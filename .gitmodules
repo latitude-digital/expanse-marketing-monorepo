@@ -1,0 +1,3 @@
+[submodule "packages/ford-ui"]
+	path = packages/ford-ui
+	url = git@github.ford.com:eComm360-Foundational-Service/web-app.git
