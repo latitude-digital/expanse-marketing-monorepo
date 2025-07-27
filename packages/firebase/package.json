@@ -1,0 +1,9 @@
+{
+  "name": "@expanse/firebase",
+  "version": "1.0.0",
+  "description": "Expanse Marketing Firebase Functions",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Test placeholder for firebase\""
+  }
+}
