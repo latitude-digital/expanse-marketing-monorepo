@@ -1,12 +1,11 @@
 import * as admin from 'firebase-admin';
-import * as functions from 'firebase-functions';
 import { 
   setCloudFrontCookies, 
   checkSurveyLimit, 
   validateSurveyLimit 
 } from '../index';
 
-// Initialize test environment
+// Initialize test environment for offline testing
 const test = require('firebase-functions-test')();
 
 // Mock Firebase Admin
@@ -51,7 +50,7 @@ describe('Firebase Functions', () => {
       }))
     };
     
-    (admin.firestore as jest.Mock).mockReturnValue(mockFirestore);
+    (admin.firestore as unknown as jest.Mock).mockReturnValue(mockFirestore);
   });
 
   afterAll(() => {

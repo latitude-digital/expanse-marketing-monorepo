@@ -1,14 +1,15 @@
-import * as functions from "firebase-functions";
+import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { logger } from "firebase-functions/v2";
 import * as admin from "firebase-admin";
 
 // Initialize Firebase Admin SDK
 admin.initializeApp();
 
 // CloudFront Cookie Management Function
-export const setCloudFrontCookies = functions.https.onCall(async (data, context) => {
+export const setCloudFrontCookies = onCall(async (request) => {
   // Verify user is authenticated
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
+  if (!request.auth) {
+    throw new HttpsError(
       "unauthenticated",
       "The function must be called while authenticated."
     );
@@ -19,7 +20,7 @@ export const setCloudFrontCookies = functions.https.onCall(async (data, context)
     // In production, this would generate actual CloudFront signed cookies
     // using AWS SDK and proper CloudFront key pair
     
-    functions.logger.info("Setting CloudFront cookies for user", { uid: context.auth.uid });
+    logger.info("Setting CloudFront cookies for user", { uid: request.auth.uid });
     
     // For now, return mock cookies structure
     // In production, you would:
@@ -38,8 +39,8 @@ export const setCloudFrontCookies = functions.https.onCall(async (data, context)
       expires
     };
   } catch (error) {
-    functions.logger.error("Error setting CloudFront cookies", error);
-    throw new functions.https.HttpsError(
+    logger.error("Error setting CloudFront cookies", error);
+    throw new HttpsError(
       "internal",
       "Unable to set CloudFront cookies"
     );
@@ -47,27 +48,27 @@ export const setCloudFrontCookies = functions.https.onCall(async (data, context)
 });
 
 // Survey Limit Check Function
-export const checkSurveyLimit = functions.https.onCall(async (data, context) => {
+export const checkSurveyLimit = onCall(async (request) => {
   // Verify user is authenticated
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
+  if (!request.auth) {
+    throw new HttpsError(
       "unauthenticated",
       "The function must be called while authenticated."
     );
   }
 
   try {
-    const { surveyId, deviceId } = data;
+    const { surveyId, deviceId } = request.data;
     
     if (!surveyId) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "invalid-argument",
         "Survey ID is required"
       );
     }
 
-    functions.logger.info("Checking survey limit", { 
-      uid: context.auth.uid, 
+    logger.info("Checking survey limit", { 
+      uid: request.auth.uid, 
       surveyId, 
       deviceId 
     });
@@ -81,7 +82,7 @@ export const checkSurveyLimit = functions.https.onCall(async (data, context) => 
     if (deviceId) {
       query = query.where("deviceId", "==", deviceId);
     } else {
-      query = query.where("userId", "==", context.auth.uid);
+      query = query.where("userId", "==", request.auth.uid);
     }
 
     const snapshot = await query.get();
@@ -101,8 +102,8 @@ export const checkSurveyLimit = functions.https.onCall(async (data, context) => 
       remaining: Math.max(0, maxResponses - responseCount)
     };
   } catch (error) {
-    functions.logger.error("Error checking survey limit", error);
-    throw new functions.https.HttpsError(
+    logger.error("Error checking survey limit", error);
+    throw new HttpsError(
       "internal",
       "Unable to check survey limit"
     );
@@ -110,27 +111,27 @@ export const checkSurveyLimit = functions.https.onCall(async (data, context) => 
 });
 
 // Survey Limit Validation Function
-export const validateSurveyLimit = functions.https.onCall(async (data, context) => {
+export const validateSurveyLimit = onCall(async (request) => {
   // Verify user is authenticated
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
+  if (!request.auth) {
+    throw new HttpsError(
       "unauthenticated",
       "The function must be called while authenticated."
     );
   }
 
   try {
-    const { surveyId, deviceId, responseData } = data;
+    const { surveyId, deviceId, responseData } = request.data;
     
     if (!surveyId || !responseData) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "invalid-argument",
         "Survey ID and response data are required"
       );
     }
 
-    functions.logger.info("Validating survey limit before submission", { 
-      uid: context.auth.uid, 
+    logger.info("Validating survey limit before submission", { 
+      uid: request.auth.uid, 
       surveyId, 
       deviceId 
     });
@@ -144,7 +145,7 @@ export const validateSurveyLimit = functions.https.onCall(async (data, context) 
     if (deviceId) {
       query = query.where("deviceId", "==", deviceId);
     } else {
-      query = query.where("userId", "==", context.auth.uid);
+      query = query.where("userId", "==", request.auth.uid);
     }
 
     const snapshot = await query.get();
@@ -158,7 +159,7 @@ export const validateSurveyLimit = functions.https.onCall(async (data, context) 
     const canSubmit = responseCount < maxResponses;
     
     if (!canSubmit) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "permission-denied",
         "Survey response limit exceeded"
       );
@@ -167,17 +168,17 @@ export const validateSurveyLimit = functions.https.onCall(async (data, context) 
     // If validation passes, store the response
     const responseDoc = {
       surveyId,
-      userId: context.auth.uid,
+      userId: request.auth.uid,
       deviceId: deviceId || null,
       responseData,
       submittedAt: admin.firestore.FieldValue.serverTimestamp(),
-      userEmail: context.auth.token.email || null
+      userEmail: request.auth.token?.email || null
     };
 
     const docRef = await db.collection("surveyResponses").add(responseDoc);
     
-    functions.logger.info("Survey response stored", { 
-      uid: context.auth.uid, 
+    logger.info("Survey response stored", { 
+      uid: request.auth.uid, 
       surveyId, 
       responseId: docRef.id 
     });
@@ -188,13 +189,13 @@ export const validateSurveyLimit = functions.https.onCall(async (data, context) 
       message: "Survey response submitted successfully"
     };
   } catch (error) {
-    functions.logger.error("Error validating and storing survey response", error);
+    logger.error("Error validating and storing survey response", error);
     
-    if (error instanceof functions.https.HttpsError) {
+    if (error instanceof HttpsError) {
       throw error;
     }
     
-    throw new functions.https.HttpsError(
+    throw new HttpsError(
       "internal",
       "Unable to validate and store survey response"
     );
