@@ -63,6 +63,13 @@
     "build:staging": "VITE_ENV=staging vite build && yarn sentry:sourcemaps",
     "preview": "vite preview",
     "test": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "perf:analyze": "node scripts/lighthouse-ci.js analyze",
+    "perf:lighthouse": "node scripts/lighthouse-ci.js lighthouse",
+    "perf:webvitals": "node scripts/lighthouse-ci.js webvitals",
+    "perf:all": "node scripts/lighthouse-ci.js all",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org latitude-digital --project expanse-marketing ./dist && sentry-cli sourcemaps upload --org latitude-digital --project expanse-marketing ./dist"
   },
   "eslintConfig": {
@@ -85,6 +92,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@playwright/test": "^1.40.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.3.0",
     "@testing-library/user-event": "^13.5.0",

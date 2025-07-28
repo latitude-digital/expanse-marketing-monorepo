@@ -6,12 +6,22 @@
   "scripts": {
     "test": "pnpm -r test",
     "build": "pnpm -r build",
-    "dev": "pnpm -r dev"
+    "dev": "pnpm -r dev",
+    "dev:all": "concurrently \"pnpm --filter @expanse/web-app dev\" \"pnpm --filter @expanse/firebase serve\"",
+    "firebase:build": "pnpm --filter @expanse/firebase build",
+    "firebase:serve": "pnpm --filter @expanse/firebase serve",
+    "firebase:deploy": "firebase deploy",
+    "firebase:deploy:functions": "firebase deploy --only functions",
+    "firebase:deploy:hosting": "firebase deploy --only hosting",
+    "firebase:emulators": "firebase emulators:start",
+    "deploy:production": "pnpm build && firebase deploy"
   },
   "keywords": ["monorepo", "expanse", "marketing", "survey", "saas"],
   "author": "Latitude Digital",
   "license": "ISC",
-  "devDependencies": {},
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
   "workspaces": [
     "packages/*"
   ]

@@ -1,15 +1,31 @@
 # Expanse Marketing Monorepo
 
-This monorepo contains the Expanse Marketing survey SAAS platform applications and Ford UI v2 components integration.
+This monorepo contains the complete Expanse Marketing survey SAAS platform with React web application, Firebase Cloud Functions, and Ford UI v2 components integration.
 
 ## Repository Structure
 
 ```
 packages/
-├── web-app/          # React web application (migrated from latitude-leads-web)
-├── firebase/         # Firebase functions & configuration (migrated from latitude-leads-firebase)
+├── web-app/          # React web application (Vite + React 18)
+│   ├── src/          # Source code with Ford UI v2 integration
+│   ├── dist/         # Production build output
+│   └── vite.config.ts # Vite configuration
+├── firebase/         # Firebase Cloud Functions (TypeScript)
+│   ├── src/          # Functions source code
+│   ├── lib/          # Compiled JavaScript output
+│   └── firebase.json # Functions configuration
 └── ford-ui/          # Ford UI v2 components (git submodule)
+    └── packages/@ui/ # Pre-built Ford components and themes
 ```
+
+## Technology Stack
+
+- **Frontend**: React 18 + TypeScript + Vite
+- **Backend**: Firebase Cloud Functions + Firestore
+- **Design System**: Ford UI v2 + Tailwind CSS
+- **Package Management**: pnpm workspaces
+- **Build Tools**: Vite (web-app), TypeScript (functions)
+- **Authentication**: Firebase Auth + CloudFront signed cookies
 
 ## Prerequisites
 
@@ -39,7 +55,7 @@ cd packages/ford-ui && nx build @ui/ford-ui-components
 
 ## Development Workflow
 
-### Development Commands
+### Quick Start
 
 ```bash
 # Install dependencies (from workspace root)
@@ -48,16 +64,40 @@ pnpm install
 # Build Ford UI components
 cd packages/ford-ui && nx build @ui/ford-ui-components
 
-# Start web app development server
-cd packages/web-app && pnpm dev
-
-# Start Firebase emulator
-cd packages/firebase && pnpm serve
-
-# Run Storybook (Ford UI reference)
-cd packages/ford-ui && nx run storybook:storybook
-# Opens at http://localhost:4400
+# Start development environment (recommended)
+pnpm dev:all  # Starts web-app + Firebase emulator
 ```
+
+### Development Commands
+
+```bash
+# Web Application Development
+pnpm --filter @expanse/web-app dev          # Start Vite dev server (port 8001)
+pnpm --filter @expanse/web-app build        # Build for production
+pnpm --filter @expanse/web-app preview      # Preview production build
+
+# Firebase Functions Development  
+pnpm --filter @expanse/firebase build       # Compile TypeScript functions
+pnpm --filter @expanse/firebase serve       # Start Firebase emulator
+pnpm firebase:emulators                     # Start all Firebase emulators
+
+# Full-stack Development
+pnpm dev                                     # Start all packages
+pnpm build                                   # Build all packages
+pnpm test                                    # Run all tests
+
+# Ford UI Components
+cd packages/ford-ui && nx build @ui/ford-ui-components  # Build components
+cd packages/ford-ui && nx run storybook:storybook       # Storybook (port 4400)
+```
+
+### Local Development URLs
+
+- **Web App**: http://localhost:8001 (Vite dev server)
+- **Admin Dashboard**: http://localhost:8001/admin (requires authentication)
+- **Firebase Emulator UI**: http://localhost:4000
+- **Functions Emulator**: http://localhost:5001
+- **Storybook**: http://localhost:4400
 
 ### Production Build
 
@@ -65,9 +105,62 @@ cd packages/ford-ui && nx run storybook:storybook
 # Build all packages
 pnpm build
 
-# Or build specific packages
-cd packages/ford-ui && nx build @ui/ford-ui-components
-cd packages/web-app && pnpm build
+# Individual package builds
+pnpm --filter @expanse/web-app build        # Web app production build
+pnpm --filter @expanse/firebase build       # Compile Firebase functions
+cd packages/ford-ui && nx build @ui/ford-ui-components  # Ford UI components
+```
+
+## Deployment
+
+### Firebase Deployment
+
+```bash
+# Deploy everything (functions + hosting)
+pnpm deploy:production
+
+# Deploy specific services
+pnpm firebase:deploy:functions               # Functions only
+pnpm firebase:deploy:hosting                 # Hosting only
+pnpm firebase:deploy                         # Both functions and hosting
+
+# Build and deploy
+pnpm firebase:build && pnpm firebase:deploy  # Build functions then deploy
+```
+
+### Environment Configuration
+
+Create environment files in `packages/web-app/`:
+
+```bash
+# .env.local (local development)
+VITE_ENV=local
+VITE_FIREBASE_PROJECT_ID=expanse-marketing-dev
+
+# .env.staging (staging environment) 
+VITE_ENV=staging
+VITE_FIREBASE_PROJECT_ID=expanse-marketing-staging
+
+# .env.production (production environment)
+VITE_ENV=production 
+VITE_FIREBASE_PROJECT_ID=expanse-marketing
+```
+
+### Firebase Project Setup
+
+```bash
+# Login to Firebase
+firebase login
+
+# Set project
+firebase use expanse-marketing              # Production
+firebase use expanse-marketing-staging     # Staging
+
+# Initialize hosting (if needed)
+firebase init hosting
+
+# Test deployment with emulator
+pnpm firebase:emulators
 ```
 
 ## Ford UI Component Usage
