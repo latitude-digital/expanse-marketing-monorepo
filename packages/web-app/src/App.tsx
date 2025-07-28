@@ -3,9 +3,10 @@ import * as Sentry from "@sentry/react";
 
 import './App.scss';
 
-import '@ford/gdux-design-foundation/dist/ford/styles/_variables.css';
-import '@ford/gdux-design-foundation/dist/ford/styles/gdux-ford.css';
-import '@ford/gdux-design-foundation/dist/ford/fontFamilies/ford-font-families.css';
+// Ford UI v2 imports - Ford Design System CSS  
+import '../../ford-ui/packages/@ui/ford-ui-components/src/styles/ford/_variables.css';
+import '../../ford-ui/packages/@ui/ford-ui-components/src/styles/ford/ford.css';
+import '../../ford-ui/packages/@ui/ford-ui-components/src/styles/ford/ford-font-families.css';
 
 // import '@ford/gdux-design-foundation/dist/lincoln/styles/_variables.css';
 // import '@ford/gdux-design-foundation/dist/lincoln/styles/gdux-lincoln.css';

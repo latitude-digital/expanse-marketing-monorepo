@@ -14,9 +14,7 @@ import { httpsCallable } from 'firebase/functions';
 import app from '../services/firebase';
 import functions from '../services/functions';
 
-var apiConfig = require("../config/api");
-var getApiUrl = apiConfig.getApiUrl;
-var ENDPOINTS = apiConfig.ENDPOINTS;
+import { getApiUrl, ENDPOINTS } from "../config/api";
 
 // these are the custom surveyjs renderers
 // while not referenced in the code they have to be imported to be registered

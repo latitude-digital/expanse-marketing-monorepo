@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useParams } from 'react-router-dom';
 import { Loader } from "@progress/kendo-react-indicators";
 import * as Sentry from "@sentry/react";
-import { Button } from '@ford/ford-ui-components';
+import { Button } from '../../../ford-ui/packages/@ui/ford-ui-components/src/components/button';
 import { mapSurveyToFordSurvey } from '../helpers/mapSurveyToFord';
 import { baseSurvey, incentiveThanks, activationThanks } from "./ExperienceSurvey";
 import { baseSurvey as derbyBaseSurvey } from './DerbySurvey';
@@ -551,8 +551,8 @@ function SurveyComponent() {
                         <Button
                             style={{ margin: '12px auto', display: 'block', fontWeight: 700 }}
                             onClick={() => customData.derbyURL && deviceSurveyGuid ? window.open(`${customData.derbyURL}${deviceSurveyGuid}`, '_blank') : undefined}
-                            size="large"
-                            color="primary"
+                            variant="primary"
+                            background="onLight"
                         >
                             LET'S PLAY
                         </Button>

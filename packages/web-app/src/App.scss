@@ -1,5 +1,6 @@
 // App.scss
-// Enable the new color system.
+// Kendo theme integration with Ford UI v2
+// Enable the new color system with Ford brand colors.
 $kendo-enable-color-system: true;
 
 $kendo-colors: (
@@ -15,7 +16,7 @@ $kendo-colors: (
     primary-on-surface: #AC8BEE,
 );
 
-// Import the Default theme.
+// Import Kendo theme for components we still use (Loader, etc.)
 @import "@progress/kendo-theme-default/dist/all.scss";
 
 .app {

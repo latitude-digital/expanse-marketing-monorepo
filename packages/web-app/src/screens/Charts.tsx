@@ -13,8 +13,10 @@ import { VisualizationPanel } from 'survey-analytics';
 import { Loader } from "@progress/kendo-react-indicators";
 
 import 'survey-analytics/survey.analytics.min.css';
-import 'tabulator-tables/dist/css/tabulator.min.css';
-import 'survey-analytics/survey.analytics.tabulator.min.css';
+// Tabulator CSS imports - temporarily commented out during dependency cleanup
+// Will be restored if tabulator-tables dependency is re-added
+// import 'tabulator-tables/dist/css/tabulator.min.css';
+// import 'survey-analytics/survey.analytics.tabulator.min.css';
 
 slk(
      "NDBhNThlYzYtN2EwMy00ZTgxLWIyNGQtOGFkZWJkM2NlNjI3OzE9MjAyNS0wNy0xOSwyPTIwMjUtMDctMTksND0yMDI1LTA3LTE5"
