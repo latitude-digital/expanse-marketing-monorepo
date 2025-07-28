@@ -1,0 +1,14 @@
+
+@mixin transition($attr, $rate){
+  transition: $attr $rate;
+}
+
+@mixin transition-bezier($type){
+  transition: $type cubic-bezier(0.625, 0.380, 0.440, 0.860);
+  transition-timing-function: cubic-bezier(0.625, 0.380, 0.440, 0.860);
+}
+
+@mixin transition-ease-out($type){
+  transition: $type cubic-bezier(0.405, 1.040, 0.800, 0.950);
+  transition-timing-function: cubic-bezier(0.405, 1.040, 0.800, 0.950);
+}

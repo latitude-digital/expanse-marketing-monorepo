@@ -1,0 +1,61 @@
+@import '../variables/_color';
+@import '../mixins/_shadow';
+
+@mixin radio-box($height, $width) {
+
+  //@include box-shadow;
+  align-items: center;
+  border: 1px solid $ranger_black;
+  //border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  font-size: 12px;
+  height: $height;
+  justify-content: center;
+  margin: 5px;
+  text-align: center;
+  width: $width;
+  border-radius: 4px;
+
+  & label {
+    cursor: pointer;
+    height: $height;
+    justify-content: center;
+    width: 100%;
+    //line-height: 0px;
+    display: flex;
+    margin: 0;
+    padding: 0;
+    lost-center: 100% flex;
+    lost-align: center;
+
+  }
+
+  input {
+    opacity: 0;
+    position: absolute;
+    clip: rect(0, 0, 0, 0);
+    width: 1px;
+    height: 1px;
+
+  }
+
+  &:focus-within {
+    outline:none;
+    border-color: $focus_blue;
+    box-shadow:0 0 5px $focus_blue;
+  }
+
+}
+
+@mixin radio-box-active {
+  background-color: $blue_ford;
+  border: 1px solid $blue_ford;
+  border-radius: 4px;
+
+  & label {
+    color: $white;
+  }
+}

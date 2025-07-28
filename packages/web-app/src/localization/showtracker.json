@@ -1,0 +1,1799 @@
+{
+    "Primary Language Code": {
+      "Key": "Primary Language Code",
+      "Alternate Keys": "",
+      "English": "EN",
+      "French": "FR",
+      "Spanish": "ES"
+    },
+    "Default To": {
+      "Key": "Default To",
+      "Alternate Keys": "",
+      "English": "EN",
+      "French": "FR",
+      "Spanish": "ES"
+    },
+    "Language Codes": {
+      "Key": "Language Codes",
+      "Alternate Keys": "",
+      "English": "EN,AU,CA, EU, ZA",
+      "French": "CA, BE-FR, CH, FR",
+      "Spanish": "US,ES"
+    },
+    "0-30 Days": {
+      "Key": "0-30 Days",
+      "Alternate Keys": "",
+      "English": "0-30 Days",
+      "French": "0-30 jours",
+      "Spanish": ""
+    },
+    "1-3 Months": {
+      "Key": "1-3 Months",
+      "Alternate Keys": "",
+      "English": "1-3 Months",
+      "French": "1-3 mois",
+      "Spanish": ""
+    },
+    "101K TO 150K": {
+      "Key": "101K TO 150K",
+      "Alternate Keys": "",
+      "English": "101K TO 150K",
+      "French": "101K à 150K",
+      "Spanish": ""
+    },
+    "151K TO 199K": {
+      "Key": "151K TO 199K",
+      "Alternate Keys": "",
+      "English": "151K TO 199K",
+      "French": "151K à 199K",
+      "Spanish": ""
+    },
+    "16 TO 24": {
+      "Key": "16 TO 24",
+      "Alternate Keys": "",
+      "English": "16 TO 24",
+      "French": "16 à 24",
+      "Spanish": ""
+    },
+    "25 TO 29": {
+      "Key": "25 TO 29",
+      "Alternate Keys": "",
+      "English": "25 TO 29",
+      "French": "25 à 29",
+      "Spanish": ""
+    },
+    "30 TO 34": {
+      "Key": "30 TO 34",
+      "Alternate Keys": "",
+      "English": "30 TO 34",
+      "French": "30 à 34",
+      "Spanish": ""
+    },
+    "35 TO 39": {
+      "Key": "35 TO 39",
+      "Alternate Keys": "",
+      "English": "35 TO 39",
+      "French": "35 à 39",
+      "Spanish": ""
+    },
+    "4-6 Months": {
+      "Key": "4-6 Months",
+      "Alternate Keys": "",
+      "English": "4-6 Months",
+      "French": "4-6 mois",
+      "Spanish": ""
+    },
+    "40 TO 44": {
+      "Key": "40 TO 44",
+      "Alternate Keys": "",
+      "English": "40 TO 44",
+      "French": "40 à 44",
+      "Spanish": ""
+    },
+    "45 TO 49": {
+      "Key": "45 TO 49",
+      "Alternate Keys": "",
+      "English": "45 TO 49",
+      "French": "45 à 49",
+      "Spanish": ""
+    },
+    "50 TO 54": {
+      "Key": "50 TO 54",
+      "Alternate Keys": "",
+      "English": "50 TO 54",
+      "French": "50 à 54",
+      "Spanish": ""
+    },
+    "51K TO 100K": {
+      "Key": "51K TO 100K",
+      "Alternate Keys": "",
+      "English": "51K TO 100K",
+      "French": "51K à 100K",
+      "Spanish": ""
+    },
+    "55 OR OLDER": {
+      "Key": "55 OR OLDER",
+      "Alternate Keys": "",
+      "English": "55 OR OLDER",
+      "French": "55 ANS OU PLUS",
+      "Spanish": ""
+    },
+    "7+ Months": {
+      "Key": "7+ Months",
+      "Alternate Keys": "",
+      "English": "7+ Months",
+      "French": "7+ mois",
+      "Spanish": ""
+    },
+    "7 Months - 1 Year": {
+      "Key": "7 Months - 1 Year",
+      "Alternate Keys": "",
+      "English": "7 Months - 1 Year",
+      "French": "7 mois - 1 an",
+      "Spanish": ""
+    },
+    "acceptsContactError": {
+      "Key": "acceptsContactError",
+      "Alternate Keys": "",
+      "English": "Must choose to opt in if email is present",
+      "French": "Vous devez vous inscrire si vous fournissez une adresse e-mail.",
+      "Spanish": ""
+    },
+    "addPhoto": {
+      "Key": "addPhoto",
+      "Alternate Keys": "",
+      "English": "Add Photo",
+      "French": "Ajouter une photo",
+      "Spanish": ""
+    },
+    "advancedFind": {
+      "Key": "advancedFind",
+      "Alternate Keys": "",
+      "English": "Advanced Find",
+      "French": "",
+      "Spanish": ""
+    },
+    "age_bracket": {
+      "Key": "age_bracket",
+      "Alternate Keys": "",
+      "English": "What age bracket do you fall in?",
+      "French": "Dans quel groupe d'age vous trouvez-vous?",
+      "Spanish": ""
+    },
+    "Agriculture, forestry and fishing": {
+      "Key": "Agriculture, forestry and fishing",
+      "Alternate Keys": "",
+      "English": "Agriculture, forestry and fishing",
+      "French": "Agriculture, foresterie et pêche",
+      "Spanish": ""
+    },
+    "avgPerDay": {
+      "Key": "avgPerDay",
+      "Alternate Keys": "",
+      "English": "Avg/Day",
+      "French": "En moyenne",
+      "Spanish": ""
+    },
+    "begin": {
+      "Key": "begin",
+      "Alternate Keys": "",
+      "English": "Begin",
+      "French": "",
+      "Spanish": ""
+    },
+    "beginDrive": {
+      "Key": "begbeginDrivein",
+      "Alternate Keys": "",
+      "English": "Begin Test Drive",
+      "French": "",
+      "Spanish": ""
+    },
+    "beginSurvey": {
+      "Key": "beginSurvey",
+      "Alternate Keys": "",
+      "English": "Begin Survey",
+      "French": "Commencez le sondage",
+      "Spanish": ""
+    },
+    "birthYear": {
+      "Key": "birthYear",
+      "Alternate Keys": "",
+      "English": "Birth Year",
+      "French": "",
+      "Spanish": "Año de nacimiento"
+    },
+    "Both": {
+      "Key": "Both",
+      "Alternate Keys": "",
+      "English": "Both",
+      "French": "Les deux",
+      "Spanish": ""
+    },
+    "Business": {
+      "Key": "Business",
+      "Alternate Keys": "",
+      "English": "Business",
+      "French": "Affaires",
+      "Spanish": ""
+    },
+    "businessName": {
+      "Key": "businessName",
+      "Alternate Keys": "",
+      "English": "Business Name",
+      "French": "Nom de l'entreprise",
+      "Spanish": ""
+    },
+    "bypassCheckDuplicates": {
+      "Key": "bypassCheckDuplicates",
+      "Alternate Keys": "",
+      "English": "Bypass Check Duplicates",
+      "French": "",
+      "Spanish": ""
+    },
+    "bypassInternet": {
+      "Key": "bypassInternet",
+      "Alternate Keys": "",
+      "English": "Bypass Internet",
+      "French": "",
+      "Spanish": ""
+    },
+    "cancel": {
+      "Key": "cancel",
+      "Alternate Keys": "",
+      "English": "Cancel",
+      "French": "Annuler",
+      "Spanish": ""
+    },
+    "Cars": {
+      "Key": "Cars",
+      "Alternate Keys": "",
+      "English": "Cars",
+      "French": "Voitures",
+      "Spanish": ""
+    },
+    "changeVehicle": {
+      "Key": "changeVehicle",
+      "Alternate Keys": "",
+      "English": "Change Vehicle",
+      "French": "",
+      "Spanish": ""
+    },
+    "choose": {
+      "Key": "choose",
+      "Alternate Keys": "",
+      "English": "Choose",
+      "French": "",
+      "Spanish": ""
+    },
+    "city": {
+      "Key": "city",
+      "Alternate Keys": "",
+      "English": "City",
+      "French": "Ville",
+      "Spanish": "Ciudad"
+    },
+    "cleanSignature": {
+      "Key": "cleanSignature",
+      "Alternate Keys": "",
+      "English": "Clear Signature",
+      "French": "",
+      "Spanish": ""
+    },
+    "close": {
+      "Key": "close",
+      "Alternate Keys": "",
+      "English": "Close",
+      "French": "Suivant",
+      "Spanish": ""
+    },
+    "confirm": {
+      "Key": "confirm",
+      "Alternate Keys": "",
+      "English": "Confirm",
+      "French": "Confirmer",
+      "Spanish": ""
+    },
+    "Construction": {
+      "Key": "Construction",
+      "Alternate Keys": "",
+      "English": "Construction",
+      "French": "Construction",
+      "Spanish": ""
+    },
+    "day": {
+      "Key": "day",
+      "Alternate Keys": "",
+      "English": "day",
+      "French": "journée",
+      "Spanish": ""
+    },
+    "done": {
+      "Key": "done",
+      "Alternate Keys": "",
+      "English": "Done",
+      "French": "Terminé",
+      "Spanish": ""
+    },
+    "doNotAccept": {
+      "Key": "doNotAccept",
+      "Alternate Keys": "",
+      "English": "I do not accept these terms.",
+      "French": "",
+      "Spanish": ""
+    },
+    "driveMostOften": {
+      "Key": "driveMostOften",
+      "Alternate Keys": "",
+      "English": "What is the vehicle you drive most often?",
+      "French": "Que conduisez-vous actuellement?",
+      "Spanish": ""
+    },
+    "duplicateDetected": {
+      "Key": "duplicateDetected",
+      "Alternate Keys": "",
+      "English": "DUPLICATE SUBMISSION DETECTED",
+      "French": "",
+      "Spanish": ""
+    },
+    "editEmail": {
+      "Key": "editEmail",
+      "Alternate Keys": "",
+      "English": "Edit Contact Information",
+      "French": "Modifiez vos coordonnées",
+      "Spanish": ""
+    },
+    "editPersonal": {
+      "Key": "editPersonal",
+      "Alternate Keys": "",
+      "English": "Edit Personal Information",
+      "French": "Modifiez vos informations personnelles",
+      "Spanish": ""
+    },
+    "eitherEmailOrPhoneRequired": {
+      "Key": "eitherEmailOrPhoneRequired",
+      "Alternate Keys": "",
+      "English": "Either Email or Phone is required.",
+      "French": "Veuillez saisir votre numéro de téléphone ou votre adresse e-mail.",
+      "Spanish": ""
+    },
+    "emailAddress": {
+      "Key": "emailAddress",
+      "Alternate Keys": "",
+      "English": "Email Address",
+      "French": "Email",
+      "Spanish": "Correo"
+    },
+    "emailAgreement": {
+      "Key": "emailAgreement",
+      "Alternate Keys": "",
+      "English": "Please email me communications, including product and service information, surveys and special offers from Ford Motor Company and it's dealers.",
+      "French": "",
+      "Spanish": "Envíame cosas."
+    },
+    "emailOptInPolicy": {
+      "Key": "emailOptInPolicy",
+      "Alternate Keys": "",
+      "English": "Click here to receive communications, including emails, from Ford Motor Company of Canada, Limited and The Lincoln Motor Company* (together, Ford), and your authorized dealership about them and their products, services, events, news, updates, offers, promotions, customized ads and more. You may withdraw consent at any time. Ford is seeking consent on its own behalf and on behalf of your authorized dealership. For more information about and how to contact your authorized dealership, please click here.  \n \nTo review our Privacy Policy, including your right to access or correct your personal information, opt-out (deletion from marketing lists), our service provider practices and storage of data in the U.S. please click here. If you have any questions you may also contact a Customer Service Representative at 1-800-565-FORD (3673) or write us at The Canadian Road P.O. Box 2000, Oakville, Ontario, Canada L6K 0C8. \n \n* Ford Motor Company of Canada, Limited carries on business as The Lincoln Motor Company.",
+      "French": "Cochez cette static let pour recevoir des communications, y compris des courriels, de Ford du Canada Limitée et de La compagnie automobile Lincoln* (Ford ensemble), et de votre concessionnaire autorisé à leur sujet ou au sujet de leurs produits et services, ainsi que des événements, des nouvelles, des mises à jour, des offres, des promotions, des annonces personnalisées et plus encore. Vous pouvez retirer votre consentement à tout moment. Ford  requiert votre consentement en son propre nom et au nom de votre concessionnaire autorisé. Pour de plus amples renseignements au sujet de votre concessionnaire autorisé et sur la façon de communiquer avec lui, veuillez cliquer ici.  \n \nPour consulter notre politique de confidentialité, y compris votre droit d'accéder à vos renseignements personnels ou de les modifier, le désabonnement (retrait des listes de marketing), les pratiques de nos prestataires de services et le stockage des données aux États-Unis, veuillez cliquer ici. Si vous avez des questions, vous pouvez également communiquer avec un représentant du service à la clientèle au 1 800 565-FORD (3673) ou nous écrire à l'adresse suivante : The Canadian Road, C.P. 2000, Oakville (Ontario) L6K 0C8, Canada. \n \n*Ford du Canada Limitée fait affaire sous la raison sociale de La compagnie automobile Lincoln.",
+      "Spanish": ""
+    },
+    "emailOptInPolicyFirst": {
+      "Key": "emailOptInPolicyFirst",
+      "Alternate Keys": "",
+      "English": "Check here to receive communications, including emails and text messages, from Ford Motor Company of Canada, Limited and The Lincoln Motor Company* (together, Ford), and your authorized dealership about them and their products, services, events, news, updates, offers, promotions, customized ads and more. You may withdraw consent at any time by using the unsubscribe mechanism provided in such messages or by contacting us. Data charges may apply. Ford is seeking consent on its own behalf and on behalf of your authorized dealership. For more information about and how to contact your authorized dealership, please click here.",
+      "French": "Cochez cette case pour recevoir des communications, y compris des courriels et des messages texte, de La Compagnie Ford du Canada Limitée et de La compagnie automobile Lincoln* (ensemble, « Ford »), ainsi que de votre concessionnaire/détaillant autorisé, à leur sujet ou concernant leurs produits et services, des événements, des nouvelles, des mises à jour, des offres, des promotions, des annonces personnalisées et plus. Vous pouvez retirer votre consentement en tout temps en suivant la procédure de désabonnement prévue dans ces messages ou en communiquant avec nous. Des frais de données peuvent s’appliquer. Ford Canada requiert votre consentement en son propre nom et au nom de votre concessionnaire/détaillant autorisé. Pour en savoir plus sur votre concessionnaire/détaillant autorisé et pour obtenir ses coordonnées, cliquez ici.",
+      "Spanish": ""
+    },
+    "emailOptInPolicySecond": {
+      "Key": "emailOptInPolicySecond",
+      "Alternate Keys": "",
+      "English": "\n \nTo review our Privacy Policy, including your right to access or correct your personal information, opt-out (deletion from marketing lists), our service provider practices and storage of data in the U.S. please click here. If you have any questions you may contact a Customer Service Representative at 1-800-565-FORD (3673) or write us at The Canadian Road P.O. Box 2000, Oakville, Ontario, Canada L6K 0C8. \n \n* Ford Motor Company of Canada, Limited carries on business as The Lincoln Motor Company.",
+      "French": "\n \nPour consulter notre politique de confidentialité, qui traite notamment de votre droit d’accéder à vos renseignements personnels ou de les corriger, de votre droit de désinscription (suppression des listes de marketing), des pratiques de nos fournisseurs de services et du stockage de données aux États-Unis, cliquez ici. Si vous avez des questions, vous pouvez communiquer avec un représentant du service à la clientèle en composant le 1 800 565-FORD (3673) ou nous écrire à l’adresse suivante : The Canadian Road, C.P. 2000, Oakville (Ontario), Canada L6K 0C8.\n \n*La Compagnie Ford du Canada Limitée fait affaire sous la raison sociale de La compagnie automobile Lincoln.",
+      "Spanish": ""
+    },
+    "thankYouOptOut": {
+      "Key": "thankYouOptOut",
+      "Alternate Keys": "",
+      "English": "Thank you for your time.",
+      "French": "Merci pour votre temps.",
+      "Spanish": ""
+    },
+    "restartSurvey": {
+      "Key": "restartSurvey",
+      "Alternate Keys": "",
+      "English": "Restart Survey",
+      "French": "Recommencer l'enquête",
+      "Spanish": ""
+    },
+    "accept": {
+      "Key": "accept",
+      "Alternate Keys": "",
+      "English": "Accept",
+      "French": "Accepter",
+      "Spanish": ""
+    },
+    "reject": {
+      "Key": "reject",
+      "Alternate Keys": "",
+      "English": "Reject",
+      "French": "Rejeter",
+      "Spanish": ""
+    },
+    "englishFrench": {
+      "Key": "englishFrench",
+      "Alternate Keys": "",
+      "English": "English/French Canadian",
+      "French": "Anglais / Français Canadien",
+      "Spanish": ""
+    },
+    "enterSameInfo": {
+      "Key": "enterSameInfo",
+      "Alternate Keys": "",
+      "English": "Please enter the SAME phone or email you provided before your test-drive.",
+      "French": "",
+      "Spanish": ""
+    },
+    "error": {
+      "Key": "error",
+      "Alternate Keys": "",
+      "English": "Error",
+      "French": "Erreur",
+      "Spanish": ""
+    },
+    "excellent": {
+      "Key": "excellent",
+      "Alternate Keys": "",
+      "English": "Excellent",
+      "French": "",
+      "Spanish": "Excelente"
+    },
+    "female": {
+      "Key": "female",
+      "Alternate Keys": "",
+      "English": "Female",
+      "French": "",
+      "Spanish": "Hembra"
+    },
+    "Female": {
+      "Key": "Female",
+      "Alternate Keys": "",
+      "English": "Female",
+      "French": "Femme",
+      "Spanish": ""
+    },
+    "findMatch": {
+      "Key": "findMatch",
+      "Alternate Keys": "",
+      "English": "Find Match",
+      "French": "",
+      "Spanish": ""
+    },
+    "findName": {
+      "Key": "findName",
+      "Alternate Keys": "",
+      "English": "Find Your Name",
+      "French": "",
+      "Spanish": ""
+    },
+    "finish": {
+      "Key": "finish",
+      "Alternate Keys": "",
+      "English": "Finish",
+      "French": "Terminer",
+      "Spanish": "Terminar"
+    },
+    "finishSave": {
+      "Key": "finishSave",
+      "Alternate Keys": "",
+      "English": "Finish & Save",
+      "French": "Terminer et Sauvegarder",
+      "Spanish": ""
+    },
+    "firstName": {
+      "Key": "firstName",
+      "Alternate Keys": "",
+      "English": "First Name",
+      "French": "Prénom",
+      "Spanish": "Nombre de pila"
+    },
+    "followUpSurvey": {
+      "Key": "followUpSurvey",
+      "Alternate Keys": "",
+      "English": "In order to help Lincoln improve future events, would you be interested in participating in a one-time follow-up survey?",
+      "French": "",
+      "Spanish": ""
+    },
+    "ford": {
+      "Key": "ford",
+      "Alternate Keys": "",
+      "English": "Ford",
+      "French": "Ford",
+      "Spanish": "Ford"
+    },
+    "fourSixMonths": {
+      "Key": "fourSixMonths",
+      "Alternate Keys": "",
+      "English": "4-6 Months",
+      "French": "",
+      "Spanish": ""
+    },
+    "gender": {
+      "Key": "gender",
+      "Alternate Keys": "",
+      "English": "Gender",
+      "French": "",
+      "Spanish": "Género"
+    },
+    "Gender": {
+      "Key": "Gender",
+      "Alternate Keys": "",
+      "English": "Gender",
+      "French": "Genre?",
+      "Spanish": ""
+    },
+    "getRandomWinner": {
+      "Key": "getRandomWinner",
+      "Alternate Keys": "",
+      "English": "GET A RANDOM WINNER",
+      "French": "",
+      "Spanish": ""
+    },
+    "Government and Public Administration": {
+      "Key": "Government and Public Administration",
+      "Alternate Keys": "",
+      "English": "Government and Public Administration",
+      "French": "Gouvernement et administration publique",
+      "Spanish": ""
+    },
+    "household_income": {
+      "Key": "household_income",
+      "Alternate Keys": "",
+      "English": "What is your total Household Income?",
+      "French": "Quel est votre revenue totale a la maison?",
+      "Spanish": ""
+    },
+    "howFamiliar": {
+      "Key": "howFamiliar",
+      "Alternate Keys": "",
+      "English": "How familiar are you with the following brands' current models?",
+      "French": "",
+      "Spanish": ""
+    },
+    "howFamiliarLincoln": {
+      "Key": "howFamiliarLincoln",
+      "Alternate Keys": "",
+      "English": "How familiar are you with Lincoln's current models?",
+      "French": "",
+      "Spanish": ""
+    },
+    "howLikelyPurchase": {
+      "Key": "howLikelyPurchase",
+      "Alternate Keys": "",
+      "English": "For your next vehicle purchase, how likely would you be to consider purchasing the following brands?",
+      "French": "",
+      "Spanish": ""
+    },
+    "howLikelyPurchaseLincoln": {
+      "Key": "howLikelyPurchaseLincoln",
+      "Alternate Keys": "",
+      "English": "For your next vehicle purchase, how likely would you be to consider purchasing a Lincoln vehicle?",
+      "French": "",
+      "Spanish": ""
+    },
+    "howLikelyPurchaseLincolnPost": {
+      "Key": "howLikelyPurchaseLincolnPost",
+      "Alternate Keys": "",
+      "English": "Based on your test-drive experience, how likely would you be to consider purchasing a vehicle from Lincoln?",
+      "French": "",
+      "Spanish": ""
+    },
+    "howLikelyRecommend": {
+      "Key": "howLikelyRecommend",
+      "Alternate Keys": "",
+      "English": "How likely are you to recommend Lincoln to a friend, relative or colleague?",
+      "French": "",
+      "Spanish": ""
+    },
+    "howLikelyRecommendPost": {
+      "Key": "howLikelyRecommendPost",
+      "Alternate Keys": "",
+      "English": "Based on your experience today, how likely are you to recommend Lincoln to a friend, relative or colleague?",
+      "French": "",
+      "Spanish": ""
+    },
+    "howLikelyRecommendPre": {
+      "Key": "howLikelyRecommendPre",
+      "Alternate Keys": "",
+      "English": "Prior to your experience today, how likely are you to recommend Lincoln to a friend, relative or colleague?",
+      "French": "",
+      "Spanish": ""
+    },
+    "howPurchase": {
+      "Key": "howPurchase",
+      "Alternate Keys": "",
+      "English": "How do you plan to acquire your next vehicle?",
+      "French": "",
+      "Spanish": ""
+    },
+    "incentiveOptIn": {
+      "Key": "incentiveOptIn",
+      "Alternate Keys": "",
+      "English": "Would you like to opt in to the incentive?",
+      "French": "",
+      "Spanish": ""
+    },
+    "impression": {
+      "Key": "impression",
+      "Alternate Keys": "",
+      "English": "What is your overall opinion or impression of the following brands?",
+      "French": "",
+      "Spanish": ""
+    },
+    "impressionPost": {
+      "Key": "impressionPost",
+      "Alternate Keys": "",
+      "English": "Now that you've taken a test-drive, what is your overall opinion or impression of:",
+      "French": "",
+      "Spanish": ""
+    },
+    "impressionPostLincoln": {
+      "Key": "impressionPostLincoln",
+      "Alternate Keys": "",
+      "English": "Now that you've taken a test-drive, what is your overall opinion or impression of Lincoln?",
+      "French": "",
+      "Spanish": ""
+    },
+    "impressionPre": {
+      "Key": "impressionPre",
+      "Alternate Keys": "",
+      "English": "Before taking a test drive, what is your overall opinion or impression of:",
+      "French": "",
+      "Spanish": ""
+    },
+    "impressionPreLincoln": {
+      "Key": "impressionPreLincoln",
+      "Alternate Keys": "",
+      "English": "Before taking a test-drive, what is your overall opinion of Lincoln?",
+      "French": "",
+      "Spanish": ""
+    },
+    "industry": {
+      "Key": "industry",
+      "Alternate Keys": "",
+      "English": "What Industry is your Business Part of?",
+      "French": "De quelle industrie votre entreprise fait-elle partie?",
+      "Spanish": ""
+    },
+    "initials": {
+      "Key": "initials",
+      "Alternate Keys": "",
+      "English": "Please enter your initials for the luggage tag.",
+      "French": "Veuillez entrer vos initiales pour l'étiquette de bagage.",
+      "Spanish": ""
+    },
+    "invalid": {
+      "Key": "invalid",
+      "Alternate Keys": "",
+      "English": "Invalid",
+      "French": "",
+      "Spanish": ""
+    },
+    "invalidAddress": {
+      "Key": "invalidAddress",
+      "Alternate Keys": "",
+      "English": "Invalid Address",
+      "French": "",
+      "Spanish": ""
+    },
+    "invalidFirstName": {
+      "Key": "invalidFirstName",
+      "Alternate Keys": "",
+      "English": "Invalid First Name",
+      "French": "Prénom invalide",
+      "Spanish": ""
+    },
+    "invalidLastName": {
+      "Key": "invalidLastName",
+      "Alternate Keys": "",
+      "English": "Invalid Last Name",
+      "French": "Nom de famille invalide",
+      "Spanish": ""
+    },
+    "lastNameLength": {
+      "Key": "lastNameLength",
+      "Alternate Keys": "",
+      "English": "Last Name must be at least 2 characters",
+      "French": "Nom de famille doivent être au moins 2 caractères",
+      "Spanish": ""
+    },
+    "invalidAddressConfirm": {
+      "Key": "invalidAddressConfirm",
+      "Alternate Keys": "",
+      "English": "If you are getting this message in error please press confirm.",
+      "French": "",
+      "Spanish": ""
+    },
+    "invalidCity": {
+      "Key": "invalidCity",
+      "Alternate Keys": "",
+      "English": "Invalid City",
+      "French": "",
+      "Spanish": ""
+    },
+    "invalidEmailAddress": {
+      "Key": "invalidEmailAddress",
+      "Alternate Keys": "",
+      "English": "Invalid Email Address",
+      "French": "",
+      "Spanish": ""
+    },
+    "invalidPhoneNumber": {
+      "Key": "invalidPhoneNumber",
+      "Alternate Keys": "",
+      "English": "Invalid Phone Number",
+      "French": "S'il vous plaît entrez un numéro de téléphone valide.",
+      "Spanish": ""
+    },
+    "invalidPostalCode": {
+      "Key": "invalidPostalCode",
+      "Alternate Keys": "",
+      "English": "Invalid Zip",
+      "French": "Code Postal Non Valide",
+      "Spanish": ""
+    },
+    "invalidState": {
+      "Key": "invalidState",
+      "Alternate Keys": "",
+      "English": "Invalid State",
+      "French": "",
+      "Spanish": ""
+    },
+    "invalidYear": {
+      "Key": "invalidYear",
+      "Alternate Keys": "",
+      "English": "Invalid Year",
+      "French": "",
+      "Spanish": ""
+    },
+    "Landscaping, Lawn and Garden": {
+      "Key": "Landscaping, Lawn and Garden",
+      "Alternate Keys": "",
+      "English": "Landscaping, Lawn and Garden",
+      "French": "Aménagement paysager",
+      "Spanish": ""
+    },
+    "lastName": {
+      "Key": "lastName",
+      "Alternate Keys": "",
+      "English": "Last Name",
+      "French": "Nom de famille",
+      "Spanish": "Apellido"
+    },
+    "lease": {
+      "Key": "lease",
+      "Alternate Keys": "",
+      "English": "Lease",
+      "French": "",
+      "Spanish": ""
+    },
+    "Lease": {
+      "Key": "Lease",
+      "Alternate Keys": "",
+      "English": "Lease",
+      "French": "Un bail",
+      "Spanish": ""
+    },
+    "lincoln": {
+      "Key": "lincoln",
+      "Alternate Keys": "",
+      "English": "Lincoln",
+      "French": "Lincoln",
+      "Spanish": "Lincoln"
+    },
+    "Make": {
+      "Key": "Make",
+      "Alternate Keys": "",
+      "English": "Make",
+      "French": "Marque",
+      "Spanish": ""
+    },
+    "male": {
+      "Key": "male",
+      "Alternate Keys": "",
+      "English": "Male",
+      "French": "",
+      "Spanish": "Masculino"
+    },
+    "Male": {
+      "Key": "Male",
+      "Alternate Keys": "",
+      "English": "Male",
+      "French": "Homme",
+      "Spanish": ""
+    },
+    "Mining": {
+      "Key": "Mining",
+      "Alternate Keys": "",
+      "English": "Mining",
+      "French": "Exploitation minière",
+      "Spanish": ""
+    },
+    "minors": {
+      "Key": "minors",
+      "Alternate Keys": "",
+      "English": "Please enter minor name(s) below:",
+      "French": "",
+      "Spanish": ""
+    },
+    "minorName": {
+      "Key": "minorName",
+      "Alternate Keys": "",
+      "English": "Full name of minor",
+      "French": "",
+      "Spanish": ""
+    },
+    "Model": {
+      "Key": "Model",
+      "Alternate Keys": "",
+      "English": "Model",
+      "French": "Modèle",
+      "Spanish": ""
+    },
+    "modelYear": {
+      "Key": "modelYear",
+      "Alternate Keys": "",
+      "English": "Model Year",
+      "French": "",
+      "Spanish": ""
+    },
+    "mostLikelyBuy": {
+      "Key": "mostLikelyBuy",
+      "Alternate Keys": "",
+      "English": "If you were to purchase or lease a new vehicle today, what would you most likely buy?",
+      "French": "",
+      "Spanish": ""
+    },
+    "multipleCitiesFound": {
+      "Key": "multipleCitiesFound",
+      "Alternate Keys": "",
+      "English": "Multiple Cities Found",
+      "French": "Plusieurs villes ont été trouvées",
+      "Spanish": ""
+    },
+    "netClimbRegistration": {
+      "Key": "netClimbRegistration",
+      "Alternate Keys": "",
+      "English": "Net Climb Registration",
+      "French": "",
+      "Spanish": ""
+    },
+    "next": {
+      "Key": "next",
+      "Alternate Keys": "",
+      "English": "Next",
+      "French": "Suivant",
+      "Spanish": "Siguiente"
+    },
+    "no": {
+      "Key": "no",
+      "Alternate Keys": "",
+      "English": "No",
+      "French": "Non",
+      "Spanish": "No"
+    },
+    "No Definite Plans": {
+      "Key": "No Definite Plans",
+      "Alternate Keys": "",
+      "English": "No Definite Plans",
+      "French": "Pas de plans définis",
+      "Spanish": ""
+    },
+    "NOT SPECIFIED": {
+      "Key": "NOT SPECIFIED",
+      "Alternate Keys": "",
+      "English": "NOT SPECIFIED",
+      "French": "NON PRÉCISÉ",
+      "Spanish": ""
+    },
+    "ok": {
+      "Key": "ok",
+      "Alternate Keys": "",
+      "English": "OK",
+      "French": "D'accord",
+      "Spanish": ""
+    },
+    "oneThreeMonths": {
+      "Key": "oneThreeMonths",
+      "Alternate Keys": "",
+      "English": "1-3 Months",
+      "French": "",
+      "Spanish": ""
+    },
+    "oneToThreeVehicles": {
+      "Key": "oneToThreeVehicles",
+      "Alternate Keys": "",
+      "English": "Please select 1-3 vehicles.",
+      "French": "Veuillez sélectionner 1-3 véhicules.",
+      "Spanish": ""
+    },
+    "onlyOne": {
+      "Key": "onlyOne",
+      "Alternate Keys": "",
+      "English": "Only ONE submission per person please.",
+      "French": "",
+      "Spanish": ""
+    },
+    "optInPlaceholder": {
+      "Key": "optInPlaceholder",
+      "Alternate Keys": "",
+      "English": "Please email me communications including product information, offers, and incentives from %1$s and the local dealer.",
+      "French": "S'il vous plaît écrivez-moi des communications, y compris les informations sur les produits, offres et incitations de %2$s et les concessionnaires locaux. Est-il acceptable d'utiliser votre adresse e-mail pour vous contacter?",
+      "Spanish": ""
+    },
+    "Other": {
+      "Key": "Other",
+      "Alternate Keys": "",
+      "English": "Other",
+      "French": "Autres",
+      "Spanish": ""
+    },
+    "OVER $200,000": {
+      "Key": "OVER $200,000",
+      "Alternate Keys": "",
+      "English": "OVER $200,000",
+      "French": "PLUS DE 200,000 $",
+      "Spanish": ""
+    },
+    "Over 1 Year": {
+      "Key": "Over 1 Year",
+      "Alternate Keys": "",
+      "English": "Over 1 Year",
+      "French": "1+ an",
+      "Spanish": ""
+    },
+    "overOneYear": {
+      "Key": "overOneYear",
+      "Alternate Keys": "",
+      "English": "Over 1 Year",
+      "French": "",
+      "Spanish": ""
+    },
+    "Personal": {
+      "Key": "Personal",
+      "Alternate Keys": "",
+      "English": "Personal",
+      "French": "Personnel",
+      "Spanish": ""
+    },
+    "personal_or_business": {
+      "Key": "personal_or_business",
+      "Alternate Keys": "",
+      "English": "Do you intend to use this vehicle for personal or business use?",
+      "French": "Avez-vous l’intention d’utiliser ce véhicule pour votre usage personnel ou pour affaires?",
+      "Spanish": ""
+    },
+    "phoneNumber": {
+      "Key": "phoneNumber",
+      "Alternate Keys": "",
+      "English": "Phone Number",
+      "French": "Téléphone",
+      "Spanish": "Teléfono"
+    },
+    "photoBooth": {
+      "Key": "photoBooth",
+      "Alternate Keys": "",
+      "English": "Photo Booth",
+      "French": "",
+      "Spanish": ""
+    },
+    "pickAWinner": {
+      "Key": "pickAWinner",
+      "Alternate Keys": "",
+      "English": "Pick-A-Winner",
+      "French": "",
+      "Spanish": ""
+    },
+    "pleaseAdjust": {
+      "Key": "pleaseAdjust",
+      "Alternate Keys": "",
+      "English": "Please adjust.",
+      "French": "Veuillez ajuster.",
+      "Spanish": ""
+    },
+    "pleaseAdjustEmail": {
+      "Key": "pleaseAdjustEmail",
+      "Alternate Keys": "",
+      "English": "Please adjust. If you are getting this message in error please ignore.",
+      "French": "S'il vous plait, entrez une adresse courriel valide.",
+      "Spanish": ""
+    },
+    "pleaseProvideSignature": {
+      "Key": "pleaseProvideSignature",
+      "Alternate Keys": "",
+      "English": "Please provide a valid signature",
+      "French": "",
+      "Spanish": "Por favor proporciona una firma válida"
+    },
+    "pleaseReadAndSign": {
+      "Key": "pleaseReadAndSign",
+      "Alternate Keys": "",
+      "English": "Please read and sign the waiver below.",
+      "French": "",
+      "Spanish": ""
+    },
+    "pleaseSelectBetween": {
+      "Key": "pleaseSelectBetween",
+      "Alternate Keys": "",
+      "English": "Please Select Between 1 and 3 Vehicles",
+      "French": "",
+      "Spanish": ""
+    },
+    "Plumbing, electrical and HV": {
+      "Key": "Plumbing, electrical and HV",
+      "Alternate Keys": "",
+      "English": "Plumbing, electrical and HV",
+      "French": "Plomberie, électricité et climatisation",
+      "Spanish": ""
+    },
+    "poor": {
+      "Key": "poor",
+      "Alternate Keys": "",
+      "English": "Poor",
+      "French": "",
+      "Spanish": "Mala"
+    },
+    "postalCode": {
+      "Key": "postalCode",
+      "Alternate Keys": "",
+      "English": "Postal Code",
+      "French": "Postal",
+      "Spanish": "Postal"
+    },
+    "privateTour": {
+      "Key": "privateTour",
+      "Alternate Keys": "",
+      "English": "Would you like to take a private tour?",
+      "French": "Voulez-vous faire une visite privée?",
+      "Spanish": ""
+    },
+    "PREFER NOT TO SAY": {
+      "Key": "PREFER NOT TO SAY",
+      "Alternate Keys": "",
+      "English": "PREFER NOT TO SAY",
+      "French": "JE PRÉFÈRE NE PAS LE DIRE",
+      "Spanish": ""
+    },
+    "privacyPledge": {
+      "Key": "OUR PRIVACY PLEDGE",
+      "Alternate Keys": "",
+      "English": "OUR PRIVACY PLEDGE",
+      "French": "NOTRE ENGAGEMENT À L’ÉGARD DE LA PROTECTION DES RENSEIGNEMENTS PERSONNELS",
+      "Spanish": ""
+    },
+    "privacyInfo": {
+      "Key": "privacyInfo",
+      "Alternate Keys": "",
+      "English": "For information on how we protect your privacy please read",
+      "French": "Pour de l’information sur la manière dont nous protégeons vos renseignements personnels, veuillez consulter",
+      "Spanish": ""
+    },
+    "privacyPolicy": {
+      "Key": "privacyPolicy",
+      "Alternate Keys": "",
+      "English": "our privacy policy",
+      "French": "notre politique de confidentialité",
+      "Spanish": ""
+    },
+    "productSpecialistLincoln": {
+      "Key": "productSpecialistLincoln",
+      "Alternate Keys": "",
+      "English": "Product Specialist Website",
+      "French": "Spécialiste produit Lincoln",
+      "Spanish": ""
+    },
+    "productSpecialistFord": {
+      "Key": "productSpecialistFord",
+      "Alternate Keys": "",
+      "English": "Product Specialist Website",
+      "French": "Spécialiste produit Ford",
+      "Spanish": ""
+    },
+    "purchase": {
+      "Key": "purchase",
+      "Alternate Keys": "",
+      "English": "Purchase",
+      "French": "",
+      "Spanish": ""
+    },
+    "Purchase": {
+      "Key": "Purchase",
+      "Alternate Keys": "",
+      "English": "Purchase",
+      "French": "Achat",
+      "Spanish": ""
+    },
+    "purchaseOrLease": {
+      "Key": "purchaseOrLease",
+      "Alternate Keys": "",
+      "English": "How do you plan to acquire your next vehicle?",
+      "French": "Comment prévoyez-vous d'acquérir votre prochain véhicule?",
+      "Spanish": ""
+    },
+    "qrCode": {
+      "Key": "qrCode",
+      "Alternate Keys": "",
+      "English": "QR Code",
+      "French": "Code QR",
+      "Spanish": ""
+    },
+    "qrCodePrompt": {
+      "Key": "qrCodePrompt",
+      "Alternate Keys": "",
+      "English": "Scan this QR code to complete the survey on your device",
+      "French": "Scannez ce code QR pour compléter l'enquête sur votre appareil",
+      "Spanish": ""
+    },
+    "readAndAgreedWaiver": {
+      "Key": "readAndAgreedWaiver",
+      "Alternate Keys": "",
+      "English": "By signing you indicate that you have read and agree to the waiver provided here.",
+      "French": "",
+      "Spanish": ""
+    },
+    "ready": {
+      "Key": "ready",
+      "Alternate Keys": "",
+      "English": "Ready",
+      "French": "",
+      "Spanish": ""
+    },
+    "refreshLocalData": {
+      "Key": "refreshLocalData",
+      "Alternate Keys": "",
+      "English": "Refresh Local Data",
+      "French": "",
+      "Spanish": ""
+    },
+    "basicRegistration": {
+      "Key": "basicRegistration",
+      "Alternate Keys": "",
+      "English": "Basic Registration",
+      "French": "Inscription de base",
+      "Spanish": ""
+    },
+  
+    "rideDriveRegistration": {
+      "Key": "rideDriveRegistration",
+      "Alternate Keys": "",
+      "English": "Ride/Drive Registration",
+      "French": "",
+      "Spanish": ""
+    },
+  
+    "repInitials": {
+      "Key": "repInitials",
+      "Alternate Keys": "",
+      "English": "Rep Initials",
+      "French": "",
+      "Spanish": ""
+    },
+    "reviewInfo": {
+      "Key": "reviewInfo",
+      "Alternate Keys": "",
+      "English": "Please confirm your contact information.",
+      "French": "Veuillez s'il vous plaît confirmer vos coordonnées.",
+      "Spanish": ""
+    },
+  
+    "rideDrive": {
+      "Key": "rideDrive",
+      "Alternate Keys": "",
+      "English": "Ride/Drive In-Vehicle",
+      "French": "",
+      "Spanish": ""
+    },
+    "save": {
+      "Key": "save",
+      "Alternate Keys": "",
+      "English": "Save",
+      "French": "",
+      "Spanish": ""
+    },
+    "saveEndRide": {
+      "Key": "saveEndRide",
+      "Alternate Keys": "",
+      "English": "Save and End Ride",
+      "French": "",
+      "Spanish": ""
+    },
+    "searchName": {
+      "Key": "searchName",
+      "Alternate Keys": "",
+      "English": "Search by Name",
+      "French": "",
+      "Spanish": ""
+    },
+    "select": {
+      "Key": "select",
+      "Alternate Keys": "",
+      "English": "Select...",
+      "French": "Sélectionner...",
+      "Spanish": ""
+    },
+    "selectBlackLabel": {
+      "Key": "selectBlackLabel",
+      "Alternate Keys": "",
+      "English": "Select Your Preferred Dealer",
+      "French": "",
+      "Spanish": ""
+    },
+    "selectCity": {
+      "Key": "selectCity",
+      "Alternate Keys": "",
+      "English": "Please select your city",
+      "French": "Sélectionnez votre ville",
+      "Spanish": ""
+    },
+    "selectEndTime": {
+      "Key": "selectEndTime",
+      "Alternate Keys": "",
+      "English": "Select End Time",
+      "French": "",
+      "Spanish": ""
+    },
+    "selectEvent": {
+      "Key": "selectEvent",
+      "Alternate Keys": "",
+      "English": "Select An Event",
+      "French": "",
+      "Spanish": ""
+    },
+    "selectStartTime": {
+      "Key": "selectStartTime",
+      "Alternate Keys": "",
+      "English": "Select Start Time",
+      "French": "",
+      "Spanish": ""
+    },
+    "selectThree": {
+      "Key": "selectThree",
+      "Alternate Keys": "",
+      "English": "Please select your top three vehicles of interest between the two brands",
+      "French": "",
+      "Spanish": ""
+    },
+    "sendSMS": {
+      "Key": "sendSMS",
+      "Alternate Keys": "",
+      "English": "Send SMS Link",
+      "French": "Envoyer un message texte",
+      "Spanish": ""
+    },
+    "sevenTwelveMonths": {
+      "Key": "sevenTwelveMonths",
+      "Alternate Keys": "",
+      "English": "7-12 Months",
+      "French": "",
+      "Spanish": ""
+    },
+    "showCount": {
+      "Key": "showCount",
+      "Alternate Keys": "",
+      "English": "Show Count",
+      "French": "Afficher le nombre",
+      "Spanish": ""
+    },
+    "showCounts": {
+      "Key": "showCounts",
+      "Alternate Keys": "",
+      "English": "Show Counts",
+      "French": "Afficher les comptes",
+      "Spanish": ""
+    },
+    "showSchedule": {
+      "Key": "showSchedule",
+      "Alternate Keys": "",
+      "English": "Show Schedule",
+      "French": "Afficher le Calendrier",
+      "Spanish": ""
+    },
+    "simulatorRegistration": {
+      "Key": "simulatorRegistration",
+      "Alternate Keys": "",
+      "English": "Simulator Registration",
+      "French": "Inscription du simulateur",
+      "Spanish": ""
+    },
+    "Small Business": {
+      "Key": "Small Business",
+      "Alternate Keys": "",
+      "English": "Small Business",
+      "French": "Petite entreprise",
+      "Spanish": ""
+    },
+    "sortFirstName": {
+      "Key": "sortFirstName",
+      "Alternate Keys": "",
+      "English": "Sort by First Name",
+      "French": "",
+      "Spanish": ""
+    },
+    "sortLastName": {
+      "Key": "sortLastName",
+      "Alternate Keys": "",
+      "English": "Sort by Last Name",
+      "French": "",
+      "Spanish": ""
+    },
+    "starRequired": {
+      "Key": "starRequired",
+      "Alternate Keys": "",
+      "English": "* Required",
+      "French": "* Obligatoires",
+      "Spanish": "* Necesario"
+    },
+    "state": {
+      "Key": "state",
+      "Alternate Keys": "",
+      "English": "State",
+      "French": "",
+      "Spanish": "Estado"
+    },
+    "province": {
+      "Key": "state",
+      "Alternate Keys": "",
+      "English": "Province",
+      "French": "Province",
+      "Spanish": ""
+    },
+    "streetAddress": {
+      "Key": "streetAddress",
+      "Alternate Keys": "",
+      "English": "Street Address",
+      "French": "Adresse",
+      "Spanish": "Dirección"
+    },
+    "streetAddress2": {
+      "Key": "streetAddress2",
+      "Alternate Keys": "",
+      "English": "Street Address 2",
+      "French": "Adresse 2",
+      "Spanish": "Dirección 2"
+    },
+    "SUVs": {
+      "Key": "SUVs",
+      "Alternate Keys": "",
+      "English": "SUVs",
+      "French": "VUS et VUM",
+      "Spanish": ""
+    },
+    "surveys": {
+      "Key": "surveys",
+      "Alternate Keys": "",
+      "English": "Surveys",
+      "French": "",
+      "Spanish": ""
+    },
+    "tagMaking": {
+      "Key": "tagMaking",
+      "Alternate Keys": "",
+      "English": "Tag Making Station",
+      "French": "",
+      "Spanish": ""
+    },
+    "takePhoto": {
+      "Key": "takePhoto",
+      "Alternate Keys": "",
+      "English": "Take Photo",
+      "French": "",
+      "Spanish": ""
+    },
+    "testDriveVehicle": {
+      "Key": "testDriveVehicle",
+      "Alternate Keys": "",
+      "English": "Please select the vehicle that you are currently driving",
+      "French": "",
+      "Spanish": ""
+    },
+    "textOptInPlaceholder": {
+      "Key": "textOptInPlaceholder",
+      "Alternate Keys": "",
+      "English": "Please send me vehicle information via text message. Standard message and data rates may apply.",
+      "French": "",
+      "Spanish": ""
+    },
+    "thankYou": {
+      "Key": "thankYou",
+      "Alternate Keys": "",
+      "English": "Thank You",
+      "French": "Merci beaucoup",
+      "Spanish": ""
+    },
+    "thankYouPhotoBooth": {
+      "Key": "thankYouPhotoBooth",
+      "Alternate Keys": "",
+      "English": "Thank You! Your image is on its way!",
+      "French": "Merci beaucoup",
+      "Spanish": ""
+    },
+    "thankYouPreDrive": {
+      "Key": "thankYouPreDrive",
+      "Alternate Keys": "",
+      "English": "Thank you for completing the pre-drive registration. Please remember to complete the post-drive survey after taking your test-drive!",
+      "French": "",
+      "Spanish": ""
+    },
+    "thankYouRegister": {
+      "Key": "thankYouRegister",
+      "Alternate Keys": "",
+      "English": "Thank you for registering with the Lincoln Motor Company.",
+      "French": "",
+      "Spanish": ""
+    },
+    "theWinnerIs": {
+      "Key": "theWinnerIs",
+      "Alternate Keys": "",
+      "English": "The Winner Is",
+      "French": "",
+      "Spanish": ""
+    },
+    "threeModels": {
+      "Key": "threeModels",
+      "Alternate Keys": "",
+      "English": "You may select up to three models.",
+      "French": "Vous pouvez sélectionner jusqu'à trois modèles.",
+      "Spanish": ""
+    },
+    "total": {
+      "Key": "total",
+      "Alternate Keys": "",
+      "English": "Total",
+      "French": "Totaux",
+      "Spanish": ""
+    },
+    "totalLeads": {
+      "Key": "totalLeads",
+      "Alternate Keys": "",
+      "English": "%d Total Leads",
+      "French": "",
+      "Spanish": ""
+    },
+    "tourCheckin": {
+      "Key": "tourCheckin",
+      "Alternate Keys": "",
+      "English": "Tour Check In",
+      "French": "",
+      "Spanish": ""
+    },
+    "Towing": {
+      "Key": "Towing",
+      "Alternate Keys": "",
+      "English": "Towing",
+      "French": "Remorquage",
+      "Spanish": ""
+    },
+    "Transportation and Utilities": {
+      "Key": "Transportation and Utilities",
+      "Alternate Keys": "",
+      "English": "Transportation and Utilities",
+      "French": "Transports et services",
+      "Spanish": ""
+    },
+    "Trucks": {
+      "Key": "Trucks",
+      "Alternate Keys": "",
+      "English": "Trucks",
+      "French": "Camions et fourgonnettes",
+      "Spanish": ""
+    },
+    "UNDER 50K": {
+      "Key": "UNDER 50K",
+      "Alternate Keys": "",
+      "English": "UNDER 50K",
+      "French": "MOINS DE 50k",
+      "Spanish": ""
+    },
+    "upload": {
+      "Key": "upload",
+      "Alternate Keys": "",
+      "English": "Upload",
+      "French": "",
+      "Spanish": ""
+    },
+    "useValidPhoneEmail": {
+      "Key": "useValidPhoneEmail",
+      "Alternate Keys": "",
+      "English": "We will send your photo to the email and/or phone number that you provided above.",
+      "French": "",
+      "Spanish": ""
+    },
+    "validAddress": {
+      "Key": "validAddress",
+      "Alternate Keys": "",
+      "English": "Valid Address",
+      "French": "",
+      "Spanish": ""
+    },
+    "validate": {
+      "Key": "validate",
+      "Alternate Keys": "",
+      "English": "Validate",
+      "French": "",
+      "Spanish": ""
+    },
+    "validEmail": {
+      "Key": "validEmail",
+      "Alternate Keys": "",
+      "English": "Valid Email",
+      "French": "",
+      "Spanish": ""
+    },
+    "version": {
+      "Key": "version",
+      "Alternate Keys": "",
+      "English": "Version %s",
+      "French": "",
+      "Spanish": ""
+    },
+    "voiQuestion": {
+      "Key": "voiQuestion",
+      "Alternate Keys": "",
+      "English": "I am interested in receiving more information on the following vehicles.",
+      "French": "Je suis intéressé à recevoir plus d'informations sur les véhicules suivants.",
+      "Spanish": ""
+    },
+    "voiQuestionSingular": {
+      "Key": "voiQuestionSingular",
+      "Alternate Keys": "",
+      "English": "I am interested in receiving more information on the following vehicle.",
+      "French": "Je suis intéressé à recevoir plus d'informations sur le véhicule suivant.",
+      "Spanish": ""
+    },
+    "waiting": {
+      "Key": "waiting",
+      "Alternate Keys": "",
+      "English": "Waiting",
+      "French": "",
+      "Spanish": ""
+    },
+    "waitingToUpload": {
+      "Key": "waitingToUpload",
+      "Alternate Keys": "",
+      "English": "%d Waiting To Upload",
+      "French": "",
+      "Spanish": ""
+    },
+    "warning": {
+      "Key": "warning",
+      "Alternate Keys": "",
+      "English": "Warning",
+      "French": "Attention",
+      "Spanish": ""
+    },
+    "whenPurchase": {
+      "Key": "whenPurchase",
+      "Alternate Keys": "",
+      "English": "When do you plan to acquire your next vehicle?",
+      "French": "Quand prévoyez-vous d'acheter votre prochain véhicule?",
+      "Spanish": ""
+    },
+    "wristbandScanned": {
+      "Key": "wristbandScanned",
+      "Alternate Keys": "",
+      "English": "Wristband scanned",
+      "French": "",
+      "Spanish": ""
+    },
+    "year": {
+      "Key": "year",
+      "Alternate Keys": "",
+      "English": "Year",
+      "French": "",
+      "Spanish": "Año"
+    },
+    "yes": {
+      "Key": "yes",
+      "Alternate Keys": "",
+      "English": "Yes",
+      "French": "Oui",
+      "Spanish": "Si"
+    },
+    "zeroThirtyDays": {
+      "Key": "zeroThirtyDays",
+      "Alternate Keys": "",
+      "English": "0-30 Days",
+      "French": "",
+      "Spanish": ""
+    },
+    "fordCAURL": {
+      "Key": "fordCAURL",
+      "Alternate Keys": "",
+      "English": "http://www.ford.ca/",
+      "French": "http://fr.ford.ca/",
+      "Spanish": ""
+    },
+      "beepToKeep": {
+          "Key": "beepToKeep",
+          "Alternate Keys": "",
+          "English": "Scan Beep To Keep",
+          "French": "",
+          "Spanish": ""
+      },
+      "newBeepToKeep": {
+          "Key": "newBeepToKeep",
+          "Alternate Keys": "",
+          "English": "Scan New Beep To Keep",
+          "French": "",
+          "Spanish": ""
+      },
+      "noBeepToKeep": {
+          "Key": "noBeepToKeep",
+          "Alternate Keys": "",
+          "English": "No Beep To Keep Card",
+          "French": "",
+          "Spanish": ""
+      },
+      "beepManualInput": {
+          "Key": "beepManualInput",
+          "Alternate Keys": "",
+          "English": "Unique ID",
+          "French": "",
+          "Spanish": ""
+      },
+      "useBeepID": {
+          "Key": "useBeepID",
+          "Alternate Keys": "",
+          "English": "Use Unique ID",
+          "French": "",
+          "Spanish": ""
+      },
+      "scanBarcode": {
+          "Key": "scanBarcode",
+          "Alternate Keys": "",
+          "English": "Scan QR Code Here",
+          "French": "",
+          "Spanish": ""
+      },
+      "fiveCharacters": {
+          "Key": "fiveCharacters",
+          "Alternate Keys": "",
+          "English": "Must be exactly 5 characters long.",
+          "French": "",
+          "Spanish": ""
+      },
+  
+      "wristband": {
+        "Key": "wristband",
+        "Alternate Keys": "",
+        "English": "Scan Wristband",
+        "French": "",
+        "Spanish": ""
+      },
+  
+      "wristbandManualInput": {
+        "Key": "wristbandManualInput",
+        "Alternate Keys": "",
+        "English": "Unique ID",
+        "French": "",
+        "Spanish": ""
+      },
+  
+      "waiverTitle": {
+        "Key": "waiverTitle",
+        "Alternate Keys": "",
+        "English": "Ford Waiver",
+        "French": "",
+        "Spanish": "Pliego de descargo de prueba de conducción de Ford"
+      },
+      "waiverTitleTestDrive": {
+        "Key": "waiverTitleTestDrive",
+        "Alternate Keys": "",
+        "English": "Ford Test-Drive Waiver",
+        "French": "",
+        "Spanish": "Pliego de descargo de prueba de conducción de Ford"
+      },
+      "waiverTitleRegistration": {
+        "Key": "waiverTitleRegistration",
+        "Alternate Keys": "",
+        "English": "Ford Registration Waiver",
+        "French": "",
+        "Spanish": "Pliego de descargo de prueba de conducción de Ford"
+      },
+      "waiverTitleMinors": {
+        "Key": "waiverTitleMinors",
+        "Alternate Keys": "",
+        "English": "Ford Minor Registration Waiver",
+        "French": "",
+        "Spanish": "Pliego de descargo de prueba de conducción de Ford"
+      },
+  
+      "nameLookup": {
+        "Key": "nameLookup",
+        "Alternate Keys": "",
+        "English": "Search By Name",
+        "French": "Rechercher un nom",
+        "Spanish": ""
+      },
+  
+      "noSurveys": {
+        "Key": "noSurveys",
+        "Alternate Keys": "",
+        "English": "No Surveys",
+        "French": "",
+        "Spanish": "No hay encuestas"
+      },
+  
+      "findMatchDirections": {
+        "Key": "findMatchDirections",
+        "Alternate Keys": "",
+        "English": "Please select your name from the list below.",
+        "French": "",
+        "Spanish": "Por favor, encuentre su nombre de la lista a continuación."
+      },
+  
+      "selectName": {
+        "Key": "selectName",
+        "Alternate Keys": "",
+        "English": "Please select your name.",
+        "French": "",
+        "Spanish": "Por favor, encuentre su nombre."
+      },
+  
+      "tryAgain": {
+        "Key": "tryAgain",
+        "Alternate Keys": "",
+        "English": "Try Again",
+        "French": "",
+        "Spanish": "Trata de nuevo"
+      },
+  
+      "participateWarning": {
+        "Key": "participateWarning",
+        "Alternate Keys": "",
+        "English": "WARNING: You will not be able to participate.",
+        "French": "",
+        "Spanish": "ADVERTENCIA: No podrás participar."
+      },
+  
+      "ifNotAcceptTerms": {
+        "Key": "ifNotAcceptTerms",
+        "Alternate Keys": "",
+        "English": "If you do not accept these terms, your survey will not be saved and you will not be allowed to participate in a test-drive.",
+        "French": "",
+        "Spanish": "Si no acepta estos términos, su encuesta no se guardará y no podrá participar en una prueba de manejo."
+      },
+  
+      "backToWaiver": {
+        "Key": "backToWaiver",
+        "Alternate Keys": "",
+        "English": "Back to Waiver",
+        "French": "",
+        "Spanish": "Regresar a Renuncia"
+      },
+  
+      "exitSurvey": {
+        "Key": "exitSurvey",
+        "Alternate Keys": "",
+        "English": "Exit Survey",
+        "French": "",
+        "Spanish": "Salir de la Encuesta"
+      },
+  
+      "pleaseHaveRepConfirm": {
+        "Key": "pleaseHaveRepConfirm",
+        "Alternate Keys": "",
+        "English": "Please have Lincoln Representative confirm Registration.",
+        "French": "",
+        "Spanish": "Por favor, tenga Lincoln Representante confirmar el registro."
+      },
+  
+      "machEReservation": {
+        "Key": "machEReservation",
+        "Alternate Keys": "",
+        "English": "Would you like to reserve one of the first Mustang Mach-E vehicles?",
+        "French": "Demandez une réservation maintenant.",
+        "Spanish": ""
+      }
+  
+  }
+  

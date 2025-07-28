@@ -1,0 +1,159 @@
+.file-preview-container {
+    margin-top: 12px;
+    margin-bottom: 8px;
+    order: 999; /* Push to the bottom when parent uses flexbox */
+}
+
+/* Ensure the file drag area uses flexbox layout to support ordering */
+.sd-file__drag-area {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Make sure the decorator takes up available space, pushing preview to bottom */
+.sd-file__decorator {
+    flex: 1 !important;
+}
+
+.uploaded-file-item {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 16px;
+    background-color: #f0f9f0;
+    border: 1px solid #d4edda;
+    border-radius: 6px;
+    margin: 8px 0;
+    min-height: 48px;
+    transition: all 0.2s ease;
+}
+
+.image-preview {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.uploaded-file-item > div:last-child {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.uploaded-file-item:hover {
+    background-color: #e8f5e8;
+}
+
+.file-success-indicator {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.check-icon {
+    width: 24px;
+    height: 24px;
+    background-color: #28a745;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.check-svg {
+    width: 14px;
+    height: 14px;
+    color: white;
+}
+
+.file-accepted-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: #155724;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.remove-file-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+    margin-left: 8px;
+    flex-shrink: 0;
+}
+
+.remove-file-btn:hover {
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.remove-icon {
+    width: 16px;
+    height: 16px;
+    color: #dc3545;
+}
+
+/* Ford-specific styling when Ford theme is active */
+.sv-root--ford .uploaded-file-item {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+}
+
+.sv-root--ford .uploaded-file-item:hover {
+    background-color: #e9ecef;
+}
+
+.sv-root--ford .check-icon {
+    background-color: #007bff; /* Ford blue */
+}
+
+.sv-root--ford .file-accepted-text {
+    color: #495057;
+}
+
+/* Mobile responsive design */
+@media (max-width: 768px) {
+    .uploaded-file-item {
+        padding: 10px 12px;
+        margin: 6px 0;
+        min-height: 44px;
+    }
+    
+    .check-icon {
+        width: 20px;
+        height: 20px;
+        margin-right: 10px;
+    }
+    
+    .check-svg {
+        width: 12px;
+        height: 12px;
+    }
+    
+    .file-accepted-text {
+        font-size: 13px;
+    }
+    
+    .remove-icon {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+/* Hide the default SurveyJS file preview when our custom component is active */
+.sv-file .sv-file__preview {
+    display: none;
+}
+
+/* Also hide the default file sign */
+.sv-file .sv-file__sign {
+    display: none;
+}

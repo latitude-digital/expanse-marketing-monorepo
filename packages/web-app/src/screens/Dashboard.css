@@ -1,0 +1,22 @@
+/* AG Grid Image Cell Styles */
+.ag-cell .image-cell-renderer {
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ag-cell .image-cell-renderer img {
+  transition: transform 0.2s ease;
+}
+
+.ag-cell .image-cell-renderer img:hover {
+  transform: scale(1.1);
+  z-index: 10;
+  position: relative;
+}
+
+/* Ensure images don't overflow cells */
+.ag-theme-material .ag-cell {
+  overflow: visible !important;
+}

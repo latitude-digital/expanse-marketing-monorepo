@@ -1,0 +1,23 @@
+{
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+    },
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact"
+    ],
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "eslint.alwaysShowStatus": true,
+    "eslint.run": "onType",
+    "javascript.format.enable": false,
+    "editor.tabSize": 2,
+    "[javascript]": {
+        "editor.defaultFormatter": "numso.prettier-standard-vscode"
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+    }
+}

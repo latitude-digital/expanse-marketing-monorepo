@@ -1,0 +1,36 @@
+@mixin desktop{
+  @media only screen and (min-width: 2000px){
+    @content;
+  }
+}
+
+@mixin laptop{
+  @media only screen and (max-width: 1300px){
+    @content;
+  }
+}
+
+@mixin tablet{
+  @media only screen and (max-width: 800px){
+    @content;
+  }
+}
+
+@mixin tablet-landscape{
+  @media only screen and (max-width: 1000px){
+    @content;
+  }
+}
+
+@mixin phone{
+  @media only screen and (max-width: 425px){
+    @content;
+  }
+}
+
+@mixin phone-landscape{
+  @media only screen and (max-width: 600px){
+    @content;
+  }
+}
+

@@ -1,0 +1,8 @@
+@import 'mixins/index';
+@import 'variables/index';
+
+@import 'base/reset';
+
+.ant-layout-sider-zero-width-trigger {
+  display: none !important;
+}

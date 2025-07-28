@@ -1,0 +1,45 @@
+// App.scss
+// Enable the new color system.
+$kendo-enable-color-system: true;
+
+$kendo-colors: (
+    primary-subtle: #EBE0FF,
+    primary-subtle-hover: #DAC7FF,
+    primary-subtle-active: #C7ADFF,
+    primary: #573D7F,
+    primary-hover: #7151A9,
+    primary-active: #46325D,
+    primary-emphasis: #916DD5,
+    primary-on-subtle: #3F3649,
+    on-primary: #ffffff,
+    primary-on-surface: #AC8BEE,
+);
+
+// Import the Default theme.
+@import "@progress/kendo-theme-default/dist/all.scss";
+
+.app {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 0;
+    padding-left: 100px;
+    padding-right: 100px;
+
+    @media(max-width: 1024px) {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    @media(max-width: 512px) {
+        padding-left: 0;
+        padding-right: 0;
+    }
+}
+
+.layout-base {
+    flex: 1;
+    width: 100%;
+    max-width: 1440px;
+    padding-bottom: 2em;
+}

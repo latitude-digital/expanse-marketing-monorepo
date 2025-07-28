@@ -1,0 +1,546 @@
+{
+    "title": {
+		"en": "Bronco Quiz",
+		"es": "Cuestionario de Bronco"
+	},
+    "pages": [
+		{
+			"name": "page1",
+			"elements": [
+				{
+					"type": "boolean",
+					"name": "question1",
+					"title": {
+						"en": "True or false: The 2025 Bronco Sport supports 1-pedal driving",
+						"es": "Verdadero o Falso: La Bronco Sport 2025 tiene 1-pedal drive"
+						},
+					"correctAnswer": true,
+					"isRequired": true,
+					"labelTrue": {
+						"en": "True",
+						"es": "Verdadero"
+						},
+					"labelFalse": {
+						"en": "False",
+						"es": "Falso"
+						},
+					"swapOrder": true
+				},
+				{
+					"type": "checkbox",
+					"name": "question2",
+					"title": {
+						"en": "Bronco Off-Roadeo is held at which of the following locations? (Select all that apply):",
+						"es": "Bronco Off-Roadeo se lleva a cabo en cuál de las siguientes ubicaciones? (Selecciona todas las que correspondan):"
+						},
+					"correctAnswer": [
+						"Item 1",
+						"Item 2",
+						"Item 3",
+						"Item 4",
+						"Item 5"
+					],
+					"isRequired": true,
+					"validators": [
+						{
+							"type": "expression"
+						}
+					],
+					"choices": [
+						{
+							"value": "Item 1",
+							"text": {
+								"en": "Moab, Utah",
+								"es": "Moab, Utah"
+							}
+						},
+						{
+							"value": "Item 2",
+							"text": {
+								"en": "Las Vegas, Nevada",
+								"es": "Las Vegas, Nevada"
+							}
+						},
+						{
+							"value": "Item 3",
+							"text": {
+								"en": "Great Smoky Mountains, Tennessee",
+								"es": "Great Smoky Mountains, Tennessee"
+							}
+						},
+						{
+							"value": "Item 4",
+							"text": {
+								"en": "Horseshoe Bay, Texas",
+								"es": "Horseshoe Bay, Texas"
+							}
+						},
+						{
+							"value": "Item 5",
+							"text": {
+								"en": "Gunstock Mountain, New Hampshire",
+								"es": "Gunstock Mountain, New Hampshire"
+							}
+						}
+					],
+					"showNoneItem": true,
+					"noneText": {
+						"en": "None of the above",
+						"es": "Ninguna de las anteriores"
+					}
+				},
+				{
+					"type": "radiogroup",
+					"name": "question3",
+					"title": {
+						"en": "On certain Broncos, where can you find an emblem of three older Bronco models?",
+						"es": "En ciertos Broncos, dónde puedes encontrar un emblema de tres modelos antiguos de Bronco?"
+					},
+					"correctAnswer": "Item 4",
+					"isRequired": true,
+					"choices": [
+						{
+							"value": "Item 1",
+							"text": {
+								"en": "Behind the sun visor",
+								"es": "Detrás de la visera del sol"
+							}
+						},
+						{
+							"value": "Item 2",
+							"text": {
+								"en": "Inside the seat back zipper pockets",
+								"es": "Dentro de los bolsillos con cremallera del respaldo del asiento"
+							}
+						},
+						{
+							"value": "Item 3",
+							"text": {
+								"en": "On the roof",
+								"es": "En el techo"
+							}
+						},
+						{
+							"value": "Item 4",
+							"text": {
+								"en": "Behind the fuel tank door",
+								"es": "Detrás de la puerta del tanque de combustible"
+							}
+						}
+					]
+				},
+				{
+					"type": "radiogroup",
+					"name": "question4",
+					"title": {
+						"en": "Where will you find \"Lift me baby!\" emblem on the Bronco?",
+						"es": "Dónde encontrarás el emblema \"Lift me baby!\" en el Bronco?"
+					},
+					"correctAnswer": "Item 1",
+					"isRequired": true,
+					"choices": [
+						{
+							"value": "Item 1",
+							"text": {
+								"en": "On the fender liners",
+								"es": "En los revestimientos de los guardabarros"
+							}
+						},
+						{
+							"value": "Item 2",
+							"text": {
+								"en": "Inside the glove compartment",
+								"es": "Dentro del compartimento de guantes"
+							}
+						},
+						{
+							"value": "Item 3",
+							"text": {
+								"en": "On the center console tray",
+								"es": "En la bandeja de la consola central"
+							}
+						},
+						{
+							"value": "Item 4",
+							"text": {
+								"en": "On the roof",
+								"es": "En el techo"
+							}
+						}
+					]
+				},
+				{
+					"type": "checkbox",
+					"name": "question5",
+					"title": {
+						"en": "Where can you find Bucking Bronco logos on a Bronco? (Select all that apply):",
+						"es": "Dónde puedes encontrar los logotipos de Bucking Bronco en un Bronco? (Selecciona todas las que correspondan):"
+					},
+					"correctAnswer": [
+						"Item 1",
+						"Item 2",
+						"Item 4",
+						"Item 5",
+						"Item 6"
+					],
+					"isRequired": true,
+					"choices": [
+						{
+							"value": "Item 1",
+							"text": {
+								"en": "Rear end",
+								"es": "Parte trasera"
+							}
+						},
+						{
+							"value": "Item 2",
+							"text": {
+								"en": "Headlights",
+								"es": "Faros"
+							}
+						},
+						{
+							"value": "Item 3",
+							"text": {
+								"en": "Roof",
+								"es": "Techo"
+							}
+						},
+						{
+							"value": "Item 4",
+							"text": {
+								"en": "Shifter",
+								"es": "Palanca de cambios"
+							}
+						},
+						{
+							"value": "Item 5",
+							"text": {
+								"en": "Back cargo light",
+								"es": "Luz de carga trasera"
+							}
+						},
+						{
+							"value": "Item 6",
+							"text": {
+								"en": "Cargo area",
+								"es": "Área de carga"
+							}
+						},
+						{
+							"value": "Item 7",
+							"text": {
+								"en": "Head rests",
+								"es": "Reposacabezas"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+            "name": "results1",
+            "elements": [
+                {
+                    "type": "html",
+                    "name": "resultsContent",
+                    "html": "<div>Results will appear here.</div>"
+                }
+            ]
+        },
+		{
+			"name": "page2",
+			"elements": [
+				{
+					"type": "radiogroup",
+					"name": "question6",
+					"title": {
+						"en": "How much money did the Bronco Wild Fund provide in support of access, preservation, and stewardship projects in 2023?",
+						"es": "¿Cuánto dinero proporcionó el Bronco Wild Fund para proyectos de acceso, preservación y gestión en 2023?"
+					},
+					"correctAnswer": "Item 4",
+					"isRequired": true,
+					"choices": [
+						{
+							"value": "Item 1",
+							"text": {
+								"en": "$500,000",
+								"es": "$500,000"
+							}
+						},
+						{
+							"value": "Item 2",
+							"text": {
+								"en": "$653,000",
+								"es": "$653,000"
+							}
+						},
+						{
+							"value": "Item 3",
+							"text": {
+								"en": "$1,410,000",
+								"es": "$1,410,000"
+							}
+						},
+						{
+							"value": "Item 4",
+							"text": {
+								"en": "$2,300,000+",
+								"es": "$2,300,000+"
+							}
+						}
+					]
+				},
+				{
+					"type": "radiogroup",
+					"name": "question7",
+					"title": {
+						"en": "What does Bronco G.O.A.T. Modes stand for?",
+						"es": "¿Qué significa Bronco G.O.A.T. Modes?"
+					},
+					"correctAnswer": "Item 2",
+					"isRequired": true,
+					"choices": [
+						{
+							"value": "Item 1",
+							"text": "Greatest Of All Time"
+						},
+						{
+							"value": "Item 2",
+							"text": "Goes Over Any Terrain"
+						},
+						{
+							"value": "Item 3",
+							"text": "Groundbreaking Outdoor Action Transport"
+						},
+						{
+							"value": "Item 4",
+							"text": "Gritty Outdoor Adventure Tool"
+						}
+					]
+				},
+				{
+					"type": "checkbox",
+					"name": "question8",
+					"title": {
+						"en": "What engine options are available for the 2024 Ford Bronco?",
+						"es": "¿Qué opciones de motor están disponibles para la Ford Bronco 2024?"
+					},
+					"correctAnswer": [
+						"Item 2",
+						"Item 3",
+						"Item 4"
+					],
+					"isRequired": true,
+					"choices": [
+						{
+							"value": "Item 1",
+							"text": {
+								"en": "2.0 L 4-cylinder",
+								"es": "2.0 L 4-cilindros"
+							}
+						},
+						{
+							"value": "Item 2",
+							"text": {
+								"en": "2.3 L 4-cylinder",
+								"es": "2.3 L 4-cilindros"
+							}
+						},
+						{
+							"value": "Item 3",
+							"text": "2.7 L V6"
+						},
+						{
+							"value": "Item 4",
+							"text": "3.0 L V6"
+						}
+					]
+				},
+				{
+					"type": "checkbox",
+					"name": "question9",
+					"title": {
+						"en": "Which of the following loads could the Bronco Raptor® tow?",
+						"es": "¿Cuál de las siguientes cargas podría remolcar la Bronco Raptor®?"
+					},
+					"correctAnswer": [
+						"Item 1",
+						"Item 2",
+						"Item 3",
+						"Item 4"
+					],
+					"isRequired": true,
+					"choices": [
+						{
+							"value": "Item 1",
+							"text": {
+								"en": "4 grand pianos",
+								"es": "4 pianos de cola"
+							}
+						},
+						{
+							"value": "Item 2",
+							"text": {
+								"en": "15 baby elephants",
+								"es": "15 elefantes bebé"
+							}
+						},
+						{
+							"value": "Item 3",
+							"text": {
+								"en": "18 standard refrigerators",
+								"es": "18 refrigeradores estándar"
+							}
+						},
+						{
+							"value": "Item 4",
+							"text": {
+								"en": "900 bricks",
+								"es": "900 ladrillos"
+							}
+						},
+						{
+							"value": "Item 5",
+							"text": {
+								"en": "1 cruise ship",
+								"es": "1 crucero"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+            "name": "results2",
+            "elements": [
+                {
+                    "type": "html",
+                    "name": "resultsContent",
+                    "html": "<div>Results will appear here.</div>"
+                }
+            ]
+        },
+		{
+			"name": "page3",
+			"elements": [
+				{
+					"type": "radiogroup",
+					"name": "question10",
+					"title": {
+						"en": "What was the highest selling year from the 1st generation of Bronco?",
+						"es": "¿Cuál fue el año de mayor venta de la 1ra generación de Bronco?"
+					},
+					"correctAnswer": "Item 3",
+					"isRequired": true,
+					"choices": [
+						{
+							"value": "Item 1",
+							"text": "1967"
+						},
+						{
+							"value": "Item 2",
+							"text": "1970"
+						},
+						{
+							"value": "Item 3",
+							"text": "1974"
+						},
+						{
+							"value": "Item 4",
+							"text": "1976"
+						}
+					]
+				},
+				{
+					"type": "boolean",
+					"name": "question11",
+					"title": {
+						"en": "True or false: The Ford Bronco was the first vehicle to be called a \"Sports-Utility Vehicle\"",
+						"es": "Verdadero o Falso: El Ford Bronco fue el primer vehículo en ser llamado \"Vehículo Utilitario Deportivo\""
+					},
+					"correctAnswer": true,
+					"isRequired": true,
+					"labelTrue": {
+						"en": "True",
+						"es": "Verdadero"
+						},
+					"labelFalse": {
+						"en": "False",
+						"es": "Falso"
+						},
+					"swapOrder": true
+				},
+				{
+					"type": "boolean",
+					"name": "question12",
+					"title": {
+						"en": "True or false: The original internal code name for the 1966 Bronco project was \"Goes Over Any Terrain\" (GOAT)",
+						"es": "Verdadero o Falso: El nombre interno original del proyecto Bronco 1966 era \"Goes Over Any Terrain\" (GOAT)"
+					},
+					"correctAnswer": true,
+					"isRequired": true,
+					"labelTrue": {
+						"en": "True",
+						"es": "Verdadero"
+						},
+					"labelFalse": {
+						"en": "False",
+						"es": "Falso"
+						},
+					"swapOrder": true
+				},
+				{
+					"type": "boolean",
+					"name": "question13",
+					"title": {
+						"en": "True or False: All four removable doors on the Bronco can be stored in the trunk",
+						"es": "Verdadero o Falso: Las cuatro puertas extraíbles del Bronco se pueden guardar en el maletero"
+					},
+					"correctAnswer": true,
+					"isRequired": true,
+					"labelTrue": {
+						"en": "True",
+						"es": "Verdadero"
+						},
+					"labelFalse": {
+						"en": "False",
+						"es": "Falso"
+						},
+					"swapOrder": true
+				},
+				{
+					"type": "boolean",
+					"name": "question14",
+					"title": {
+						"en": "True or false: Four-Wheel Drive is standard on the Bronco and Bronco Sport",
+						"es": "Verdadero o Falso: La tracción en las cuatro ruedas es estándar en el Bronco y Bronco Sport"
+					},
+					"correctAnswer": true,
+					"isRequired": true,
+					"labelTrue": {
+						"en": "True",
+						"es": "Verdadero"
+						},
+					"labelFalse": {
+						"en": "False",
+						"es": "Falso"
+						},
+					"swapOrder": true
+				}
+			]
+		},
+		{
+            "name": "results3",
+            "elements": [
+                {
+                    "type": "html",
+                    "name": "resultsContent",
+                    "html": "<div>Results will appear here.</div>"
+                }
+            ]
+        }
+	],
+    "timerInfoMode": "page",
+    "headerView": "advanced"
+}

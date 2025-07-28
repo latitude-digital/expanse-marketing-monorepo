@@ -1,0 +1,23 @@
+.signatureInput {
+    font-family: "Caveat", cursive;
+    font-size: 28px;
+    font-optical-sizing: auto;
+    font-style: normal;
+}
+.sv-header--mobile {
+    min-height: 44vw;
+    margin: auto;
+}
+.sv-header__background-image--contain {
+    background-position: center center;
+}
+
+.sd-completedpage:before {
+    display: none;
+}
+
+.gdux-ford {
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+}
