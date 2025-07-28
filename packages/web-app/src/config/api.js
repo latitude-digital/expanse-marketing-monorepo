@@ -23,11 +23,11 @@ const BASE_URLS = {
 
 // Determine current environment from build-time environment variable
 const determineEnvironment = function () {
-  // Only check process.env.REACT_APP_ENV
-  const reactEnv = process.env.REACT_APP_ENV
-  if (reactEnv === ENV.PRODUCTION) return ENV.PRODUCTION
-  if (reactEnv === ENV.STAGING) return ENV.STAGING
-  if (reactEnv === ENV.LOCAL) return ENV.LOCAL
+  // Check Vite environment variables
+  const viteEnv = import.meta.env.VITE_ENV
+  if (viteEnv === ENV.PRODUCTION) return ENV.PRODUCTION
+  if (viteEnv === ENV.STAGING) return ENV.STAGING
+  if (viteEnv === ENV.LOCAL) return ENV.LOCAL
   // Default to production
   console.log('No environment setting found, defaulting to PRODUCTION')
   return ENV.PRODUCTION
@@ -47,20 +47,20 @@ console.log('Using API base URL:', getBaseUrl())
 // Check if we should use Firebase Functions emulator
 const useFunctionsEmulator = () => {
   // Check Firebase mode first
-  if (process.env.REACT_APP_FIREBASE_MODE === 'production') {
+  if (import.meta.env.VITE_FIREBASE_MODE === 'production') {
     return false;
   }
   
-  if (process.env.REACT_APP_FIREBASE_MODE === 'emulator') {
-    return process.env.REACT_APP_USE_FUNCTIONS_EMULATOR !== 'false';
+  if (import.meta.env.VITE_FIREBASE_MODE === 'emulator') {
+    return import.meta.env.VITE_USE_FUNCTIONS_EMULATOR !== 'false';
   }
   
   // Default behavior
-  const inDev = process.env.NODE_ENV === 'development' || 
+  const inDev = import.meta.env.MODE === 'development' || 
                 window.location.hostname === 'localhost' ||
-                process.env.REACT_APP_USE_EMULATOR === 'true';
+                import.meta.env.VITE_USE_EMULATOR === 'true';
   
-  return inDev && process.env.REACT_APP_USE_FUNCTIONS_EMULATOR !== 'false';
+  return inDev && import.meta.env.VITE_USE_FUNCTIONS_EMULATOR !== 'false';
 }
 
 // Firebase Functions base URLs

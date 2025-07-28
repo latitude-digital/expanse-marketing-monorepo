@@ -15,18 +15,18 @@ const app = initializeApp(firebaseConfig);
 
 // Log environment variables on startup
 console.log('=== Firebase Configuration on Startup ===');
-console.log('NODE_ENV:', process.env.NODE_ENV);
-console.log('REACT_APP_ENV:', process.env.REACT_APP_ENV);
-console.log('REACT_APP_FIREBASE_MODE:', process.env.REACT_APP_FIREBASE_MODE);
-console.log('REACT_APP_USE_FUNCTIONS_EMULATOR:', process.env.REACT_APP_USE_FUNCTIONS_EMULATOR);
-console.log('REACT_APP_USE_AUTH_EMULATOR:', process.env.REACT_APP_USE_AUTH_EMULATOR);
-console.log('REACT_APP_USE_FIRESTORE_EMULATOR:', process.env.REACT_APP_USE_FIRESTORE_EMULATOR);
+console.log('NODE_ENV:', import.meta.env.MODE);
+console.log('VITE_ENV:', import.meta.env.VITE_ENV);
+console.log('VITE_FIREBASE_MODE:', import.meta.env.VITE_FIREBASE_MODE);
+console.log('VITE_USE_FUNCTIONS_EMULATOR:', import.meta.env.VITE_USE_FUNCTIONS_EMULATOR);
+console.log('VITE_USE_AUTH_EMULATOR:', import.meta.env.VITE_USE_AUTH_EMULATOR);
+console.log('VITE_USE_FIRESTORE_EMULATOR:', import.meta.env.VITE_USE_FIRESTORE_EMULATOR);
 console.log('========================================');
 
 // Check if we should connect to emulators
 export const shouldUseEmulator = (service?: 'auth' | 'firestore' | 'functions') => {
     // Check Firebase mode first
-    const firebaseMode = process.env.REACT_APP_FIREBASE_MODE;
+    const firebaseMode = import.meta.env.VITE_FIREBASE_MODE;
     
     // If explicitly set to production, never use emulators
     if (firebaseMode === 'production') {
@@ -38,20 +38,20 @@ export const shouldUseEmulator = (service?: 'auth' | 'firestore' | 'functions') 
         // Allow individual service overrides
         switch (service) {
             case 'auth':
-                return process.env.REACT_APP_USE_AUTH_EMULATOR !== 'false';
+                return import.meta.env.VITE_USE_AUTH_EMULATOR !== 'false';
             case 'firestore':
-                return process.env.REACT_APP_USE_FIRESTORE_EMULATOR !== 'false';
+                return import.meta.env.VITE_USE_FIRESTORE_EMULATOR !== 'false';
             case 'functions':
-                return process.env.REACT_APP_USE_FUNCTIONS_EMULATOR !== 'false';
+                return import.meta.env.VITE_USE_FUNCTIONS_EMULATOR !== 'false';
             default:
                 return true;
         }
     }
     
     // Default behavior: emulators in development
-    const useEmulator = process.env.NODE_ENV === 'development' || 
+    const useEmulator = import.meta.env.MODE === 'development' || 
                        window.location.hostname === 'localhost' ||
-                       process.env.REACT_APP_USE_EMULATOR === 'true';
+                       import.meta.env.VITE_USE_EMULATOR === 'true';
     
     if (!useEmulator) return false;
     
@@ -59,11 +59,11 @@ export const shouldUseEmulator = (service?: 'auth' | 'firestore' | 'functions') 
     // By default, only use Functions emulator, keep Firestore and Auth in production
     switch (service) {
         case 'auth':
-            return process.env.REACT_APP_USE_AUTH_EMULATOR === 'true';
+            return import.meta.env.VITE_USE_AUTH_EMULATOR === 'true';
         case 'firestore':
-            return process.env.REACT_APP_USE_FIRESTORE_EMULATOR === 'true';
+            return import.meta.env.VITE_USE_FIRESTORE_EMULATOR === 'true';
         case 'functions':
-            return process.env.REACT_APP_USE_FUNCTIONS_EMULATOR !== 'false'; // Default true in dev
+            return import.meta.env.VITE_USE_FUNCTIONS_EMULATOR !== 'false'; // Default true in dev
         default:
             return useEmulator;
     }
