@@ -183,6 +183,7 @@ function AdminScreen() {
                         {hasCheckIn && (
                             <a
                                 href={`/s/${encodeURIComponent(params.data.id)}/in`}
+                                data-testid={`admin-dashboard-table-checkin-link-${params.data.id}`}
                                 style={{
                                     padding: '6px 10px',
                                     backgroundColor: '#4CAF50',
@@ -203,6 +204,7 @@ function AdminScreen() {
                         {hasCheckOut && (
                             <a
                                 href={`/s/${encodeURIComponent(params.data.id)}/out`}
+                                data-testid={`admin-dashboard-table-checkout-link-${params.data.id}`}
                                 style={{
                                     padding: '6px 10px',
                                     backgroundColor: '#FF9800',
@@ -241,6 +243,7 @@ function AdminScreen() {
                 return (
                     <a 
                         href={`/admin/event/${encodeURIComponent(params.data.id)}`}
+                        data-testid={`admin-dashboard-table-event-name-link-${params.data.id}`}
                         style={{ 
                             color: '#1976d2', 
                             textDecoration: 'none', 
@@ -368,6 +371,7 @@ function AdminScreen() {
                         href={`/s/${encodeURIComponent(params.value)}`}
                         target="_blank"
                         rel="noopener noreferrer"
+                        data-testid={`admin-dashboard-table-event-id-link-${params.value}`}
                         style={{ 
                             color: '#1976d2', 
                             textDecoration: 'none',
@@ -466,12 +470,13 @@ function AdminScreen() {
     };
 
     return (
-        <div className="admin-grid-container">
+        <div className="admin-grid-container" data-testid="admin-dashboard-container">
             <div style={{ padding: '20px', flexShrink: 0, width: '100%', boxSizing: 'border-box' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '15px', gap: '20px' }}>
-                    <h1 style={{ margin: 0 }}>Events</h1>
+                    <h1 style={{ margin: 0 }} data-testid="admin-dashboard-header-title">Events</h1>
                     <a 
                         href="/admin/event/new"
+                        data-testid="admin-dashboard-header-new-event-button"
                         style={{
                             padding: '10px 20px',
                             backgroundColor: '#4CAF50',
@@ -494,6 +499,7 @@ function AdminScreen() {
                             placeholder="Search across all columns..."
                             value={quickFilterText}
                             onChange={(e) => setQuickFilterText(e.target.value)}
+                            data-testid="admin-dashboard-search-input"
                             style={{
                                 padding: '8px 12px',
                                 fontSize: '14px',
@@ -505,6 +511,7 @@ function AdminScreen() {
                         {quickFilterText && (
                             <button
                                 onClick={() => setQuickFilterText('')}
+                                data-testid="admin-dashboard-search-clear-button"
                                 style={{
                                     padding: '8px 12px',
                                     backgroundColor: '#f44336',
@@ -524,6 +531,7 @@ function AdminScreen() {
                     <div style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
                         <button
                             onClick={() => setActiveFilter('current')}
+                            data-testid="admin-dashboard-filters-current-events-button"
                             style={{
                                 padding: '8px 16px',
                                 backgroundColor: activeFilter === 'current' ? '#1976d2' : '#e0e0e0',
@@ -539,6 +547,7 @@ function AdminScreen() {
                         </button>
                         <button
                             onClick={() => setActiveFilter('past')}
+                            data-testid="admin-dashboard-filters-past-events-button"
                             style={{
                                 padding: '8px 16px',
                                 backgroundColor: activeFilter === 'past' ? '#1976d2' : '#e0e0e0',
@@ -554,6 +563,7 @@ function AdminScreen() {
                         </button>
                         <button
                             onClick={() => setActiveFilter('future')}
+                            data-testid="admin-dashboard-filters-future-events-button"
                             style={{
                                 padding: '8px 16px',
                                 backgroundColor: activeFilter === 'future' ? '#1976d2' : '#e0e0e0',
@@ -578,20 +588,20 @@ function AdminScreen() {
             </div>
 
             {eventsLoading && (
-                <div style={{ padding: '20px', textAlign: 'center' }}>
+                <div style={{ padding: '20px', textAlign: 'center' }} data-testid="admin-dashboard-loading">
                     <p>Loading events...</p>
                 </div>
             )}
 
             {eventsError && (
-                <div style={{ padding: '20px', color: 'red' }}>
+                <div style={{ padding: '20px', color: 'red' }} data-testid="admin-dashboard-error">
                     <p>Error loading events: {eventsError.message}</p>
                 </div>
             )}
 
             {/* AG Grid */}
             {!eventsLoading && !eventsError && (
-                <div className="ag-theme-material" style={{ 
+                <div className="ag-theme-material" data-testid="admin-dashboard-table" style={{ 
                     width: 'calc(100% - 40px)', 
                     margin: '0 20px 20px', 
                     boxSizing: 'border-box',

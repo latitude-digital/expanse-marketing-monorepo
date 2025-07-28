@@ -155,20 +155,23 @@ function DashboardScreen() {
                             "description": `The Event ID also serves as the URL ${window.location.origin}/s/{id}`,
                             "descriptionLocation": "underInput",
                             "isRequired": true,
-                            "readOnly": thisEvent.id !== 'new'
+                            "readOnly": thisEvent.id !== 'new',
+                            "inputId": "admin-edit-event-form-id-input"
                         },
                         {
                             "type": "text",
                             "name": "name",
                             "title": "Event Name",
-                            "isRequired": true
+                            "isRequired": true,
+                            "inputId": "admin-edit-event-form-name-input"
                         },
                         {
                             "type": "text",
                             "inputType": "date",
                             "name": "startDate",
                             "title": "Event Start",
-                            "isRequired": true
+                            "isRequired": true,
+                            "inputId": "admin-edit-event-form-start-date-input"
                         },
                         {
                             "type": "text",
@@ -183,7 +186,8 @@ function DashboardScreen() {
                                     "expression": "{startDate} <= {endDate}"
                                 }
                             ],
-                            "startWithNewLine": false
+                            "startWithNewLine": false,
+                            "inputId": "admin-edit-event-form-end-date-input"
                         },
                         // Ford Event Panel
                         {
@@ -196,7 +200,8 @@ function DashboardScreen() {
                                     "name": "fordEventID",
                                     "title": "Ford Event ID",
                                     "description": "The Ford Event ID is used for internal tracking",
-                                    "descriptionLocation": "underInput"
+                                    "descriptionLocation": "underInput",
+                                    "inputId": "admin-edit-event-form-ford-event-id-input"
                                 },
                                 {
                                     "type": "radiogroup",
@@ -240,7 +245,8 @@ function DashboardScreen() {
                             "name": "enablePreRegistration",
                             "title": "Enable Pre-registration?",
                             "visibleIf": "{sendThankYouEmail} = false",
-                            "defaultValue": false
+                            "defaultValue": false,
+                            "inputId": "admin-edit-event-form-enable-pre-registration-checkbox"
                         },
                         // Panel for Pre-registration fields (Visible if enablePreRegistration is true)
                         {
@@ -298,7 +304,8 @@ function DashboardScreen() {
                             "name": "sendThankYouEmail",
                             "title": "Send Thank You Email?",
                             "defaultValue": false,
-                            "visibleIf": "{enablePreRegistration} = false"
+                            "visibleIf": "{enablePreRegistration} = false",
+                            "inputId": "admin-edit-event-form-send-thank-you-email-checkbox"
                         },
                         {
                             "type": "text",
@@ -336,7 +343,8 @@ function DashboardScreen() {
                             "type": "boolean",
                             "name": "enableAutoCheckOut",
                             "title": "Enable auto-check-out?",
-                            "defaultValue": false
+                            "defaultValue": false,
+                            "inputId": "admin-edit-event-form-enable-auto-checkout-checkbox"
                         },
                         {
                             "type": "panel",
@@ -475,6 +483,37 @@ function DashboardScreen() {
                     previewElement.innerHTML = htmlContent;
                 }
             }
+        });
+
+        // Add test IDs to form elements after rendering
+        survey.onAfterRenderQuestion.add((sender, options) => {
+            const question = options.question;
+            const htmlElement = options.htmlElement;
+            
+            // Add data-testid to input elements
+            if (question.inputId && htmlElement) {
+                const inputElement = htmlElement.querySelector('input, select, textarea');
+                if (inputElement) {
+                    inputElement.setAttribute('data-testid', question.inputId);
+                }
+            }
+        });
+
+        // Add test IDs to buttons after survey renders
+        survey.onAfterRenderSurvey.add((sender, options) => {
+            setTimeout(() => {
+                // Add test ID to the main Save/Complete button
+                const completeButton = document.querySelector('.sv-btn.sv-complete-btn, input[value="Save"]');
+                if (completeButton) {
+                    completeButton.setAttribute('data-testid', 'admin-edit-event-form-save-button');
+                }
+                
+                // Add test ID to the Save and Edit Survey button
+                const editSurveyButton = document.querySelector('.nav-button .sd-btn.nav-input');
+                if (editSurveyButton) {
+                    editSurveyButton.setAttribute('data-testid', 'admin-edit-event-form-save-and-edit-survey-button');
+                }
+            }, 100);
         });
 
         // Now populate survey question choices using the actual survey questions
@@ -775,11 +814,11 @@ function DashboardScreen() {
 
     return (
         thisEvent && thisSurvey ? (
-            <div>
+            <div data-testid="admin-edit-event-container">
                 <Survey model={thisSurvey} />
             </div>
         ) : (
-            <div>Loading...</div>
+            <div data-testid="admin-edit-event-loading">Loading...</div>
         )
     );
 }
