@@ -1,0 +1,161 @@
+.layout-base {
+    max-width: 100%;
+}
+
+/* Allow AG Grid header text to wrap */
+.admin-grid-container .ag-header-cell-label {
+    white-space: normal !important;
+    line-height: 1.2em !important;
+}
+
+.admin-grid-container .ag-header-cell {
+    display: flex !important;
+    align-items: center !important;
+    height: auto !important;
+    min-height: 48px !important;
+    border-right: 1px solid #ddd !important;
+}
+
+.admin-grid-container .ag-header-cell-text {
+    overflow: visible !important;
+    text-overflow: unset !important;
+    white-space: normal !important;
+}
+
+.admin-grid-container .ag-header-row {
+    height: auto !important;
+}
+
+/* Allow cells to use their natural display for autoHeight to work */
+/* For autoHeight columns, don't force flex display */
+.admin-grid-container .ag-cell:not([col-id="name"]):not([col-id="actions"]):not([col-id="emails"]):not([col-id="id"]) {
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* Ensure date cells display properly */
+.admin-grid-container .ag-cell[col-id="startDate"],
+.admin-grid-container .ag-cell[col-id="endDate"] {
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* Ensure cell values are visible */
+.admin-grid-container .ag-cell[col-id="startDate"] .ag-cell-value,
+.admin-grid-container .ag-cell[col-id="endDate"] .ag-cell-value {
+    display: block !important;
+}
+
+/* AutoHeight columns need block display */
+.admin-grid-container .ag-cell[col-id="name"],
+.admin-grid-container .ag-cell[col-id="actions"],
+.admin-grid-container .ag-cell[col-id="emails"],
+.admin-grid-container .ag-cell[col-id="id"] {
+    display: block !important;
+}
+
+/* Add row borders */
+.admin-grid-container .ag-row {
+    border-bottom: 1px solid #ddd !important;
+}
+
+/* Ensure cells have proper line height and borders */
+.admin-grid-container .ag-cell {
+    border-right: 1px solid #ddd !important;
+}
+
+/* Add a border to the entire pinned columns container */
+.admin-grid-container .ag-pinned-left-cols-container {
+    border-right: 1px solid #ddd !important;
+}
+
+/* Also add border to pinned header */
+.admin-grid-container .ag-pinned-left-header {
+    border-right: 1px solid #ddd !important;
+}
+
+/* Removed - this was preventing autoHeight from working properly */
+
+/* Special handling for action column */
+.admin-grid-container .ag-cell[col-id="actions"] {
+    padding: 0 !important;
+}
+
+/* Ensure action buttons container fills the cell */
+.admin-grid-container .ag-cell[col-id="actions"] .ag-cell-wrapper {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+}
+
+/* Special handling for cells with custom content */
+.admin-grid-container .ag-cell-wrapper {
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+/* Removed override for Event ID column to allow proper flex display */
+
+/* Fix date columns specifically */
+.admin-grid-container .ag-cell span {
+    display: inline-block;
+    line-height: normal;
+}
+
+/* Make column resize handles more visible */
+.admin-grid-container .ag-header-cell-resize {
+    width: 4px !important;
+    background-color: #e0e0e0 !important;
+    opacity: 0.5;
+}
+
+.admin-grid-container .ag-header-cell-resize:hover {
+    background-color: #1976d2 !important;
+    opacity: 1;
+    width: 6px !important;
+}
+
+/* Ensure header has proper borders */
+.admin-grid-container .ag-header {
+    border-bottom: 2px solid #ddd !important;
+}
+
+/* Add right border to last column */
+.admin-grid-container .ag-cell:last-child {
+    border-right: none !important;
+}
+
+/* Ensure vertical lines are visible */
+.admin-grid-container .ag-body-viewport {
+    overflow-x: auto !important;
+}
+
+/* iPad vertical viewport optimizations */
+@media screen and (max-width: 834px) {
+    .admin-grid-container {
+        font-size: 14px;
+    }
+    
+    .admin-grid-container .ag-cell {
+        padding: 8px 4px !important;
+    }
+    
+    .admin-grid-container .ag-header-cell {
+        min-height: 40px !important;
+    }
+}
+
+/* Force row height recalculation for autoHeight cells */
+.admin-grid-container .ag-row {
+    min-height: auto !important;
+    height: auto !important;
+}
+
+.admin-grid-container .ag-cell[col-id="name"],
+.admin-grid-container .ag-cell[col-id="actions"],
+.admin-grid-container .ag-cell[col-id="emails"],
+.admin-grid-container .ag-cell[col-id="id"] {
+    height: auto !important;
+    min-height: auto !important;
+}

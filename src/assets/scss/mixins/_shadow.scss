@@ -1,0 +1,30 @@
+@import 'transition';
+
+@mixin box-shadow{
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+
+  filter: progid:DXImageTransform.Microsoft.Blur(PixelRadius=3,MakeShadow=true,ShadowOpacity=0.30);
+  -ms-filter: "progid:DXImageTransform.Microsoft.Blur(PixelRadius=3,MakeShadow=true,ShadowOpacity=0.30)";
+  zoom: 1;
+
+  @include transition-ease-out(all 0.2s);
+
+  &.hover{
+    &:hover {
+      box-shadow: 0 5px 15px rgba(0,0,0,0.25), 0 3px 3px rgba(0,0,0,0.22);
+    }
+  }
+
+}
+
+
+@mixin box-shadow-deep{
+  box-shadow: 0 3px 5px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.24);
+
+  filter: progid:DXImageTransform.Microsoft.Blur(PixelRadius=3,MakeShadow=true,ShadowOpacity=0.30);
+  -ms-filter: "progid:DXImageTransform.Microsoft.Blur(PixelRadius=3,MakeShadow=true,ShadowOpacity=0.30)";
+  zoom: 1;
+
+  //@include transition-ease-out(box-shadow 0.2s);
+
+}

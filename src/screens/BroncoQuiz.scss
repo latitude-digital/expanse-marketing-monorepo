@@ -1,0 +1,89 @@
+@import '../assets/scss/variables/_color.scss';
+@import '../index.scss';
+
+.header {
+    text-align: center !important;
+    font-size: 1.5rem;
+    font-family: FordF1;
+    margin: 3rem 0 1rem 0;
+    font-weight: bold;
+
+}
+
+.click_here {
+    font-size: 1.2rem;
+    text-align: center !important;
+    font-weight: bold;
+    margin-bottom: 2.5rem;
+    font-family: FordF1;
+}
+
+.link {
+    text-decoration: none;
+    color: $ford_skyblue;
+    font-family: FordF1;
+}
+
+.how_did_you_do {
+    font-size: 1.25rem;
+    text-align: center !important;
+    font-weight: bold;
+    margin: 0;
+    font-family: FordF1;
+}
+
+.compared_to_last_quizzes {
+    font-size: 1.25rem;
+    text-align: center !important;
+    font-weight: bold;
+    margin: 0;
+    font-family: FordF1;
+}
+
+.chart_container {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading {
+    font-size: 2rem;
+    text-align: center !important;
+    font-weight: bold;
+    margin: 0;
+    color: $blue_ford;
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+    font-family: FordF1;
+}
+
+.results-container {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+.question-block {
+    margin-bottom: 20px;
+    padding: 10px;
+    padding-right: 30px;
+    padding-left: 30px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: white;
+}
+
+.question-title {
+    font-size: 1.2rem;
+    font-weight: bold !important;
+    margin-bottom: 10px;
+}
+
+.correct {
+    color: green;
+}
+
+.incorrect {
+    color: red;
+}

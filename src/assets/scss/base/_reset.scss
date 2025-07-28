@@ -1,0 +1,68 @@
+@import '../variables/index';
+
+*{
+  box-sizing: border-box;
+  @include resetMP;
+}
+
+html,
+body{
+  width: 100%;
+  height: 100%;
+  font-family: arial,helvetica,sans-serif !important;
+
+  // invisible div was overlaying page on mobile and blocking clicks
+  #root > div:nth-child(2) {
+    display: none
+  }
+}
+
+input[type="text"], input[type="email"], textarea{
+  appearance: none;
+  border-radius: 4px;
+  outline: none;
+
+  &:focus {
+    outline:none;
+    border-color: $focus_blue;
+    box-shadow:0 0 5px $focus_blue;
+  }
+
+}
+
+
+button{
+  appearance: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+//a{
+//  text-decoration: none;
+//  color: $black;
+//  cursor: pointer;
+//  &:hover{
+//    color: $blue_ford;
+//  }
+//}
+
+$header_sizes: (
+    1: 1.5%,
+    2: 1.25%,
+    3: 1%,
+    4: 0.75%,
+    5: 0.5%,
+    6: 0.25%
+);
+
+@each $n, $p in $header_sizes {
+  h#{$n}{
+    @include resetMP;
+    @include pad-vert($p);
+  }
+}
+
+
+.ld_cursor_pointer{
+  cursor: pointer;
+}

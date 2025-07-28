@@ -1,0 +1,4 @@
+
+@function alphaLighten($color, $lighten: 30, $alpha: 0.2){
+  @return rgba(lighten($color, $lighten), $alpha);
+}

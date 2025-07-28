@@ -1,0 +1,13 @@
+.waiver-scroll-view {
+  border: 1px solid darkGray;
+  font-size: 14px;
+  height: 300px;
+  padding: 10px;
+  margin-bottom: 40px;
+  scrollbar-width: thin;
+  overflow: scroll;
+
+  @media (min-width: 768px) {
+    height: 375px;
+  }
+}

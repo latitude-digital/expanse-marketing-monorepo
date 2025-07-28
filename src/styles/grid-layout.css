@@ -1,0 +1,44 @@
+/* Grid layout styles - only apply to grid containers */
+.dashboard-grid-container,
+.admin-grid-container {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  overflow: hidden;
+}
+
+/* When grid containers are present, prevent body scroll */
+body:has(.dashboard-grid-container),
+body:has(.admin-grid-container) {
+  overflow: hidden;
+}
+
+/* Fallback for browsers that don't support :has() */
+.grid-page {
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* When grid containers are direct children of layout-base, adjust the parent styles */
+.layout-base > .dashboard-grid-container,
+.layout-base > .admin-grid-container {
+  margin: 0; /* Remove negative margin to prevent cutoff */
+}
+
+/* For grid pages, we need to adjust the app container */
+.app {
+  min-height: 100vh;
+}
+
+/* Ensure AG Grid takes full height for dashboard, but not admin (which uses autoHeight) */
+.dashboard-grid-container .ag-theme-material {
+  height: 100%;
+  width: 100%;
+}
+
+.admin-grid-container .ag-theme-material {
+  width: 100%;
+  /* No height constraint for autoHeight to work properly */
+}
