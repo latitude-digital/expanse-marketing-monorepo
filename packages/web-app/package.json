@@ -1,9 +1,0 @@
-{
-  "name": "@expanse/web-app",
-  "version": "1.0.0",
-  "description": "Expanse Marketing Web Application",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Test placeholder for web-app\""
-  }
-}
