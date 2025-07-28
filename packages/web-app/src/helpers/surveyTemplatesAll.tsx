@@ -60,8 +60,9 @@ export const initCreator = (creator: SurveyCreatorModel) => {
   const themeTabPlugin = creator.themeEditor;
 
   // sort the themes so that the custom themes starting with __ are at the top
-  themeTabPlugin.availableThemes = themeTabPlugin.availableThemes.sort(
-    (a: string, b: string) => {
+  if (themeTabPlugin && themeTabPlugin.availableThemes) {
+    themeTabPlugin.availableThemes = themeTabPlugin.availableThemes.sort(
+      (a: string, b: string) => {
       if (a.startsWith("__") && !b.startsWith("__")) {
         return -1;
       } else if (!a.startsWith("__") && b.startsWith("__")) {
@@ -73,6 +74,7 @@ export const initCreator = (creator: SurveyCreatorModel) => {
       }
     }
   );
+  }
 
   const enLocale = editorLocalization.getLocale("en");
   enLocale.toolboxCategories["__0pii"] = "Personal Information Questions";
