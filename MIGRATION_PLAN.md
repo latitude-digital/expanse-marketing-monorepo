@@ -101,6 +101,7 @@ This document outlines the step-by-step migration of latitude-digital/latitude-l
 **Status**: ⏳ Pending Previous Phases
 
 #### Objectives
+- **Clean up unused dependencies** before migration (15-25MB reduction)
 - Migrate web application with zero functionality changes
 - **Replace Create React App with Vite** for modern build tooling
 - Maintain all existing build processes and deployment model
@@ -108,7 +109,40 @@ This document outlines the step-by-step migration of latitude-digital/latitude-l
 
 #### Tasks
 
-**2A: Git History-Preserving Migration** ⭐ **PRESERVE HISTORY**
+**2A: Dependency Cleanup** ⭐ **NEW - PERFORMANCE CRITICAL**
+- [ ] **Phase 1 - Safe Kendo Removals**: Remove 31 unused Kendo packages:
+  ```bash
+  # Remove unused Kendo React components
+  yarn remove @progress/kendo-react-animation @progress/kendo-react-charts \
+              @progress/kendo-react-conversational-ui @progress/kendo-react-data-tools \
+              @progress/kendo-react-dropdowns @progress/kendo-react-editor \
+              @progress/kendo-react-excel-export @progress/kendo-react-gantt \
+              @progress/kendo-react-gauges @progress/kendo-react-grid \
+              @progress/kendo-react-intl @progress/kendo-react-listbox \
+              @progress/kendo-react-notification @progress/kendo-react-pdf \
+              @progress/kendo-react-pivotgrid @progress/kendo-react-popup \
+              @progress/kendo-react-progressbars @progress/kendo-react-ripple \
+              @progress/kendo-react-scheduler @progress/kendo-react-sortable \
+              @progress/kendo-react-tooltip @progress/kendo-react-treelist \
+              @progress/kendo-react-treeview @progress/kendo-react-upload \
+              @progress/kendo-theme-default
+  
+  # Remove unused Kendo core packages  
+  yarn remove @progress/kendo-data-query @progress/kendo-date-math \
+              @progress/kendo-drawing @progress/kendo-intl \
+              @progress/kendo-popup-common
+  
+  # Remove accidental dependency
+  yarn remove add
+  ```
+- [ ] **Build Test**: Verify application builds successfully
+- [ ] **Runtime Test**: Test major user flows (login, survey creation, data export)
+- [ ] **Phase 2 - Verification**: Check usage of inputmask, showdown, sprintf-js, ua-parser-js
+- [ ] **Remove verified unused packages** from Phase 2
+- [ ] **Bundle Analysis**: Verify 15-25MB reduction achieved
+- [ ] **Git Commit**: Dependency cleanup complete
+
+**2B: Git History-Preserving Migration** ⭐ **PRESERVE HISTORY**
 - [ ] Add latitude-leads-web as remote:
   ```bash
   git remote add web-app-origin https://github.com/latitude-digital/latitude-leads-web.git
@@ -190,6 +224,8 @@ This document outlines the step-by-step migration of latitude-digital/latitude-l
 - [ ] Create git commit after successful migration
 
 #### Success Criteria
+- **15-25MB bundle size reduction** from dependency cleanup
+- **20-30% faster install times** from removing unused packages
 - Web app runs identically to original
 - All existing functionality preserved
 - **Static build output** maintained (no server required)
@@ -403,5 +439,6 @@ import { StyledDataTable as DataTable } from '@ford-ui/dataTable/DataTable.style
 - This plan leverages direct gh CLI access to latitude-digital repositories
 - Expert consensus strongly supports Phase 0 analysis approach
 - **Ford UI integration fully incorporated** based on use-as-is.md requirements
+- **Dependency cleanup analysis** documented in DEPENDENCY_CLEANUP_ANALYSIS.md
 - Focus on tooling challenges (CI/CD, env vars) while following Ford UI patterns
 - Team onboarding includes git submodule workflows
