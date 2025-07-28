@@ -6,29 +6,33 @@ settings:
 
 importers:
 
-  .: {}
+  .:
+    devDependencies:
+      concurrently:
+        specifier: ^8.2.2
+        version: 8.2.2
 
   packages/firebase:
     dependencies:
       firebase-admin:
-        specifier: ^12.0.0
-        version: 12.7.0
+        specifier: ^13.4.0
+        version: 13.4.0
       firebase-functions:
-        specifier: ^4.6.0
-        version: 4.9.0(firebase-admin@12.7.0)
+        specifier: ^6.4.0
+        version: 6.4.0(firebase-admin@13.4.0)
     devDependencies:
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.12
       firebase-functions-test:
-        specifier: ^3.1.0
-        version: 3.4.1(firebase-admin@12.7.0)(firebase-functions@4.9.0(firebase-admin@12.7.0))(jest@29.7.0)
+        specifier: ^3.4.1
+        version: 3.4.1(firebase-admin@13.4.0)(firebase-functions@6.4.0(firebase-admin@13.4.0))(jest@29.7.0(@types/node@20.14.8)(ts-node@10.9.2(@swc/core@1.6.5(@swc/helpers@0.5.11))(@types/node@20.14.8)(typescript@5.8.3)))
       jest:
         specifier: ^29.7.0
-        version: 29.7.0
+        version: 29.7.0(@types/node@20.14.8)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.6.5(@swc/helpers@0.5.11))(@types/node@20.14.8)(typescript@5.8.3))
       ts-jest:
         specifier: ^29.1.1
-        version: 29.1.5(@babel/core@7.24.7)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.24.7))(jest@29.7.0)(typescript@5.8.3)
+        version: 29.1.5(@babel/core@7.24.7)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.24.7))(esbuild@0.21.5)(jest@29.7.0(@types/node@20.14.8)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.6.5(@swc/helpers@0.5.11))(@types/node@20.14.8)(typescript@5.8.3)))(typescript@5.8.3)
       typescript:
         specifier: ^5.2.2
         version: 5.8.3
@@ -670,20 +674,20 @@ importers:
         specifier: ^5.3.6
         version: 5.3.11(@babel/core@7.24.7)(react-dom@18.3.1(react@18.3.1))(react-is@18.3.1)(react@18.3.1)
       survey-analytics:
-        specifier: 1.12.29
-        version: 1.12.29(@types/plotly.js-dist-min@2.3.4)(survey-core@1.12.29)
+        specifier: ^2.2.6
+        version: 2.2.6(@types/plotly.js-dist-min@2.3.4)(@types/tabulator-tables@6.2.8)(survey-core@2.2.6)
       survey-core:
-        specifier: 1.12.29
-        version: 1.12.29
+        specifier: ^2.2.6
+        version: 2.2.6
       survey-creator-core:
-        specifier: 1.12.29
-        version: 1.12.29(survey-core@1.12.29)
+        specifier: ^2.2.6
+        version: 2.2.6(survey-core@2.2.6)
       survey-creator-react:
-        specifier: 1.12.29
-        version: 1.12.29(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(survey-core@1.12.29)(survey-creator-core@1.12.29(survey-core@1.12.29))(survey-react-ui@1.12.29(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(survey-core@1.12.29))
+        specifier: ^2.2.6
+        version: 2.2.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(survey-core@2.2.6)(survey-creator-core@2.2.6(survey-core@2.2.6))(survey-react-ui@2.2.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(survey-core@2.2.6))
       survey-react-ui:
-        specifier: 1.12.29
-        version: 1.12.29(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(survey-core@1.12.29)
+        specifier: ^2.2.6
+        version: 2.2.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(survey-core@2.2.6)
       ua-parser-js:
         specifier: ^1.0.32
         version: 1.0.38
@@ -703,6 +707,9 @@ importers:
       '@babel/plugin-proposal-private-property-in-object':
         specifier: ^7.21.11
         version: 7.21.11(@babel/core@7.24.7)
+      '@playwright/test':
+        specifier: ^1.40.0
+        version: 1.46.0
       '@testing-library/jest-dom':
         specifier: ^5.16.5
         version: 5.17.0
@@ -2285,6 +2292,9 @@ packages:
   '@firebase/app-check-interop-types@0.3.2':
     resolution: {integrity: sha512-LMs47Vinv2HBMZi49C09dJxp0QT5LwDzFaVGf/+ITHe3BlIhUiLNttkATSXplc89A2lAaeTqjgqVkiRfUGyQiQ==}
 
+  '@firebase/app-check-interop-types@0.3.3':
+    resolution: {integrity: sha512-gAlxfPLT2j8bTI/qfe3ahl2I2YcBQ8cFIBdhAQA4I2f3TndcO+22YizyGYuttLHPQEpWkhmpFW60VCFEPg4g5A==}
+
   '@firebase/app-check-types@0.5.2':
     resolution: {integrity: sha512-FSOEzTzL5bLUbD2co3Zut46iyPWML6xc4x+78TeaXMSuJap5QObfb+rVvZJtla3asN4RwU7elaQaduP+HFizDA==}
 
@@ -2299,6 +2309,9 @@ packages:
   '@firebase/app-types@0.9.2':
     resolution: {integrity: sha512-oMEZ1TDlBz479lmABwWsWjzHwheQKiAgnuKxE0pz0IXCVx7/rtlkx1fQ6GfgK24WCrxDKMplZrT50Kh04iMbXQ==}
 
+  '@firebase/app-types@0.9.3':
+    resolution: {integrity: sha512-kRVpIl4vVGJ4baogMDINbyrIOtOxqhkZQg4jTq3l8Lw6WSk0xfpEYzezFu+Kl4ve4fbPl79dvwRtaFqAC/ucCw==}
+
   '@firebase/app@0.10.13':
     resolution: {integrity: sha512-OZiDAEK/lDB6xy/XzYAyJJkaDqmQ+BCtOEPLqFvxWKUz5JbBmej7IiiRHdtiIOD/twW7O5AxVsfaaGA/V1bNsA==}
 
@@ -2309,6 +2322,9 @@ packages:
 
   '@firebase/auth-interop-types@0.2.3':
     resolution: {integrity: sha512-Fc9wuJGgxoxQeavybiuwgyi+0rssr76b+nHpj+eGhXFYAdudMWyfBHvFL/I5fEHniUM/UQdFzi9VXJK2iZF7FQ==}
+
+  '@firebase/auth-interop-types@0.2.4':
+    resolution: {integrity: sha512-JPgcXKCuO+CWqGDnigBtvo09HeBs5u/Ktc2GaFj2m01hLarbxthLNm7Fk8iOP1aqAtXV+fnnGj7U28xmk7IwVA==}
 
   '@firebase/auth-types@0.12.2':
     resolution: {integrity: sha512-qsEBaRMoGvHO10unlDJhaKSuPn4pyoTtlQuP1ghZfzB6rNQPuhp/N/DcFZxm9i4v0SogjCbf9reWupwIvfmH6w==}
@@ -2328,6 +2344,10 @@ packages:
   '@firebase/component@0.6.9':
     resolution: {integrity: sha512-gm8EUEJE/fEac86AvHn8Z/QW8BvR56TBw3hMW0O838J/1mThYQXAIQBgUv75EqlCZfdawpWLrKt1uXvp9ciK3Q==}
 
+  '@firebase/component@0.7.0':
+    resolution: {integrity: sha512-wR9En2A+WESUHexjmRHkqtaVH94WLNKt6rmeqZhSLBybg4Wyf0Umk04SZsS6sBq4102ZsDBFwoqMqJYj2IoDSg==}
+    engines: {node: '>=20.0.0'}
+
   '@firebase/data-connect@0.1.0':
     resolution: {integrity: sha512-vSe5s8dY13ilhLnfY0eYRmQsdTbH7PUFZtBbqU6JVX/j8Qp9A6G5gG6//ulbX9/1JFOF1IWNOne9c8S/DOCJaQ==}
     peerDependencies:
@@ -2336,11 +2356,22 @@ packages:
   '@firebase/database-compat@1.0.8':
     resolution: {integrity: sha512-OpeWZoPE3sGIRPBKYnW9wLad25RaWbGyk7fFQe4xnJQKRzlynWeFBSRRAoLE2Old01WXwskUiucNqUUVlFsceg==}
 
+  '@firebase/database-compat@2.1.0':
+    resolution: {integrity: sha512-8nYc43RqxScsePVd1qe1xxvWNf0OBnbwHxmXJ7MHSuuTVYFO3eLyLW3PiCKJ9fHnmIz4p4LbieXwz+qtr9PZDg==}
+    engines: {node: '>=20.0.0'}
+
+  '@firebase/database-types@1.0.16':
+    resolution: {integrity: sha512-xkQLQfU5De7+SPhEGAXFBnDryUWhhlFXelEg2YeZOQMCdoe7dL64DDAd77SQsR+6uoXIZY5MB4y/inCs4GTfcw==}
+
   '@firebase/database-types@1.0.5':
     resolution: {integrity: sha512-fTlqCNwFYyq/C6W7AJ5OCuq5CeZuBEsEwptnVxlNPkWCo5cTTyukzAHRSO/jaQcItz33FfYrrFk1SJofcu2AaQ==}
 
   '@firebase/database@1.0.8':
     resolution: {integrity: sha512-dzXALZeBI1U5TXt6619cv0+tgEhJiwlUtQ55WNZY7vGAjv7Q1QioV969iYwt1AQQ0ovHnEW0YW9TiBfefLvErg==}
+
+  '@firebase/database@1.1.0':
+    resolution: {integrity: sha512-gM6MJFae3pTyNLoc9VcJNuaUDej0ctdjn3cVtILo3D5lpp0dmUHHLFN/pUKe7ImyeB1KAvRlEYxvIHNF04Filg==}
+    engines: {node: '>=20.0.0'}
 
   '@firebase/firestore-compat@0.3.38':
     resolution: {integrity: sha512-GoS0bIMMkjpLni6StSwRJarpu2+S5m346Na7gr9YZ/BZ/W3/8iHGNr9PxC+f0rNZXqS4fGRn88pICjrZEgbkqQ==}
@@ -2389,6 +2420,10 @@ packages:
 
   '@firebase/logger@0.4.2':
     resolution: {integrity: sha512-Q1VuA5M1Gjqrwom6I6NUU4lQXdo9IAQieXlujeHZWvRt1b7qQ0KwBaNAjgxG27jgF9/mUwsNmO8ptBCGVYhB0A==}
+
+  '@firebase/logger@0.5.0':
+    resolution: {integrity: sha512-cGskaAvkrnh42b3BA3doDWeBmuHFO/Mx5A83rbRDYakPjO9bJtRL3dX7javzc2Rr/JHZf4HlterTW2lUkfeN4g==}
+    engines: {node: '>=20.0.0'}
 
   '@firebase/messaging-compat@0.2.12':
     resolution: {integrity: sha512-pKsiUVZrbmRgdImYqhBNZlkKJbqjlPkVdQRZGRbkTyX4OSGKR0F/oJeCt1a8jEg5UnBp4fdVwSWSp4DuCovvEQ==}
@@ -2447,6 +2482,10 @@ packages:
 
   '@firebase/util@1.10.0':
     resolution: {integrity: sha512-xKtx4A668icQqoANRxyDLBLz51TAbDP9KRfpbKGxiCAW346d0BeJe5vN6/hKxxmWwnZ0mautyv39JxviwwQMOQ==}
+
+  '@firebase/util@1.13.0':
+    resolution: {integrity: sha512-0AZUyYUfpMNcztR5l09izHwXkZpghLgCUaAGjtMwXnCg3bj4ml5VgiwqOMOxJ+Nw4qN/zJAaOQBcJ7KGkWStqQ==}
+    engines: {node: '>=20.0.0'}
 
   '@firebase/vertexai-preview@0.0.4':
     resolution: {integrity: sha512-EBSqyu9eg8frQlVU9/HjKtHN7odqbh9MtAcVz3WwHj4gLCLOoN9F/o+oxlq3CxvFrd3CNTZwu6d2mZtVlEInng==}
@@ -2517,6 +2556,10 @@ packages:
     resolution: {integrity: sha512-MmaX6HeSvyPbWGwFq7mXdo0uQZLGBYCwziiLIGq5JVX+/bdI3SAq6bP98trV5eTWfLuvsMcIC1YJOF2vfteLFA==}
     engines: {node: '>=14.0.0'}
 
+  '@google-cloud/promisify@4.0.0':
+    resolution: {integrity: sha512-Orxzlfb9c67A15cq2JQEyVc7wEsmFBmHjZWZYQMUyJ1qivXyMwdyNOs9odi79hze+2zqdTtu1E19IM/FtqZ10g==}
+    engines: {node: '>=14'}
+
   '@google-cloud/promisify@4.1.0':
     resolution: {integrity: sha512-G/FQx5cE/+DqBbOpA5jKsegGwdPniU6PuIEMt+qxWgFxvxuFOzVmp6zYchtYuwAWV5/8Dgs0yAmjvNZv3uXLQg==}
     engines: {node: '>=18'}
@@ -2535,6 +2578,10 @@ packages:
 
   '@google-cloud/storage@7.12.1':
     resolution: {integrity: sha512-Z3ZzOnF3YKLuvpkvF+TjQ6lztxcAyTILp+FjKonmVpEwPa9vFvxpZjubLR4sB6bf19i/8HL2AXRjA0YFgHFRmQ==}
+    engines: {node: '>=14'}
+
+  '@google-cloud/storage@7.16.0':
+    resolution: {integrity: sha512-7/5LRgykyOfQENcm6hDKP8SX/u9XxE5YOiWOkgkwcoO+cG8xT/cyOvp9wwN3IxfdYgpHs8CE7Nq2PKX2lNaEXw==}
     engines: {node: '>=14'}
 
   '@grpc/grpc-js@1.13.4':
@@ -5744,9 +5791,6 @@ packages:
   '@types/express@4.17.23':
     resolution: {integrity: sha512-Crp6WY9aTYP3qPi2wGDo9iUe/rceX01UMhnF1jmwDcKCFM6cx7YhGP/Mpr3y9AASpfHixIG0E6azCcL5OcDHsQ==}
 
-  '@types/express@4.17.3':
-    resolution: {integrity: sha512-I8cGRJj3pyOLs/HndoP+25vOqhqWkAZsWMEmq1qXy/b/M3ppufecUwaK2/TVDVxcV61/iSdhykUjQQ2DLSrTdg==}
-
   '@types/file-saver@2.0.7':
     resolution: {integrity: sha512-dNKVfHd/jk0SkR/exKGj2ggkB45MAkzvWCaqLUUgkyjITkGNzH8H+yUwr+BLJUBjZOe9w8X3wgmXhZDRg1ED6A==}
 
@@ -5962,6 +6006,9 @@ packages:
 
   '@types/styled-components@5.1.34':
     resolution: {integrity: sha512-mmiVvwpYklFIv9E8qfxuPyIt/OuyIrn6gMOAMOFUO3WJfSrSE+sGUoa4PiZj77Ut7bKZpaa6o1fBKS/4TOEvnA==}
+
+  '@types/tabulator-tables@6.2.8':
+    resolution: {integrity: sha512-AhyqabOXLW3k8685sOWtNAY6hrUZqabysGvEsdIuIXpFViSK/cFziiafztsP/Tveh03qqIKsXu60Mw145o9g4w==}
 
   '@types/tar@6.1.13':
     resolution: {integrity: sha512-IznnlmU5f4WcGTh2ltRu/Ijpmk8wiWXfF0VA4s+HPjHZgvFggk1YaIkbo5krX/zUCzWF8N/l4+W/LNxnvAJ8nw==}
@@ -7457,6 +7504,11 @@ packages:
   concat-with-sourcemaps@1.1.0:
     resolution: {integrity: sha512-4gEjHJFT9e+2W/77h/DS5SGUgwDaOwprX8L/gl5+3ixnzkVJJsZWDSelmN3Oilw3LNDZjZV0yqH1hLG3k6nghg==}
 
+  concurrently@8.2.2:
+    resolution: {integrity: sha512-1dP4gpXFhei8IOtlXRE/T/4H88ElHgTiUzh71YUmtjTEHMSRS2Z/fgOxHSxxusGHogsRfxNq1vyAwxSC+EVyDg==}
+    engines: {node: ^14.13.0 || >=16.0.0}
+    hasBin: true
+
   confbox@0.1.8:
     resolution: {integrity: sha512-RMtmw0iFkeR4YV+fUOSucriAQNb9g8zFR52MWCtl+cCZOFRNL6zeB395vPzFhEjjn4fMxXudmELnl/KF/WrK6w==}
 
@@ -7920,47 +7972,9 @@ packages:
     resolution: {integrity: sha512-BS8PfmtDGnrgYdOonGZQdLZslWIeCGFP9tpan0hi1Co2Zr2NKADsvGYA8XxuG/4UWgJ6Cjtv+YJnB6MM69QGlQ==}
     engines: {node: '>= 0.4'}
 
-  datatables.net-buttons-dt@1.7.1:
-    resolution: {integrity: sha512-mdHWKHff9cR2KsyQvCmJcC4/S0NZaEzIo83Rqa1ncaQjtSoe989d3bDMyGg0jCEahqNVrZPDjuKWZw0FCR4Xsg==}
-
-  datatables.net-buttons@1.7.1:
-    resolution: {integrity: sha512-D2OxZeR18jhSx+l0xcfAJzfUH7l3LHCu0e606fV7+v3hMhphOfljjZYLaiRmGiR9lqO/f5xE/w2a+OtG/QMavw==}
-
-  datatables.net-colreorder-dt@1.7.2:
-    resolution: {integrity: sha512-CJWwXmTmla5iSzBekbHOviJxVIEUmtmdT9f8F7AOwipKCxJSrH3by4bAKVIheAtV5XxQxcw/i8dBllaYEfmmzg==}
-
-  datatables.net-colreorder@1.7.2:
-    resolution: {integrity: sha512-F8TYMFXtWLtsjciwS7hkP/Fbp3XS6WHuHLc+iMFtQqiQmbMo/59GK7YSxKuxSoqTTJU/opaPXQYjODnIuNEc/g==}
-
-  datatables.net-dt@1.13.11:
-    resolution: {integrity: sha512-4GpS4OFLwIMfhb5UdJh6bEnh0E52jIJOlx7KLKs1pSce/xpHjvcmucbUWNaEndQIpHXtIxmVPoqcDB0ZbiVB+A==}
-
-  datatables.net-dt@2.3.2:
-    resolution: {integrity: sha512-2heAMe0AVqJ8nt9wE35ArLtL1zP7N7qnhM3u52bLcJfi4NStxyBsHScVggTHVQPj7r9O+qirAxox1Xcr+Bm4Dw==}
-
-  datatables.net-responsive-dt@2.5.1:
-    resolution: {integrity: sha512-suFoSSb2v3Lj7B4aoSxdyVfRPYb89WtyxCdH46HkE9mFZ9sJoicazsTKOwpWdwxZ+JT3vae0b7bKM2lOpwYxFw==}
-
-  datatables.net-responsive@2.5.1:
-    resolution: {integrity: sha512-hyJb2faIzEWUX5Yn4HOSq/6NNB9SXDVbI4OU9ny+XU/2ghZEz4676spOgzpDHTdWvCfM+t1mbUsT70fDiTTr9w==}
-
-  datatables.net-rowgroup-dt@1.5.2:
-    resolution: {integrity: sha512-Sx0lWZj8Wflkt9Y6iJoX5GaZiV9/K4kR74Pr11DABy3TQ03cZA+JbkKKokSgKPdmRi5j9PPEwJYWmkehoxAWlg==}
-
-  datatables.net-rowgroup@1.5.2:
-    resolution: {integrity: sha512-hmjpCRCUqFm45x7mLzZbKCILNSyWsegA7wiJ2fY6rHzUmMNEUiThnXstOfgfxqHOUVATn/mGDBpvUl+1UDNaFg==}
-
-  datatables.net-select-dt@1.7.1:
-    resolution: {integrity: sha512-QeJDXPVWlqRZdLsyMMGayzhPuCRoITLkMEKshw6msyePUeUjc3ctwzOYDlYHX9MY3zXre4EocmWrG4fgZYKLEA==}
-
-  datatables.net-select@1.7.1:
-    resolution: {integrity: sha512-yC+GoBDVsnbaFTYKmZ2v5Bftc66zSZCYHbPYZb/ccdvxytEEudjc9R3wn6fgkOrVx3C2X/8keQc4a7EJvdOErg==}
-
-  datatables.net@1.13.11:
-    resolution: {integrity: sha512-AE6RkMXziRaqzPcu/pl3SJXeRa6fmXQG/fVjuRESujvkzqDCYEeKTTpPMuVJSGYJpPi32WGSphVNNY1G4nSN/g==}
-
-  datatables.net@2.3.2:
-    resolution: {integrity: sha512-31TzwIQM0+pr2ZOEOEH6dsHd/WSAl5GDDGPezOHPI3mM2NK4lcDyOoG8xXeWmSbVfbi852LNK5C84fpp4Q+qxg==}
+  date-fns@2.30.0:
+    resolution: {integrity: sha512-fnULvOpxnC5/Vg3NCiWelDsLiUc9bRwAPs/+LfTLNvetFCtCTN+yQz15C/fs4AwX1R9K5GLtLfn8QW+dWisaAw==}
+    engines: {node: '>=0.11'}
 
   date-format@4.0.3:
     resolution: {integrity: sha512-7P3FyqDcfeznLZp2b+OMitV9Sz2lUnsT87WaTat9nVwqsBkTzPG3lPLNwW3en6F4pHUiWzr6vb8CLhjdK9bcxQ==}
@@ -8993,9 +9007,9 @@ packages:
     resolution: {integrity: sha512-+iwzCJ7C5v5KgcBuueqVoNiHVoQpwiUK5XFLjf0affFTep+Wcw93tPvmb8tqujDNmzhBDPddnWV/qgWSXgq+Hg==}
     engines: {node: '>=12'}
 
-  firebase-admin@12.7.0:
-    resolution: {integrity: sha512-raFIrOyTqREbyXsNkSHyciQLfv8AUZazehPaQS1lZBSCDYW74FYXU0nQZa3qHI4K+hawohlDbywZ4+qce9YNxA==}
-    engines: {node: '>=14'}
+  firebase-admin@13.4.0:
+    resolution: {integrity: sha512-Y8DcyKK+4pl4B93ooiy1G8qvdyRMkcNFfBSh+8rbVcw4cW8dgG0VXCCTp5NUwub8sn9vSPsOwpb9tE2OuFmcfQ==}
+    engines: {node: '>=18'}
 
   firebase-functions-test@3.4.1:
     resolution: {integrity: sha512-qAq0oszrBGdf4bnCF6t4FoSgMsepeIXh0Pi/FhikSE6e+TvKKGpfrfUP/5pFjJZxFcLsweoau88KydCql4xSeg==}
@@ -9005,12 +9019,12 @@ packages:
       firebase-functions: '>=4.9.0'
       jest: '>=28.0.0'
 
-  firebase-functions@4.9.0:
-    resolution: {integrity: sha512-IqxOEsVAWGcRv9KRGzWQR5mOFuNsil3vsfkRPPiaV1U/ATC27/jbahh4z8I4rW8Xqa6cQE5xqnw0ueyMH7i7Ag==}
+  firebase-functions@6.4.0:
+    resolution: {integrity: sha512-Q/LGhJrmJEhT0dbV60J4hCkVSeOM6/r7xJS/ccmkXzTWMjo+UPAYX9zlQmGlEjotstZ0U9GtQSJSgbB2Z+TJDg==}
     engines: {node: '>=14.10.0'}
     hasBin: true
     peerDependencies:
-      firebase-admin: ^10.0.0 || ^11.0.0 || ^12.0.0
+      firebase-admin: ^11.10.0 || ^12.0.0 || ^13.0.0
 
   firebase@10.14.1:
     resolution: {integrity: sha512-0KZxU+Ela9rUCULqFsUUOYYkjh7OM1EWdIfG6///MtXd0t2/uUIf0iNV5i0KariMhRQ5jve/OY985nrAXFaZeQ==}
@@ -10388,9 +10402,6 @@ packages:
   joycon@3.1.1:
     resolution: {integrity: sha512-34wB/Y7MW7bzjKRjUKTa46I2Z7eV62Rkhva+KkopW7Qvv/OSWBqvkSY7vusOPrNuZcUG3tApvdVgNB8POj3SPw==}
     engines: {node: '>=10'}
-
-  jquery@3.5.0:
-    resolution: {integrity: sha512-Xb7SVYMvygPxbFMpTFQiHh1J7HClEaThguL15N/Gg37Lri/qKyhRGZYzHRyLH8Stq3Aow0LsHO2O2ci86fCrNQ==}
 
   js-cookie@3.0.5:
     resolution: {integrity: sha512-cEiJEAEoIbWfCZYKWhVwFuvPX1gETRYPw6LlaTKoxD3s2AkXzkCjnp6h0V77ozyqj0jakteJ4YqDJT830+lVGw==}
@@ -13634,6 +13645,9 @@ packages:
   space-separated-tokens@2.0.2:
     resolution: {integrity: sha512-PEGlAwrG8yXGXRjW32fGbg66JAlOAwbObuqVoJpv/mRgoWDQfgH1wDPvtzWyUSNAXBGSk8h755YDbbcEy3SH2Q==}
 
+  spawn-command@0.0.2:
+    resolution: {integrity: sha512-zC8zGoGkmc8J9ndvml8Xksr1Amk9qBujgbF0JAIWO7kXr43w0h/0GJNM/Vustixu+YE8N/MTrQ7N31FvHUACxQ==}
+
   spawn-wrap@2.0.0:
     resolution: {integrity: sha512-EeajNjfN9zMnULLwhZZQU3GWBoFNkbngTUPfaawT4RkMiviTxcX0qfhVbGey39mfctfDHkWtuecgQ8NJcyQWHg==}
     engines: {node: '>=8'}
@@ -14002,14 +14016,18 @@ packages:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
 
-  survey-analytics@1.12.29:
-    resolution: {integrity: sha512-LaPoz3PvKCz2OL6bPCdzeFyQnSQbZXGRwb7I+DK7H41yE3heoQ7pMyd57JxjM7QPkSYSAiJj/USFQOFCUFeyPg==}
+  survey-analytics@2.2.6:
+    resolution: {integrity: sha512-K8ZQPGq3mkhpmPHUMy9Vx9ZRlBPZTjMM0scOTLb6qvjunIV+SIcww/GyhCm6AZYV9Nwkshf9oYys17183tocaQ==}
     peerDependencies:
       '@types/plotly.js-dist-min': ^2.3.0
-      survey-core: 1.12.29
+      '@types/tabulator-tables': ^6.2.3
+      survey-core: 2.2.6
 
   survey-core@1.12.29:
     resolution: {integrity: sha512-nNxw2NnxIg6pOdBi3FXORoL+PhTDMCOQByhUfDsAVl8PqYhUSRXmYzqXH6kTzWnSmWAGjMXpqKSCyi1qAlTBFg==}
+
+  survey-core@2.2.6:
+    resolution: {integrity: sha512-ZtAmB1lHzkT11+f8rN4nlrDqUou3u3n6Q+R5FA/x+T0ALW4ju4LcPBKcgzbYmWO3ZG0ku1uDxYVV6Mm6ddVkTQ==}
 
   survey-creator-core@1.12.29:
     resolution: {integrity: sha512-wqOukA+ROEZaOs5mwOdkI2yfa0q5ONwXrFm0TegX5xiiCiaHmU464xWm/WP4D5Lw1LUAVkk+s28/7B8bO4/M2g==}
@@ -14021,16 +14039,26 @@ packages:
       ace-builds:
         optional: true
 
-  survey-creator-react@1.12.29:
-    resolution: {integrity: sha512-e1c+yDkS7r2f/1uXDTaepz+9N1crRY5+F1dTptZxsQkhTNEI32IULRfoZr/qtNys/FH5/atA3MtUWHitXYHnuQ==}
+  survey-creator-core@2.2.6:
+    resolution: {integrity: sha512-Hru5a3Cmt++82rpEOXOHHZHuNOGyPBZoG5EnSnjyPIOGN3SL3QoZelMc4WePmfbkPjR4kedCXKxW/1VkRWTDTg==}
+    engines: {node: '>=0.10.0'}
+    peerDependencies:
+      ace-builds: ^1.4.12
+      survey-core: 2.2.6
+    peerDependenciesMeta:
+      ace-builds:
+        optional: true
+
+  survey-creator-react@2.2.6:
+    resolution: {integrity: sha512-RAn5AZ2FNe0bpGuh39nl3KuctLqIDtXdvc8EhhUIA+76m98I1c6gZCadk18y0bIW/RTuwzBh5bwjPwbD1fzgLA==}
     engines: {node: '>=0.10.0'}
     peerDependencies:
       ace-builds: ^1.4.12
       react: ^16.5.0 || ^17.0.1 || ^18.1.0 || ^19.0.0
       react-dom: ^16.5.0 || ^17.0.1 || ^18.1.0 || ^19.0.0
-      survey-core: 1.12.29
-      survey-creator-core: 1.12.29
-      survey-react-ui: 1.12.29
+      survey-core: 2.2.6
+      survey-creator-core: 2.2.6
+      survey-react-ui: 2.2.6
     peerDependenciesMeta:
       ace-builds:
         optional: true
@@ -14041,6 +14069,13 @@ packages:
       react: ^16.5.0 || ^17.0.1 || ^18.2.0 || ^19.0.0
       react-dom: ^16.5.0 || ^17.0.1 || ^18.2.0 || ^19.0.0
       survey-core: 1.12.29
+
+  survey-react-ui@2.2.6:
+    resolution: {integrity: sha512-+YwtNsFSex2UtTTeoDcLXrukA7g5K5IGQegvfBMn4AS10VEKDDIt5Vv9ro1Dn6CB8rB9EsEZd7T1lTJVhQfNkA==}
+    peerDependencies:
+      react: ^16.5.0 || ^17.0.1 || ^18.1.0 || ^19.0.0
+      react-dom: ^16.5.0 || ^17.0.1 || ^18.1.0 || ^19.0.0
+      survey-core: 2.2.6
 
   svg-parser@2.0.4:
     resolution: {integrity: sha512-e4hG1hRwoOdRb37cIMSgzNsxyzKfayW6VOflrwvR+/bzrkyxY/31WkbgnQpgtrNp1SdpJvpUAGTa/ZoiPNDuRQ==}
@@ -14076,8 +14111,8 @@ packages:
     resolution: {integrity: sha512-9kY+CygyYM6j02t5YFHbNz2FN5QmYGv9zAjVp4lCDjlCw7amdckXlEt/bjMhUIfj4ThGRE4gCUH5+yGnNuPo5A==}
     engines: {node: '>=10.0.0'}
 
-  tabulator-tables@4.8.4:
-    resolution: {integrity: sha512-sSs3GoWPF3/l/8m+WGUbmsLASkLVB3bB7RnW/4/g/zwOQoxM9pWdaeZE+Nk7UJjjb6K9fW3dfIQnozIfNpFATw==}
+  tabulator-tables@6.3.1:
+    resolution: {integrity: sha512-qFW7kfadtcaISQIibKAIy0f3eeIXUVi8242Vly1iJfMD79kfEGzfczNuPBN/80hDxHzQJXYbmJ8VipI40hQtfA==}
 
   tailwind-merge@2.5.2:
     resolution: {integrity: sha512-kjEBm+pvD+6eAwzJL2Bi+02/9LFLal1Gs61+QB7HvTfQQ0aXwC5LGT8PEt1gS0CWKktKe6ysPTAy3cBC5MeiIg==}
@@ -14733,8 +14768,8 @@ packages:
   utrie@1.0.2:
     resolution: {integrity: sha512-1MLa5ouZiOmQzUbjbu9VmjLzn1QLXBhwpUa7kdLUQK+KQ5KA9I1vk5U4YHe/X2Ch7PYnJfWuWT+VbuxbGwljhw==}
 
-  uuid@10.0.0:
-    resolution: {integrity: sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==}
+  uuid@11.1.0:
+    resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
     hasBin: true
 
   uuid@8.0.0:
@@ -16903,6 +16938,8 @@ snapshots:
 
   '@firebase/app-check-interop-types@0.3.2': {}
 
+  '@firebase/app-check-interop-types@0.3.3': {}
+
   '@firebase/app-check-types@0.5.2': {}
 
   '@firebase/app-check@0.8.8(@firebase/app@0.10.13)':
@@ -16922,6 +16959,8 @@ snapshots:
       tslib: 2.6.3
 
   '@firebase/app-types@0.9.2': {}
+
+  '@firebase/app-types@0.9.3': {}
 
   '@firebase/app@0.10.13':
     dependencies:
@@ -16947,6 +16986,8 @@ snapshots:
 
   '@firebase/auth-interop-types@0.2.3': {}
 
+  '@firebase/auth-interop-types@0.2.4': {}
+
   '@firebase/auth-types@0.12.2(@firebase/app-types@0.9.2)(@firebase/util@1.10.0)':
     dependencies:
       '@firebase/app-types': 0.9.2
@@ -16964,6 +17005,11 @@ snapshots:
   '@firebase/component@0.6.9':
     dependencies:
       '@firebase/util': 1.10.0
+      tslib: 2.6.3
+
+  '@firebase/component@0.7.0':
+    dependencies:
+      '@firebase/util': 1.13.0
       tslib: 2.6.3
 
   '@firebase/data-connect@0.1.0(@firebase/app@0.10.13)':
@@ -16984,6 +17030,20 @@ snapshots:
       '@firebase/util': 1.10.0
       tslib: 2.6.3
 
+  '@firebase/database-compat@2.1.0':
+    dependencies:
+      '@firebase/component': 0.7.0
+      '@firebase/database': 1.1.0
+      '@firebase/database-types': 1.0.16
+      '@firebase/logger': 0.5.0
+      '@firebase/util': 1.13.0
+      tslib: 2.6.3
+
+  '@firebase/database-types@1.0.16':
+    dependencies:
+      '@firebase/app-types': 0.9.3
+      '@firebase/util': 1.13.0
+
   '@firebase/database-types@1.0.5':
     dependencies:
       '@firebase/app-types': 0.9.2
@@ -16996,6 +17056,16 @@ snapshots:
       '@firebase/component': 0.6.9
       '@firebase/logger': 0.4.2
       '@firebase/util': 1.10.0
+      faye-websocket: 0.11.4
+      tslib: 2.6.3
+
+  '@firebase/database@1.1.0':
+    dependencies:
+      '@firebase/app-check-interop-types': 0.3.3
+      '@firebase/auth-interop-types': 0.2.4
+      '@firebase/component': 0.7.0
+      '@firebase/logger': 0.5.0
+      '@firebase/util': 1.13.0
       faye-websocket: 0.11.4
       tslib: 2.6.3
 
@@ -17077,6 +17147,10 @@ snapshots:
       tslib: 2.6.3
 
   '@firebase/logger@0.4.2':
+    dependencies:
+      tslib: 2.6.3
+
+  '@firebase/logger@0.5.0':
     dependencies:
       tslib: 2.6.3
 
@@ -17174,6 +17248,10 @@ snapshots:
       undici: 6.19.7
 
   '@firebase/util@1.10.0':
+    dependencies:
+      tslib: 2.6.3
+
+  '@firebase/util@1.13.0':
     dependencies:
       tslib: 2.6.3
 
@@ -17292,6 +17370,9 @@ snapshots:
 
   '@google-cloud/projectify@4.0.0': {}
 
+  '@google-cloud/promisify@4.0.0':
+    optional: true
+
   '@google-cloud/promisify@4.1.0': {}
 
   '@google-cloud/promisify@5.0.0': {}
@@ -17346,6 +17427,28 @@ snapshots:
     transitivePeerDependencies:
       - encoding
       - supports-color
+
+  '@google-cloud/storage@7.16.0':
+    dependencies:
+      '@google-cloud/paginator': 5.0.2
+      '@google-cloud/projectify': 4.0.0
+      '@google-cloud/promisify': 4.0.0
+      abort-controller: 3.0.0
+      async-retry: 1.3.3
+      duplexify: 4.1.3
+      fast-xml-parser: 4.4.1
+      gaxios: 6.7.1
+      google-auth-library: 9.15.1
+      html-entities: 2.6.0
+      mime: 3.0.0
+      p-limit: 3.1.0
+      retry-request: 7.0.2
+      teeny-request: 9.0.0
+      uuid: 8.3.2
+    transitivePeerDependencies:
+      - encoding
+      - supports-color
+    optional: true
 
   '@grpc/grpc-js@1.13.4':
     dependencies:
@@ -17509,41 +17612,6 @@ snapshots:
       jest-message-util: 29.7.0
       jest-util: 29.7.0
       slash: 3.0.0
-
-  '@jest/core@29.7.0':
-    dependencies:
-      '@jest/console': 29.7.0
-      '@jest/reporters': 29.7.0
-      '@jest/test-result': 29.7.0
-      '@jest/transform': 29.7.0
-      '@jest/types': 29.6.3
-      '@types/node': 20.14.8
-      ansi-escapes: 4.3.2
-      chalk: 4.1.2
-      ci-info: 3.9.0
-      exit: 0.1.2
-      graceful-fs: 4.2.11
-      jest-changed-files: 29.7.0
-      jest-config: 29.7.0(@types/node@20.14.8)
-      jest-haste-map: 29.7.0
-      jest-message-util: 29.7.0
-      jest-regex-util: 29.6.3
-      jest-resolve: 29.7.0
-      jest-resolve-dependencies: 29.7.0
-      jest-runner: 29.7.0
-      jest-runtime: 29.7.0
-      jest-snapshot: 29.7.0
-      jest-util: 29.7.0
-      jest-validate: 29.7.0
-      jest-watcher: 29.7.0
-      micromatch: 4.0.8
-      pretty-format: 29.7.0
-      slash: 3.0.0
-      strip-ansi: 6.0.1
-    transitivePeerDependencies:
-      - babel-plugin-macros
-      - supports-color
-      - ts-node
 
   '@jest/core@29.7.0(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.6.5(@swc/helpers@0.5.11))(@types/node@20.14.8)(typescript@5.8.3))':
     dependencies:
@@ -22677,12 +22745,6 @@ snapshots:
       '@types/qs': 6.14.0
       '@types/serve-static': 1.15.8
 
-  '@types/express@4.17.3':
-    dependencies:
-      '@types/body-parser': 1.19.6
-      '@types/express-serve-static-core': 5.0.7
-      '@types/serve-static': 1.15.8
-
   '@types/file-saver@2.0.7': {}
 
   '@types/find-cache-dir@3.2.1': {}
@@ -22919,6 +22981,8 @@ snapshots:
       '@types/hoist-non-react-statics': 3.3.7(@types/react@18.3.11)
       '@types/react': 18.3.11
       csstype: 3.1.3
+
+  '@types/tabulator-tables@6.2.8': {}
 
   '@types/tar@6.1.13':
     dependencies:
@@ -24820,6 +24884,18 @@ snapshots:
     dependencies:
       source-map: 0.6.1
 
+  concurrently@8.2.2:
+    dependencies:
+      chalk: 4.1.2
+      date-fns: 2.30.0
+      lodash: 4.17.21
+      rxjs: 7.8.2
+      shell-quote: 1.8.3
+      spawn-command: 0.0.2
+      supports-color: 8.1.1
+      tree-kill: 1.2.2
+      yargs: 17.7.2
+
   confbox@0.1.8: {}
 
   config-chain@1.1.13:
@@ -24988,21 +25064,6 @@ snapshots:
       ripemd160: 2.0.2
       safe-buffer: 5.2.1
       sha.js: 2.4.12
-
-  create-jest@29.7.0:
-    dependencies:
-      '@jest/types': 29.6.3
-      chalk: 4.1.2
-      exit: 0.1.2
-      graceful-fs: 4.2.11
-      jest-config: 29.7.0(@types/node@20.14.8)
-      jest-util: 29.7.0
-      prompts: 2.4.2
-    transitivePeerDependencies:
-      - '@types/node'
-      - babel-plugin-macros
-      - supports-color
-      - ts-node
 
   create-jest@29.7.0(@types/node@20.14.8)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.6.5(@swc/helpers@0.5.11))(@types/node@20.14.8)(typescript@5.8.3)):
     dependencies:
@@ -25421,78 +25482,9 @@ snapshots:
       es-errors: 1.3.0
       is-data-view: 1.0.2
 
-  datatables.net-buttons-dt@1.7.1:
+  date-fns@2.30.0:
     dependencies:
-      datatables.net-buttons: 1.7.1
-      datatables.net-dt: 1.13.11
-      jquery: 3.5.0
-
-  datatables.net-buttons@1.7.1:
-    dependencies:
-      datatables.net: 1.13.11
-      jquery: 3.5.0
-
-  datatables.net-colreorder-dt@1.7.2:
-    dependencies:
-      datatables.net-colreorder: 1.7.2
-      datatables.net-dt: 1.13.11
-      jquery: 3.5.0
-
-  datatables.net-colreorder@1.7.2:
-    dependencies:
-      datatables.net: 1.13.11
-      jquery: 3.5.0
-
-  datatables.net-dt@1.13.11:
-    dependencies:
-      datatables.net: 1.13.11
-      jquery: 3.5.0
-
-  datatables.net-dt@2.3.2:
-    dependencies:
-      datatables.net: 2.3.2
-      jquery: 3.5.0
-
-  datatables.net-responsive-dt@2.5.1:
-    dependencies:
-      datatables.net-dt: 1.13.11
-      datatables.net-responsive: 2.5.1
-      jquery: 3.5.0
-
-  datatables.net-responsive@2.5.1:
-    dependencies:
-      datatables.net: 1.13.11
-      jquery: 3.5.0
-
-  datatables.net-rowgroup-dt@1.5.2:
-    dependencies:
-      datatables.net-dt: 2.3.2
-      datatables.net-rowgroup: 1.5.2
-      jquery: 3.5.0
-
-  datatables.net-rowgroup@1.5.2:
-    dependencies:
-      datatables.net: 2.3.2
-      jquery: 3.5.0
-
-  datatables.net-select-dt@1.7.1:
-    dependencies:
-      datatables.net-dt: 1.13.11
-      datatables.net-select: 1.7.1
-      jquery: 3.5.0
-
-  datatables.net-select@1.7.1:
-    dependencies:
-      datatables.net: 1.13.11
-      jquery: 3.5.0
-
-  datatables.net@1.13.11:
-    dependencies:
-      jquery: 3.5.0
-
-  datatables.net@2.3.2:
-    dependencies:
-      jquery: 3.5.0
+      '@babel/runtime': 7.28.2
 
   date-format@4.0.3: {}
 
@@ -26827,40 +26819,41 @@ snapshots:
     dependencies:
       semver-regex: 4.0.5
 
-  firebase-admin@12.7.0:
+  firebase-admin@13.4.0:
     dependencies:
       '@fastify/busboy': 3.1.1
-      '@firebase/database-compat': 1.0.8
-      '@firebase/database-types': 1.0.5
+      '@firebase/database-compat': 2.1.0
+      '@firebase/database-types': 1.0.16
       '@types/node': 22.16.5
       farmhash-modern: 1.1.0
+      google-auth-library: 9.15.1
       jsonwebtoken: 9.0.2
       jwks-rsa: 3.2.0
       node-forge: 1.3.1
-      uuid: 10.0.0
+      uuid: 11.1.0
     optionalDependencies:
       '@google-cloud/firestore': 7.11.3
-      '@google-cloud/storage': 7.12.1
+      '@google-cloud/storage': 7.16.0
     transitivePeerDependencies:
       - encoding
       - supports-color
 
-  firebase-functions-test@3.4.1(firebase-admin@12.7.0)(firebase-functions@4.9.0(firebase-admin@12.7.0))(jest@29.7.0):
+  firebase-functions-test@3.4.1(firebase-admin@13.4.0)(firebase-functions@6.4.0(firebase-admin@13.4.0))(jest@29.7.0(@types/node@20.14.8)(ts-node@10.9.2(@swc/core@1.6.5(@swc/helpers@0.5.11))(@types/node@20.14.8)(typescript@5.8.3))):
     dependencies:
       '@types/lodash': 4.17.20
-      firebase-admin: 12.7.0
-      firebase-functions: 4.9.0(firebase-admin@12.7.0)
-      jest: 29.7.0
+      firebase-admin: 13.4.0
+      firebase-functions: 6.4.0(firebase-admin@13.4.0)
+      jest: 29.7.0(@types/node@20.14.8)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.6.5(@swc/helpers@0.5.11))(@types/node@20.14.8)(typescript@5.8.3))
       lodash: 4.17.21
       ts-deepmerge: 2.0.7
 
-  firebase-functions@4.9.0(firebase-admin@12.7.0):
+  firebase-functions@6.4.0(firebase-admin@13.4.0):
     dependencies:
       '@types/cors': 2.8.19
-      '@types/express': 4.17.3
+      '@types/express': 4.17.23
       cors: 2.8.5
       express: 4.21.2
-      firebase-admin: 12.7.0
+      firebase-admin: 13.4.0
       protobufjs: 7.5.3
     transitivePeerDependencies:
       - supports-color
@@ -28266,25 +28259,6 @@ snapshots:
       - babel-plugin-macros
       - supports-color
 
-  jest-cli@29.7.0:
-    dependencies:
-      '@jest/core': 29.7.0
-      '@jest/test-result': 29.7.0
-      '@jest/types': 29.6.3
-      chalk: 4.1.2
-      create-jest: 29.7.0
-      exit: 0.1.2
-      import-local: 3.2.0
-      jest-config: 29.7.0(@types/node@20.14.8)
-      jest-util: 29.7.0
-      jest-validate: 29.7.0
-      yargs: 17.7.2
-    transitivePeerDependencies:
-      - '@types/node'
-      - babel-plugin-macros
-      - supports-color
-      - ts-node
-
   jest-cli@29.7.0(@types/node@20.14.8)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.6.5(@swc/helpers@0.5.11))(@types/node@20.14.8)(typescript@5.8.3)):
     dependencies:
       '@jest/core': 29.7.0(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.6.5(@swc/helpers@0.5.11))(@types/node@20.14.8)(typescript@5.8.3))
@@ -28303,36 +28277,6 @@ snapshots:
       - babel-plugin-macros
       - supports-color
       - ts-node
-
-  jest-config@29.7.0(@types/node@20.14.8):
-    dependencies:
-      '@babel/core': 7.24.7
-      '@jest/test-sequencer': 29.7.0
-      '@jest/types': 29.6.3
-      babel-jest: 29.7.0(@babel/core@7.24.7)
-      chalk: 4.1.2
-      ci-info: 3.9.0
-      deepmerge: 4.3.1
-      glob: 7.2.3
-      graceful-fs: 4.2.11
-      jest-circus: 29.7.0(babel-plugin-macros@3.1.0)
-      jest-environment-node: 29.7.0
-      jest-get-type: 29.6.3
-      jest-regex-util: 29.6.3
-      jest-resolve: 29.7.0
-      jest-runner: 29.7.0
-      jest-util: 29.7.0
-      jest-validate: 29.7.0
-      micromatch: 4.0.8
-      parse-json: 5.2.0
-      pretty-format: 29.7.0
-      slash: 3.0.0
-      strip-json-comments: 3.1.1
-    optionalDependencies:
-      '@types/node': 20.14.8
-    transitivePeerDependencies:
-      - babel-plugin-macros
-      - supports-color
 
   jest-config@29.7.0(@types/node@20.14.8)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.6.5(@swc/helpers@0.5.11))(@types/node@20.14.8)(typescript@5.8.3)):
     dependencies:
@@ -28699,18 +28643,6 @@ snapshots:
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
-  jest@29.7.0:
-    dependencies:
-      '@jest/core': 29.7.0
-      '@jest/types': 29.6.3
-      import-local: 3.2.0
-      jest-cli: 29.7.0
-    transitivePeerDependencies:
-      - '@types/node'
-      - babel-plugin-macros
-      - supports-color
-      - ts-node
-
   jest@29.7.0(@types/node@20.14.8)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.6.5(@swc/helpers@0.5.11))(@types/node@20.14.8)(typescript@5.8.3)):
     dependencies:
       '@jest/core': 29.7.0(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.6.5(@swc/helpers@0.5.11))(@types/node@20.14.8)(typescript@5.8.3))
@@ -28744,8 +28676,6 @@ snapshots:
   jose@4.15.9: {}
 
   joycon@3.1.1: {}
-
-  jquery@3.5.0: {}
 
   js-cookie@3.0.5: {}
 
@@ -32436,6 +32366,8 @@ snapshots:
 
   space-separated-tokens@2.0.2: {}
 
+  spawn-command@0.0.2: {}
+
   spawn-wrap@2.0.0:
     dependencies:
       foreground-child: 2.0.0
@@ -32896,46 +32828,46 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
-  survey-analytics@1.12.29(@types/plotly.js-dist-min@2.3.4)(survey-core@1.12.29):
+  survey-analytics@2.2.6(@types/plotly.js-dist-min@2.3.4)(@types/tabulator-tables@6.2.8)(survey-core@2.2.6):
     dependencies:
       '@types/plotly.js-dist-min': 2.3.4
-      datatables.net: 1.13.11
-      datatables.net-buttons: 1.7.1
-      datatables.net-buttons-dt: 1.7.1
-      datatables.net-colreorder: 1.7.2
-      datatables.net-colreorder-dt: 1.7.2
-      datatables.net-dt: 1.13.11
-      datatables.net-responsive: 2.5.1
-      datatables.net-responsive-dt: 2.5.1
-      datatables.net-rowgroup: 1.5.2
-      datatables.net-rowgroup-dt: 1.5.2
-      datatables.net-select: 1.7.1
-      datatables.net-select-dt: 1.7.1
-      jquery: 3.5.0
+      '@types/tabulator-tables': 6.2.8
       muuri: 0.8.0
       plotly.js-dist-min: 2.35.3
-      survey-core: 1.12.29
-      tabulator-tables: 4.8.4
+      survey-core: 2.2.6
+      tabulator-tables: 6.3.1
 
   survey-core@1.12.29: {}
+
+  survey-core@2.2.6: {}
 
   survey-creator-core@1.12.29(survey-core@1.12.29):
     dependencies:
       survey-core: 1.12.29
 
-  survey-creator-react@1.12.29(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(survey-core@1.12.29)(survey-creator-core@1.12.29(survey-core@1.12.29))(survey-react-ui@1.12.29(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(survey-core@1.12.29)):
+  survey-creator-core@2.2.6(survey-core@2.2.6):
+    dependencies:
+      survey-core: 2.2.6
+
+  survey-creator-react@2.2.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(survey-core@2.2.6)(survey-creator-core@2.2.6(survey-core@2.2.6))(survey-react-ui@2.2.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(survey-core@2.2.6)):
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      survey-core: 1.12.29
-      survey-creator-core: 1.12.29(survey-core@1.12.29)
-      survey-react-ui: 1.12.29(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(survey-core@1.12.29)
+      survey-core: 2.2.6
+      survey-creator-core: 2.2.6(survey-core@2.2.6)
+      survey-react-ui: 2.2.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(survey-core@2.2.6)
 
   survey-react-ui@1.12.29(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(survey-core@1.12.29):
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       survey-core: 1.12.29
+
+  survey-react-ui@2.2.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(survey-core@2.2.6):
+    dependencies:
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      survey-core: 2.2.6
 
   svg-parser@2.0.4: {}
 
@@ -32988,7 +32920,7 @@ snapshots:
       string-width: 4.2.3
       strip-ansi: 6.0.1
 
-  tabulator-tables@4.8.4: {}
+  tabulator-tables@6.3.1: {}
 
   tailwind-merge@2.5.2: {}
 
@@ -33304,24 +33236,6 @@ snapshots:
       '@jest/types': 29.6.3
       babel-jest: 29.7.0(@babel/core@7.24.7)
       esbuild: 0.21.5
-
-  ts-jest@29.1.5(@babel/core@7.24.7)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.24.7))(jest@29.7.0)(typescript@5.8.3):
-    dependencies:
-      bs-logger: 0.2.6
-      fast-json-stable-stringify: 2.1.0
-      jest: 29.7.0
-      jest-util: 29.7.0
-      json5: 2.2.3
-      lodash.memoize: 4.1.2
-      make-error: 1.3.6
-      semver: 7.7.2
-      typescript: 5.8.3
-      yargs-parser: 21.1.1
-    optionalDependencies:
-      '@babel/core': 7.24.7
-      '@jest/transform': 29.7.0
-      '@jest/types': 29.6.3
-      babel-jest: 29.7.0(@babel/core@7.24.7)
 
   ts-loader@9.5.2(typescript@5.8.3)(webpack@5.100.2(@swc/core@1.6.5(@swc/helpers@0.5.11))(esbuild@0.21.5)):
     dependencies:
@@ -33766,7 +33680,7 @@ snapshots:
       base64-arraybuffer: 1.0.2
     optional: true
 
-  uuid@10.0.0: {}
+  uuid@11.1.0: {}
 
   uuid@8.0.0: {}
 
