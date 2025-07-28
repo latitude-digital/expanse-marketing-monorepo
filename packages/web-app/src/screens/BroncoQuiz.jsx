@@ -4,8 +4,8 @@ import { Survey } from "survey-react-ui";
 import "survey-core/i18n/spanish";
 import * as SurveyCore from "survey-core";
 import * as Sentry from "@sentry/react";
-import { themeJSON } from "../themes/surveyJS/ford";
-import "survey-core/defaultV2.min.css";
+// import { themeJSON, getFordTheme } from "../themes/surveyJS/ford"; // Removed - theme files deleted
+import "survey-core/survey-core.min.css";
 import "./Surveys.css";
 import { prepareForSurvey } from "../helpers/surveyTemplatesAll";
 import { getApiUrl, ENDPOINTS } from '../config/api';
@@ -54,7 +54,7 @@ const BroncoSurvey = () => {
 
   const eventID = "BroncoQuizDraft";
   const survey = new Model(broncoQuizJSON);
-  survey.applyTheme(themeJSON);
+  // survey.applyTheme(getFordTheme()); // Removed - theme deleted
   prepareForSurvey(survey);
 
   const extractUTM = () => {

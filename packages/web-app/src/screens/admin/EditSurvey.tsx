@@ -7,22 +7,19 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import auth from '../../services/auth';
 import app from '../../services/firebase';
 
-import { ITheme, QuestionRadiogroupModel, Serializer } from "survey-core";
+import { QuestionRadiogroupModel, Serializer } from "survey-core";
 import { SurveyCreatorComponent, SurveyCreator } from "survey-creator-react";
 
 import _ from 'lodash';
 import { ICreatorOptions } from 'survey-creator-core';
 
-import 'survey-analytics/survey.analytics.min.css';
-import 'survey-creator-core/survey-creator-core.min.css';
+import 'survey-core/survey-core.css';
+import 'survey-creator-core/survey-creator-core.css';
 import "../Surveys.css";
 import "./admin.css";
 import './EditSurvey.css';
 
 import { initCreator, initSurvey, prepareCreatorOnQuestionAdded, prepareForSurvey, prepareSurveyOnQuestionAdded } from '../../helpers/surveyTemplatesAll';
-import { initCreatorFord, initSurveyFord, prepareCreatorOnQuestionAddedFord } from '../../helpers/surveyTemplatesFord';
-import { initCreatorLincoln, initSurveyLincoln, prepareCreatorOnQuestionAddedLincoln } from '../../helpers/surveyTemplatesLincoln';
-import { initCreatorFMC, initSurveyFMC, prepareCreatorOnQuestionAddedFMC } from '../../helpers/surveyTemplatesFMC';
 
 const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
     toFirestore(event: ExpanseEvent): DocumentData {
@@ -59,9 +56,6 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
     },
 };
 
-initSurveyFMC();
-initSurveyFord();
-initSurveyLincoln();
 initSurvey();
 
 function DashboardScreen() {
@@ -100,15 +94,12 @@ function DashboardScreen() {
                 showLogicTab: true,
                 isAutoSave: false,
                 showSaveButton: true,
-                showThemeTab: true,
+                showThemeTab: false,
                 showTranslationTab: true,
             };
 
             const newCreator = new SurveyCreator(creatorOptions);
 
-            initCreatorFMC(newCreator);
-            initCreatorFord(newCreator);
-            initCreatorLincoln(newCreator);
             initCreator(newCreator);
 
             newCreator.onSurveyInstanceCreated.add((creator, options) => {
@@ -147,9 +138,6 @@ function DashboardScreen() {
 
             newCreator.onQuestionAdded.add((sender, options) => {
                 prepareCreatorOnQuestionAdded(sender, options);
-                prepareCreatorOnQuestionAddedFMC(sender, options);
-                prepareCreatorOnQuestionAddedFord(sender, options);
-                prepareCreatorOnQuestionAddedLincoln(sender, options);
             });
 
             // radioGroup
@@ -177,9 +165,6 @@ function DashboardScreen() {
             });
 
             newCreator.JSON = eventData?.questions;
-            if (eventData?.theme && Object.keys(eventData?.theme).length > 0) {
-                newCreator.theme = eventData?.theme as ITheme;
-            }
 
             newCreator.saveSurveyFunc = (saveNo: number, callback: (saveNo: number, success: boolean) => void) => {
                 console.log("saving questions...")
@@ -194,18 +179,6 @@ function DashboardScreen() {
                 });
             };
 
-            newCreator.saveThemeFunc = (saveNo: number, callback: (saveNo: number, success: boolean) => void) => {
-                console.log("saving theme...")
-                updateDoc(eventRef, {
-                    theme: JSON.stringify(newCreator.theme),
-                }).then(() => {
-                    console.log("saved!")
-                    callback(saveNo, true);
-                }).catch((error) => {
-                    console.error(error);
-                    callback(saveNo, false);
-                });
-            };
 
             // Image upload handler
             newCreator.onUploadFile.add(async (sender, options) => {

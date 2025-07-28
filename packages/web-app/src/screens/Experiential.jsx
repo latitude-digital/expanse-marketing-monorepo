@@ -10,14 +10,14 @@ import { Button } from '../../../ford-ui/packages/@ui/ford-ui-components/src/com
 import { mapSurveyToFordSurvey } from '../helpers/mapSurveyToFord';
 import { baseSurvey, incentiveThanks, activationThanks } from "./ExperienceSurvey";
 import { baseSurvey as derbyBaseSurvey } from './DerbySurvey';
-import { themeJSON as fordThemeJSON } from "../themes/surveyJS/ford";
+// import { themeJSON as fordThemeJSON, getFordTheme } from "../themes/surveyJS/ford"; // Removed - theme files deleted
 import { prepareForSurvey, prepareSurveyOnQuestionAdded } from "../helpers/surveyTemplatesAll";
 import { getApiUrl, ENDPOINTS } from '../config/api';
 
 import { CheckboxVOIQuestion } from "../surveysjs_renderers/CheckboxVOI";
 import { RadioGroupRowQuestion } from "../surveysjs_renderers/RadioButtonButton";
 
-import "survey-core/defaultV2.min.css";
+import "survey-core/survey-core.min.css";
 
 import "./Surveys.css";
 
@@ -114,10 +114,10 @@ function SurveyComponent() {
                 if (res.data) {
                     document.title = res.data.event_name;
                     // if the favicon is defined
-                    if (fordThemeJSON.favicon) {
-                        var link = document.querySelector("link[rel~='icon']");
-                        link.href = fordThemeJSON.favicon;
-                    }
+                    // if (fordThemeJSON.favicon) {
+                    //     var link = document.querySelector("link[rel~='icon']");
+                    //     link.href = fordThemeJSON.favicon;
+                    // }
 
                     // Conditionally use DerbySurvey baseSurvey if ffs_ford_campaign is 700397
                     let surveyJSON;
@@ -276,7 +276,7 @@ function SurveyComponent() {
 
                     const survey = new Model(surveyJSON);
                     prepareForSurvey(survey);
-                    survey.applyTheme(fordThemeJSON);
+                    // survey.applyTheme(getFordTheme()); // Removed - theme deleted
 
                     survey.onUpdateQuestionCssClasses.add((sender, options) => {
                         if (options.question.name === "signature") {

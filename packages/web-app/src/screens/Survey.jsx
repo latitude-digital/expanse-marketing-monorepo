@@ -26,9 +26,9 @@ import "../surveysjs_renderers/FilePreview";
 
 import logo from '../assets/ford-signature.svg';
 import globeIcon from '../assets/icons/ford/globe.svg';
-import { fordCSS } from "../themes/surveyJS/ford";
-import "survey-core/defaultV2.min.css";
-import "../themes/surveyJS/fds/custom-fds.css";
+// import { fordCSS, getFordTheme } from "../themes/surveyJS/ford"; // Removed - theme files deleted
+import "survey-core/survey-core.min.css";
+// import "../themes/surveyJS/fds/custom-fds.css"; // Removed - CSS file deleted
 
 import "./Surveys.css";
 import { prepareForSurvey, prepareSurveyOnQuestionAdded } from "../helpers/surveyTemplatesAll";
@@ -401,16 +401,16 @@ function SurveyComponent() {
                     if (res.preSurvey) {
                         setThisPreSurvey(res.preSurvey);
                     }
-                    const themeJSON = JSON.parse(res.event.theme);
+                    // const themeJSON = JSON.parse(res.event.theme);
 
-                    document.body.style.backgroundColor = themeJSON.cssVariables['--sjs-editor-background'];
+                    // document.body.style.backgroundColor = themeJSON.cssVariables['--sjs-editor-background'];
 
                     document.title = res.event.name;
                     // if the favicon is defined
-                    if (themeJSON.favicon) {
-                        var link = document.querySelector("link[rel~='icon']");
-                        link.href = themeJSON.favicon;
-                    }
+                    // if (themeJSON.favicon) {
+                    //     var link = document.querySelector("link[rel~='icon']");
+                    //     link.href = themeJSON.favicon;
+                    // }
 
                     if (res.event._preEventID && !preSurveyID) {
                         // this is a post-event survey, sign people out
@@ -457,10 +457,10 @@ function SurveyComponent() {
                     }
 
                     const survey = new Model(surveyJSON);
-                    survey.applyTheme(themeJSON);
+                    // survey.applyTheme(getFordTheme()); // Removed - theme deleted
                     
                     if (res.event.fordEventID) {
-                        survey.css = fordCSS;
+                        // survey.css = fordCSS; // Removed - CSS deleted
                         survey.questionErrorLocation = "bottom";
                     }
 
