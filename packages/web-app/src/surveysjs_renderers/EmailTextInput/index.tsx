@@ -1,11 +1,11 @@
 import React from "react";
-import { defaultV2Css, ElementFactory, LocalizableString, QuestionTextModel, Serializer } from "survey-core";
+import { ElementFactory, LocalizableString, QuestionTextModel, Serializer } from "survey-core";
 import { ReactQuestionFactory, SurveyQuestionText } from "survey-react-ui";
 import { vsprintf } from 'sprintf-js';
 
 const CUSTOM_QUESTION_TYPE = "emailtextinput";
 
-(defaultV2Css as any)[CUSTOM_QUESTION_TYPE] = defaultV2Css["text"];
+// CSS classes will be handled by SurveyJS v2.x automatically
 
 // A model that extends the Question class and inherits all its properties and methods
 export class QuestionEmailTextModel extends QuestionTextModel {

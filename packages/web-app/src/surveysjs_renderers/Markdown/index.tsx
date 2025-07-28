@@ -1,5 +1,5 @@
 import React from "react";
-import { CssClassBuilder, defaultV2Css, ElementFactory, LocalizableString, QuestionFactory, QuestionNonValue, Serializer } from "survey-core";
+import { CssClassBuilder, ElementFactory, LocalizableString, QuestionFactory, QuestionNonValue, Serializer } from "survey-core";
 import { editorLocalization } from "survey-creator-core";
 import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
 import Showdown from "showdown";
@@ -21,7 +21,7 @@ locale.pehelp.question.scrollView = "Puts the markdown text in a height-limited 
 // builder icon
 registerIconManually("icon-markdown", "markdown", "brands");
 
-(defaultV2Css as any)[CUSTOM_QUESTION_TYPE] = defaultV2Css["html"];
+// CSS classes will be handled by SurveyJS v2.x automatically
 
 const converter = new Showdown.Converter({
     openLinksInNewWindow: true,
