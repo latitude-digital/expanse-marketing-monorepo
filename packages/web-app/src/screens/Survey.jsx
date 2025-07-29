@@ -23,6 +23,7 @@ import { RadioGroupRowQuestion } from "../surveysjs_renderers/RadioButtonButton"
 import { SurveyBookeoQuestion } from "../surveysjs_renderers/Bookeo";
 import { EmailTextInput } from "../surveysjs_renderers/EmailTextInput";
 import "../surveysjs_renderers/FilePreview";
+import { StyledTextField } from "@ui/ford-ui-components/src/v2/inputField/Input";
 
 import logo from '../assets/ford-signature.svg';
 import globeIcon from '../assets/icons/ford/globe.svg';
@@ -1068,7 +1069,24 @@ function SurveyComponent() {
                         onChange={handleLanguageChange}
                     />
                 )}
-                <div id="fd-nxt">
+                <div id="fd-nxt" className="ford_light">
+                    {/* Test Ford UI StyledTextField */}
+                    <div style={{ padding: '20px', marginBottom: '20px', border: '2px solid red' }}>
+                        <h3>Ford UI Test Input (should match Storybook styling):</h3>
+                        <StyledTextField
+                            label="Test Email Address (Optional)"
+                            isRequired={false}
+                            placeholder="Enter your email"
+                            value=""
+                            isInvalid={false}
+                            errorMessage=""
+                            description="We'll never share your email with anyone else."
+                            type="email"
+                            isDisabled={false}
+                            onChange={(value) => console.log('Test input changed:', value)}
+                            onBlur={() => console.log('Test input blurred')}
+                        />
+                    </div>
                     <Survey model={thisSurvey} />
                 </div>
                 {

@@ -1,0 +1,15 @@
+/* Hide SurveyJS default styling to prevent interference with Ford UI styling */
+.fds-text-renderer .sv_q_text_root {
+    border: none !important;
+    background: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.fds-text-renderer .sv_q_text_root input {
+    display: none !important;
+}
+
+.fds-text-renderer .sv-string-editor {
+    display: none !important;
+}

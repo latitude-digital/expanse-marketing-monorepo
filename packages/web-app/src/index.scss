@@ -2,6 +2,134 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Ford UI Design System - Essential CSS imports from working Storybook config */
+@import './styles/ford/_variables.css';
+@import './styles/ford/ford.css';
+@import './styles/ford/ford-font-families.css';
+
+/* Bridge classes to connect StyledTextField expectations with Ford CSS definitions */
+.text-ford-body1-regular {
+  @apply body-1-regular;
+}
+
+.text-ford-body2-regular {
+  @apply body-2-regular;
+}
+
+.text-ford-text-moderate\(default\) {
+  color: var(--semantic-color-text-onlight-moderate-default);
+}
+
+.text-ford-text-subtle {
+  color: var(--semantic-color-text-onlight-subtle);
+}
+
+.text-ford-text-subtlest\(disabled\) {
+  color: var(--semantic-color-text-onlight-subtlest-disabled);
+}
+
+.border-ford-fill-moderate\(default\) {
+  border-color: var(--semantic-color-stroke-onlight-moderate-default);
+}
+
+.border-ford-fill-danger-strong {
+  border-color: var(--semantic-color-fill-onlight-danger-strong);
+}
+
+.ford-component-select {
+  border-radius: calc(var(--semantic-radius-sm) * 1px);
+}
+
+.ford-component-input-color {
+  color: var(--semantic-color-text-onlight-moderate-default);
+}
+
+.ford-component-input-disabled-background {
+  background-color: var(--semantic-color-fill-onlight-disabled);
+}
+
+
+/* Ford UI Font Faces */
+@font-face {
+    font-family: FordMotion;
+    font-style: normal;
+    font-weight: 100 300;
+    src: url('//www.ford.com/shared/fonts/f1/light.woff2') format('woff2'),
+    url('//www.ford.com/shared/fonts/f1/light.woff') format('woff');
+}
+
+@font-face {
+    font-family: FordMotion;
+    font-style: normal;
+    font-weight: 400;
+    src: url('//www.ford.com/shared/fonts/f1/regular.woff2') format('woff2'),
+    url('//www.ford.com/shared/fonts/f1/regular.woff') format('woff');
+}
+
+@font-face {
+    font-family: FordMotion;
+    font-style: normal;
+    font-weight: 500;
+    src: url('//www.ford.com/shared/fonts/f1/medium.woff2') format('woff2'),
+    url('//www.ford.com/shared/fonts/f1/medium.woff') format('woff');
+}
+
+@font-face {
+    font-family: FordMotion;
+    font-style: normal;
+    font-weight: 600;
+    src: url('//www.ford.com/shared/fonts/f1/semibold.woff2') format('woff2'),
+    url('//www.ford.com/shared/fonts/f1/semibold.woff') format('woff');
+}
+
+@font-face {
+    font-family: FordMotion;
+    font-style: normal;
+    font-weight: 700;
+    src: url('//www.ford.com/shared/fonts/f1/bold.woff2') format('woff2'),
+    url('//www.ford.com/shared/fonts/f1/bold.woff') format('woff');
+}
+
+@font-face {
+    font-family: FordF1;
+    font-style: normal;
+    font-weight: 100 300;
+    src: url('//www.ford.com/shared/fonts/f1/light.woff2') format('woff2'),
+    url('//www.ford.com/shared/fonts/f1/light.woff') format('woff');
+}
+
+@font-face {
+    font-family: FordF1;
+    font-style: normal;
+    font-weight: 400;
+    src: url('//www.ford.com/shared/fonts/f1/regular.woff2') format('woff2'),
+    url('//www.ford.com/shared/fonts/f1/regular.woff') format('woff');
+}
+
+@font-face {
+    font-family: FordF1;
+    font-style: normal;
+    font-weight: 500;
+    src: url('//www.ford.com/shared/fonts/f1/medium.woff2') format('woff2'),
+    url('//www.ford.com/shared/fonts/f1/medium.woff') format('woff');
+}
+
+@font-face {
+    font-family: FordF1;
+    font-style: normal;
+    font-weight: 600;
+    src: url('//www.ford.com/shared/fonts/f1/semibold.woff2') format('woff2'),
+    url('//www.ford.com/shared/fonts/f1/semibold.woff') format('woff');
+}
+
+@font-face {
+    font-family: FordF1;
+    font-style: normal;
+    font-weight: 700;
+    src: url('//www.ford.com/shared/fonts/f1/bold.woff2') format('woff2'),
+    url('//www.ford.com/shared/fonts/f1/bold.woff') format('woff');
+}
+
 /* Fix Tailwind + SurveyJS conflict: Target SurveyJS SVG icons specifically */
 .svc-creator svg {
   width: auto !important;
@@ -60,3 +188,4 @@ code {
   height: 100%;
   padding-bottom: 0;
 }
+

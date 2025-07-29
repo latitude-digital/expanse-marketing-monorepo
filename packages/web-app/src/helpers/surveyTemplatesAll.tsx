@@ -15,6 +15,7 @@ import { RadioGroupRowQuestion } from "../surveysjs_renderers/RadioButtonButton"
 import { SurveyBookeoQuestion } from "../surveysjs_renderers/Bookeo";
 import { EmailTextInput } from "../surveysjs_renderers/EmailTextInput";
 import { SurveyQuestionMarkdown } from "../surveysjs_renderers/Markdown";
+import { FDSTextRenderer } from "../surveysjs_renderers/FDSRenderers/FDSText";
 
 import Showdown from "showdown";
 import { registerIcons } from "./fontAwesomeIcons";
@@ -26,6 +27,7 @@ console.log(
   SurveyBookeoQuestion.name,
   EmailTextInput.name,
   SurveyQuestionMarkdown.name,
+  FDSTextRenderer.name,
 );
 
 const converter = new Showdown.Converter({
@@ -289,4 +291,5 @@ export const prepareCreatorOnQuestionAdded = (
       fr: "Les tarifs standard pour les messages et les données peuvent s'appliquer.",
     });
   }
+
 };

@@ -298,7 +298,7 @@ function DashboardScreen() {
     }, [userLoading]);
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }} className="ford_light">
             <h1>Edit Event {thisEvent?.id}</h1>
 
             {creator && <SurveyCreatorComponent creator={creator} style={{ flex: 1 }} />}

@@ -1,18 +1,12 @@
+/* Ford UI specific signature styling */
 .signatureInput {
     font-family: "Caveat", cursive;
     font-size: 28px;
     font-optical-sizing: auto;
     font-style: normal;
 }
-.sv-header--mobile {
-    min-height: 44vw;
-    margin: auto;
-}
-.sv-header__background-image--contain {
-    background-position: center center;
-}
 
+/* Hide SurveyJS default completed page styling to use Ford UI theme */
 .sd-completedpage:before {
     display: none;
 }
-
