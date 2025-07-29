@@ -649,9 +649,6 @@ importers:
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
-      meridian-base:
-        specifier: latitude-digital/meridian-base#v0.9.0
-        version: git+https://git@github.com:latitude-digital/meridian-base.git#6ef9f1aecba2ce0050696bf90fbcbfd6421153af(react-dom@18.3.1(react@18.3.1))
       moment:
         specifier: ^2.29.4
         version: 2.30.1
@@ -10978,10 +10975,6 @@ packages:
     resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
     engines: {node: '>= 8'}
 
-  meridian-base@git+https://git@github.com:latitude-digital/meridian-base.git#6ef9f1aecba2ce0050696bf90fbcbfd6421153af:
-    resolution: {commit: 6ef9f1aecba2ce0050696bf90fbcbfd6421153af, repo: git@github.com:latitude-digital/meridian-base.git, type: git}
-    version: 0.9.0
-
   methods@1.1.2:
     resolution: {integrity: sha512-iclAHeNqNm68zFtnZ0e+1L2yUIdvzNoauKU4WBA3VvH/vPFieF7qfRlwUZU+DA9P9bPXIS90ulxoUoCH23sV2w==}
     engines: {node: '>= 0.6'}
@@ -14050,21 +14043,8 @@ packages:
       '@types/tabulator-tables': ^6.2.3
       survey-core: 2.2.6
 
-  survey-core@1.12.29:
-    resolution: {integrity: sha512-nNxw2NnxIg6pOdBi3FXORoL+PhTDMCOQByhUfDsAVl8PqYhUSRXmYzqXH6kTzWnSmWAGjMXpqKSCyi1qAlTBFg==}
-
   survey-core@2.2.6:
     resolution: {integrity: sha512-ZtAmB1lHzkT11+f8rN4nlrDqUou3u3n6Q+R5FA/x+T0ALW4ju4LcPBKcgzbYmWO3ZG0ku1uDxYVV6Mm6ddVkTQ==}
-
-  survey-creator-core@1.12.29:
-    resolution: {integrity: sha512-wqOukA+ROEZaOs5mwOdkI2yfa0q5ONwXrFm0TegX5xiiCiaHmU464xWm/WP4D5Lw1LUAVkk+s28/7B8bO4/M2g==}
-    engines: {node: '>=0.10.0'}
-    peerDependencies:
-      ace-builds: ^1.4.12
-      survey-core: 1.12.29
-    peerDependenciesMeta:
-      ace-builds:
-        optional: true
 
   survey-creator-core@2.2.6:
     resolution: {integrity: sha512-Hru5a3Cmt++82rpEOXOHHZHuNOGyPBZoG5EnSnjyPIOGN3SL3QoZelMc4WePmfbkPjR4kedCXKxW/1VkRWTDTg==}
@@ -14089,13 +14069,6 @@ packages:
     peerDependenciesMeta:
       ace-builds:
         optional: true
-
-  survey-react-ui@1.12.29:
-    resolution: {integrity: sha512-sEhnsFroGLTgyCRx3l4M14Nm/ggfNIcmx7Uhaj0ZzdOJR5qMtArVyeOCX3EZ2XrZQOyTlgl6bccGhi9igFZCZw==}
-    peerDependencies:
-      react: ^16.5.0 || ^17.0.1 || ^18.2.0 || ^19.0.0
-      react-dom: ^16.5.0 || ^17.0.1 || ^18.2.0 || ^19.0.0
-      survey-core: 1.12.29
 
   survey-react-ui@2.2.6:
     resolution: {integrity: sha512-+YwtNsFSex2UtTTeoDcLXrukA7g5K5IGQegvfBMn4AS10VEKDDIt5Vv9ro1Dn6CB8rB9EsEZd7T1lTJVhQfNkA==}
@@ -29315,18 +29288,6 @@ snapshots:
 
   merge2@1.4.1: {}
 
-  meridian-base@git+https://git@github.com:latitude-digital/meridian-base.git#6ef9f1aecba2ce0050696bf90fbcbfd6421153af(react-dom@18.3.1(react@18.3.1)):
-    dependencies:
-      react: 18.3.1
-      showdown: 2.1.0
-      sprintf-js: 1.1.3
-      survey-core: 1.12.29
-      survey-creator-core: 1.12.29(survey-core@1.12.29)
-      survey-react-ui: 1.12.29(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(survey-core@1.12.29)
-    transitivePeerDependencies:
-      - ace-builds
-      - react-dom
-
   methods@1.1.2: {}
 
   micromatch@4.0.8:
@@ -32869,13 +32830,7 @@ snapshots:
       survey-core: 2.2.6
       tabulator-tables: 6.3.1
 
-  survey-core@1.12.29: {}
-
   survey-core@2.2.6: {}
-
-  survey-creator-core@1.12.29(survey-core@1.12.29):
-    dependencies:
-      survey-core: 1.12.29
 
   survey-creator-core@2.2.6(survey-core@2.2.6):
     dependencies:
@@ -32888,12 +32843,6 @@ snapshots:
       survey-core: 2.2.6
       survey-creator-core: 2.2.6(survey-core@2.2.6)
       survey-react-ui: 2.2.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(survey-core@2.2.6)
-
-  survey-react-ui@1.12.29(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(survey-core@1.12.29):
-    dependencies:
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-      survey-core: 1.12.29
 
   survey-react-ui@2.2.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(survey-core@2.2.6):
     dependencies:

@@ -18,7 +18,12 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@ui/ford-ui-components/*": ["../ford-ui/packages/@ui/ford-ui-components/*"]
+    }
   },
   "include": [
     "src"
