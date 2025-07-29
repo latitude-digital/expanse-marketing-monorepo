@@ -51,9 +51,22 @@ export const initSurvey = () => {
   // surveyLocalization.supportedLocales = ["en", "es"];
   
   // Add custom localized string for "(Optional)" text
+  // Ensure the locale objects exist before setting properties
+  if (!surveyLocalization.locales["en"]) {
+    surveyLocalization.locales["en"] = {};
+  }
+  if (!surveyLocalization.locales["es"]) {
+    surveyLocalization.locales["es"] = {};
+  }
+  if (!surveyLocalization.locales["fr"]) {
+    surveyLocalization.locales["fr"] = {};
+  }
+  
+  // Set custom optionalText for our custom renderers
   surveyLocalization.locales["en"]["optionalText"] = " (Optional)";
   surveyLocalization.locales["es"]["optionalText"] = " (Opcional)";
   surveyLocalization.locales["fr"]["optionalText"] = " (Optionnel)";
+  
 
   AllSurveys.globalInit();
 };

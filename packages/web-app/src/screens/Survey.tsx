@@ -21,7 +21,7 @@ import { RadioGroupRowQuestion } from "../surveysjs_renderers/RadioButtonButton"
 import { SurveyBookeoQuestion } from "../surveysjs_renderers/Bookeo";
 import { EmailTextInput } from "../surveysjs_renderers/EmailTextInput";
 import "../surveysjs_renderers/FilePreview";
-// import { StyledTextField } from "@ui/ford-ui-components/src/v2/inputField/Input"; // Commented out for TypeScript migration testing
+import { StyledTextField } from "@ui/ford-ui-components/src/v2/inputField/Input";
 
 import logo from '../assets/ford-signature.svg';
 import globeIcon from '../assets/icons/ford/globe.svg';
@@ -475,34 +475,30 @@ const SurveyComponent: React.FC = () => {
           console.log('All locales:', survey.getUsedLocales());
           console.log('Custom content locales:', customContentLocales);
           
-          // Only show language selector if there are custom content translations
-          setSupportedLocales(customContentLocales);
+          // Always support en, es, fr for SurveyJS built-in translations
+          const supportedLanguages = customContentLocales.length > 0 ? customContentLocales : ['en', 'es', 'fr'];
+          setSupportedLocales(supportedLanguages);
           
           // Determine the best language to use
-          if (customContentLocales.length > 0) {
-            const urlLang = searchParams.get('lang');
-            const browserLang = window.navigator?.language;
-            const bestLang = determineLanguage(customContentLocales, urlLang, browserLang);
-            
-            console.log('Selected locale:', bestLang, 
-                        'URL param:', urlLang, 
-                        'Browser language:', browserLang);
-            
-            // Set the survey locale
-            survey.locale = bestLang;
-            setCurrentLocale(bestLang);
-            
-            // Update URL if needed
-            if (bestLang && (!urlLang || urlLang !== bestLang)) {
-              const newSearchParams = new URLSearchParams(searchParams);
-              newSearchParams.set('lang', bestLang);
-              setSearchParams(newSearchParams, { replace: true });
-            }
-          } else {
-            // No custom translations, use default locale
-            const defaultLoc = getDefaultLocale(survey);
-            survey.locale = defaultLoc;
-            setCurrentLocale(defaultLoc);
+          const urlLang = searchParams.get('lang');
+          const browserLang = window.navigator?.language;
+          const bestLang = determineLanguage(supportedLanguages, urlLang, browserLang);
+          
+          console.log('Selected locale:', bestLang, 
+                      'URL param:', urlLang, 
+                      'Browser language:', browserLang,
+                      'Supported languages:', supportedLanguages);
+          
+          // Set the survey locale
+          survey.locale = bestLang;
+          setCurrentLocale(bestLang);
+          
+          
+          // Update URL if needed (only if different from current URL param)
+          if (bestLang && urlLang !== bestLang) {
+            const newSearchParams = new URLSearchParams(searchParams);
+            newSearchParams.set('lang', bestLang);
+            setSearchParams(newSearchParams, { replace: true });
           }
 
           survey.onAfterRenderSurvey.add((sender: Model) => {
@@ -820,7 +816,7 @@ const SurveyComponent: React.FC = () => {
       Sentry.captureException(err);
       alert(err);
     });
-  }, [user, params.eventID, searchParams, navigate, location, thisEvent?.surveyType, thisPreSurvey]);
+  }, [user, params.eventID, navigate, location, thisEvent?.surveyType, thisPreSurvey]);
 
   return (
     limitReached ?
@@ -866,65 +862,64 @@ const SurveyComponent: React.FC = () => {
           currentBrand === 'lincoln' ? 'lincoln_light' : 
           'unbranded'
         }>
-          {/* Brand Switcher */}
-          <div style={{ padding: '10px', marginBottom: '10px', backgroundColor: '#f0f0f0' }}>
-            <button 
-              onClick={() => {
-                const nextBrand: 'ford' | 'lincoln' | 'unbranded' = 
-                  currentBrand === 'ford' ? 'lincoln' : 
-                  currentBrand === 'lincoln' ? 'unbranded' : 
-                  'ford';
-                setCurrentBrand(nextBrand);
-              }}
-              style={{ 
-                padding: '8px 16px', 
-                backgroundColor: 
-                  currentBrand === 'ford' ? '#0066cc' : 
-                  currentBrand === 'lincoln' ? '#8B2635' : 
-                  '#666666',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                marginRight: '10px'
-              }}
-            >
-              Switch to {
-                currentBrand === 'ford' ? 'Lincoln' : 
-                currentBrand === 'lincoln' ? 'Unbranded' : 
-                'Ford'
-              }
-            </button>
-            <span style={{ marginLeft: '10px', fontWeight: 'bold' }}>
-              Current Brand: {
-                currentBrand === 'ford' ? 'Ford' : 
-                currentBrand === 'lincoln' ? 'Lincoln' : 
-                'Unbranded'
-              }
-            </span>
+          {/* Brand Switcher with Language Selector */}
+          <div style={{ 
+            padding: '10px', 
+            marginBottom: '10px', 
+            backgroundColor: '#f0f0f0',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <button 
+                onClick={() => {
+                  const nextBrand: 'ford' | 'lincoln' | 'unbranded' = 
+                    currentBrand === 'ford' ? 'lincoln' : 
+                    currentBrand === 'lincoln' ? 'unbranded' : 
+                    'ford';
+                  setCurrentBrand(nextBrand);
+                }}
+                style={{ 
+                  padding: '8px 16px', 
+                  backgroundColor: 
+                    currentBrand === 'ford' ? '#0066cc' : 
+                    currentBrand === 'lincoln' ? '#8B2635' : 
+                    '#666666',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  marginRight: '10px'
+                }}
+              >
+                Switch to {
+                  currentBrand === 'ford' ? 'Lincoln' : 
+                  currentBrand === 'lincoln' ? 'Unbranded' : 
+                  'Ford'
+                }
+              </button>
+              <span style={{ marginLeft: '10px', fontWeight: 'bold' }}>
+                Current Brand: {
+                  currentBrand === 'ford' ? 'Ford' : 
+                  currentBrand === 'lincoln' ? 'Lincoln' : 
+                  'Unbranded'
+                }
+              </span>
+            </div>
+            
+            {/* Language Selector on the right side */}
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <span style={{ marginRight: '10px', fontWeight: 'bold' }}>Language:</span>
+              <LanguageSelector 
+                survey={thisSurvey}
+                supportedLocales={supportedLocales}
+                currentLocale={currentLocale || 'en'}
+                onChange={handleLanguageChange}
+              />
+            </div>
           </div>
           
-          {/* Test Ford UI StyledTextField */}
-          <div style={{ padding: '20px', marginBottom: '20px', border: '2px solid red' }}>
-            <h3>{
-              currentBrand === 'ford' ? 'Ford' : 
-              currentBrand === 'lincoln' ? 'Lincoln' : 
-              'Unbranded'
-            } UI Test Input (should match Storybook styling):</h3>
-            <StyledTextField
-              label="Test Email Address (Optional)"
-              isRequired={false}
-              placeholder="Enter your email"
-              value=""
-              isInvalid={false}
-              errorMessage=""
-              description="We'll never share your email with anyone else."
-              type="email"
-              isDisabled={false}
-              onChange={(value: string) => console.log('Test input changed:', value)}
-              onBlur={() => console.log('Test input blurred')}
-            />
-          </div>
           <Survey model={thisSurvey} />
         </div>
         {

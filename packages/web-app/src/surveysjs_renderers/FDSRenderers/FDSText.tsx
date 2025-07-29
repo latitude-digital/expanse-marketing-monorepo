@@ -36,8 +36,9 @@ export class FDSTextRenderer extends SurveyQuestionElementBase {
         // Handle different input types
         const inputType = this.getInputType();
         
-        // Get localized optional text for Ford UI component
-        const optionalText = surveyLocalization.getString("optionalText");
+        // Get localized optional text for Ford UI component based on current survey locale
+        const currentLocale = question.survey.locale || 'en';
+        const optionalText = surveyLocalization.locales[currentLocale]?.["optionalText"] || " (Optional)";
         
         return (
             <StyledTextField
