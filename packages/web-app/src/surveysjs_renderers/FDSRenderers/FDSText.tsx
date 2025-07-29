@@ -2,6 +2,29 @@ import React from "react";
 import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
 import { QuestionTextModel, surveyLocalization } from "survey-core";
 import { StyledTextField } from "@ui/ford-ui-components/src/v2/inputField/Input";
+import Showdown from 'showdown';
+
+// Create Showdown converter with same config as web-app
+const markdownConverter = new Showdown.Converter({
+    openLinksInNewWindow: true,
+});
+
+// Helper function to process markdown text
+const processMarkdown = (text: string): string => {
+    if (!text) return text;
+    
+    // Check if text contains markdown syntax
+    const hasMarkdown = /\*\*.*?\*\*|\*.*?\*|`.*?`|\[.*?\]\(.*?\)/.test(text);
+    
+    if (!hasMarkdown) {
+        return text; // Return as-is if no markdown
+    }
+    
+    // Process markdown to HTML
+    const html = markdownConverter.makeHtml(text);
+    // Remove root paragraphs to match SurveyJS behavior
+    return html.replace(/^<p>(.*)<\/p>$/g, '$1');
+};
 
 export class FDSTextRenderer extends SurveyQuestionElementBase {
     constructor(props: any) {
@@ -30,9 +53,6 @@ export class FDSTextRenderer extends SurveyQuestionElementBase {
             : undefined;
         const isInvalid = question.errors.length > 0;
         
-        // Get description from question description property
-        const description = question.description;
-        
         // Handle different input types
         const inputType = this.getInputType();
         
@@ -40,16 +60,25 @@ export class FDSTextRenderer extends SurveyQuestionElementBase {
         const currentLocale = question.survey.locale || 'en';
         const optionalText = surveyLocalization.locales[currentLocale]?.["optionalText"] || " (Optional)";
         
+        // Process markdown for title and description
+        const processedTitle = processMarkdown(title);
+        const processedDescription = processMarkdown(question.description);
+        
+        // Create a wrapper for HTML content
+        const HtmlContent = ({ html }: { html: string }) => (
+            <span dangerouslySetInnerHTML={{ __html: html }} />
+        );
+        
         return (
             <StyledTextField
-                label={title}
+                label={processedTitle.includes('<') ? <HtmlContent html={processedTitle} /> : processedTitle}
+                description={processedDescription.includes('<') ? <HtmlContent html={processedDescription} /> : processedDescription}
                 isRequired={isRequired}
                 requiredMessage={optionalText}
                 placeholder={question.placeholder || ""}
                 value={question.value || ""}
                 isInvalid={isInvalid}
                 errorMessage={errorMessage}
-                description={description}
                 type={inputType}
                 isDisabled={question.isReadOnly}
                 onChange={(value: string) => {

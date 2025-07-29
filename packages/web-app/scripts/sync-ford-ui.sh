@@ -53,6 +53,8 @@ sed -i '' 's/:root {/.lincoln_light {/' "$WEB_APP_DEST/lincoln/_variables.css"
 
 echo "✅ CSS files copied to web-app"
 
+# No additional Ford UI patches needed - markdown processing handled in web-app
+
 # Check if there are changes to commit
 if git diff --quiet packages/ford-ui packages/web-app/src/styles/; then
     echo "✅ Ford UI is already up to date"
