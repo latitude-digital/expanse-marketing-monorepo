@@ -503,6 +503,8 @@ const globalInit = () => {
     onInit: () => {
       Serializer.getProperty("email", "name").readOnly = true;
       Serializer.getProperty("email", "_ffs").readOnly = true;
+      // Ensure isRequired property is inherited from survey definition
+      Serializer.addProperty("emailtextinput", "isRequired");
     },
     questionJSON: {
       type: "emailtextinput",
@@ -542,6 +544,8 @@ const globalInit = () => {
     onInit: () => {
       Serializer.getProperty("phone", "name").readOnly = true;
       Serializer.getProperty("phone", "_ffs").readOnly = true;
+      // Ensure isRequired property is inherited from survey definition for text type questions
+      Serializer.addProperty("text", "isRequired");
     },
     questionJSON: {
       type: "text",

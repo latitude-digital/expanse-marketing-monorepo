@@ -19,7 +19,7 @@ import { getApiUrl, ENDPOINTS } from "../config/api";
 import { CheckboxVOIQuestion } from "../surveysjs_renderers/CheckboxVOI";
 import { RadioGroupRowQuestion } from "../surveysjs_renderers/RadioButtonButton";
 import { SurveyBookeoQuestion } from "../surveysjs_renderers/Bookeo";
-import { EmailTextInput } from "../surveysjs_renderers/EmailTextInput";
+// EmailTextInput removed - FDSTextRenderer handles all text inputs including email with proper required field support
 import "../surveysjs_renderers/FilePreview";
 
 import { StyledTextField } from "@ui/ford-ui-components/src/v2/inputField/Input";
