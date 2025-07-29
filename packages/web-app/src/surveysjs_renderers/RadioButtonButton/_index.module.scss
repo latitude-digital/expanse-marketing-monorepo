@@ -21,14 +21,8 @@
     max-width: calc(33.333% - 0.67rem);
   }
   
-  @media (max-width: 640px) {
-    flex: 1 1 calc(50% - 0.5rem) !important; // 2 items per row
-    min-width: calc(50% - 0.5rem);
-    max-width: calc(50% - 0.5rem);
-  }
-  
-  @media (max-width: 400px) {
-    flex: 1 1 100% !important; // 1 item per row
+  @media (max-width: 768px) {
+    flex: 1 1 100% !important; // 1 item per row on mobile
     min-width: 100%;
     max-width: 100%;
   }

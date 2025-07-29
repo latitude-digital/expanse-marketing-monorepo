@@ -6,6 +6,10 @@ This file provides comprehensive guidance to Claude Code (claude.ai/code) when w
 
 This is a monorepo for Expanse Marketing, a survey SAAS platform with advanced Ford Design System (FDS) integration. The repository successfully implements three-way brand switching (Ford/Lincoln/Unbranded) with proper CSS variable scoping and SurveyJS v2 custom renderers.
 
+## Component Usage Guidelines
+
+- We should always defer to using ford-ui components/atoms/molecules/etc rather than writing our own code to LOOK like them
+
 ## Environment Setup
 
 - Node.js version: 20 (see .nvmrc)
