@@ -366,6 +366,7 @@ function SurveyComponent() {
     const [currentLocale, setCurrentLocale] = useState('');
     const [limitReached, setLimitReached] = useState(false);
     const [limitMessage, setLimitMessage] = useState('');
+    const [currentBrand, setCurrentBrand] = useState('ford'); // 'ford', 'lincoln', or 'unbranded'
 
     const converter = new showdown.Converter({
         openLinksInNewWindow: true,
@@ -1069,10 +1070,56 @@ function SurveyComponent() {
                         onChange={handleLanguageChange}
                     />
                 )}
-                <div id="fd-nxt" className="ford_light">
+                <div id="fd-nxt" className={
+                    currentBrand === 'ford' ? 'ford_light' : 
+                    currentBrand === 'lincoln' ? 'lincoln_light' : 
+                    'unbranded'
+                }>
+                    {/* Brand Switcher */}
+                    <div style={{ padding: '10px', marginBottom: '10px', backgroundColor: '#f0f0f0' }}>
+                        <button 
+                            onClick={() => {
+                                const nextBrand = 
+                                    currentBrand === 'ford' ? 'lincoln' : 
+                                    currentBrand === 'lincoln' ? 'unbranded' : 
+                                    'ford';
+                                setCurrentBrand(nextBrand);
+                            }}
+                            style={{ 
+                                padding: '8px 16px', 
+                                backgroundColor: 
+                                    currentBrand === 'ford' ? '#0066cc' : 
+                                    currentBrand === 'lincoln' ? '#8B2635' : 
+                                    '#666666',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                marginRight: '10px'
+                            }}
+                        >
+                            Switch to {
+                                currentBrand === 'ford' ? 'Lincoln' : 
+                                currentBrand === 'lincoln' ? 'Unbranded' : 
+                                'Ford'
+                            }
+                        </button>
+                        <span style={{ marginLeft: '10px', fontWeight: 'bold' }}>
+                            Current Brand: {
+                                currentBrand === 'ford' ? 'Ford' : 
+                                currentBrand === 'lincoln' ? 'Lincoln' : 
+                                'Unbranded'
+                            }
+                        </span>
+                    </div>
+                    
                     {/* Test Ford UI StyledTextField */}
                     <div style={{ padding: '20px', marginBottom: '20px', border: '2px solid red' }}>
-                        <h3>Ford UI Test Input (should match Storybook styling):</h3>
+                        <h3>{
+                            currentBrand === 'ford' ? 'Ford' : 
+                            currentBrand === 'lincoln' ? 'Lincoln' : 
+                            'Unbranded'
+                        } UI Test Input (should match Storybook styling):</h3>
                         <StyledTextField
                             label="Test Email Address (Optional)"
                             isRequired={false}

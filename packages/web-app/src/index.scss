@@ -3,9 +3,35 @@
 @tailwind utilities;
 
 /* Ford UI Design System - Essential CSS imports from working Storybook config */
-@import './styles/ford/_variables.css';
-@import './styles/ford/ford.css';
-@import './styles/ford/ford-font-families.css';
+/* Use absolute paths from project root to avoid context resolution issues */
+@import '/src/styles/ford/_variables.css';
+@import '/src/styles/ford/ford.css';
+@import '/src/styles/ford/ford-font-families.css';
+
+/* Lincoln UI Design System - CSS imports for brand switching */
+@import '/src/styles/lincoln/_variables.css';
+@import '/src/styles/lincoln/lincoln.css';
+@import '/src/styles/lincoln/lincoln-font-families.css';
+
+/* Unbranded Theme - Generic styling without brand-specific variables */
+.unbranded {
+  /* Basic font definitions */
+  --font-display-1-large-regular-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display-1-large-regular-font-size: 70;
+  --font-display-1-large-regular-line-height: 80;
+  --font-display-1-large-regular-font-weight: 400;
+  
+  /* Basic semantic colors */
+  --semantic-color-text-onlight-moderate-default: #333333;
+  --semantic-color-text-onlight-subtle: #666666;
+  --semantic-color-text-onlight-subtlest-disabled: #999999;
+  --semantic-color-stroke-onlight-moderate-default: #cccccc;
+  --semantic-color-fill-onlight-danger-strong: #dc3545;
+  --semantic-color-fill-onlight-disabled: #f8f9fa;
+  
+  /* Basic radius */
+  --semantic-radius-sm: 4;
+}
 
 /* Bridge classes to connect StyledTextField expectations with Ford CSS definitions */
 .text-ford-body1-regular {

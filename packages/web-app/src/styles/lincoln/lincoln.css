@@ -1,0 +1,374 @@
+/* This file is generated via npm run style-dictionary on Thursday, February 6, 2025 at 10:07 AM.*/
+/* Do not modify. */
+/* Please commit this file to version control. */
+
+
+#fd-nxt .display-1-large-regular, .display-1-large-regular {
+	font-family: var(--font-display-1-large-regular-font-family),serif;
+	font-size: calc(var(--font-display-1-large-regular-font-size) * 1px);
+	font-weight: var(--font-display-1-large-regular-font-weight);
+	line-height: calc(var(--font-display-1-large-regular-line-height) * 1px);
+	
+}
+#fd-nxt .display-1-large-semibold, .display-1-large-semibold {
+	font-family: var(--font-display-1-large-semibold-font-family),serif;
+	font-size: calc(var(--font-display-1-large-semibold-font-size) * 1px);
+	font-weight: var(--font-display-1-large-semibold-font-weight);
+	line-height: calc(var(--font-display-1-large-semibold-line-height) * 1px);
+	
+}
+#fd-nxt .display-1-small-regular, .display-1-small-regular {
+	font-family: var(--font-display-1-small-regular-font-family),serif;
+	font-size: calc(var(--font-display-1-small-regular-font-size) * 1px);
+	font-weight: var(--font-display-1-small-regular-font-weight);
+	line-height: calc(var(--font-display-1-small-regular-line-height) * 1px);
+	
+}
+#fd-nxt .display-1-small-semibold, .display-1-small-semibold {
+	font-family: var(--font-display-1-small-semibold-font-family),serif;
+	font-size: calc(var(--font-display-1-small-semibold-font-size) * 1px);
+	font-weight: var(--font-display-1-small-semibold-font-weight);
+	line-height: calc(var(--font-display-1-small-semibold-line-height) * 1px);
+	
+}
+#fd-nxt .display-2-large-regular, .display-2-large-regular {
+	font-family: var(--font-display-2-large-regular-font-family),serif;
+	font-size: calc(var(--font-display-2-large-regular-font-size) * 1px);
+	font-weight: var(--font-display-2-large-regular-font-weight);
+	line-height: calc(var(--font-display-2-large-regular-line-height) * 1px);
+	
+}
+#fd-nxt .display-2-large-semibold, .display-2-large-semibold {
+	font-family: var(--font-display-2-large-semibold-font-family),serif;
+	font-size: calc(var(--font-display-2-large-semibold-font-size) * 1px);
+	font-weight: var(--font-display-2-large-semibold-font-weight);
+	line-height: calc(var(--font-display-2-large-semibold-line-height) * 1px);
+	
+}
+#fd-nxt .display-2-small-regular, .display-2-small-regular {
+	font-family: var(--font-display-2-small-regular-font-family),serif;
+	font-size: calc(var(--font-display-2-small-regular-font-size) * 1px);
+	font-weight: var(--font-display-2-small-regular-font-weight);
+	line-height: calc(var(--font-display-2-small-regular-line-height) * 1px);
+	
+}
+#fd-nxt .display-2-small-semibold, .display-2-small-semibold {
+	font-family: var(--font-display-2-small-semibold-font-family),serif;
+	font-size: calc(var(--font-display-2-small-semibold-font-size) * 1px);
+	font-weight: var(--font-display-2-small-semibold-font-weight);
+	line-height: calc(var(--font-display-2-small-semibold-line-height) * 1px);
+	
+}
+#fd-nxt .display-3-large-regular, .display-3-large-regular {
+	font-family: var(--font-display-3-large-regular-font-family),serif;
+	font-size: calc(var(--font-display-3-large-regular-font-size) * 1px);
+	font-weight: var(--font-display-3-large-regular-font-weight);
+	line-height: calc(var(--font-display-3-large-regular-line-height) * 1px);
+	
+}
+#fd-nxt .display-3-large-semibold, .display-3-large-semibold {
+	font-family: var(--font-display-3-large-semibold-font-family),serif;
+	font-size: calc(var(--font-display-3-large-semibold-font-size) * 1px);
+	font-weight: var(--font-display-3-large-semibold-font-weight);
+	line-height: calc(var(--font-display-3-large-semibold-line-height) * 1px);
+	
+}
+#fd-nxt .display-3-small-regular, .display-3-small-regular {
+	font-family: var(--font-display-3-small-regular-font-family),serif;
+	font-size: calc(var(--font-display-3-small-regular-font-size) * 1px);
+	font-weight: var(--font-display-3-small-regular-font-weight);
+	line-height: calc(var(--font-display-3-small-regular-line-height) * 1px);
+	
+}
+#fd-nxt .display-3-small-semibold, .display-3-small-semibold {
+	font-family: var(--font-display-3-small-semibold-font-family),serif;
+	font-size: calc(var(--font-display-3-small-semibold-font-size) * 1px);
+	font-weight: var(--font-display-3-small-semibold-font-weight);
+	line-height: calc(var(--font-display-3-small-semibold-line-height) * 1px);
+	
+}
+#fd-nxt .headline-1-large-regular, .headline-1-large-regular {
+	font-family: var(--font-headline-1-large-regular-font-family),sans-serif;
+	font-size: calc(var(--font-headline-1-large-regular-font-size) * 1px);
+	font-weight: var(--font-headline-1-large-regular-font-weight);
+	line-height: calc(var(--font-headline-1-large-regular-line-height) * 1px);
+	
+}
+#fd-nxt .headline-1-large-semibold, .headline-1-large-semibold {
+	font-family: var(--font-headline-1-large-semibold-font-family),sans-serif;
+	font-size: calc(var(--font-headline-1-large-semibold-font-size) * 1px);
+	font-weight: var(--font-headline-1-large-semibold-font-weight);
+	line-height: calc(var(--font-headline-1-large-semibold-line-height) * 1px);
+	
+}
+#fd-nxt .headline-1-small-regular, .headline-1-small-regular {
+	font-family: var(--font-headline-1-small-regular-font-family),sans-serif;
+	font-size: calc(var(--font-headline-1-small-regular-font-size) * 1px);
+	font-weight: var(--font-headline-1-small-regular-font-weight);
+	line-height: calc(var(--font-headline-1-small-regular-line-height) * 1px);
+	
+}
+#fd-nxt .headline-1-small-semibold, .headline-1-small-semibold {
+	font-family: var(--font-headline-1-small-semibold-font-family),sans-serif;
+	font-size: calc(var(--font-headline-1-small-semibold-font-size) * 1px);
+	font-weight: var(--font-headline-1-small-semibold-font-weight);
+	line-height: calc(var(--font-headline-1-small-semibold-line-height) * 1px);
+	
+}
+#fd-nxt .headline-2-large-regular, .headline-2-large-regular {
+	font-family: var(--font-headline-2-large-regular-font-family),sans-serif;
+	font-size: calc(var(--font-headline-2-large-regular-font-size) * 1px);
+	font-weight: var(--font-headline-2-large-regular-font-weight);
+	line-height: calc(var(--font-headline-2-large-regular-line-height) * 1px);
+	
+}
+#fd-nxt .headline-2-large-semibold, .headline-2-large-semibold {
+	font-family: var(--font-headline-2-large-semibold-font-family),sans-serif;
+	font-size: calc(var(--font-headline-2-large-semibold-font-size) * 1px);
+	font-weight: var(--font-headline-2-large-semibold-font-weight);
+	line-height: calc(var(--font-headline-2-large-semibold-line-height) * 1px);
+	
+}
+#fd-nxt .headline-2-small-regular, .headline-2-small-regular {
+	font-family: var(--font-headline-2-small-regular-font-family),sans-serif;
+	font-size: calc(var(--font-headline-2-small-regular-font-size) * 1px);
+	font-weight: var(--font-headline-2-small-regular-font-weight);
+	line-height: calc(var(--font-headline-2-small-regular-line-height) * 1px);
+	
+}
+#fd-nxt .headline-2-small-semibold, .headline-2-small-semibold {
+	font-family: var(--font-headline-2-small-semibold-font-family),sans-serif;
+	font-size: calc(var(--font-headline-2-small-semibold-font-size) * 1px);
+	font-weight: var(--font-headline-2-small-semibold-font-weight);
+	line-height: calc(var(--font-headline-2-small-semibold-line-height) * 1px);
+	
+}
+#fd-nxt .headline-3-large-regular, .headline-3-large-regular {
+	font-family: var(--font-headline-3-large-regular-font-family),sans-serif;
+	font-size: calc(var(--font-headline-3-large-regular-font-size) * 1px);
+	font-weight: var(--font-headline-3-large-regular-font-weight);
+	line-height: calc(var(--font-headline-3-large-regular-line-height) * 1px);
+	
+}
+#fd-nxt .headline-3-large-semibold, .headline-3-large-semibold {
+	font-family: var(--font-headline-3-large-semibold-font-family),sans-serif;
+	font-size: calc(var(--font-headline-3-large-semibold-font-size) * 1px);
+	font-weight: var(--font-headline-3-large-semibold-font-weight);
+	line-height: calc(var(--font-headline-3-large-semibold-line-height) * 1px);
+	
+}
+#fd-nxt .headline-3-small-regular, .headline-3-small-regular {
+	font-family: var(--font-headline-3-small-regular-font-family),sans-serif;
+	font-size: calc(var(--font-headline-3-small-regular-font-size) * 1px);
+	font-weight: var(--font-headline-3-small-regular-font-weight);
+	line-height: calc(var(--font-headline-3-small-regular-line-height) * 1px);
+	
+}
+#fd-nxt .headline-3-small-semibold, .headline-3-small-semibold {
+	font-family: var(--font-headline-3-small-semibold-font-family),sans-serif;
+	font-size: calc(var(--font-headline-3-small-semibold-font-size) * 1px);
+	font-weight: var(--font-headline-3-small-semibold-font-weight);
+	line-height: calc(var(--font-headline-3-small-semibold-line-height) * 1px);
+	
+}
+#fd-nxt .title-medium, .title-medium {
+	font-family: var(--font-title-medium-font-family),sans-serif;
+	font-size: calc(var(--font-title-medium-font-size) * 1px);
+	font-weight: var(--font-title-medium-font-weight);
+	line-height: calc(var(--font-title-medium-line-height) * 1px);
+	
+}
+#fd-nxt .title-semibold, .title-semibold {
+	font-family: var(--font-title-semibold-font-family),sans-serif;
+	font-size: calc(var(--font-title-semibold-font-size) * 1px);
+	font-weight: var(--font-title-semibold-font-weight);
+	line-height: calc(var(--font-title-semibold-line-height) * 1px);
+	
+}
+#fd-nxt .subtitle-regular, .subtitle-regular {
+	font-family: var(--font-subtitle-regular-font-family),sans-serif;
+	font-size: calc(var(--font-subtitle-regular-font-size) * 1px);
+	font-weight: var(--font-subtitle-regular-font-weight);
+	line-height: calc(var(--font-subtitle-regular-line-height) * 1px);
+	
+}
+#fd-nxt .subtitle-semibold, .subtitle-semibold {
+	font-family: var(--font-subtitle-semibold-font-family),sans-serif;
+	font-size: calc(var(--font-subtitle-semibold-font-size) * 1px);
+	font-weight: var(--font-subtitle-semibold-font-weight);
+	line-height: calc(var(--font-subtitle-semibold-line-height) * 1px);
+	
+}
+#fd-nxt .body-1-light, .body-1-light {
+	font-family: var(--font-body-1-light-font-family),sans-serif;
+	font-size: calc(var(--font-body-1-light-font-size) * 1px);
+	font-weight: var(--font-body-1-light-font-weight);
+	line-height: calc(var(--font-body-1-light-line-height) * 1px);
+	
+}
+#fd-nxt .body-1-regular, .body-1-regular {
+	font-family: var(--font-body-1-regular-font-family),sans-serif;
+	font-size: calc(var(--font-body-1-regular-font-size) * 1px);
+	font-weight: var(--font-body-1-regular-font-weight);
+	line-height: calc(var(--font-body-1-regular-line-height) * 1px);
+	
+}
+#fd-nxt .body-1-medium, .body-1-medium {
+	font-family: var(--font-body-1-medium-font-family),sans-serif;
+	font-size: calc(var(--font-body-1-medium-font-size) * 1px);
+	font-weight: var(--font-body-1-medium-font-weight);
+	line-height: calc(var(--font-body-1-medium-line-height) * 1px);
+	
+}
+#fd-nxt .body-1-semibold, .body-1-semibold {
+	font-family: var(--font-body-1-semibold-font-family),sans-serif;
+	font-size: calc(var(--font-body-1-semibold-font-size) * 1px);
+	font-weight: var(--font-body-1-semibold-font-weight);
+	line-height: calc(var(--font-body-1-semibold-line-height) * 1px);
+	
+}
+#fd-nxt .body-1-bold, .body-1-bold {
+	font-family: var(--font-body-1-bold-font-family),sans-serif;
+	font-size: calc(var(--font-body-1-bold-font-size) * 1px);
+	font-weight: var(--font-body-1-bold-font-weight);
+	line-height: calc(var(--font-body-1-bold-line-height) * 1px);
+	
+}
+#fd-nxt .body-1-underline, .body-1-underline {
+	font-family: var(--font-body-1-underline-font-family),sans-serif;
+	font-size: calc(var(--font-body-1-underline-font-size) * 1px);
+	font-weight: var(--font-body-1-underline-font-weight);
+	line-height: calc(var(--font-body-1-underline-line-height) * 1px);
+	text-decoration-line: var(--font-body-1-underline-text-decoration-line);
+	text-decoration-skip-ink: var(--font-body-1-underline-text-decoration-skip-ink);
+	text-decoration-style: var(--font-body-1-underline-text-decoration-style);
+	text-decoration-thickness: var(--font-body-1-underline-text-decoration-thickness);
+	text-underline-position: var(--font-body-1-underline-text-underline-position);
+	
+}
+#fd-nxt .body-1-superscript, .body-1-superscript {
+	font-family: var(--font-body-1-superscript-font-family),sans-serif;
+	font-feature-settings: var(--font-body-1-superscript-font-feature-settings);
+	font-size: calc(var(--font-body-1-superscript-font-size) * 1px);
+	font-weight: var(--font-body-1-superscript-font-weight);
+	line-height: calc(var(--font-body-1-superscript-line-height) * 1px);
+	text-decoration-line: var(--font-body-1-superscript-text-decoration-line);
+	text-decoration-skip-ink: var(--font-body-1-superscript-text-decoration-skip-ink);
+	text-decoration-style: var(--font-body-1-superscript-text-decoration-style);
+	text-decoration-thickness: var(--font-body-1-superscript-text-decoration-thickness);
+	text-underline-position: var(--font-body-1-superscript-text-underline-position);
+	
+}
+#fd-nxt .body-2-light, .body-2-light {
+	font-family: var(--font-body-2-light-font-family),sans-serif;
+	font-size: calc(var(--font-body-2-light-font-size) * 1px);
+	font-weight: var(--font-body-2-light-font-weight);
+	line-height: calc(var(--font-body-2-light-line-height) * 1px);
+	
+}
+#fd-nxt .body-2-regular, .body-2-regular {
+	font-family: var(--font-body-2-regular-font-family),sans-serif;
+	font-size: calc(var(--font-body-2-regular-font-size) * 1px);
+	font-weight: var(--font-body-2-regular-font-weight);
+	line-height: calc(var(--font-body-2-regular-line-height) * 1px);
+	
+}
+#fd-nxt .body-2-medium, .body-2-medium {
+	font-family: var(--font-body-2-medium-font-family),sans-serif;
+	font-size: calc(var(--font-body-2-medium-font-size) * 1px);
+	font-weight: var(--font-body-2-medium-font-weight);
+	line-height: calc(var(--font-body-2-medium-line-height) * 1px);
+	
+}
+#fd-nxt .body-2-semibold, .body-2-semibold {
+	font-family: var(--font-body-2-semibold-font-family),sans-serif;
+	font-size: calc(var(--font-body-2-semibold-font-size) * 1px);
+	font-weight: var(--font-body-2-semibold-font-weight);
+	line-height: calc(var(--font-body-2-semibold-line-height) * 1px);
+	
+}
+#fd-nxt .body-2-bold, .body-2-bold {
+	font-family: var(--font-body-2-bold-font-family),sans-serif;
+	font-size: calc(var(--font-body-2-bold-font-size) * 1px);
+	font-weight: var(--font-body-2-bold-font-weight);
+	line-height: calc(var(--font-body-2-bold-line-height) * 1px);
+	
+}
+#fd-nxt .body-2-underline, .body-2-underline {
+	font-family: var(--font-body-2-underline-font-family),sans-serif;
+	font-size: calc(var(--font-body-2-underline-font-size) * 1px);
+	font-weight: var(--font-body-2-underline-font-weight);
+	line-height: calc(var(--font-body-2-underline-line-height) * 1px);
+	text-decoration-line: var(--font-body-2-underline-text-decoration-line);
+	text-decoration-skip-ink: var(--font-body-2-underline-text-decoration-skip-ink);
+	text-decoration-style: var(--font-body-2-underline-text-decoration-style);
+	text-decoration-thickness: var(--font-body-2-underline-text-decoration-thickness);
+	text-underline-position: var(--font-body-2-underline-text-underline-position);
+	
+}
+#fd-nxt .body-2-superscript, .body-2-superscript {
+	font-family: var(--font-body-2-superscript-font-family),sans-serif;
+	font-feature-settings: var(--font-body-2-superscript-font-feature-settings);
+	font-size: calc(var(--font-body-2-superscript-font-size) * 1px);
+	font-weight: var(--font-body-2-superscript-font-weight);
+	line-height: calc(var(--font-body-2-superscript-line-height) * 1px);
+	text-decoration-line: var(--font-body-2-superscript-text-decoration-line);
+	text-decoration-skip-ink: var(--font-body-2-superscript-text-decoration-skip-ink);
+	text-decoration-style: var(--font-body-2-superscript-text-decoration-style);
+	text-decoration-thickness: var(--font-body-2-superscript-text-decoration-thickness);
+	text-underline-position: var(--font-body-2-superscript-text-underline-position);
+	
+}
+#fd-nxt .caption-regular, .caption-regular {
+	font-family: var(--font-caption-regular-font-family),sans-serif;
+	font-size: calc(var(--font-caption-regular-font-size) * 1px);
+	font-weight: var(--font-caption-regular-font-weight);
+	line-height: calc(var(--font-caption-regular-line-height) * 1px);
+	
+}
+#fd-nxt .caption-medium, .caption-medium {
+	font-family: var(--font-caption-medium-font-family),sans-serif;
+	font-size: calc(var(--font-caption-medium-font-size) * 1px);
+	font-weight: var(--font-caption-medium-font-weight);
+	line-height: calc(var(--font-caption-medium-line-height) * 1px);
+	
+}
+#fd-nxt .caption-semibold, .caption-semibold {
+	font-family: var(--font-caption-semibold-font-family),sans-serif;
+	font-size: calc(var(--font-caption-semibold-font-size) * 1px);
+	font-weight: var(--font-caption-semibold-font-weight);
+	line-height: calc(var(--font-caption-semibold-line-height) * 1px);
+	
+}
+#fd-nxt .caption-bold, .caption-bold {
+	font-family: var(--font-caption-bold-font-family),sans-serif;
+	font-size: calc(var(--font-caption-bold-font-size) * 1px);
+	font-weight: var(--font-caption-bold-font-weight);
+	line-height: calc(var(--font-caption-bold-line-height) * 1px);
+	
+}
+#fd-nxt .caption-underline, .caption-underline {
+	font-family: var(--font-caption-underline-font-family),sans-serif;
+	font-size: calc(var(--font-caption-underline-font-size) * 1px);
+	font-weight: var(--font-caption-underline-font-weight);
+	line-height: calc(var(--font-caption-underline-line-height) * 1px);
+	text-decoration-line: var(--font-caption-underline-text-decoration-line);
+	text-decoration-skip-ink: var(--font-caption-underline-text-decoration-skip-ink);
+	text-decoration-style: var(--font-caption-underline-text-decoration-style);
+	text-decoration-thickness: var(--font-caption-underline-text-decoration-thickness);
+	text-underline-position: var(--font-caption-underline-text-underline-position);
+	
+}
+#fd-nxt .caption-superscript, .caption-superscript {
+	font-family: var(--font-caption-superscript-font-family),sans-serif;
+	font-feature-settings: var(--font-caption-superscript-font-feature-settings);
+	font-size: calc(var(--font-caption-superscript-font-size) * 1px);
+	font-weight: var(--font-caption-superscript-font-weight);
+	line-height: calc(var(--font-caption-superscript-line-height) * 1px);
+	text-decoration-line: var(--font-caption-superscript-text-decoration-line);
+	text-decoration-skip-ink: var(--font-caption-superscript-text-decoration-skip-ink);
+	text-decoration-style: var(--font-caption-superscript-text-decoration-style);
+	text-decoration-thickness: var(--font-caption-superscript-text-decoration-thickness);
+	text-underline-position: var(--font-caption-superscript-text-underline-position);
+	
+}
