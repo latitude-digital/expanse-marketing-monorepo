@@ -1,5 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 
+// Auto-generated Ford UI extensions for StyledSelectionCard compatibility
+const fordExtensions = require('./src/styles/ford-tailwind-extensions.js');
+
 module.exports = {
   // Use Ford UI Storybook's Tailwind preset for proper ford- prefixed classes
   presets: [
@@ -21,8 +24,23 @@ module.exports = {
       fontFamily: {
         ford: ['Ford-Font', 'Arial', 'sans-serif'],
       },
-      // Map Ford UI component classes to theme color system
+      // Auto-generated Ford UI extensions for StyledSelectionCard compatibility
+      spacing: {
+        ...fordExtensions.spacing,
+      },
+      borderRadius: {
+        ...fordExtensions.borderRadius,
+      },
+      borderWidth: {
+        ...fordExtensions.borderWidth,
+      },
+      height: {
+        ...fordExtensions.height,
+      },
       colors: {
+        // Auto-generated ford- prefixed colors
+        ...fordExtensions.colors,
+        // Map Ford UI component classes to theme color system
         'ford-text-moderate(default)': 'var(--semantic-color-text-onlight-moderate-default)',
         'ford-text-subtle': 'var(--semantic-color-text-onlight-subtle)',
         'ford-text-subtlest(disabled)': 'var(--semantic-color-text-onlight-subtlest-disabled)',
@@ -48,6 +66,10 @@ module.exports = {
     'text-ford-fill-success-strong',
     'border-ford-fill-success-strong',
     'ring-ford-stroke-strongest\\(focus\\)',
+    // Ford UI StyledSelectionCard classes with parentheses
+    'bg-ford-fill-highcontrast\\(default\\)',
+    'border-ford-stroke-subtle\\(dividers\\)',
+    'hover:bg-ford-opacity-hover-default',
     // Ford UI component classes
     'ford-component-select',
     'ford-component-input-color',

@@ -1,6 +1,7 @@
 import React, {  } from "react";
 import { ItemValue, RendererFactory, Serializer, SurveyModel } from "survey-core";
 import { ReactQuestionFactory, SurveyQuestionRadiogroup } from "survey-react-ui";
+import StyledSelectionCard from "@ui/ford-ui-components/src/v2/selection-card/default/StyledSelectionCard";
 
 import style from './_index.module.scss'
 
@@ -26,72 +27,29 @@ export class RadioGroupRowQuestion extends SurveyQuestionRadiogroup {
                 this.question.clickItemHandler(item);
             }
 
-            // Use SurveyJS CSS classes with fallback to our custom classes
-            const defaultClasses = customCSS || {
-                container: style.radio_group_row,
-                root: style.radio_box,
-                rootSmall: style.radio_box_small,
-                rootLarge: style.radio_box_large,
-                rootActive: style.radio_box_active,
-                rootDisabled: style.radio_box_disabled
-            };
-
-            let itemClasses = [defaultClasses.root];
-
-            if (this.question.buttonSize === "small") {
-                itemClasses = [defaultClasses.rootSmall];
-            } else if (this.question.buttonSize === "large") {
-                itemClasses = [defaultClasses.rootLarge];
-            }
-
-            if (isChecked) {
-                itemClasses.push(defaultClasses.rootActive);
-            }
-
-            if (isDisabled) {
-                itemClasses.push(defaultClasses.rootDisabled);
-            }
-
             return (
-                <div
-                    role="presentation"
-                    className={itemClasses.join(" ")}
-                    onClick={(e) => {
-                        if (isDisabled) return;
-                        const radio = document.getElementById(this.question.getItemId(item));
-                        if (radio && e.target !== radio) {
-                            radio.click();
-                        }
-                    }}
+                <StyledSelectionCard
                     key={item.id}
                     id={inputId}
-                >
-                    <label htmlFor={inputId}>
-                        {item.title}
-                        <input
-                            role="option"
-                            id={this.question.getItemId(item)}
-                            disabled={isDisabled}
-                            name={this.question.name + item.id}
-                            type={optionType}
-                            value={item.value}
-                            checked={isChecked}
-                            onChange={handleOnChange}
-                            onClick={(e) => e.stopPropagation()}
-                        />
-                    </label>
-                </div>
+                    name={this.question.name}
+                    value={item.value}
+                    checked={isChecked}
+                    disabled={isDisabled}
+                    onChange={handleOnChange}
+                    headline=""
+                    description={item.title}
+                    tags={[]}
+                    variant="none"
+                    className="ford-component-selection-card"
+                />
             )
         }
     }
 
     getBody(cssClasses: any) {
-        const defaultClasses = {
-            container: cssClasses?.radiobuttongroupcontainer || style.radio_group_row
-        };
-
+        // Use a simple flex layout for Ford UI Selection Cards
         return (
-            <div className={defaultClasses.container}>
+            <div className={style.radio_group_row}>
                 {this.getItems(cssClasses, this.question.bodyItems)}
             </div>
         )

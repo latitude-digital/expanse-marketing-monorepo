@@ -74,6 +74,35 @@
   background-color: var(--semantic-color-fill-onlight-disabled);
 }
 
+.ford-component-selection-card {
+  color: var(--semantic-color-text-onlight-moderate-default);
+  border-color: var(--semantic-color-stroke-onlight-moderate-default);
+  background-color: var(--semantic-color-fill-onlight-subtle);
+  border-radius: calc(var(--semantic-radius-sm) * 1px);
+}
+
+.ford-component-selection-card:hover {
+  background-color: var(--semantic-color-fill-onlight-moderate-hover, #f5f5f5);
+}
+
+.ford-component-selection-card[aria-checked="true"] {
+  border-color: var(--semantic-color-stroke-onlight-primary-default, #0066cc);
+  background-color: var(--semantic-color-fill-onlight-primary-subtle, #e6f3ff);
+}
+
+/* Fix for Ford UI StyledSelectionCard background - scoped to Ford theme */
+.ford_light .bg-ford-fill-highcontrast\(default\) {
+  background-color: var(--semantic-color-fill-onlight-highcontrast-default) !important;
+}
+
+.lincoln_light .bg-ford-fill-highcontrast\(default\) {
+  background-color: var(--semantic-color-fill-onlight-highcontrast-default) !important;
+}
+
+.unbranded .bg-ford-fill-highcontrast\(default\) {
+  background-color: #ffffff !important;
+}
+
 
 /* Ford UI Font Faces */
 @font-face {
