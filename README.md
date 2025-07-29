@@ -1,6 +1,6 @@
 # Expanse Marketing Monorepo
 
-This monorepo contains the complete Expanse Marketing survey SAAS platform with React web application, Firebase Cloud Functions, and Ford UI v2 components integration.
+This monorepo contains the complete Expanse Marketing survey SAAS platform with React web application, Firebase Cloud Functions, and Ford UI v2 components integration featuring advanced three-way brand switching capabilities.
 
 ## Repository Structure
 
@@ -8,6 +8,13 @@ This monorepo contains the complete Expanse Marketing survey SAAS platform with 
 packages/
 ├── web-app/          # React web application (Vite + React 18)
 │   ├── src/          # Source code with Ford UI v2 integration
+│   │   ├── styles/   # Ford/Lincoln CSS files with theme scoping
+│   │   │   ├── ford/     # Ford brand CSS (theme-scoped)
+│   │   │   └── lincoln/  # Lincoln brand CSS (theme-scoped)
+│   │   ├── surveysjs_renderers/ # SurveyJS v2 custom renderers
+│   │   │   └── FDSRenderers/    # Ford Design System renderers
+│   │   └── screens/  # Application screens with brand switching
+│   ├── scripts/      # Ford UI sync and automation scripts
 │   ├── dist/         # Production build output
 │   └── vite.config.ts # Vite configuration
 ├── firebase/         # Firebase Cloud Functions (TypeScript)
@@ -20,12 +27,14 @@ packages/
 
 ## Technology Stack
 
-- **Frontend**: React 18 + TypeScript + Vite
+- **Frontend**: React 18 + TypeScript + Vite + SurveyJS v2.2.6
 - **Backend**: Firebase Cloud Functions + Firestore
-- **Design System**: Ford UI v2 + Tailwind CSS
+- **Design System**: Ford UI v2 + Tailwind CSS with theme-scoped variables
+- **Survey Engine**: SurveyJS v2 with custom Ford Design System renderers
 - **Package Management**: pnpm workspaces
 - **Build Tools**: Vite (web-app), TypeScript (functions)
 - **Authentication**: Firebase Auth + CloudFront signed cookies
+- **Brand Switching**: Three-way Ford/Lincoln/Unbranded theme system
 
 ## Prerequisites
 
@@ -49,8 +58,8 @@ git submodule update --init --recursive
 # Install dependencies
 pnpm install
 
-# Build Ford UI components
-cd packages/ford-ui && nx build @ui/ford-ui-components
+# Update Ford UI (builds components + syncs CSS with theme scoping)
+pnpm ford-ui:update
 ```
 
 ## Development Workflow
@@ -61,8 +70,8 @@ cd packages/ford-ui && nx build @ui/ford-ui-components
 # Install dependencies (from workspace root)
 pnpm install
 
-# Build Ford UI components
-cd packages/ford-ui && nx build @ui/ford-ui-components
+# Update Ford UI (builds components + syncs CSS with theme scoping)
+pnpm ford-ui:update
 
 # Start development environment (recommended)
 pnpm dev:all  # Starts web-app + Firebase emulator
@@ -86,8 +95,8 @@ pnpm dev                                     # Start all packages
 pnpm build                                   # Build all packages
 pnpm test                                    # Run all tests
 
-# Ford UI Components
-cd packages/ford-ui && nx build @ui/ford-ui-components  # Build components
+# Ford UI Components & CSS Sync
+pnpm ford-ui:update                                      # Update components + sync CSS
 cd packages/ford-ui && nx run storybook:storybook       # Storybook (port 4400)
 ```
 
@@ -95,20 +104,201 @@ cd packages/ford-ui && nx run storybook:storybook       # Storybook (port 4400)
 
 - **Web App**: http://localhost:8001 (Vite dev server)
 - **Admin Dashboard**: http://localhost:8001/admin (requires authentication)
+- **Survey Testing**: http://localhost:8001/survey (with brand switching)
 - **Firebase Emulator UI**: http://localhost:4000
 - **Functions Emulator**: http://localhost:5001
 - **Storybook**: http://localhost:4400
 
-### Production Build
+## Ford Design System Integration
+
+### Three-Way Brand Switching Architecture
+
+Our implementation supports seamless switching between Ford, Lincoln, and Unbranded themes:
+
+```typescript
+// Brand switching implementation in Survey.jsx
+const [currentBrand, setCurrentBrand] = useState('ford'); // 'ford', 'lincoln', or 'unbranded'
+
+// Theme application with proper CSS variable scoping
+<div id="fd-nxt" className={
+    currentBrand === 'ford' ? 'ford_light' : 
+    currentBrand === 'lincoln' ? 'lincoln_light' : 
+    'unbranded'
+}>
+```
+
+### Theme-Scoped CSS Variables
+
+**Critical Learning**: CSS variables must be theme-scoped to prevent conflicts between brands.
+
+```css
+/* ❌ WRONG: Global scope causes brand conflicts */
+:root {
+  --semantic-color-text-onlight-moderate-default: #333333;
+}
+
+/* ✅ CORRECT: Theme-scoped variables enable proper switching */
+.ford_light {
+  --semantic-color-text-onlight-moderate-default: #333333;
+}
+
+.lincoln_light {
+  --semantic-color-text-onlight-moderate-default: #333333;
+}
+
+.unbranded {
+  --semantic-color-text-onlight-moderate-default: #333333;
+}
+```
+
+### Ford UI CSS Import Strategy
+
+**Critical Learning**: Use absolute paths to prevent context-dependent resolution issues.
+
+```scss
+/* ❌ WRONG: Relative paths fail when imported from subdirectories */
+@import './styles/ford/_variables.css';
+
+/* ✅ CORRECT: Absolute paths work from any import context */
+@import '/src/styles/ford/_variables.css';
+@import '/src/styles/lincoln/_variables.css';
+```
+
+### Automated CSS Sync Script
+
+The `sync-ford-ui.sh` script automatically handles theme scoping transformations:
 
 ```bash
-# Build all packages
+# Run the comprehensive Ford UI update command
+pnpm ford-ui:update
+
+# What it does:
+# 1. Initializes/updates Ford UI submodule to latest version
+# 2. Builds Ford UI components with nx
+# 3. Copies CSS files from Ford UI to web-app
+# 4. Transforms :root selectors to theme-scoped classes
+# 5. Applies sed transformations: :root { → .ford_light { and .lincoln_light {
+# 6. Ensures proper theme switching without CSS variable conflicts
+```
+
+### SurveyJS v2 Custom Renderer Integration
+
+Custom Ford Design System renderers for SurveyJS components:
+
+```typescript
+// Custom TextField renderer using Ford UI StyledTextField
+import { StyledTextField } from '@ui/ford-ui-components/src/v2/inputField/Input';
+
+// Register custom renderer with SurveyJS v2
+ReactQuestionFactory.Instance.registerQuestion('text', (props) => {
+  return (
+    <StyledTextField
+      label={props.question.title}
+      value={props.question.value || ''}
+      onChange={(e) => props.question.value = e.target.value}
+      isRequired={props.question.isRequired}
+      className="ford-component-input-color"
+    />
+  );
+});
+```
+
+### CSS Bridge Classes
+
+Bridge classes connect SurveyJS expectations with Ford UI styling:
+
+```scss
+/* Bridge classes for StyledTextField component integration */
+.text-ford-body1-regular {
+  @apply body-1-regular;
+}
+
+.text-ford-text-moderate\(default\) {
+  color: var(--semantic-color-text-onlight-moderate-default);
+}
+
+.border-ford-fill-moderate\(default\) {
+  border-color: var(--semantic-color-stroke-onlight-moderate-default);
+}
+
+.ford-component-input-color {
+  color: var(--semantic-color-text-onlight-moderate-default);
+}
+```
+
+## Brand Theme Implementation
+
+### Ford Theme Features
+- **Colors**: Ford blue primary palette (#0066cc, #044ea7)
+- **Typography**: FordF1 font family
+- **Components**: Ford-specific visual styling
+- **Radius**: Rounded corners (400px for buttons)
+
+### Lincoln Theme Features  
+- **Colors**: Lincoln burgundy palette (#8B2635, #22292b)
+- **Typography**: LincolnSerif and LincolnFont families
+- **Components**: Luxury-focused visual styling
+- **Radius**: Sharp, angular design (4px for buttons)
+
+### Unbranded Theme Features
+- **Colors**: Neutral grays (#333333, #666666, #cccccc)
+- **Typography**: System fonts (-apple-system, BlinkMacSystemFont, Roboto)
+- **Components**: Clean, minimal styling
+- **Radius**: Standard web conventions (4px)
+
+## Component Usage Patterns
+
+### Foundation Components with Brand Awareness
+
+```typescript
+// StyledTextField automatically respects current brand theme
+import { StyledTextField } from '@ui/ford-ui-components/src/v2/inputField/Input';
+
+export function BrandAwareInput({ label, ...props }) {
+  return (
+    <StyledTextField
+      label={label}
+      className="ford-component-input-color"
+      {...props}
+    />
+  );
+}
+```
+
+### Theme-Aware Custom Components
+
+```typescript
+// Components that adapt to current brand context
+export function BrandAwareButton({ children, ...props }) {
+  return (
+    <button 
+      className="
+        px-4 py-2 rounded-[var(--semantic-radius-sm)] 
+        bg-[var(--semantic-color-fill-onlight-interactive)]
+        text-[var(--semantic-color-text-onlight-strong)]
+        hover:bg-[var(--semantic-color-fill-onlight-interactive-hover)]
+      "
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}
+```
+
+## Production Build
+
+```bash
+# Build all packages with proper theme integration
 pnpm build
 
 # Individual package builds
 pnpm --filter @expanse/web-app build        # Web app production build
 pnpm --filter @expanse/firebase build       # Compile Firebase functions
-cd packages/ford-ui && nx build @ui/ford-ui-components  # Ford UI components
+pnpm ford-ui:update                          # Ford UI components + CSS sync
+
+# Build with Ford UI update
+pnpm ford-ui:update && pnpm build
 ```
 
 ## Deployment
@@ -124,8 +314,8 @@ pnpm firebase:deploy:functions               # Functions only
 pnpm firebase:deploy:hosting                 # Hosting only
 pnpm firebase:deploy                         # Both functions and hosting
 
-# Build and deploy
-pnpm firebase:build && pnpm firebase:deploy  # Build functions then deploy
+# Build and deploy with Ford UI update
+pnpm ford-ui:update && pnpm firebase:build && pnpm firebase:deploy
 ```
 
 ### Environment Configuration
@@ -146,277 +336,80 @@ VITE_ENV=production
 VITE_FIREBASE_PROJECT_ID=expanse-marketing
 ```
 
-### Firebase Project Setup
+## Troubleshooting Ford UI Integration
 
-```bash
-# Login to Firebase
-firebase login
+### CSS Import Resolution Issues
 
-# Set project
-firebase use expanse-marketing              # Production
-firebase use expanse-marketing-staging     # Staging
+**Problem**: CSS imports fail when BroncoQuiz.scss imports ../index.scss
+**Solution**: Use absolute paths in index.scss
 
-# Initialize hosting (if needed)
-firebase init hosting
+```scss
+/* ❌ WRONG: Context-dependent relative paths */
+@import './styles/ford/_variables.css';
 
-# Test deployment with emulator
-pnpm firebase:emulators
+/* ✅ CORRECT: Absolute paths from project root */
+@import '/src/styles/ford/_variables.css';
 ```
 
-## Ford UI Component Usage
+### Brand Switching Not Working
 
-### Component Import Patterns by Category
+**Problem**: Brand switching changes classes but not visual styling
+**Root Cause**: CSS variables defined at `:root` level override each other
+**Solution**: Theme-scoped CSS variables
 
-#### Foundation Components (Atoms)
+```scss
+/* ❌ WRONG: Global variables conflict */
+:root {
+  --semantic-color-text-onlight-moderate-default: #333333;
+}
 
-Basic building blocks - simple, single-purpose components.
-
-```typescript
-// Button component
-import { StyledButton, UnstyledButton } from '@ui/ford-ui-components/v2/button/Button';
-// OR using path alias
-import { StyledButton } from '@ford-ui/button/Button';
-
-// Icon component  
-import { Icon } from '@ford-ui/icon/Icon';
-
-// Typography
-import { Typography } from '@ford-ui/typography/Typography';
-
-// Input field
-import { Input } from '@ford-ui/inputField/Input';
-
-// Checkbox
-import { Checkbox, UnstyledCheckbox } from '@ford-ui/checkbox';
-
-// Radio buttons
-import { RadioButton, RadioButtonGroup } from '@ford-ui/radio';
-
-// Toggle switch
-import { Toggle, UnstyledToggle } from '@ford-ui/toggle';
-
-// Usage example
-export default function LoginForm() {
-  return (
-    <form className="space-y-4">
-      <Input 
-        label="Email" 
-        type="email" 
-        placeholder="Enter your email"
-      />
-      <Input 
-        label="Password" 
-        type="password" 
-        placeholder="Enter your password"
-      />
-      <Checkbox label="Remember me" />
-      <StyledButton variant="primary" type="submit">
-        Sign In
-      </StyledButton>
-    </form>
-  );
+/* ✅ CORRECT: Scoped variables enable switching */
+.ford_light {
+  --semantic-color-text-onlight-moderate-default: #333333;
 }
 ```
 
-#### Interface Components (Molecules)
+### Tailwind Styles Not Applied
 
-Components that combine atoms into functional units.
-
-```typescript
-// Search component
-import { Search, UnstyledSearch } from '@ford-ui/search/Search';
-
-// Notification
-import { Notification, UnstyledNotification } from '@ford-ui/notification';
-
-// Notification Dot
-import { NotificationDot, UnstyledNotificationDot } from '@ford-ui/notificationDot';
-
-// Rating component
-import { Rating, UnstyledRating } from '@ford-ui/rating';
-
-// Chip components
-import { Chip, UnstyledChip, ChipGroup } from '@ford-ui/chip';
-
-// Breadcrumbs
-import { Breadcrumbs, UnstyledBreadcrumbs } from '@ford-ui/breadcrumbs';
-```
-
-#### Layout Components (Organisms)
-
-Complex components that form distinct sections of an interface.
-
-```typescript
-// Modal component
-import { Modal } from '@ford-ui/modal';
-
-// Drawer/Sheet component
-import { Drawer, Sheet } from '@ford-ui/drawer';
-
-// Popover component
-import { Popover } from '@ford-ui/popover';
-
-// Data Table
-import { StyledDataTable as DataTable } from '@ford-ui/dataTable/DataTable.styled';
-
-// Tabs component
-import { Tabs } from '@ford-ui/tabs';
-
-// Pagination
-import { Pagination, UnstyledPagination } from '@ford-ui/pagination';
-
-// Selection Cards
-import { StyledSelectionCard as SelectionCard } from '@ford-ui/selection-card/default/StyledSelectionCard';
-import { StyledSelectionCardSmall as SelectionCardSmall } from '@ford-ui/selection-card/small/styled/StyledSelectionCardSmall';
-```
-
-#### Specialized Components (Templates)
-
-Domain-specific components for Ford's e-commerce use cases.
-
-```typescript
-// Vehicle Cards
-import { StyledVehicleCard as VehicleCard } from '@ford-ui/vehicleCard/styled/StyledVehicleCard';
-import { UnstyledVehicleCard } from '@ford-ui/vehicleCard/unstyled/UnstyledVehicleCard';
-
-// Editorial Cards
-import { StyledEditorialCard as EditorialCard } from '@ford-ui/editorialCard/styled/StyledEditorialCard';
-
-// List components
-import { List, UnstyledList } from '@ford-ui/list/listItem';
-import { ListGroup } from '@ford-ui/list/listItemGroup';
-
-// Floating Action Button
-import { FloatingActionButton } from '@ford-ui/floatingActionButton/FloatingActionButton';
-```
-
-### Design System Integration
-
-#### Theme Application
-
-Ford UI v2 uses CSS custom properties for theming. Apply themes at the app level:
-
-```typescript
-// Apply theme to your app
-export default function App({ children }) {
-  return (
-    <html lang="en" className="ford_light"> {/* or ford_dark */}
-      <body>
-        <div className="min-h-screen bg-background-onlight-default text-text-onlight-default">
-          {children}
-        </div>
-      </body>
-    </html>
-  );
-}
-```
-
-#### Design Tokens Usage
-
-```typescript
-// Use semantic tokens directly in your components
-export default function CustomComponent() {
-  return (
-    <div className="bg-surface-onlight-default border border-border-onlight-default p-4 rounded-lg">
-      <h2 className="text-text-onlight-strong text-lg font-semibold mb-2">
-        Custom Component
-      </h2>
-      <p className="text-text-onlight-subtle">
-        This component uses Ford's semantic design tokens.
-      </p>
-    </div>
-  );
-}
-```
-
-## Component Discovery Workflow
-
-1. **Browse Storybook**: Visit http://localhost:4400 to see all available components
-2. **Find Component**: Navigate to the component category in Storybook
-3. **Check Implementation**: View the "Docs" tab for props and examples
-4. **Import in App**: Use the import patterns shown above
-5. **Verify Styling**: Ensure Tailwind config includes Ford UI's design tokens
-
-### Storybook Categories Mapping
-
-| Storybook Category | Component Examples | Import Pattern |
-|-------------------|-------------------|----------------|
-| **Foundation Components** | Button, Input, Icon, Typography | `@ford-ui/[component]/[Component]` |
-| **Interface Components** | Search, Notification, Rating, Chips | `@ford-ui/[component]` |
-| **Layout Components** | Modal, Drawer, DataTable, Tabs | `@ford-ui/[component]` |
-| **Specialized Components** | VehicleCard, EditorialCard, Lists | `@ford-ui/[component]/styled/[Component]` |
-
-## Version Management
-
-### Updating Ford UI Components
-
-```bash
-# Update to latest Ford UI changes
-cd packages/ford-ui
-git pull origin develop
-
-# Return to workspace root and commit the update
-cd ../..
-git add packages/ford-ui
-git commit -m "Update Ford UI components to latest develop"
-```
-
-### Checking Current Version
-
-```bash
-# See current Ford UI version
-cd packages/ford-ui
-git log --oneline -5        # Recent commits
-git describe --tags         # Current tag if available
-git rev-parse --short HEAD  # Current commit hash
-```
-
-### Rolling Back Updates
-
-```bash
-# If an update breaks something, rollback to previous version
-cd packages/ford-ui
-git checkout [previous-commit-hash]
-cd ../..
-git add packages/ford-ui
-git commit -m "Rollback Ford UI to stable version"
-```
-
-## Troubleshooting
-
-### Common Issues
-
-**1. Tailwind Styles Not Applied**
 ```javascript
 // Ensure Ford UI paths are included in Tailwind content
 content: [
   './src/**/*.{js,ts,jsx,tsx}',
-  '../ford-ui/packages/@ui/ford-ui-components/src/**/*.{js,ts,jsx,tsx}' // Add this
+  '../ford-ui/packages/@ui/ford-ui-components/src/**/*.{js,ts,jsx,tsx}'
 ]
 ```
 
-**2. TypeScript Import Errors**
+### TypeScript Import Errors
+
 ```json
 // Add proper path mapping in tsconfig.json
 "paths": {
-  "@ui/ford-ui-components": ["../ford-ui/packages/@ui/ford-ui-components/src"]
+  "@ui/ford-ui-components": ["../ford-ui/packages/@ui/ford-ui-components/src"],
+  "@ford-ui/*": ["../ford-ui/packages/@ui/ford-ui-components/src/v2/*"]
 }
 ```
 
-**3. Design Tokens Not Resolving**
-```javascript
-// Verify Tailwind preset is properly configured
-presets: [
-  require('../ford-ui/packages/@ui/ford-ui-components/tailwind.config.js')
-]
+### SurveyJS Component Styling Issues
+
+**Problem**: SurveyJS components don't inherit Ford UI styling
+**Solution**: Implement custom renderers with proper CSS bridges
+
+```typescript
+// Register custom renderer for text inputs
+ReactQuestionFactory.Instance.registerQuestion('text', (props) => {
+  return (
+    <StyledTextField
+      label={props.question.title}
+      value={props.question.value || ''}
+      onChange={(e) => props.question.value = e.target.value}
+      className="ford-component-input-color"
+    />
+  );
+});
 ```
 
-**4. Hot Reload Not Working**
-- Ensure workspace dependencies are properly linked
-- Restart dev server after Ford UI changes
-- Check that file watchers include Ford UI source files
+### Submodule Sync Issues
 
-**5. Submodule Issues**
 ```bash
 # Submodule is empty or missing
 git submodule update --init --recursive
@@ -434,30 +427,64 @@ git add packages/ford-ui
 git commit -m "Pin Ford UI to specific version"
 ```
 
-## Critical Considerations
+## Version Management
 
-### Dependencies Synchronization
-- Ensure React versions match between Ford UI and web app
-- Verify react-aria-components versions are compatible
-- Keep Tailwind CSS configurations aligned
+### Updating Ford UI Components
 
-### Design Token Resolution
-- Ford UI's semantic tokens must be properly inherited
-- Test both light and dark themes
-- Verify responsive design tokens work correctly
+```bash
+# Update Ford UI with automatic sync and commit
+pnpm ford-ui:update
 
-### Build Performance
-- Ford UI components are pre-built, minimizing build time
-- pnpm workspace provides efficient dependency management and caching
-- Monitor bundle size impact of included components
+# Commit the update
+git add packages/ford-ui packages/web-app/src/styles/
+git commit -m "Update Ford UI components and sync CSS with theme scoping"
+```
+
+### Checking Current Version
+
+```bash
+# See current Ford UI version
+cd packages/ford-ui
+git log --oneline -5        # Recent commits
+git describe --tags         # Current tag if available
+git rev-parse --short HEAD  # Current commit hash
+```
+
+## Critical Design System Lessons Learned
+
+### 1. CSS Variable Scoping is Essential
+- **Problem**: Global `:root` variables cause brand conflicts
+- **Solution**: Theme-scoped variables (`.ford_light`, `.lincoln_light`, `.unbranded`)
+- **Implementation**: Automated sed transformations in sync script
+
+### 2. Import Path Resolution Context Matters
+- **Problem**: Relative paths fail in nested import contexts
+- **Solution**: Absolute paths from project root
+- **Critical**: CSS imports must be context-independent
+
+### 3. SurveyJS Integration Requires Custom Renderers
+- **Problem**: SurveyJS default components don't use Ford UI styling
+- **Solution**: Custom ReactQuestionFactory renderers
+- **Bridge**: CSS classes connect SurveyJS expectations to Ford UI
+
+### 4. Theme Switching Needs Proper Component Architecture
+- **Pattern**: Single theme state controls entire application
+- **Wrapper**: `#fd-nxt` wrapper element with dynamic theme class
+- **Inheritance**: CSS variables cascade to all child components
+
+### 5. Automation Prevents Human Error
+- **Tool**: `pnpm ford-ui:update` command handles complex transformations
+- **Benefits**: Eliminates manual CSS variable scoping errors
+- **Process**: Submodule update → CSS copy → Theme scoping → Ready for development
 
 ## Getting Help
 
-1. **Storybook Documentation**: Reference component APIs and examples
+1. **Storybook Documentation**: Reference component APIs and examples at http://localhost:4400
 2. **Ford UI Repository**: Check component source code and tests
-3. **Workspace Documentation**: Review pnpm workspace guides
-4. **Design System Team**: Consult with Ford UI maintainers for complex issues
+3. **Brand Switching**: Test all three themes in Survey component
+4. **CSS Debugging**: Use browser DevTools to inspect CSS variable inheritance
+5. **Ford UI Update**: Run `pnpm ford-ui:update` when CSS issues occur
 
 ---
 
-For migration details and implementation plans, see [MIGRATION_PLAN.md](./MIGRATION_PLAN.md).
+**Next Steps**: This implementation provides a solid foundation for Ford Design System integration with advanced brand switching capabilities. The theme-scoped CSS architecture supports future brand additions and ensures maintainable, conflict-free styling.

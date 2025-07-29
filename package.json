@@ -14,7 +14,8 @@
     "firebase:deploy:functions": "firebase deploy --only functions",
     "firebase:deploy:hosting": "firebase deploy --only hosting",
     "firebase:emulators": "firebase emulators:start",
-    "deploy:production": "pnpm build && firebase deploy"
+    "deploy:production": "pnpm build && firebase deploy",
+    "ford-ui:update": "git submodule update --init --recursive && cd packages/ford-ui && git pull origin develop && nx build @ui/ford-ui-components && cd ../.. && ./packages/web-app/scripts/sync-ford-ui.sh"
   },
   "keywords": ["monorepo", "expanse", "marketing", "survey", "saas"],
   "author": "Latitude Digital",
