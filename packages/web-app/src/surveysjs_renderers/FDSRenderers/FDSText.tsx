@@ -1,7 +1,7 @@
 import React from "react";
 import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
 import { QuestionTextModel } from "survey-core";
-import { StyledTextField } from "@ui/ford-ui-components/src/v2/inputField/Input";
+// import { StyledTextField } from "@ui/ford-ui-components/src/v2/inputField/Input"; // Commented out for TypeScript migration testing
 import "./FDSText.css";
 
 export class FDSTextRenderer extends SurveyQuestionElementBase {
