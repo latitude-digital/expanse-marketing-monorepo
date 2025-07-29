@@ -5,4 +5,44 @@
   flex-wrap: wrap;
   gap: 1rem;
   width: 100%;
+  // Removed align-items: stretch to allow natural height
+}
+
+// Individual selection card styling with natural heights
+.radio_group_row > div {
+  flex: 1 1 auto !important; // Natural height based on content
+  min-width: 150px; // Minimum width to prevent text wrapping
+  max-width: none; // Allow cards to expand as needed
+  
+  // Responsive breakpoints
+  @media (max-width: 900px) {
+    flex: 1 1 calc(33.333% - 0.67rem) !important; // 3 items per row
+    min-width: calc(33.333% - 0.67rem);
+    max-width: calc(33.333% - 0.67rem);
+  }
+  
+  @media (max-width: 640px) {
+    flex: 1 1 calc(50% - 0.5rem) !important; // 2 items per row
+    min-width: calc(50% - 0.5rem);
+    max-width: calc(50% - 0.5rem);
+  }
+  
+  @media (max-width: 400px) {
+    flex: 1 1 100% !important; // 1 item per row
+    min-width: 100%;
+    max-width: 100%;
+  }
+  
+  // Ensure text wraps inside cards when needed
+  p, span, div {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+  
+  // Center content inside the cards
+  .group {
+    justify-content: center;
+    text-align: center;
+  }
 }

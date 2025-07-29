@@ -117,6 +117,7 @@ const fordInit = () => {
         es: "¿Qué tan probable es que recomiende Ford a un amigo o colega?",
         fr: "Quelle est la probabilité que vous recommandiez Ford à un ami ou collègue?",
       },
+      description: "Just putting in a description *here*.",
       renderAs: "radiobuttongroup",
       isRequired: true,
       choices: [
