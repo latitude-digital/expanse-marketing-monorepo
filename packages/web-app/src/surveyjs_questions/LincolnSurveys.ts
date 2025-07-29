@@ -33,6 +33,11 @@ const lincolnInit = () => {
     questionJSON: {
       type: "checkbox",
       name: "voi",
+      title: {
+        en: "I am interested in receiving more information on the following vehicles.",
+        es: "Me interesaría recibir más información sobre los siguientes vehículos.",
+        fr: "Je suis intéressé à recevoir plus d'informations sur les véhicules suivants.",
+      },
       renderAs: "voi",
       maxSelectedChoices: 3,
       choicesByUrl: {
@@ -70,6 +75,11 @@ const lincolnInit = () => {
     },
     questionJSON: {
       type: "radiogroup",
+      title: {
+        en: "Please email me communications, including product and service information, surveys and special offers from Lincoln and its retailers.",
+        es: "Por favor, envíenme comunicaciones, incluyendo información sobre productos y servicios, encuestas y ofertas especiales de Lincoln y sus minoristas.",
+        fr: "Veuillez m'envoyer des communications, y compris des informations sur les produits et services, des enquêtes et des offres spéciales de Lincoln et de ses détaillants.",
+      },
       renderAs: "radiobuttongroup",
       buttonSize: "medium",
       name: "email_opt_in",

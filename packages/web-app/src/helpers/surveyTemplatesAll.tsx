@@ -20,7 +20,7 @@ import "../surveysjs_renderers/FDSRenderers/CustomSurveyQuestion";
 
 import Showdown from "showdown";
 import { registerIcons } from "./fontAwesomeIcons";
-import { AllSurveys } from "../surveyjs_questions";
+import { AllSurveys, FordSurveys, LincolnSurveys } from "../surveyjs_questions";
 
 console.log(
   CheckboxVOIQuestion.name,
@@ -41,6 +41,17 @@ registerIcons([
   "house-circle-check",
   "at",
   "phone",
+  // Ford/Lincoln icons
+  "cars",
+  "thumbs-up",
+  "people-arrows",
+  "genderless",
+  "calendar-star",
+  "money-check-dollar-pen",
+  "chart-bar",
+  "calendar-clock",
+  "pen-field",
+  "car-garage",
 ]);
 
 export const initSurvey = () => {
@@ -69,6 +80,8 @@ export const initSurvey = () => {
   
 
   AllSurveys.globalInit();
+  FordSurveys.fordInit();
+  LincolnSurveys.lincolnInit();
 };
 
 export const initCreator = (creator: SurveyCreatorModel) => {
@@ -99,6 +112,8 @@ export const initCreator = (creator: SurveyCreatorModel) => {
 
   const enLocale = editorLocalization.getLocale("en");
   enLocale.toolboxCategories["__0pii"] = "Personal Information Questions";
+  enLocale.toolboxCategories["__fordCategory"] = "Ford Questions";
+  enLocale.toolboxCategories["__lincolnCategory"] = "Lincoln Questions";
 
   creator.toolbox.changeCategories([
     { name: "markdown", category: "misc"},
@@ -109,6 +124,23 @@ export const initCreator = (creator: SurveyCreatorModel) => {
     { name: "lastname", category: "__0pii" },
     { name: "email", category: "__0pii" },
     { name: "phone", category: "__0pii" },
+    // Ford Questions
+    { name: "fordvoi", category: "__fordCategory" },
+    { name: "fordoptin", category: "__fordCategory" },
+    { name: "fordrecommend", category: "__fordCategory" },
+    { name: "fordrecommendpost", category: "__fordCategory" },
+    { name: "gender", category: "__fordCategory" },
+    { name: "agebracket", category: "__fordCategory" },
+    { name: "howlikelyacquire", category: "__fordCategory" },
+    { name: "howlikelypurchasingford", category: "__fordCategory" },
+    { name: "howlikelypurchasingfordpost", category: "__fordCategory" },
+    { name: "inmarkettiming", category: "__fordCategory" },
+    { name: "adultwaiver", category: "__fordCategory" },
+    { name: "minorwaiver", category: "__fordCategory" },
+    { name: "vehicledrivenmostmake", category: "__fordCategory" },
+    // Lincoln Questions
+    { name: "lincolnvoi", category: "__lincolnCategory" },
+    { name: "lincolnoptin", category: "__lincolnCategory" },
   ]);
 
   const md = creator.toolbox.getItemByName("markdown");
@@ -237,7 +269,6 @@ export const prepareCreatorOnQuestionAdded = (
   options: QuestionAddedEvent
 ) => {
   if (options.question.getType() === "optin") {
-    options.question.titleLocation = "hidden";
     options.question.descriptionLocation = "underInput";
     options.question.label = "I agree";
   }

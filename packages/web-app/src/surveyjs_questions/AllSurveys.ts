@@ -6,7 +6,66 @@ import {
 
 const globalInit = () => {
 
+  // Add _ffs property to both question and panel types
+  // This ensures the property appears for individual questions and panel/container questions
   Serializer.addProperty("question", {
+    name: "_ffs",
+    displayName: "FFS question",
+    type: "text",
+    category: "data",
+    isSerializable: true,
+  });
+
+  Serializer.addProperty("panel", {
+    name: "_ffs",
+    displayName: "FFS question",
+    type: "text",
+    category: "data",
+    isSerializable: true,
+  });
+
+  // Add _ffs property to custom question types that need it
+  Serializer.addProperty("autocompleteaddress", {
+    name: "_ffs",
+    displayName: "FFS question",
+    type: "text",
+    category: "data",
+    isSerializable: true,
+  });
+
+  Serializer.addProperty("autocompleteaddress2", {
+    name: "_ffs",
+    displayName: "FFS question",
+    type: "text",
+    category: "data",
+    isSerializable: true,
+  });
+
+  Serializer.addProperty("firstname", {
+    name: "_ffs",
+    displayName: "FFS question",
+    type: "text",
+    category: "data",
+    isSerializable: true,
+  });
+
+  Serializer.addProperty("lastname", {
+    name: "_ffs",
+    displayName: "FFS question",
+    type: "text",
+    category: "data",
+    isSerializable: true,
+  });
+
+  Serializer.addProperty("email", {
+    name: "_ffs",
+    displayName: "FFS question",
+    type: "text",
+    category: "data",
+    isSerializable: true,
+  });
+
+  Serializer.addProperty("phone", {
     name: "_ffs",
     displayName: "FFS question",
     type: "text",
@@ -27,6 +86,11 @@ const globalInit = () => {
     questionJSON: {
       type: "text",
       name: "first_name",
+      title: {
+        en: "First Name",
+        es: "Nombre",
+        fr: "Prénom",
+      },
       isRequired: true,
       autocomplete: "given-name",
       validators: [
@@ -66,6 +130,11 @@ const globalInit = () => {
     questionJSON: {
       type: "text",
       name: "last_name",
+      title: {
+        en: "Last Name",
+        es: "Apellidos",
+        fr: "Nom de famille",
+      },
       isRequired: true,
       autocomplete: "family-name",
       startWithNewLine: false,
@@ -440,6 +509,11 @@ const globalInit = () => {
       // type: "text",
       // renderAs: "emailtextinput",
       name: "email",
+      title: {
+        en: "Email Address",
+        es: "Correo electrónico",
+        fr: "Email",
+      },
       inputType: "email",
       autocomplete: "email",
       validators: [
@@ -472,6 +546,11 @@ const globalInit = () => {
     questionJSON: {
       type: "text",
       name: "phone",
+      title: {
+        en: "Mobile Number",
+        es: "Teléfono",
+        fr: "Téléphone",
+      },
       inputType: "tel",
       autocomplete: "tel",
       maskType: "pattern",
@@ -490,8 +569,19 @@ const globalInit = () => {
     questionJSON: {
       type: "boolean",
       renderAs: "checkbox",
+      title: {
+        en: "Please email me communications, including product and service information, surveys and special offers from Ford and its retailers.",
+        es: "Por favor, envíenme comunicaciones, incluyendo información sobre productos y servicios, encuestas y ofertas especiales de Ford y sus minoristas.",
+        fr: "Veuillez m'envoyer des communications, y compris des informations sur les produits et services, des enquêtes et des offres spéciales de Ford et de ses détaillants.",
+      },
+      description: {
+        en: "Ford Motor Company respects your privacy and treats your personal information with care. **[Click here to read Ford Motor Company's privacy policy.](https://ford.com/help/privacy/)**",
+        es: "Ford Motor Company respeta su confidencialidad y trata su información personal con respeto. **[Haga clic aquí para consultar la política de confidencialidad de Ford Motor Company.](https://es.ford.com/help/privacy/)**",
+        fr: "Ford Motor Company respecte votre vie privée et traite vos informations personnelles avec soin. **[Cliquez ici pour lire la politique de confidentialité de Ford Motor Company.](https://ford.com/help/privacy/)**",
+      },
+      descriptionLocation: "underInput",
       label: "I agree",
-      titleLocation: "hidden",
+      titleLocation: "top",
       valueTrue: "Yes",
       valueFalse: "No",
     },

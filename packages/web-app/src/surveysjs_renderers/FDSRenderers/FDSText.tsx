@@ -98,3 +98,11 @@ ReactQuestionFactory.Instance.registerQuestion(
         return React.createElement(FDSTextRenderer, props);
     }
 );
+
+// Also register for email text input type
+ReactQuestionFactory.Instance.registerQuestion(
+    "emailtextinput",
+    (props) => {
+        return React.createElement(FDSTextRenderer, props);
+    }
+);

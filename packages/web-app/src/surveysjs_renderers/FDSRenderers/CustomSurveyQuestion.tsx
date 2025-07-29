@@ -49,11 +49,17 @@ export class CustomSurveyQuestion extends React.Component<CustomSurveyQuestionPr
       return null;
     }
 
-    // Check if we're in Survey Creator mode - if so, use default SurveyJS rendering
-    // This allows creator selection/editing functionality to work properly
-    if (survey && (survey.isDesignMode || survey.isDisplayMode || creator.isDesignMode)) {
-      // Fall back to default SurveyJS question rendering for Survey Creator
-      return null; // This will cause SurveyJS to use its default renderer
+    // Check if we're in Survey Creator/Designer mode - if so, don't interfere
+    // Let SurveyJS handle its own rendering for the designer interface
+    const isDesignerMode = 
+      (creator && (creator.isCreator || creator.isDesignMode || creator.readOnly === false)) ||
+      (survey && (survey.isDesignMode || survey.mode === 'design')) ||
+      // Check if we're in the SurveyJS Creator environment
+      (typeof window !== 'undefined' && window.location.pathname.includes('/admin/'));
+
+    if (isDesignerMode) {
+      // Return null to let SurveyJS use its default question renderer
+      return null;
     }
 
     // Only render the question element itself, bypassing SurveyJS title and error wrappers
@@ -86,12 +92,18 @@ export class CustomSurveyQuestion extends React.Component<CustomSurveyQuestionPr
   }
 }
 
-// Register the custom survey question component
-// Try multiple possible element names to ensure it gets registered correctly
-ReactElementFactory.Instance.registerElement("question", (props: CustomSurveyQuestionProps) => {
-  return React.createElement(CustomSurveyQuestion, props);
-});
+// Conditionally register the custom survey question component
+// Only register if NOT in a designer/admin context
+const isInDesignerContext = 
+  typeof window !== 'undefined' && window.location.pathname.includes('/admin/');
 
-ReactElementFactory.Instance.registerElement("survey-question", (props: CustomSurveyQuestionProps) => {
-  return React.createElement(CustomSurveyQuestion, props);
-});
+if (!isInDesignerContext) {
+  // Register the custom survey question component for runtime surveys only
+  ReactElementFactory.Instance.registerElement("question", (props: CustomSurveyQuestionProps) => {
+    return React.createElement(CustomSurveyQuestion, props);
+  });
+
+  ReactElementFactory.Instance.registerElement("survey-question", (props: CustomSurveyQuestionProps) => {
+    return React.createElement(CustomSurveyQuestion, props);
+  });
+}

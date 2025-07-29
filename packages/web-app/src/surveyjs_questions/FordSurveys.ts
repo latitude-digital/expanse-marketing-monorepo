@@ -36,6 +36,11 @@ const fordInit = () => {
     questionJSON: {
       type: "checkbox",
       name: "voi",
+      title: {
+        en: "I am interested in receiving more information on the following vehicles.",
+        es: "Me interesaría recibir más información sobre los siguientes vehículos.",
+        fr: "Je suis intéressé à recevoir plus d'informations sur les véhicules suivants.",
+      },
       renderAs: "voi",
       maxSelectedChoices: 3,
       choicesByUrl: {
@@ -69,6 +74,16 @@ const fordInit = () => {
     inheritBaseProps: true,
     questionJSON: {
       type: "radiogroup",
+      title: {
+        en: "Please email me communications, including product and service information, surveys and special offers from Ford and its retailers.",
+        es: "Por favor, envíenme comunicaciones, incluyendo información sobre productos y servicios, encuestas y ofertas especiales de Ford y sus minoristas.",
+        fr: "Veuillez m'envoyer des communications, y compris des informations sur les produits et services, des enquêtes et des offres spéciales de Ford et de ses détaillants.",
+      },
+      description: {
+        en: "Ford Motor Company respects your privacy and treats your personal information with care. [Click here to read Ford Motor Company's privacy policy.](https://ford.com/help/privacy/)",
+        es: "Ford Motor Company respeta su confidencialidad y trata su información personal con respeto. [Haga clic aquí para consultar la política de confidencialidad de Ford Motor Company.](https://es.ford.com/help/privacy/)",
+        fr: "Ford Motor Company respecte votre vie privée et traite vos informations personnelles avec soin. [Cliquez ici pour lire la politique de confidencialité de Ford Motor Company.](https://ford.com/help/privacy/)",
+      },
       descriptionLocation: "underInput",
       isRequired: true,
       renderAs: "radiobuttongroup",
@@ -97,6 +112,11 @@ const fordInit = () => {
     },
     questionJSON: {
       type: "radiogroup",
+      title: {
+        en: "How likely are you to recommend Ford to a friend or colleague?",
+        es: "¿Qué tan probable es que recomiende Ford a un amigo o colega?",
+        fr: "Quelle est la probabilité que vous recommandiez Ford à un ami ou collègue?",
+      },
       renderAs: "radiobuttongroup",
       isRequired: true,
       choices: [
@@ -152,6 +172,11 @@ const fordInit = () => {
     inheritBaseProps: true,
     questionJSON: {
       type: "radiogroup",
+      title: {
+        en: "What is your gender?",
+        es: "¿Cuál es tu género?",
+        fr: "Quel est votre genre?",
+      },
       renderAs: "radiobuttongroup",
       buttonSize: "large",
       choices: [
@@ -180,6 +205,11 @@ const fordInit = () => {
     inheritBaseProps: true,
     questionJSON: {
       type: "radiogroup",
+      title: {
+        en: "What is your age?",
+        es: "¿Cuál es tu edad?",
+        fr: "Quel est votre âge?",
+      },
       renderAs: "radiobuttongroup",
       buttonSize: "large",
       choices: [
@@ -219,6 +249,11 @@ const fordInit = () => {
     inheritBaseProps: true,
     questionJSON: {
       type: "radiogroup",
+      title: {
+        en: "How would you most likely acquire your next vehicle?",
+        es: "¿Cómo adquirirías más probablemente tu próximo vehículo?",
+        fr: "Comment acquerriez-vous le plus probablement votre prochain véhicule?",
+      },
       renderAs: "radiobuttongroup",
       buttonSize: "large",
       choices: [
@@ -242,6 +277,11 @@ const fordInit = () => {
     inheritBaseProps: true,
     questionJSON: {
       type: "radiogroup",
+      title: {
+        en: "How likely are you to consider purchasing a Ford vehicle?",
+        es: "¿Qué tan probable es que consideres comprar un vehículo Ford?",
+        fr: "Quelle est la probabilité que vous considériez l'achat d'un véhicule Ford?",
+      },
       renderAs: "radiobuttongroup",
       buttonSize: "large",
       choices: [
@@ -297,6 +337,11 @@ const fordInit = () => {
     inheritBaseProps: true,
     questionJSON: {
       type: "radiogroup",
+      title: {
+        en: "When are you planning to purchase your next vehicle?",
+        es: "¿Cuándo planeas comprar tu próximo vehículo?",
+        fr: "Quand prévoyez-vous acheter votre prochain véhicule?",
+      },
       renderAs: "radiobuttongroup",
       buttonSize: "large",
       choices: [
@@ -530,6 +575,11 @@ const fordInit = () => {
     inheritBaseProps: true,
     questionJSON: {
       type: "dropdown",
+      title: {
+        en: "What brand of vehicle do you drive most often?",
+        es: "¿Qué marca de vehículo conduces con más frecuencia?",
+        fr: "Quelle marque de véhicule conduisez-vous le plus souvent?",
+      },
       choicesByUrl: {
         url: "https://cdn.latitudewebservices.com/data/makes.json",
         valueName: "make_id",
@@ -555,6 +605,11 @@ const fordInit = () => {
     },
     questionJSON: {
       type: "radiogroup",
+      title: {
+        en: "After this experience, how likely are you to recommend Ford to a friend or colleague?",
+        es: "Después de esta experiencia, ¿qué tan probable es que recomiende Ford a un amigo o colega?",
+        fr: "Après cette expérience, quelle est la probabilité que vous recommandiez Ford à un ami ou collègue?",
+      },
       renderAs: "radiobuttongroup",
       isRequired: true,
       choices: [
@@ -610,6 +665,11 @@ const fordInit = () => {
     inheritBaseProps: true,
     questionJSON: {
       type: "radiogroup",
+      title: {
+        en: "After this experience, how likely are you to consider purchasing a Ford vehicle?",
+        es: "Después de esta experiencia, ¿qué tan probable es que consideres comprar un vehículo Ford?",
+        fr: "Après cette expérience, quelle est la probabilité que vous considériez l'achat d'un véhicule Ford?",
+      },
       renderAs: "radiobuttongroup",
       buttonSize: "large",
       choices: [
