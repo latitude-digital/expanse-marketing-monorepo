@@ -1,8 +1,7 @@
 import React from "react";
 import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
-import { QuestionTextModel } from "survey-core";
-// import { StyledTextField } from "@ui/ford-ui-components/src/v2/inputField/Input"; // Commented out for TypeScript migration testing
-import "./FDSText.css";
+import { QuestionTextModel, surveyLocalization } from "survey-core";
+import { StyledTextField } from "@ui/ford-ui-components/src/v2/inputField/Input";
 
 export class FDSTextRenderer extends SurveyQuestionElementBase {
     constructor(props: any) {
@@ -25,7 +24,10 @@ export class FDSTextRenderer extends SurveyQuestionElementBase {
         const isRequired = question.isRequired;
         
         // Get error message if validation failed
-        const errorMessage = question.errors.length > 0 ? question.errors[0].text : undefined;
+        // SurveyJS error objects use getText() method for localized error messages
+        const errorMessage = question.errors.length > 0 
+            ? (question.errors[0].getText ? question.errors[0].getText() : question.errors[0].text)
+            : undefined;
         const isInvalid = question.errors.length > 0;
         
         // Get description from question description property
@@ -34,10 +36,14 @@ export class FDSTextRenderer extends SurveyQuestionElementBase {
         // Handle different input types
         const inputType = this.getInputType();
         
+        // Get localized optional text for Ford UI component
+        const optionalText = surveyLocalization.getString("optionalText");
+        
         return (
             <StyledTextField
                 label={title}
                 isRequired={isRequired}
+                requiredMessage={optionalText}
                 placeholder={question.placeholder || ""}
                 value={question.value || ""}
                 isInvalid={isInvalid}

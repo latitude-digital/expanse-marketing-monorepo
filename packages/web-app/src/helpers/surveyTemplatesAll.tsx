@@ -16,6 +16,7 @@ import { SurveyBookeoQuestion } from "../surveysjs_renderers/Bookeo";
 import { EmailTextInput } from "../surveysjs_renderers/EmailTextInput";
 import { SurveyQuestionMarkdown } from "../surveysjs_renderers/Markdown";
 import { FDSTextRenderer } from "../surveysjs_renderers/FDSRenderers/FDSText";
+import "../surveysjs_renderers/FDSRenderers/CustomSurveyQuestion";
 
 import Showdown from "showdown";
 import { registerIcons } from "./fontAwesomeIcons";
@@ -48,6 +49,11 @@ export const initSurvey = () => {
   );
 
   // surveyLocalization.supportedLocales = ["en", "es"];
+  
+  // Add custom localized string for "(Optional)" text
+  surveyLocalization.locales["en"]["optionalText"] = " (Optional)";
+  surveyLocalization.locales["es"]["optionalText"] = " (Opcional)";
+  surveyLocalization.locales["fr"]["optionalText"] = " (Optionnel)";
 
   AllSurveys.globalInit();
 };
