@@ -23,6 +23,8 @@ import Stats from './screens/Stats';
 import Dashboard from './screens/Dashboard';
 import Charts from './screens/Charts';
 
+import FDSDemo from './screens/FDS_Demo';
+
 import BroncoQuiz from './screens/BroncoQuiz';
 
 import Admin from './screens/admin/index';
@@ -45,6 +47,7 @@ root.render(
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />}>
+          <Route path="demo" element={<FDSDemo />} />
           <Route index element={<Home />} />
           <Route path="welcome" element={<Login />} />
           <Route path="auth" element={<Login />} />

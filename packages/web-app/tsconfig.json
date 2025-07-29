@@ -22,7 +22,11 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@ui/ford-ui-components/*": ["../ford-ui/packages/@ui/ford-ui-components/*"]
+      "@ui/ford-ui-components/*": ["../ford-ui/packages/@ui/ford-ui-components/*"],
+      "@ui/atoms/*": ["../ford-ui/packages/@ui/atoms/src/lib/*"],
+      "@common/helpers/*": ["../ford-ui/packages/@common/helpers/src/lib/*"],
+      "@common/interfaces/*": ["../ford-ui/packages/@common/interfaces/src/lib/*"],
+      "@common/utils/*": ["../ford-ui/packages/@common/utils/src/lib/*"]
     }
   },
   "include": [

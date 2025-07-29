@@ -63,7 +63,10 @@ export default defineConfig(({ command, mode }) => {
       alias: {
         '@': path.resolve(__dirname, './src'),
         '@ui/ford-ui-components': path.resolve(__dirname, '../ford-ui/packages/@ui/ford-ui-components'),
-        '@ui/atoms': path.resolve(__dirname, '../ford-ui/packages/@ui/atoms/src'),
+        '@ui/atoms': path.resolve(__dirname, '../ford-ui/packages/@ui/atoms/src/lib'),
+        '@common/helpers': path.resolve(__dirname, '../ford-ui/packages/@common/helpers/src/lib'),
+        '@common/interfaces': path.resolve(__dirname, '../ford-ui/packages/@common/interfaces/src/lib'),
+        '@common/utils': path.resolve(__dirname, '../ford-ui/packages/@common/utils/src/lib'),
         // Add any other aliases that were used in the original app
       }
     },
