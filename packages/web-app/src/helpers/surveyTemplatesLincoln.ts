@@ -8,7 +8,7 @@ import {
   SurveyCreatorModel,
 } from "survey-creator-core";
 
-import { LincolnSurveys } from "meridian-base";
+import { LincolnSurveys } from "../surveyjs_questions";
 
 import { registerIcons } from "./fontAwesomeIcons";
 

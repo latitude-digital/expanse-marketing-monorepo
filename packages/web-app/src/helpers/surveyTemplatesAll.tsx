@@ -20,7 +20,7 @@ import "../surveysjs_renderers/FDSRenderers/CustomSurveyQuestion";
 
 import Showdown from "showdown";
 import { registerIcons } from "./fontAwesomeIcons";
-import { AllSurveys } from "meridian-base";
+import { AllSurveys } from "../surveyjs_questions";
 
 console.log(
   CheckboxVOIQuestion.name,

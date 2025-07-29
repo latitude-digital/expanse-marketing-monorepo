@@ -370,3 +370,64 @@ git submodule update --remote packages/ford-ui  # Update to latest
 ---
 
 **Important**: This Ford UI integration represents significant lessons learned. The theme-scoped CSS variable architecture and automated sync workflow are critical for maintainable multi-brand design systems. Always prioritize CSS variable scoping and automated tooling to prevent human error.
+
+## Custom Survey Question Definitions
+
+Custom SurveyJS question type definitions are in:
+`packages/web-app/src/surveyjs_questions/`
+
+These register new question types with SurveyJS (business logic).
+Visual presentation is handled by existing renderers in surveysjs_renderers/
+
+**MIGRATION COMPLETED**: Previously these were in the separate meridian-base repository.
+As of 2025-07-29, all custom question definitions have been migrated into the web-app package.
+
+### File Structure
+```
+packages/web-app/src/surveyjs_questions/
+├── AllSurveys.ts          # Universal question definitions
+├── FordSurveys.ts         # Ford-specific question definitions  
+├── LincolnSurveys.ts      # Lincoln-specific question definitions
+├── interfaces.d.ts       # TypeScript interfaces for custom questions
+└── index.ts              # Exports all modules
+```
+
+### Available Question Types
+
+**Universal Questions** (AllSurveys.ts):
+- firstname, lastname: Personal information with validation
+- email, phone: Communication fields with custom validation
+- autocompleteaddress, autocompleteaddress2: Google Address Autocomplete
+- optin: Boolean checkbox for agreements
+
+**Ford-Specific Questions** (FordSurveys.ts):
+- fordvoi: Ford Vehicle of Interest selector
+- fordoptin, fordrecommend, fordrecommendpost: Ford brand engagement
+- gender, agebracket, howlikelyacquire: Demographics and purchase intent
+- howlikelypurchasingford, howlikelypurchasingfordpost: Purchase likelihood
+- inmarkettiming: Purchase timing preferences
+- adultwaiver, minorwaiver: Legal waiver components
+- vehicledrivenmostmake: Current vehicle brand tracking
+
+**Lincoln-Specific Questions** (LincolnSurveys.ts):
+- lincolnvoi: Lincoln Vehicle of Interest selector
+- lincolnoptin: Lincoln brand opt-in
+
+### Integration Pattern
+Question definitions are initialized in Survey.tsx before survey creation:
+```typescript
+// Initialize custom question definitions
+AllSurveys.globalInit();
+FordSurveys.fordInit();
+LincolnSurveys.lincolnInit();
+
+const survey = new Model(surveyJSON);
+```
+
+Visual rendering handled by existing FDS renderers with Ford/Lincoln/Unbranded theming.
+
+### Migration Notes
+- Removed dependency on separate meridian-base repository
+- All question definitions now co-located with visual renderers
+- Maintains exact same API and functionality as before
+- No changes required to existing survey JSON or templates

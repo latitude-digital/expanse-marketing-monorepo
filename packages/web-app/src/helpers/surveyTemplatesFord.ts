@@ -10,7 +10,7 @@ import {
 import { registerIcons } from "./fontAwesomeIcons";
 
 import { initThemeFord } from "../themes/surveyJS/ford";
-import { FordSurveys } from "meridian-base";
+import { FordSurveys } from "../surveyjs_questions";
 
 registerIcons([
   "cars",
