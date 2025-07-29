@@ -1,6 +1,7 @@
 import React from "react";
-import { ElementFactory, LocalizableString, QuestionTextModel, Serializer } from "survey-core";
-import { ReactQuestionFactory, SurveyQuestionText } from "survey-react-ui";
+import { ElementFactory, LocalizableString, QuestionTextModel, Serializer, surveyLocalization } from "survey-core";
+import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
+import { StyledTextField } from "@ui/ford-ui-components/src/v2/inputField/Input";
 import { vsprintf } from 'sprintf-js';
 
 const CUSTOM_QUESTION_TYPE = "emailtextinput";
@@ -67,22 +68,65 @@ Serializer.addClass(
     "question"
 );
 
-export class EmailTextInput extends SurveyQuestionText {
+export class EmailTextInput extends SurveyQuestionElementBase {
     constructor(props: any) {
         super(props);
 
         this.question.locDidYouMeanQuestion.setLocaleText('en', 'Did you mean %s?');
         this.question.locDidYouMeanQuestion.setLocaleText('es', '¿Quisiste decir %s?');
         this.question.locDidYouMeanQuestion.setLocaleText('fr', 'Vouliez-vous dire %s?');
+    }
 
-        (this as any).renderInput = () => {
-            return (
-                <>
-                    {super.renderInput()}
-                    {this.question.didYouMean && this.renderDidYouMean()}
-                </>
-            )
-        }
+    protected get question(): QuestionEmailTextModel {
+        return this.questionBase as QuestionEmailTextModel;
+    }
+
+    protected canRender(): boolean {
+        return super.canRender();
+    }
+
+    protected renderElement(): JSX.Element {
+        const question = this.question;
+        
+        // Get the question title and handle required/optional indication
+        const title = question.fullTitle;
+        const isRequired = question.isRequired;
+        
+        // Get error message if validation failed
+        const errorMessage = question.errors.length > 0 
+            ? (question.errors[0].getText ? question.errors[0].getText() : question.errors[0].text)
+            : undefined;
+        const isInvalid = question.errors.length > 0;
+        
+        // Get localized optional text for Ford UI component based on current survey locale
+        const currentLocale = question.survey.locale || 'en';
+        const optionalText = surveyLocalization.locales[currentLocale]?.["optionalText"] || " (Optional)";
+        
+        return (
+            <>
+                <StyledTextField
+                    label={title}
+                    description={question.description}
+                    isRequired={isRequired}
+                    requiredMessage={optionalText}
+                    placeholder={question.placeholder || ""}
+                    value={question.value || ""}
+                    isInvalid={isInvalid}
+                    errorMessage={errorMessage}
+                    type="email"
+                    isDisabled={question.isReadOnly}
+                    onChange={(value: string) => {
+                        question.value = value;
+                    }}
+                    onBlur={() => {
+                        // Trigger validation on blur
+                        question.validate();
+                    }}
+                    data-testid={`email-text-${question.name}`}
+                />
+                {question.didYouMean && this.renderDidYouMean()}
+            </>
+        );
     }
 
     renderDidYouMean = () => {

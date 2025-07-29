@@ -13,8 +13,9 @@ import {
 import { CheckboxVOIQuestion } from "../surveysjs_renderers/CheckboxVOI";
 import { RadioGroupRowQuestion } from "../surveysjs_renderers/RadioButtonButton";
 import { SurveyBookeoQuestion } from "../surveysjs_renderers/Bookeo";
-import { EmailTextInput } from "../surveysjs_renderers/EmailTextInput";
 import { SurveyQuestionMarkdown } from "../surveysjs_renderers/Markdown";
+import { EmailTextInput } from "../surveysjs_renderers/EmailTextInput";
+// Import FDSTextRenderer last to ensure it overrides EmailTextInput for emailtextinput type
 import { FDSTextRenderer } from "../surveysjs_renderers/FDSRenderers/FDSText";
 import "../surveysjs_renderers/FDSRenderers/CustomSurveyQuestion";
 
