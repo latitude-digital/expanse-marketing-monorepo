@@ -39,6 +39,11 @@ const lincolnInit = () => {
         es: "Me interesaría recibir más información sobre los siguientes vehículos.",
         fr: "Je suis intéressé à recevoir plus d'informations sur les véhicules suivants.",
       },
+      "description": {
+        en: "Select up to 3 Lincoln vehicles you're interested in learning more about.",
+        es: "Seleccione hasta 3 vehículos Lincoln sobre los que le gustaría obtener más información.",
+        fr: "Sélectionnez jusqu'à 3 véhicules Lincoln qui vous intéressent pour en savoir plus.",
+      },
       renderAs: "voi",
       maxSelectedChoices: 3,
       choicesByUrl: {

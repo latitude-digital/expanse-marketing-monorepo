@@ -3,6 +3,8 @@ import { RendererFactory, Serializer } from "survey-core";
 import { ReactQuestionFactory, SurveyQuestionCheckbox } from "survey-react-ui";
 import SegmentedControl from '@ui/ford-ui-components/src/v2/segmented-control/SegmentedControl';
 import StyledSelectionCardSmall from '@ui/ford-ui-components/src/v2/selection-card/small/styled/StyledSelectionCardSmall';
+import { FDSQuestionWrapper } from '../FDSRenderers/FDSShared/FDSQuestionWrapper';
+import { useQuestionValidation } from '../FDSRenderers/FDSShared';
 
 import { trim } from "lodash";
 
@@ -18,6 +20,8 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
         // No custom CSS classes needed - using Ford UI SelectionCard
 
         (this as any).getBody = (cssClasses: any) => {
+            // Detect brand from choicesByUrl or question type name
+            const isFordBrand = this.isFordBrand();
             let filteredItems = this.question.bodyItems;
             const tabs = [
                 { key: 'ford-suvs', label: 'Ford SUVs' },
@@ -28,23 +32,23 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
             // Create mapping from item ID to original JSON data
             const originalDataMap = new Map();
             
-            // SOLUTION: Fetch Ford JSON data directly since SurveyJS loses originalData
-            // Use the same URL as configured in the Ford VOI question
-            const fordJsonUrl = this.question.choicesByUrl?.url || 'https://cdn.latitudewebservices.com/vehicles/ford.json';
+            // Fetch vehicle JSON data directly since SurveyJS loses originalData
+            // Use the URL from the question configuration
+            const vehicleJsonUrl = this.question.choicesByUrl?.url || 'https://cdn.latitudewebservices.com/vehicles/ford.json';
             
-            console.log('VOI getBody: Attempting to fetch Ford JSON directly from:', fordJsonUrl);
+            console.log('VOI getBody: Attempting to fetch vehicle JSON directly from:', vehicleJsonUrl);
             
-            // Check if we've already cached the Ford data to avoid repeated fetches
-            if (!(this as any).fordVehiclesCache) {
-                console.log('VOI getBody: No cached Ford data, fetching...');
+            // Check if we've already cached the vehicle data to avoid repeated fetches
+            if (!(this as any).vehiclesCache) {
+                console.log('VOI getBody: No cached vehicle data, fetching...');
                 
                 // Store a promise so multiple renders don't trigger multiple fetches
-                if (!(this as any).fordDataPromise) {
-                    (this as any).fordDataPromise = fetch(fordJsonUrl)
+                if (!(this as any).vehicleDataPromise) {
+                    (this as any).vehicleDataPromise = fetch(vehicleJsonUrl)
                         .then(response => response.json())
                         .then(data => {
-                            console.log(`VOI getBody: Successfully fetched ${data.length} Ford vehicles`);
-                            (this as any).fordVehiclesCache = data;
+                            console.log(`VOI getBody: Successfully fetched ${data.length} vehicles`);
+                            (this as any).vehiclesCache = data;
                             
                             // Create the mapping
                             data.forEach((vehicle: any) => {
@@ -63,18 +67,18 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
                             return data;
                         })
                         .catch(error => {
-                            console.error('VOI getBody: Failed to fetch Ford vehicles:', error);
+                            console.error('VOI getBody: Failed to fetch vehicles:', error);
                             return [];
                         });
                 }
                 
                 // Return empty filtered items for now, will update after fetch completes
-                console.log('VOI getBody: Waiting for Ford data to load...');
+                console.log('VOI getBody: Waiting for vehicle data to load...');
             } else {
-                console.log(`VOI getBody: Using cached Ford data (${(this as any).fordVehiclesCache.length} vehicles)`);
+                console.log(`VOI getBody: Using cached vehicle data (${(this as any).vehiclesCache.length} vehicles)`);
                 
                 // Use cached data to create the mapping
-                (this as any).fordVehiclesCache.forEach((vehicle: any) => {
+                (this as any).vehiclesCache.forEach((vehicle: any) => {
                     originalDataMap.set(vehicle.id, vehicle);
                     originalDataMap.set(String(vehicle.id), vehicle);
                 });
@@ -110,67 +114,84 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
                 }
             }
 
-            // Type filtering based on selected tab
-            const selectedTab = tabs.find(tab => tab.key === this.state.selectedTabKey);
-            const vehicleType = selectedTab?.label || 'Ford SUVs';
-            
-            // Apply vehicle type filtering based on selected tab
-            // Get original JSON data from the choices mapping
-            const beforeFilterCount = filteredItems.length;
-            filteredItems = filteredItems.filter((item: any, index: number) => {
-                // Look up original data using item value (ID)
-                const originalData = originalDataMap.get(item.value);
-                const itemType = originalData?.type;
+            // Apply vehicle type filtering only for Ford brand
+            if (isFordBrand) {
+                // Type filtering based on selected tab
+                const selectedTab = tabs.find(tab => tab.key === this.state.selectedTabKey);
+                const vehicleType = selectedTab?.label || 'Ford SUVs';
                 
-                // Debug logging for first few items
-                if (index < 5) {
-                    console.log(`Filtering debug [${index}]:`, {
-                        itemValue: item.value,
-                        itemId: item.id, 
-                        hasOriginalData: !!originalData,
-                        itemType,
-                        vehicleType,
-                        matches: itemType === vehicleType,
-                        originalDataKeys: originalData ? Object.keys(originalData) : 'none',
-                        mapKeys: Array.from(originalDataMap.keys()).slice(0, 5)
-                    });
-                }
+                // Apply vehicle type filtering based on selected tab
+                // Get original JSON data from the choices mapping
+                const beforeFilterCount = filteredItems.length;
+                filteredItems = filteredItems.filter((item: any, index: number) => {
+                    // Look up original data using item value (ID)
+                    const originalData = originalDataMap.get(item.value);
+                    const itemType = originalData?.type;
+                    
+                    // Debug logging for first few items
+                    if (index < 5) {
+                        console.log(`Filtering debug [${index}]:`, {
+                            itemValue: item.value,
+                            itemId: item.id, 
+                            hasOriginalData: !!originalData,
+                            itemType,
+                            vehicleType,
+                            matches: itemType === vehicleType,
+                            originalDataKeys: originalData ? Object.keys(originalData) : 'none',
+                            mapKeys: Array.from(originalDataMap.keys()).slice(0, 5)
+                        });
+                    }
+                    
+                    if (!itemType) {
+                        console.log('No type found for item:', { 
+                            itemValue: item.value, 
+                            itemId: item.id,
+                            hasOriginalData: !!originalData,
+                            originalData: originalData ? Object.keys(originalData) : 'none'
+                        });
+                        return false; // Hide items without type info
+                    }
+                    
+                    return itemType === vehicleType;
+                });
                 
-                if (!itemType) {
-                    console.log('No type found for item:', { 
-                        itemValue: item.value, 
-                        itemId: item.id,
-                        hasOriginalData: !!originalData,
-                        originalData: originalData ? Object.keys(originalData) : 'none'
-                    });
-                    return false; // Hide items without type info
-                }
-                
-                return itemType === vehicleType;
-            });
-            
-            console.log(`Filtering: ${beforeFilterCount} → ${filteredItems.length} vehicles for "${vehicleType}"`);
+                console.log(`Filtering: ${beforeFilterCount} → ${filteredItems.length} vehicles for "${vehicleType}"`);
+            } else {
+                // For Lincoln, show all vehicles without filtering
+                console.log(`Lincoln brand: showing all ${filteredItems.length} vehicles without type filtering`);
+            }
             
             // Store the mapping for use in renderItem
             (this as any).originalDataMap = originalDataMap;
 
-            console.log(`Filtered ${filteredItems.length} vehicles for ${vehicleType}`);
+            // Get validation state for FDS wrapper
+            const errorMessage = this.question.errors?.length > 0 ? this.question.errors[0].text : undefined;
+            const isInvalid = this.question.errors?.length > 0;
 
             return (
-                <div>
-                    <div className="flex justify-center">
-                        <SegmentedControl 
-                            tabs={tabs}
-                            className="w-[360px]"
-                            selectedKey={this.state.selectedTabKey}
-                            onValueChange={this.setSelectedTabKey}
-                            variant="forms"
-                        />
-                    </div>
-                    <div className="flex flex-wrap justify-center gap-4 mt-6">
+                <FDSQuestionWrapper
+                    label={this.question.fullTitle || this.question.title || "I am interested in receiving more information on the following vehicles."}
+                    description={this.question.description}
+                    isRequired={this.question.isRequired}
+                    isInvalid={isInvalid}
+                    errorMessage={errorMessage}
+                    question={this.question}
+                >
+                    {isFordBrand && (
+                        <div className="flex justify-center mb-6">
+                            <SegmentedControl 
+                                tabs={tabs}
+                                className="w-[360px]"
+                                selectedKey={this.state.selectedTabKey}
+                                onValueChange={this.setSelectedTabKey}
+                                variant="forms"
+                            />
+                        </div>
+                    )}
+                    <div className={`flex flex-wrap justify-center gap-4`}>
                         {this.getItems(cssClasses, filteredItems)}
                     </div>
-                </div>
+                </FDSQuestionWrapper>
             )
         }
 
@@ -272,6 +293,29 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
 
     setSelectedTabKey = (key: string) => {
         this.setState({ selectedTabKey: key });
+    }
+
+    isFordBrand = () => {
+        // Check choicesByUrl first (most reliable)
+        const url = this.question.choicesByUrl?.url;
+        if (url && url.includes('ford.json')) {
+            return true;
+        }
+        if (url && url.includes('lincoln.json')) {
+            return false;
+        }
+        
+        // Fallback: Check question type name
+        const questionType = this.question.getType();
+        if (questionType === 'fordvoi') {
+            return true;
+        }
+        if (questionType === 'lincolnvoi') {
+            return false;
+        }
+        
+        // Default to Ford if we can't detect
+        return true;
     }
 }
 
