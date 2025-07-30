@@ -1,0 +1,140 @@
+{
+  "title": "Comprehensive FDS Renderers Test Survey",
+  "description": "Testing all 6 core question types with Ford Design System components",
+  "pages": [
+    {
+      "name": "page1",
+      "title": "Personal Information",
+      "elements": [
+        {
+          "type": "text",
+          "name": "firstName",
+          "title": "**First Name** (with markdown)",
+          "description": "Please enter your *first name* here",
+          "isRequired": true,
+          "placeholder": "Enter your first name"
+        },
+        {
+          "type": "text",
+          "name": "lastName", 
+          "title": "Last Name",
+          "description": "Please enter your last name",
+          "isRequired": true,
+          "placeholder": "Enter your last name"
+        },
+        {
+          "type": "text",
+          "name": "email",
+          "title": "Email Address",
+          "inputType": "email",
+          "isRequired": true,
+          "placeholder": "Enter your email address",
+          "validators": [
+            {
+              "type": "email"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "name": "phone",
+          "title": "Phone Number",
+          "inputType": "tel",
+          "isRequired": false,
+          "placeholder": "Enter your phone number"
+        }
+      ]
+    },
+    {
+      "name": "page2", 
+      "title": "Preferences & Choices",
+      "elements": [
+        {
+          "type": "radiogroup",
+          "name": "favoriteColor",
+          "title": "What is your **favorite color**?",
+          "description": "Choose one option from the list below",
+          "isRequired": true,
+          "choices": [
+            {"value": "red", "text": "Red"},
+            {"value": "blue", "text": "Blue"}, 
+            {"value": "green", "text": "Green"},
+            {"value": "purple", "text": "Purple"},
+            {"value": "other", "text": "Other"}
+          ]
+        },
+        {
+          "type": "checkbox",
+          "name": "interests",
+          "title": "What are your **interests**? (Select all that apply)",
+          "description": "Check all options that *interest* you",
+          "isRequired": false,
+          "choices": [
+            {"value": "sports", "text": "Sports"},
+            {"value": "music", "text": "Music"},
+            {"value": "technology", "text": "Technology"},
+            {"value": "travel", "text": "Travel"},
+            {"value": "cooking", "text": "Cooking"},
+            {"value": "reading", "text": "Reading"}
+          ]
+        },
+        {
+          "type": "dropdown",
+          "name": "country",
+          "title": "Country of Residence",
+          "description": "Select your current country of residence",
+          "isRequired": true,
+          "placeholder": "Please select a country...",
+          "choices": [
+            {"value": "us", "text": "United States"},
+            {"value": "ca", "text": "Canada"},
+            {"value": "uk", "text": "United Kingdom"},
+            {"value": "de", "text": "Germany"},
+            {"value": "fr", "text": "France"},
+            {"value": "au", "text": "Australia"},
+            {"value": "jp", "text": "Japan"},
+            {"value": "other", "text": "Other"}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "page3",
+      "title": "Additional Information",
+      "elements": [
+        {
+          "type": "comment",
+          "name": "additionalComments",
+          "title": "Additional Comments",
+          "description": "Please share any additional thoughts or feedback",
+          "isRequired": false,
+          "placeholder": "Your comments here...",
+          "rows": 5,
+          "maxLength": 500
+        },
+        {
+          "type": "boolean",
+          "name": "newsletter",
+          "title": "Newsletter Subscription",
+          "description": "Would you like to receive our **monthly newsletter** with updates and special offers?",
+          "isRequired": false,
+          "labelTrue": "Yes, subscribe me",
+          "labelFalse": "No, thanks"
+        },  
+        {
+          "type": "boolean",
+          "name": "termsAccepted",
+          "title": "Terms and Conditions",
+          "description": "Please confirm that you have read and accept our [terms and conditions](https://example.com/terms)",
+          "isRequired": true,
+          "labelTrue": "I accept",
+          "labelFalse": "I decline"
+        }
+      ]
+    }
+  ],
+  "showQuestionNumbers": "off",
+  "showProgressBar": "bottom",
+  "completedHtml": "<h3>Thank you for completing the survey!</h3><p>All FDS renderers are working correctly.</p>",
+  "requiredText": ""
+}
