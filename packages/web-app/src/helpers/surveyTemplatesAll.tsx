@@ -15,8 +15,13 @@ import { RadioGroupRowQuestion } from "../surveysjs_renderers/RadioButtonButton"
 import { SurveyBookeoQuestion } from "../surveysjs_renderers/Bookeo";
 import { SurveyQuestionMarkdown } from "../surveysjs_renderers/Markdown";
 import { EmailTextInput } from "../surveysjs_renderers/EmailTextInput";
-// Import FDSTextRenderer last to ensure it overrides EmailTextInput for emailtextinput type
+// Import FDS renderers to override default SurveyJS renderers
 import { FDSTextRenderer } from "../surveysjs_renderers/FDSRenderers/FDSText";
+import { FDSRadioRenderer } from "../surveysjs_renderers/FDSRenderers/FDSRadio";
+import { FDSCheckboxRenderer } from "../surveysjs_renderers/FDSRenderers/FDSCheckbox";
+import { FDSDropdownRenderer } from "../surveysjs_renderers/FDSRenderers/FDSDropdown";
+import { FDSTextAreaRenderer } from "../surveysjs_renderers/FDSRenderers/FDSTextArea";
+import { FDSToggleRenderer } from "../surveysjs_renderers/FDSRenderers/FDSToggle";
 import "../surveysjs_renderers/FDSRenderers/CustomSurveyQuestion";
 
 import Showdown from "showdown";
@@ -30,6 +35,11 @@ console.log(
   EmailTextInput.name,
   SurveyQuestionMarkdown.name,
   FDSTextRenderer.name,
+  FDSRadioRenderer.name,
+  FDSCheckboxRenderer.name,
+  FDSDropdownRenderer.name,
+  FDSTextAreaRenderer.name,
+  FDSToggleRenderer.name,
 );
 
 const converter = new Showdown.Converter({
