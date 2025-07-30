@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FDS Text Test</title>
+</head>
+<body>
+    <h1>FDS Text Test</h1>
+    <p>Testing FDSText with simple survey JSON</p>
+    
+    <script>
+        // Simple test to verify text input works
+        const testSurvey = {
+            "pages": [{
+                "elements": [{
+                    "type": "text",
+                    "name": "firstName",
+                    "title": "**First Name** (with markdown)",
+                    "description": "Please enter your *first name* here",
+                    "isRequired": true,
+                    "placeholder": "Enter your first name"
+                }, {
+                    "type": "text",
+                    "name": "email",
+                    "title": "Email Address",
+                    "inputType": "email",
+                    "isRequired": true,
+                    "placeholder": "Enter your email"
+                }]
+            }]
+        };
+        
+        console.log('Test Survey JSON:', JSON.stringify(testSurvey, null, 2));
+    </script>
+</body>
+</html>
