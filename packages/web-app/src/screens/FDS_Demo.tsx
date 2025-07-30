@@ -21,7 +21,7 @@ import { Typography } from "@ui/ford-ui-components/src/v2/typography/Typography"
 
 
 const DemoScreen: React.FC = () => {
-  const [currentBrand, setCurrentBrand] = useState<'ford' | 'lincoln' | 'unbranded'>('ford');
+  const [currentBrand, setCurrentBrand] = useState<'ford' | 'lincoln'>('ford');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   const basicOptions = [{
@@ -85,10 +85,8 @@ const DemoScreen: React.FC = () => {
   return (
     <div className="gdux-ford">
       <div id="fd-nxt" className={
-        currentBrand === 'ford' ? `ford_${theme}` :
-          currentBrand === 'lincoln' ? `lincoln_${theme}` :
-            'unbranded'
-      }>
+          currentBrand === 'ford' ? `ford_${theme}` : `lincoln_${theme}`
+        }>
         {/* Brand Switcher with Language Selector */}
         <div style={{
           padding: '10px',
@@ -101,18 +99,13 @@ const DemoScreen: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <button
               onClick={() => {
-                const nextBrand: 'ford' | 'lincoln' | 'unbranded' =
-                  currentBrand === 'ford' ? 'lincoln' :
-                    currentBrand === 'lincoln' ? 'unbranded' :
-                      'ford';
+                const nextBrand = currentBrand === 'ford' ? 'lincoln' : 'ford';
                 setCurrentBrand(nextBrand);
               }}
               style={{
                 padding: '8px 16px',
                 backgroundColor:
-                  currentBrand === 'ford' ? '#999999' :
-                    currentBrand === 'lincoln' ? '#cccccc' :
-                      '#0066cc',
+                  currentBrand === 'ford' ? '#999999' : '#0066cc',
                 color: 'white',
                 border: 'none',
                 borderRadius: '4px',
@@ -122,15 +115,14 @@ const DemoScreen: React.FC = () => {
             >
               Switch to {
                 currentBrand === 'ford' ? 'Lincoln' :
-                  currentBrand === 'lincoln' ? 'Unbranded' :
+                  currentBrand === 'lincoln' ? 'ford' :
                     'Ford'
               }
             </button>
-
+{/* 
             <button
               onClick={() => {
-                const nextTheme: 'light' | 'dark' =
-                  theme === 'light' ? 'dark' : 'light';
+                const nextTheme = theme === 'light' ? 'dark' : 'light';
                 setTheme(nextTheme);
               }}
               style={{
@@ -147,7 +139,7 @@ const DemoScreen: React.FC = () => {
               Switch to {
                 theme === 'light' ? 'dark' : 'light'
               }
-            </button>
+            </button> */}
 
             <span style={{ marginLeft: '10px', fontWeight: 'bold' }}>
               Current Style: {currentBrand}-{theme}

@@ -2,15 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Ford UI Design System - Essential CSS imports from working Storybook config */
-/* Use absolute paths from project root to avoid context resolution issues */
-@import '/src/styles/ford/_variables.css';
+/* Ford UI Design System - Complete theme support */
 @import '/src/styles/ford/ford.css';
-@import '/src/styles/ford/ford-font-families.css';
-
-/* Lincoln UI Design System - CSS imports for brand switching */
-@import '/src/styles/lincoln/_variables.css';
 @import '/src/styles/lincoln/lincoln.css';
+@import '/src/styles/ford/ford-font-families.css';
 @import '/src/styles/lincoln/lincoln-font-families.css';
 
 /* Unbranded Theme - Generic styling without brand-specific variables */

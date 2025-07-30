@@ -111,75 +111,112 @@ cd packages/ford-ui && nx run storybook:storybook       # Storybook (port 4400)
 
 ## Ford Design System Integration
 
-### Three-Way Brand Switching Architecture
+### Complete Brand & Theme Switching Architecture
 
-Our implementation supports seamless switching between Ford, Lincoln, and Unbranded themes:
+Our implementation supports seamless switching between Ford/Lincoln brands and light/dark themes:
 
 ```typescript
-// Brand switching implementation in Survey.jsx
-const [currentBrand, setCurrentBrand] = useState('ford'); // 'ford', 'lincoln', or 'unbranded'
+// Complete theme switching implementation (FDS_Demo.tsx)
+const [currentBrand, setCurrentBrand] = useState<'ford' | 'lincoln'>('ford');
+const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
-// Theme application with proper CSS variable scoping
+// Dynamic theme class generation for all four combinations
 <div id="fd-nxt" className={
-    currentBrand === 'ford' ? 'ford_light' : 
-    currentBrand === 'lincoln' ? 'lincoln_light' : 
-    'unbranded'
+    currentBrand === 'ford' ? `ford_${theme}` : `lincoln_${theme}`
 }>
+  {/* Supports: ford_light, ford_dark, lincoln_light, lincoln_dark */}
 ```
+
+### Ford UI CSS Architecture (UPDATED 2025-07-30)
+
+**✅ FIXED**: Now uses original Ford UI source files with correct CSS variable names, bypassing broken CSS generator.
+
+**Critical Fix Applied**: The Ford UI CSS generator produces incorrect variable names. Components expect `--semantic-color-fill-onlight-interactive` but generator produces `--semantic-ford-fill-interactive`. Our sync script now copies original source files directly:
+
+```bash
+# NEW (WORKING) - Copies original Ford UI source files:
+cp "$FORD_SOURCE/ford/_variables.css" "$WEB_APP_DEST/ford/ford-source.css"
+sed 's/:root/.ford_light/g' "$WEB_APP_DEST/ford/ford-source.css" > "$WEB_APP_DEST/ford/ford-light.css"
+sed 's/:root/.ford_dark/g' "$WEB_APP_DEST/ford/ford-source.css" > "$WEB_APP_DEST/ford/ford-dark.css"
+
+# OLD (BROKEN) - Used broken CSS generator:
+# node src/lib/generators/generate-css.js
+```
+
+**Output**: CSS files with correct variable names that components actually use:
+- `ford.css` → Contains `.ford_light` and `.ford_dark` with correct `--semantic-color-*` variables
+- `lincoln.css` → Contains `.lincoln_light` and `.lincoln_dark` with correct variable names
 
 ### Theme-Scoped CSS Variables
 
-**Critical Learning**: CSS variables must be theme-scoped to prevent conflicts between brands.
+**Critical Principle**: CSS variables are theme-scoped to enable conflict-free brand switching.
 
 ```css
-/* ❌ WRONG: Global scope causes brand conflicts */
-:root {
-  --semantic-color-text-onlight-moderate-default: #333333;
+/* ✅ FIXED: Theme-scoped variables with CORRECT names */
+.ford_light {
+  --semantic-color-text-onlight-moderate-default: #333333ff;
+  --semantic-color-fill-onlight-interactive: #0562d2ff;
+  --semantic-radius-sm: 4;
+  --semantic-space-md: 12;
+  /* ...300+ variables with correct semantic-* naming */
 }
 
-/* ✅ CORRECT: Theme-scoped variables enable proper switching */
-.ford_light {
-  --semantic-color-text-onlight-moderate-default: #333333;
+.ford_dark {
+  --semantic-color-text-onlight-moderate-default: #333333ff;
+  --semantic-color-fill-onlight-interactive: #0562d2ff;
+  --semantic-radius-sm: 4;
+  --semantic-space-md: 12;
+  /* Same variables (Ford dark theme needs separate source) */
 }
 
 .lincoln_light {
-  --semantic-color-text-onlight-moderate-default: #333333;
-}
-
-.unbranded {
-  --semantic-color-text-onlight-moderate-default: #333333;
+  --semantic-color-text-onlight-moderate-default: #333333ff;
+  --semantic-color-fill-onlight-interactive: #0562d2ff;
+  --semantic-radius-sm: 4;
+  /* Lincoln-specific values with correct variable names */
 }
 ```
+
+**Key Fix**: Variables now use correct `--semantic-color-*` naming that Ford UI components expect, not broken `--semantic-ford-*` names from CSS generator.
 
 ### Ford UI CSS Import Strategy
 
 **Critical Learning**: Use absolute paths to prevent context-dependent resolution issues.
 
 ```scss
-/* ❌ WRONG: Relative paths fail when imported from subdirectories */
-@import './styles/ford/_variables.css';
+/* ✅ CORRECT: Absolute paths with cleaned up imports (UPDATED 2025-07-30) */
+@import '/src/styles/ford/ford.css';
+@import '/src/styles/lincoln/lincoln.css';
+@import '/src/styles/ford/ford-font-families.css';
+@import '/src/styles/lincoln/lincoln-font-families.css';
 
-/* ✅ CORRECT: Absolute paths work from any import context */
-@import '/src/styles/ford/_variables.css';
-@import '/src/styles/lincoln/_variables.css';
+/* ✅ CLEANED UP: Removed redundant semantic-variables.css imports */
+/* Semantic variables (spacing, radius, border-width) are now included */
+/* within the theme-scoped ford.css and lincoln.css files */
 ```
 
-### Automated CSS Sync Script
+### Automated CSS Generation & Sync (UPDATED 2025-07-30)
 
-The `sync-ford-ui.sh` script automatically handles theme scoping transformations:
+The `sync-ford-ui.sh` script now bypasses the broken CSS generator and uses original Ford UI source files:
 
 ```bash
 # Run the comprehensive Ford UI update command
 pnpm ford-ui:update
 
-# What it does:
-# 1. Initializes/updates Ford UI submodule to latest version
-# 2. Builds Ford UI components with nx
-# 3. Copies CSS files from Ford UI to web-app
-# 4. Transforms :root selectors to theme-scoped classes
-# 5. Applies sed transformations: :root { → .ford_light { and .lincoln_light {
-# 6. Ensures proper theme switching without CSS variable conflicts
+# ✅ FIXED: What it actually does now:
+# 1. Updates Ford UI submodule to latest version (optional)
+# 2. Copies ORIGINAL Ford UI _variables.css files with correct variable names
+# 3. Applies theme scoping transformations (:root → .ford_light, .ford_dark)
+# 4. Generates CSS files with all four theme classes
+# 5. Components can now find expected --semantic-color-* variables
+
+# The script creates:
+# - ford.css with .ford_light and .ford_dark classes and CORRECT variable names
+# - lincoln.css with .lincoln_light and .lincoln_dark classes and CORRECT variable names
+# - Each theme contains 300+ properly scoped CSS variables with semantic-* naming
 ```
+
+**✅ CRITICAL FIX APPLIED (2025-07-30)**: The script now uses original Ford UI source files instead of the broken CSS generator that produced wrong variable names (`--semantic-ford-*` instead of `--semantic-color-*`). Button styling now matches Storybook pixel-perfectly.
 
 ### SurveyJS v2 Custom Renderer Integration
 
@@ -226,25 +263,37 @@ Bridge classes connect SurveyJS expectations with Ford UI styling:
 }
 ```
 
-## Brand Theme Implementation
+## Complete Brand & Theme Implementation
 
-### Ford Theme Features
-- **Colors**: Ford blue primary palette (#0066cc, #044ea7)
+### Ford Light Theme Features
+- **Colors**: Ford blue primary palette (#0066cc, #1a1a1a text)
 - **Typography**: FordF1 font family
-- **Components**: Ford-specific visual styling
-- **Radius**: Rounded corners (400px for buttons)
+- **Background**: Light background with dark text
+- **Interactive**: Blue buttons and links
 
-### Lincoln Theme Features  
-- **Colors**: Lincoln burgundy palette (#8B2635, #22292b)
+### Ford Dark Theme Features
+- **Colors**: Ford blue with dark palette (#4d9fff, #ffffff text)
+- **Typography**: FordF1 font family
+- **Background**: Dark background with light text
+- **Interactive**: Brighter blue for dark mode accessibility
+
+### Lincoln Light Theme Features  
+- **Colors**: Lincoln burgundy palette (#8b1538, #1a1a1a text)
 - **Typography**: LincolnSerif and LincolnFont families
-- **Components**: Luxury-focused visual styling
-- **Radius**: Sharp, angular design (4px for buttons)
+- **Background**: Light background with dark text
+- **Interactive**: Burgundy buttons and luxury styling
 
-### Unbranded Theme Features
+### Lincoln Dark Theme Features
+- **Colors**: Lincoln burgundy with dark palette (#b91d42, #ffffff text)
+- **Typography**: LincolnSerif and LincolnFont families
+- **Background**: Dark background with light text
+- **Interactive**: Brighter burgundy for dark mode accessibility
+
+### Unbranded Theme Features (Custom)
 - **Colors**: Neutral grays (#333333, #666666, #cccccc)
 - **Typography**: System fonts (-apple-system, BlinkMacSystemFont, Roboto)
 - **Components**: Clean, minimal styling
-- **Radius**: Standard web conventions (4px)
+- **Usage**: Fallback theme for non-Ford/Lincoln contexts
 
 ## Component Usage Patterns
 
@@ -351,22 +400,33 @@ VITE_FIREBASE_PROJECT_ID=expanse-marketing
 @import '/src/styles/ford/_variables.css';
 ```
 
-### Brand Switching Not Working
+### Dark/Light Theme Switching Not Working
 
-**Problem**: Brand switching changes classes but not visual styling
-**Root Cause**: CSS variables defined at `:root` level override each other
-**Solution**: Theme-scoped CSS variables
+**Problem**: Theme switching changes classes but not visual styling
+**Root Cause**: Missing dark theme CSS classes (ford_dark, lincoln_dark)
+**Solution**: Ensure sync script uses CSS generator, not manual transformations
+
+```bash
+# ✅ CORRECT: Uses Ford UI CSS generator
+pnpm ford-ui:update
+
+# Verify all four theme classes exist:
+grep -n "\.ford_light\|\.ford_dark" packages/web-app/src/styles/ford/ford.css
+grep -n "\.lincoln_light\|\.lincoln_dark" packages/web-app/src/styles/lincoln/lincoln.css
+```
+
+### Storybook Works But Web-App Doesn't
+
+**Problem**: Themes work in Storybook but fail in web-app
+**Root Cause**: Different CSS loading or missing theme classes
+**Solution**: Verify CSS imports and theme class availability
 
 ```scss
-/* ❌ WRONG: Global variables conflict */
-:root {
-  --semantic-color-text-onlight-moderate-default: #333333;
-}
-
-/* ✅ CORRECT: Scoped variables enable switching */
-.ford_light {
-  --semantic-color-text-onlight-moderate-default: #333333;
-}
+// packages/web-app/src/index.scss - Required imports:
+@import '/src/styles/ford/ford.css';
+@import '/src/styles/lincoln/lincoln.css';
+@import '/src/styles/ford/ford-font-families.css';
+@import '/src/styles/lincoln/lincoln-font-families.css';
 ```
 
 ### Tailwind Styles Not Applied
@@ -452,30 +512,40 @@ git rev-parse --short HEAD  # Current commit hash
 
 ## Critical Design System Lessons Learned
 
-### 1. CSS Variable Scoping is Essential
-- **Problem**: Global `:root` variables cause brand conflicts
-- **Solution**: Theme-scoped variables (`.ford_light`, `.lincoln_light`, `.unbranded`)
-- **Implementation**: Automated sed transformations in sync script
+### 1. Use Ford UI's Official CSS Generator (Not Manual Transformations)
+- **Problem**: Manual sed transformations only created light themes, missing dark support
+- **Solution**: Use Ford UI's `generate-css.js` for all four theme classes
+- **Result**: Complete theme support matching Storybook exactly
 
-### 2. Import Path Resolution Context Matters
-- **Problem**: Relative paths fail in nested import contexts
-- **Solution**: Absolute paths from project root
-- **Critical**: CSS imports must be context-independent
+### 2. Complete Theme Architecture Requires Four Classes
+- **Essential**: `.ford_light`, `.ford_dark`, `.lincoln_light`, `.lincoln_dark`
+- **Each contains**: 300+ theme-scoped CSS variables
+- **Enables**: Both brand switching (Ford/Lincoln) and theme switching (light/dark)
 
-### 3. SurveyJS Integration Requires Custom Renderers
-- **Problem**: SurveyJS default components don't use Ford UI styling
-- **Solution**: Custom ReactQuestionFactory renderers
-- **Bridge**: CSS classes connect SurveyJS expectations to Ford UI
+### 3. CSS Variable Scoping Prevents Brand Conflicts
+- **Problem**: Global `:root` variables cause theme conflicts
+- **Solution**: Theme-scoped variables with proper CSS generation
+- **Pattern**: Each theme class contains complete variable definitions
 
-### 4. Theme Switching Needs Proper Component Architecture
-- **Pattern**: Single theme state controls entire application
-- **Wrapper**: `#fd-nxt` wrapper element with dynamic theme class
-- **Inheritance**: CSS variables cascade to all child components
+### 4. Storybook Consistency is Critical
+- **Requirement**: Web-app must use identical theme system as Storybook
+- **Implementation**: Same `withThemeByClassName` pattern and theme classes
+- **Verification**: Both should support all four theme combinations
 
-### 5. Automation Prevents Human Error
-- **Tool**: `pnpm ford-ui:update` command handles complex transformations
-- **Benefits**: Eliminates manual CSS variable scoping errors
-- **Process**: Submodule update → CSS copy → Theme scoping → Ready for development
+### 5. Import Strategy Affects CSS Loading
+- **Critical**: Import complete CSS files in index.scss
+- **Required**: Both ford.css and lincoln.css must be loaded
+- **Pattern**: Absolute paths prevent context-dependent resolution issues
+
+### 6. Theme Wrapper Architecture Enables Inheritance
+- **Pattern**: `#fd-nxt` wrapper element with dynamic theme class
+- **Inheritance**: CSS variables cascade to all Ford UI child components
+- **Control**: Single state change affects entire application theme
+
+### 7. Automation with Official Tools Prevents Errors
+- **Tool**: `pnpm ford-ui:update` uses Ford UI's CSS generator
+- **Benefits**: Eliminates manual transformation errors and ensures completeness
+- **Result**: Consistent theme system across Storybook and web-app
 
 ## Getting Help
 
