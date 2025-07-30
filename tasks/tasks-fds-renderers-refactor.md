@@ -126,7 +126,7 @@
 ### 3.0 Core Selection Renderers
 **Goal:** Implement checkbox and radio renderers (most critical for surveys)
 
-- [ ] **3.1 Refactor FDSCheckbox to use real Checkbox component**
+- [x] **3.1 Refactor FDSCheckbox to use real Checkbox component**
   - Import `Checkbox` from `@ui/ford-ui-components/src/v2/checkbox/Checkbox`
   - Replace existing custom HTML implementation
   - Use Pattern B approach with FDSQuestionWrapper
@@ -137,26 +137,26 @@
     - Handle `onChange` to update SurveyJS array
   - Wrap entire group with FDSQuestionWrapper
 
-- [ ] **3.2 Implement FDSRadio with RadioButtonGroup**
+- [x] **3.2 Implement FDSRadio with RadioButtonGroup**
   - Create `packages/web-app/src/surveysjs_renderers/FDSRenderers/FDSRadio.tsx`
   - Import `RadioButtonGroup` from `@ui/ford-ui-components/src/v2/radio/RadioButtonGroup`
-  - Use Pattern B approach with FDSQuestionWrapper
+  - Use Pattern A approach (RadioButtonGroup has built-in wrapper with groupLabel, description, errorMessage)
   - Map SurveyJS props:
-    - `groupLabel=""` (empty since wrapper handles label)
+    - `groupLabel={question.fullTitle}`
     - `name={question.name}`
     - `options={question.choices.map(choice => ({ value: choice.value, label: choice.text, isDisabled: question.isReadOnly }))}`
     - `value={question.value}`
     - `onChange={(value) => question.value = value}`
   - Register with ReactQuestionFactory for "radiogroup" type
 
-- [ ] **3.3 Test checkbox and radio with complex selection scenarios**
+- [x] **3.3 Test checkbox and radio with complex selection scenarios**
   - Create test survey with multiple checkbox groups
   - Test radio button groups with various options
   - Verify state management works correctly (arrays for checkbox, single values for radio)
   - Test Ford and Lincoln theme switching
   - Validate accessibility (ARIA labels, keyboard navigation)
 
-- [ ] **3.4 Validate theme inheritance**
+- [x] **3.4 Validate theme inheritance**
   - Confirm both renderers inherit Ford/Lincoln theme colors
   - Test in Survey.tsx with proper #fd-nxt wrapper
   - Verify CSS variables cascade correctly
