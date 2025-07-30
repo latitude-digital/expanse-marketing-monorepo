@@ -62,12 +62,118 @@ cat "$WEB_APP_DEST/lincoln/lincoln-light.css" "$WEB_APP_DEST/lincoln/lincoln-dar
 rm -f "$WEB_APP_DEST/ford/ford-source.css" "$WEB_APP_DEST/ford/ford-light.css" "$WEB_APP_DEST/ford/ford-dark.css"
 rm -f "$WEB_APP_DEST/lincoln/lincoln-source.css" "$WEB_APP_DEST/lincoln/lincoln-light.css" "$WEB_APP_DEST/lincoln/lincoln-dark.css"
 
-# Copy font files (these don't need theme scoping)
+# Copy and fix font files
+echo "📁 Copying Ford font families (no changes needed)..."
 cp "$FORD_SOURCE/ford/ford-font-families.css" "$WEB_APP_DEST/ford/"
+
+echo "🔧 Copying and fixing Lincoln font families (protocol-relative URLs → HTTPS)..."
 cp "$FORD_SOURCE/lincoln/lincoln-font-families.css" "$WEB_APP_DEST/lincoln/"
+# Fix protocol-relative URLs to use HTTPS (Lincoln servers require HTTPS)
+sed -i '' 's|//www\.lincoln\.com|https://www.lincoln.com|g' "$WEB_APP_DEST/lincoln/lincoln-font-families.css"
 
 # Semantic variables are already included in the theme-scoped ford.css and lincoln.css files
 echo "✅ Semantic variables (radius, spacing, border-width) included in theme-scoped CSS files"
+
+# Ensure complete typography classes are in index.scss (fix for Ford UI incomplete Tailwind presets)
+echo "🔧 Ensuring complete typography classes in index.scss..."
+TYPOGRAPHY_MARKER="/* Fix incomplete Ford UI typography classes"
+if ! grep -q "$TYPOGRAPHY_MARKER" "$WEB_APP_DEST/../index.scss"; then
+    echo "📝 Adding complete typography classes to index.scss..."
+    cat >> "$WEB_APP_DEST/../index.scss" << 'EOF'
+
+/* Fix incomplete Ford UI typography classes - Ford UI presets only generate partial classes */
+/* These complete typography classes ensure proper font inheritance for all Ford UI components */
+
+/* Body1 typography classes */
+.text-ford-body1-light {
+  font-family: var(--font-body-1-light-font-family);
+  font-size: calc(var(--font-body-1-light-font-size) * 1px);
+  line-height: calc(var(--font-body-1-light-line-height) * 1px);
+  font-weight: var(--font-body-1-light-font-weight);
+}
+
+.text-ford-body1-regular {
+  font-family: var(--font-body-1-regular-font-family);
+  font-size: calc(var(--font-body-1-regular-font-size) * 1px);
+  line-height: calc(var(--font-body-1-regular-line-height) * 1px);
+  font-weight: var(--font-body-1-regular-font-weight);
+}
+
+.text-ford-body1-medium {
+  font-family: var(--font-body-1-medium-font-family);
+  font-size: calc(var(--font-body-1-medium-font-size) * 1px);
+  line-height: calc(var(--font-body-1-medium-line-height) * 1px);
+  font-weight: var(--font-body-1-medium-font-weight);
+}
+
+.text-ford-body1-semibold {
+  font-family: var(--font-body-1-semibold-font-family);
+  font-size: calc(var(--font-body-1-semibold-font-size) * 1px);
+  line-height: calc(var(--font-body-1-semibold-line-height) * 1px);
+  font-weight: var(--font-body-1-semibold-font-weight);
+}
+
+.text-ford-body1-bold {
+  font-family: var(--font-body-1-bold-font-family);
+  font-size: calc(var(--font-body-1-bold-font-size) * 1px);
+  line-height: calc(var(--font-body-1-bold-line-height) * 1px);
+  font-weight: var(--font-body-1-bold-font-weight);
+}
+
+/* Body2 typography classes */
+.text-ford-body2-light {
+  font-family: var(--font-body-2-light-font-family);
+  font-size: calc(var(--font-body-2-light-font-size) * 1px);
+  line-height: calc(var(--font-body-2-light-line-height) * 1px);
+  font-weight: var(--font-body-2-light-font-weight);
+}
+
+.text-ford-body2-regular {
+  font-family: var(--font-body-2-regular-font-family);
+  font-size: calc(var(--font-body-2-regular-font-size) * 1px);
+  line-height: calc(var(--font-body-2-regular-line-height) * 1px);
+  font-weight: var(--font-body-2-regular-font-weight);
+}
+
+.text-ford-body2-medium {
+  font-family: var(--font-body-2-medium-font-family);
+  font-size: calc(var(--font-body-2-medium-font-size) * 1px);
+  line-height: calc(var(--font-body-2-medium-line-height) * 1px);
+  font-weight: var(--font-body-2-medium-font-weight);
+}
+
+.text-ford-body2-semibold {
+  font-family: var(--font-body-2-semibold-font-family);
+  font-size: calc(var(--font-body-2-semibold-font-size) * 1px);
+  line-height: calc(var(--font-body-2-semibold-line-height) * 1px);
+  font-weight: var(--font-body-2-semibold-font-weight);
+}
+
+.text-ford-body2-bold {
+  font-family: var(--font-body-2-bold-font-family);
+  font-size: calc(var(--font-body-2-bold-font-size) * 1px);
+  line-height: calc(var(--font-body-2-bold-line-height) * 1px);
+  font-weight: var(--font-body-2-bold-font-weight);
+}
+
+/* Subtitle typography classes */
+.text-ford-subtitle-regular {
+  font-family: var(--font-subtitle-regular-font-family);
+  font-size: calc(var(--font-subtitle-regular-font-size) * 1px);
+  line-height: calc(var(--font-subtitle-regular-line-height) * 1px);
+  font-weight: var(--font-subtitle-regular-font-weight);
+}
+
+.text-ford-subtitle-semibold {
+  font-family: var(--font-subtitle-semibold-font-family);
+  font-size: calc(var(--font-subtitle-semibold-font-size) * 1px);
+  line-height: calc(var(--font-subtitle-semibold-line-height) * 1px);
+  font-weight: var(--font-subtitle-semibold-font-weight);
+}
+EOF
+else
+    echo "✅ Complete typography classes already present in index.scss"
+fi
 
 # Create compatibility _variables.css files (now pointing to correct CSS)
 echo "🔧 Creating _variables.css compatibility files..."
@@ -193,7 +299,11 @@ echo ""
 echo "🔧 Key improvements applied:"
 echo "   • FIXED: Now uses original Ford UI source files with correct --semantic-color-* variable names"
 echo "   • FIXED: Replaced broken CSS generator that produced wrong --semantic-ford-* variables"
+echo "   • FIXED: Lincoln font URLs converted from protocol-relative to HTTPS (Lincoln servers require HTTPS)"
+echo "   • FIXED: Complete typography classes added to index.scss (Ford UI presets only generate partial classes)"
 echo "   • All four theme classes generated: .ford_light, .ford_dark, .lincoln_light, .lincoln_dark"
 echo "   • Complete CSS variable scoping for proper theme switching"
 echo "   • Components can now find expected CSS variables (--semantic-color-fill-onlight-interactive, etc.)"
-echo "   • Button styling should now match Storybook pixel-perfectly"
+echo "   • Ford UI component labels now inherit proper brand fonts (FordF1, LincolnFont)"
+echo "   • Button styling matches Storybook pixel-perfectly"
+echo "   • Brand switching works completely for all Ford UI built-in component labels"

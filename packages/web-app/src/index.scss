@@ -33,6 +33,96 @@
   color: var(--semantic-color-text-onlight-moderate-default);
 }
 
+/* Fix incomplete Ford UI typography classes - Ford UI presets only generate partial classes */
+/* These complete typography classes ensure proper font inheritance for all Ford UI components */
+
+/* Body1 typography classes */
+.text-ford-body1-light {
+  font-family: var(--font-body-1-light-font-family);
+  font-size: calc(var(--font-body-1-light-font-size) * 1px);
+  line-height: calc(var(--font-body-1-light-line-height) * 1px);
+  font-weight: var(--font-body-1-light-font-weight);
+}
+
+.text-ford-body1-regular {
+  font-family: var(--font-body-1-regular-font-family);
+  font-size: calc(var(--font-body-1-regular-font-size) * 1px);
+  line-height: calc(var(--font-body-1-regular-line-height) * 1px);
+  font-weight: var(--font-body-1-regular-font-weight);
+}
+
+.text-ford-body1-medium {
+  font-family: var(--font-body-1-medium-font-family);
+  font-size: calc(var(--font-body-1-medium-font-size) * 1px);
+  line-height: calc(var(--font-body-1-medium-line-height) * 1px);
+  font-weight: var(--font-body-1-medium-font-weight);
+}
+
+.text-ford-body1-semibold {
+  font-family: var(--font-body-1-semibold-font-family);
+  font-size: calc(var(--font-body-1-semibold-font-size) * 1px);
+  line-height: calc(var(--font-body-1-semibold-line-height) * 1px);
+  font-weight: var(--font-body-1-semibold-font-weight);
+}
+
+.text-ford-body1-bold {
+  font-family: var(--font-body-1-bold-font-family);
+  font-size: calc(var(--font-body-1-bold-font-size) * 1px);
+  line-height: calc(var(--font-body-1-bold-line-height) * 1px);
+  font-weight: var(--font-body-1-bold-font-weight);
+}
+
+/* Body2 typography classes */
+.text-ford-body2-light {
+  font-family: var(--font-body-2-light-font-family);
+  font-size: calc(var(--font-body-2-light-font-size) * 1px);
+  line-height: calc(var(--font-body-2-light-line-height) * 1px);
+  font-weight: var(--font-body-2-light-font-weight);
+}
+
+.text-ford-body2-regular {
+  font-family: var(--font-body-2-regular-font-family);
+  font-size: calc(var(--font-body-2-regular-font-size) * 1px);
+  line-height: calc(var(--font-body-2-regular-line-height) * 1px);
+  font-weight: var(--font-body-2-regular-font-weight);
+}
+
+.text-ford-body2-medium {
+  font-family: var(--font-body-2-medium-font-family);
+  font-size: calc(var(--font-body-2-medium-font-size) * 1px);
+  line-height: calc(var(--font-body-2-medium-line-height) * 1px);
+  font-weight: var(--font-body-2-medium-font-weight);
+}
+
+.text-ford-body2-semibold {
+  font-family: var(--font-body-2-semibold-font-family);
+  font-size: calc(var(--font-body-2-semibold-font-size) * 1px);
+  line-height: calc(var(--font-body-2-semibold-line-height) * 1px);
+  font-weight: var(--font-body-2-semibold-font-weight);
+}
+
+.text-ford-body2-bold {
+  font-family: var(--font-body-2-bold-font-family);
+  font-size: calc(var(--font-body-2-bold-font-size) * 1px);
+  line-height: calc(var(--font-body-2-bold-line-height) * 1px);
+  font-weight: var(--font-body-2-bold-font-weight);
+}
+
+/* Subtitle typography classes */
+.text-ford-subtitle-regular {
+  font-family: var(--font-subtitle-regular-font-family);
+  font-size: calc(var(--font-subtitle-regular-font-size) * 1px);
+  line-height: calc(var(--font-subtitle-regular-line-height) * 1px);
+  font-weight: var(--font-subtitle-regular-font-weight);
+}
+
+.text-ford-subtitle-semibold {
+  font-family: var(--font-subtitle-semibold-font-family);
+  font-size: calc(var(--font-subtitle-semibold-font-size) * 1px);
+  line-height: calc(var(--font-subtitle-semibold-line-height) * 1px);
+  font-weight: var(--font-subtitle-semibold-font-weight);
+}
+
 .ford-component-selection-card {
   color: var(--semantic-color-text-onlight-moderate-default);
   border-color: var(--semantic-color-stroke-onlight-moderate-default);

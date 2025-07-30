@@ -21,18 +21,11 @@ export class FDSTextAreaRenderer extends SurveyQuestionElementBase {
         const question = this.question;
         const { isInvalid, errorMessage } = useQuestionValidation(question);
         const optionalText = getOptionalText(question);
-        
-        // Handle labels that might contain JSX elements
-        const labelContent = renderLabel(question.fullTitle);
-        const label = typeof labelContent === 'string' ? labelContent : question.fullTitle;
-        
-        const descriptionContent = renderDescription(question.description);
-        const description = typeof descriptionContent === 'string' ? descriptionContent : question.description;
 
         return (
             <TextArea
-                label={label}
-                description={description}
+                label={renderLabel(question.fullTitle)}
+                description={renderDescription(question.description)}
                 placeholder={question.placeholder || ""}
                 value={question.value || ""}
                 rows={question.rows || 4}

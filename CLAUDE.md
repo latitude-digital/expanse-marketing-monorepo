@@ -247,14 +247,16 @@ ReactQuestionFactory.Instance.registerQuestion('text', (props) => {
 
 ### 5. Automated CSS Sync Workflow
 
-**Critical Tool**: `sync-ford-ui.sh` handles complex CSS transformations
+**Critical Tool**: `sync-ford-ui.sh` handles complex CSS transformations and font fixes
 
 ```bash
-# What the script does:
+# What the script does (UPDATED 2025-07-30):
 # 1. Updates Ford UI submodule to latest
-# 2. Copies CSS files from Ford UI source
-# 3. Applies sed transformations: :root { → .ford_light { and .lincoln_light {
-# 4. Ensures theme scoping for brand switching
+# 2. Copies CSS files from Ford UI source with correct variable names
+# 3. Applies theme scoping: :root { → .ford_light { and .lincoln_light {
+# 4. FIXED: Converts Lincoln font URLs from protocol-relative to HTTPS
+# 5. FIXED: Adds complete typography classes to index.scss (font-family, font-size, etc.)
+# 6. Ensures proper brand switching for all Ford UI component labels
 
 # When to run:
 ./packages/web-app/scripts/sync-ford-ui.sh
@@ -263,6 +265,14 @@ ReactQuestionFactory.Instance.registerQuestion('text', (props) => {
 # - Ford UI submodule updates
 # - CSS variable conflicts
 # - Brand switching issues
+# - Font inheritance problems
+# - Typography class issues
+
+# Auto-fixes applied:
+# ✅ Lincoln font HTTPS URLs
+# ✅ Complete Ford UI typography classes
+# ✅ Theme-scoped CSS variables
+# ✅ Ford UI component label font inheritance
 ```
 
 ## Development Workflow Guidance
@@ -426,6 +436,51 @@ git add packages/ford-ui packages/web-app/src/styles/
 git commit -m "Update Ford UI and sync CSS with theme scoping"
 ```
 
+### Issue 5: Lincoln Fonts Loading as Times New Roman (FIXED 2025-07-30)
+
+**Symptoms**: Lincoln theme shows correct `font-family: "LincolnFont"` but renders as Times New Roman
+**Root Cause**: Protocol-relative URLs (`//www.lincoln.com/...`) resolve to HTTP in development, but Lincoln servers require HTTPS
+**Solution**: ✅ **FIXED** - Sync script now automatically converts Lincoln font URLs to HTTPS
+
+```bash
+# ✅ FIXED: Sync script automatically fixes Lincoln font URLs
+./packages/web-app/scripts/sync-ford-ui.sh
+
+# Manual fix if needed:
+sed -i '' 's|//www\.lincoln\.com|https://www.lincoln.com|g' packages/web-app/src/styles/lincoln/lincoln-font-families.css
+```
+
+**Console Error Pattern**:
+```
+Access to font at 'http://www.lincoln.com/cmslibs/etc/designs/common/skin/lincoln/fonts/Prox...
+Failed to load resource: net::ERR_FAILED
+```
+
+### Issue 6: Ford UI Component Labels Not Inheriting Brand Fonts (FIXED 2025-07-30)
+
+**Symptoms**: Built-in Ford UI component labels (TextArea, Dropdown, etc.) don't switch fonts between Ford/Lincoln themes
+**Root Cause**: Ford UI Tailwind presets generate incomplete typography classes - only `font-size` but missing `font-family`, `font-weight`, `line-height`
+**Solution**: ✅ **FIXED** - Sync script now automatically adds complete typography classes to index.scss
+
+**Examples of Fixed Classes**:
+```scss
+.text-ford-body2-regular {
+  font-family: var(--font-body-2-regular-font-family);
+  font-size: calc(var(--font-body-2-regular-font-size) * 1px);
+  line-height: calc(var(--font-body-2-regular-line-height) * 1px);
+  font-weight: var(--font-body-2-regular-font-weight);
+}
+```
+
+**Verification**:
+```bash
+# ✅ FIXED: Sync script automatically adds complete typography classes
+./packages/web-app/scripts/sync-ford-ui.sh
+
+# Verify classes are complete:
+grep -A4 "text-ford-body2-regular" packages/web-app/src/index.scss
+```
+
 ## Ford UI Component Usage Patterns
 
 ### Import Patterns
@@ -559,10 +614,13 @@ grep -A10 "fordDarkThemes\|lincolnDarkThemes" packages/web-app/tailwind.config.j
 
 1. **✅ FIXED**: **Original Ford UI Source Files**: Use original `_variables.css` files, NOT broken CSS generator
 2. **✅ FIXED**: **Correct CSS Variable Names**: Ensure components find expected `--semantic-color-*` variables
-3. **Complete Theme Support**: All four theme classes (ford_light, ford_dark, lincoln_light, lincoln_dark)
-4. **Clean CSS Architecture**: No redundant semantic-variables.css files, all variables theme-scoped
-5. **Theme Wrapper**: `#fd-nxt` with dynamic class enables automatic inheritance
-6. **Storybook Consistency**: Web-app uses same theme system as Storybook with matching variable names
+3. **✅ FIXED**: **Lincoln Font HTTPS URLs**: Protocol-relative URLs converted to HTTPS for proper loading
+4. **✅ FIXED**: **Complete Typography Classes**: Ford UI component labels inherit proper brand fonts (FordF1, LincolnFont)
+5. **Complete Theme Support**: All four theme classes (ford_light, ford_dark, lincoln_light, lincoln_dark)
+6. **Clean CSS Architecture**: No redundant semantic-variables.css files, all variables theme-scoped
+7. **Theme Wrapper**: `#fd-nxt` with dynamic class enables automatic inheritance
+8. **Storybook Consistency**: Web-app uses same theme system as Storybook with matching variable names
+9. **Automated Sync Script**: All fixes applied automatically via sync-ford-ui.sh
 
 ## Future Development Guidelines
 

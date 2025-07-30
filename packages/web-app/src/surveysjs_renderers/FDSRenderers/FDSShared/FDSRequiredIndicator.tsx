@@ -1,4 +1,5 @@
 import React from 'react';
+import { Typography } from "@ui/ford-ui-components/src/v2/typography/Typography";
 import { getOptionalText } from './utils';
 
 interface FDSRequiredIndicatorProps {
@@ -11,14 +12,11 @@ export const FDSRequiredIndicator: React.FC<FDSRequiredIndicatorProps> = ({ ques
   return (
     <span 
       className="fds-required-indicator"
-      style={{
-        marginLeft: '4px',
-        fontSize: '14px',
-        fontWeight: '400',
-        color: 'var(--semantic-color-text-onlight-subtle-default)'
-      }}
+      style={{ marginLeft: '4px' }}
     >
-      {optionalText}
+      <Typography variant="body2" color="subtle" weight="regular">
+        {optionalText}
+      </Typography>
     </span>
   );
 };

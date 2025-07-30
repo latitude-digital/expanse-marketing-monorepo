@@ -197,7 +197,7 @@ sed 's/:root/.ford_dark/g' "$WEB_APP_DEST/ford/ford-source.css" > "$WEB_APP_DEST
 
 ### Automated CSS Generation & Sync (UPDATED 2025-07-30)
 
-The `sync-ford-ui.sh` script now bypasses the broken CSS generator and uses original Ford UI source files:
+The `sync-ford-ui.sh` script includes comprehensive fixes for Ford UI integration:
 
 ```bash
 # Run the comprehensive Ford UI update command
@@ -207,16 +207,24 @@ pnpm ford-ui:update
 # 1. Updates Ford UI submodule to latest version (optional)
 # 2. Copies ORIGINAL Ford UI _variables.css files with correct variable names
 # 3. Applies theme scoping transformations (:root → .ford_light, .ford_dark)
-# 4. Generates CSS files with all four theme classes
-# 5. Components can now find expected --semantic-color-* variables
+# 4. FIXED: Converts Lincoln font URLs from protocol-relative to HTTPS
+# 5. FIXED: Adds complete typography classes to index.scss for font inheritance
+# 6. Generates CSS files with all four theme classes
+# 7. Components can now find expected --semantic-color-* variables
 
 # The script creates:
 # - ford.css with .ford_light and .ford_dark classes and CORRECT variable names
 # - lincoln.css with .lincoln_light and .lincoln_dark classes and CORRECT variable names
 # - Each theme contains 300+ properly scoped CSS variables with semantic-* naming
+# - Complete typography classes (.text-ford-body2-regular, etc.) with all CSS properties
+# - Working Lincoln fonts (HTTPS URLs) that load properly in development
 ```
 
-**✅ CRITICAL FIX APPLIED (2025-07-30)**: The script now uses original Ford UI source files instead of the broken CSS generator that produced wrong variable names (`--semantic-ford-*` instead of `--semantic-color-*`). Button styling now matches Storybook pixel-perfectly.
+**✅ CRITICAL FIXES APPLIED (2025-07-30)**: 
+1. **CSS Variables**: Uses original Ford UI source files with correct `--semantic-color-*` variable names
+2. **Lincoln Fonts**: Converts protocol-relative URLs to HTTPS for proper font loading
+3. **Typography Classes**: Adds complete Ford UI typography classes for proper font inheritance
+4. **Button Styling**: Now matches Storybook pixel-perfectly
 
 ### SurveyJS v2 Custom Renderer Integration
 
@@ -485,6 +493,39 @@ git checkout [commit-hash]
 cd ../..
 git add packages/ford-ui
 git commit -m "Pin Ford UI to specific version"
+```
+
+### Lincoln Fonts Loading as Times New Roman (FIXED 2025-07-30)
+
+**Problem**: Lincoln theme shows correct `font-family: "LincolnFont"` but renders as Times New Roman
+**Root Cause**: Protocol-relative URLs (`//www.lincoln.com/...`) resolve to HTTP, Lincoln servers require HTTPS
+**Solution**: ✅ **FIXED** - Sync script now automatically converts Lincoln font URLs to HTTPS
+
+```bash
+# ✅ FIXED: Sync script automatically fixes Lincoln font URLs
+./packages/web-app/scripts/sync-ford-ui.sh
+
+# Console error pattern:
+# Access to font at 'http://www.lincoln.com/cmslibs/etc/designs/common/skin/lincoln/fonts/...'
+# Failed to load resource: net::ERR_FAILED
+```
+
+### Ford UI Component Labels Not Inheriting Brand Fonts (FIXED 2025-07-30)
+
+**Problem**: Built-in Ford UI component labels (TextArea, Dropdown, etc.) don't switch fonts between Ford/Lincoln themes
+**Root Cause**: Ford UI Tailwind presets generate incomplete typography classes (only `font-size`, missing `font-family`, `font-weight`, `line-height`)
+**Solution**: ✅ **FIXED** - Sync script now automatically adds complete typography classes to index.scss
+
+```bash
+# ✅ FIXED: Sync script automatically adds complete typography classes
+./packages/web-app/scripts/sync-ford-ui.sh
+
+# Example of what gets fixed:
+# Before: .text-ford-body2-regular { font-size: var(--fontSize-ford-body2-regular); }
+# After: Complete class with font-family, font-size, line-height, font-weight
+
+# Verify fix:
+grep -A4 "text-ford-body2-regular" packages/web-app/src/index.scss
 ```
 
 ## Version Management

@@ -24,6 +24,7 @@ import Dashboard from './screens/Dashboard';
 import Charts from './screens/Charts';
 
 import FDSDemo from './screens/FDS_Demo';
+import FDSSurveyDemo from './screens/FDSSurveyDemo';
 
 import BroncoQuiz from './screens/BroncoQuiz';
 
@@ -48,6 +49,7 @@ root.render(
       <Routes>
         <Route path="/" element={<App />}>
           <Route path="demo" element={<FDSDemo />} />
+          <Route path="fds-survey-demo" element={<FDSSurveyDemo />} />
           <Route index element={<Home />} />
           <Route path="welcome" element={<Login />} />
           <Route path="auth" element={<Login />} />

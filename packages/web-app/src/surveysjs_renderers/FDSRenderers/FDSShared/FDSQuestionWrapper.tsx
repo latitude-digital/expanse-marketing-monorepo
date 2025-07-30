@@ -1,5 +1,6 @@
 import React from 'react';
-import { renderLabel, renderDescription } from './utils';
+import { Typography } from "@ui/ford-ui-components/src/v2/typography/Typography";
+import { renderLabel, renderDescription, processMarkdown } from './utils';
 import { FDSErrorDisplay } from './FDSErrorDisplay';
 import { FDSRequiredIndicator } from './FDSRequiredIndicator';
 
@@ -24,15 +25,30 @@ export const FDSQuestionWrapper: React.FC<FDSQuestionWrapperProps> = ({
 }) => {
   return (
     <div className="fds-question-wrapper">
-      {/* Question Label */}
-      <div className="fds-question-label" style={{
-        marginBottom: '8px',
-        fontSize: '16px',
-        fontWeight: '600',
-        lineHeight: '1.4',
-        color: 'var(--semantic-color-text-onlight-moderate-default)'
-      }}>
-        {renderLabel(label)}
+      {/* Question Label - Match built-in Ford UI component styling */}
+      <div className="fds-question-label" style={{ marginBottom: '8px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+        {(() => {
+          const processedLabel = processMarkdown(label);
+          const hasHtml = processedLabel.includes('<');
+          
+          if (hasHtml) {
+            // For HTML content, use a span with Typography classes
+            return (
+              <span 
+                className="text-ford-body2-regular"
+                style={{ color: 'var(--semantic-color-text-onlight-moderate-default)' }}
+                dangerouslySetInnerHTML={{ __html: processedLabel }}
+              />
+            );
+          } else {
+            // For plain text, use Typography component
+            return (
+              <Typography variant="body2" weight="regular" color="moderate">
+                {processedLabel}
+              </Typography>
+            );
+          }
+        })()}
         {!isRequired && (
           <FDSRequiredIndicator question={question} />
         )}
@@ -40,13 +56,29 @@ export const FDSQuestionWrapper: React.FC<FDSQuestionWrapperProps> = ({
 
       {/* Question Description (optional) */}
       {description && (
-        <div className="fds-question-description" style={{
-          marginBottom: '12px',
-          fontSize: '14px',
-          lineHeight: '1.5',
-          color: 'var(--semantic-color-text-onlight-subtle-default)'
-        }}>
-          {renderDescription(description)}
+        <div className="fds-question-description" style={{ marginBottom: '12px' }}>
+          {(() => {
+            const processedDescription = processMarkdown(description);
+            const hasHtml = processedDescription.includes('<');
+            
+            if (hasHtml) {
+              // For HTML content, use a span with Typography classes to match built-in Ford UI descriptions
+              return (
+                <span 
+                  className="text-ford-body2-regular"
+                  style={{ color: 'var(--semantic-color-text-onlight-subtle)' }}
+                  dangerouslySetInnerHTML={{ __html: processedDescription }}
+                />
+              );
+            } else {
+              // For plain text, use Typography component to match built-in Ford UI descriptions
+              return (
+                <Typography variant="body2" color="subtle">
+                  {processedDescription}
+                </Typography>
+              );
+            }
+          })()}
         </div>
       )}
 
