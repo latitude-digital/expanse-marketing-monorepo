@@ -64,6 +64,7 @@ export default defineConfig(({ command, mode }) => {
         '@': path.resolve(__dirname, './src'),
         '@ui/ford-ui-components': path.resolve(__dirname, '../ford-ui/packages/@ui/ford-ui-components'),
         '@ui/atoms': path.resolve(__dirname, '../ford-ui/packages/@ui/atoms/src/lib'),
+        '@ui/icons': path.resolve(__dirname, '../ford-ui/packages/@ui/icons/src/lib'),
         '@common/helpers': path.resolve(__dirname, '../ford-ui/packages/@common/helpers/src/lib'),
         '@common/interfaces': path.resolve(__dirname, '../ford-ui/packages/@common/interfaces/src/lib'),
         '@common/utils': path.resolve(__dirname, '../ford-ui/packages/@common/utils/src/lib'),
