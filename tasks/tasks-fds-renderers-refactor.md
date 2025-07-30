@@ -94,7 +94,7 @@
 ### 2.0 Shared Component Architecture
 **Goal:** Create reusable components for Pattern B renderers (components without built-in wrappers)
 
-- [ ] **2.1 Create FDSQuestionWrapper component**
+- [x] **2.1 Create FDSQuestionWrapper component**
   - Create `packages/web-app/src/surveysjs_renderers/FDSRenderers/FDSShared/FDSQuestionWrapper.tsx`
   - Interface: `{ label: string; description?: string; isRequired?: boolean; isInvalid?: boolean; errorMessage?: string; children: React.ReactNode }`
   - Render structure:
@@ -105,19 +105,19 @@
     - Error display when `isInvalid && errorMessage`
   - Use CSS variables for theming: `var(--semantic-color-text-onlight-moderate-default)`
 
-- [ ] **2.2 Create FDSErrorDisplay component**
+- [x] **2.2 Create FDSErrorDisplay component**
   - Create `packages/web-app/src/surveysjs_renderers/FDSRenderers/FDSShared/FDSErrorDisplay.tsx`
   - Interface: `{ message: string }`
   - Style consistently with FDS error patterns
   - Use error color: `var(--semantic-color-text-onlight-danger-default)`
 
-- [ ] **2.3 Create FDSRequiredIndicator component**
+- [x] **2.3 Create FDSRequiredIndicator component**
   - Create `packages/web-app/src/surveysjs_renderers/FDSRenderers/FDSShared/FDSRequiredIndicator.tsx`
   - Display "(Optional)" text using `surveyLocalization.locales[currentLocale]?.["optionalText"]`
   - Style consistently with FDS patterns
   - Use subtle color: `var(--semantic-color-text-onlight-subtle-default)`
 
-- [ ] **2.4 Test shared components with theme switching**
+- [x] **2.4 Test shared components with theme switching**
   - Create test page with FDSQuestionWrapper examples
   - Verify Ford and Lincoln theme switching updates colors correctly
   - Test markdown rendering in labels and descriptions
