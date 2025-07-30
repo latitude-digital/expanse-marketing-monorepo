@@ -36,18 +36,13 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
             // Use the URL from the question configuration
             const vehicleJsonUrl = this.question.choicesByUrl?.url || 'https://cdn.latitudewebservices.com/vehicles/ford.json';
             
-            console.log('VOI getBody: Attempting to fetch vehicle JSON directly from:', vehicleJsonUrl);
-            
             // Check if we've already cached the vehicle data to avoid repeated fetches
             if (!(this as any).vehiclesCache) {
-                console.log('VOI getBody: No cached vehicle data, fetching...');
-                
                 // Store a promise so multiple renders don't trigger multiple fetches
                 if (!(this as any).vehicleDataPromise) {
                     (this as any).vehicleDataPromise = fetch(vehicleJsonUrl)
                         .then(response => response.json())
                         .then(data => {
-                            console.log(`VOI getBody: Successfully fetched ${data.length} vehicles`);
                             (this as any).vehiclesCache = data;
                             
                             // Create the mapping
@@ -55,8 +50,6 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
                                 originalDataMap.set(vehicle.id, vehicle);
                                 originalDataMap.set(String(vehicle.id), vehicle); // Also store as string
                             });
-                            
-                            console.log(`VOI getBody: Created originalDataMap with ${originalDataMap.size} entries`);
                             
                             // Store the mapping for use in renderItem
                             (this as any).originalDataMap = originalDataMap;
@@ -71,11 +64,7 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
                             return [];
                         });
                 }
-                
-                // Return empty filtered items for now, will update after fetch completes
-                console.log('VOI getBody: Waiting for vehicle data to load...');
             } else {
-                console.log(`VOI getBody: Using cached vehicle data (${(this as any).vehiclesCache.length} vehicles)`);
                 
                 // Use cached data to create the mapping
                 (this as any).vehiclesCache.forEach((vehicle: any) => {
@@ -83,29 +72,9 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
                     originalDataMap.set(String(vehicle.id), vehicle);
                 });
                 
-                console.log(`VOI getBody: Created originalDataMap with ${originalDataMap.size} entries from cache`);
-                
                 // Store the mapping for use in renderItem
                 (this as any).originalDataMap = originalDataMap;
             }
-            
-            // Debug the mapping
-            console.log('OriginalDataMap debug:', {
-                mapSize: originalDataMap.size,
-                sampleKeys: Array.from(originalDataMap.keys()).slice(0, 5),
-                sampleEntry: originalDataMap.size > 0 ? {
-                    key: Array.from(originalDataMap.keys())[0],
-                    value: originalDataMap.get(Array.from(originalDataMap.keys())[0])
-                } : null
-            });
-
-            // Debug logging
-            console.log('VOI getBody called:', {
-                bodyItems: this.question.bodyItems?.length || 0,
-                choices: this.question.choices?.length || 0,  
-                selectedTab: this.state.selectedTabKey,
-                originalDataMap: originalDataMap.size
-            });
 
             if (this.question.onlyInclude?.length) {
                 const onlyInclude = this.question.onlyInclude?.split(',').map((o: string) => trim(o) ? Number(trim(o)) : null) || [];
@@ -122,43 +91,17 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
                 
                 // Apply vehicle type filtering based on selected tab
                 // Get original JSON data from the choices mapping
-                const beforeFilterCount = filteredItems.length;
-                filteredItems = filteredItems.filter((item: any, index: number) => {
+                filteredItems = filteredItems.filter((item: any) => {
                     // Look up original data using item value (ID)
                     const originalData = originalDataMap.get(item.value);
                     const itemType = originalData?.type;
                     
-                    // Debug logging for first few items
-                    if (index < 5) {
-                        console.log(`Filtering debug [${index}]:`, {
-                            itemValue: item.value,
-                            itemId: item.id, 
-                            hasOriginalData: !!originalData,
-                            itemType,
-                            vehicleType,
-                            matches: itemType === vehicleType,
-                            originalDataKeys: originalData ? Object.keys(originalData) : 'none',
-                            mapKeys: Array.from(originalDataMap.keys()).slice(0, 5)
-                        });
-                    }
-                    
                     if (!itemType) {
-                        console.log('No type found for item:', { 
-                            itemValue: item.value, 
-                            itemId: item.id,
-                            hasOriginalData: !!originalData,
-                            originalData: originalData ? Object.keys(originalData) : 'none'
-                        });
                         return false; // Hide items without type info
                     }
                     
                     return itemType === vehicleType;
                 });
-                
-                console.log(`Filtering: ${beforeFilterCount} → ${filteredItems.length} vehicles for "${vehicleType}"`);
-            } else {
-                // For Lincoln, show all vehicles without filtering
-                console.log(`Lincoln brand: showing all ${filteredItems.length} vehicles without type filtering`);
             }
             
             // Store the mapping for use in renderItem
@@ -223,7 +166,6 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
                 } else {
                     // Check if we're at the max selection limit
                     if (currentValue.length >= maxAllowed) {
-                        console.log(`Selection limit reached: ${currentValue.length}/${maxAllowed}`);
                         return;
                     }
                     // Add the item to the selection
@@ -278,7 +220,6 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
                                 src={imageURL} 
                                 className="object-contain w-full max-h-30"
                                 onError={(e) => {
-                                    console.log('Image failed to load:', imageURL);
                                     e.currentTarget.style.display = 'none';
                                 }}
                             />

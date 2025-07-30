@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Model, SurveyError, FunctionFactory } from "survey-core";
+import { Model, SurveyError, FunctionFactory, ITheme } from "survey-core";
 import { Survey } from "survey-react-ui";
 import { useNavigate, useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { Loader } from "@progress/kendo-react-indicators";
@@ -52,6 +52,9 @@ import {
 // Import brand utilities and FDS initializer
 import { shouldLoadFDS, getBrandTheme, normalizeBrand } from '../utils/brandUtils';
 import { initializeFDSForBrand } from '../helpers/fdsInitializer';
+
+// Import custom Ford navigation
+import { FordSurveyNavigation } from '../components/FordSurveyNavigation';
 
 // TypeScript interfaces
 interface RouteParams {
@@ -243,9 +246,15 @@ const SurveyComponent: React.FC = () => {
 
           const surveyJSON = JSON.parse(res.event.questions);
 
+          // Set default properties before creating model (can be overridden by survey definition)
+          const defaultSurveyProperties = {
+            "widthMode": "responsive",
+            ...surveyJSON // Survey definition can override defaults
+          };
+
           if (res.event.disabled && !user) {
-            surveyJSON.showCompleteButton = false;
-            surveyJSON.pages = [
+            defaultSurveyProperties.showCompleteButton = false;
+            defaultSurveyProperties.pages = [
               {
                 "elements": [
                   {
@@ -269,10 +278,40 @@ const SurveyComponent: React.FC = () => {
             // Continue with survey creation even if FDS fails
           }
 
-          const survey = new Model(surveyJSON);
+          const eventTheme = JSON.parse(res.event.theme || `{"cssVariables": {}}`);
+
+          const survey = new Model(defaultSurveyProperties);
           
           if (res.event.fordEventID) {
             survey.questionErrorLocation = "bottom";
+          }
+
+          // Hide built-in navigation buttons for Ford/Lincoln brands to use custom navigation
+          const shouldUseCustomNavigation = eventBrand === 'Ford' || eventBrand === 'Lincoln';
+          console.log('[Navigation Debug] eventBrand:', eventBrand, 'shouldUseCustomNavigation:', shouldUseCustomNavigation);
+          if (shouldUseCustomNavigation) {
+            console.log('[Navigation Debug] Hiding built-in navigation buttons');
+            survey.showNavigationButtons = false;
+          }
+
+          // Set default theme appearance to "Without Panels" for Ford/Lincoln brands
+          if (eventBrand === 'Ford' || eventBrand === 'Lincoln') {
+            console.log('[Theme Debug] Setting theme appearance to "Without Panels" for', eventBrand, 'brand');
+            const updatedTheme = {
+              themeName: "default",
+              colorPalette: "light",
+              isPanelless: true,
+              backgroundImage: "",
+              backgroundImageFit: "cover",
+              backgroundImageAttachment: "scroll",
+              backgroundOpacity: 1,
+              cssVariables: {
+                "--sjs-general-backcolor-dim": "#ffffff",
+                ...eventTheme.cssVariables,
+              },
+              ...eventTheme,
+            };
+            survey.applyTheme(updatedTheme);
           }
 
           prepareForSurvey(survey, eventBrand);
@@ -879,6 +918,19 @@ const SurveyComponent: React.FC = () => {
         }>
           
           <Survey model={thisSurvey} />
+          
+          {/* Custom Ford/Lincoln navigation */}
+          {(() => {
+            const currentBrand = normalizeBrand(thisEvent?.brand);
+            const shouldShowCustomNav = currentBrand === 'Ford' || currentBrand === 'Lincoln';
+            console.log('[Custom Navigation Debug] currentBrand:', currentBrand, 'shouldShowCustomNav:', shouldShowCustomNav);
+            return shouldShowCustomNav && (
+              <FordSurveyNavigation 
+                survey={thisSurvey} 
+                brand={currentBrand} 
+              />
+            );
+          })()}
         </div>
         {
           thisEvent?.fordEventID && (
