@@ -257,22 +257,22 @@ const SurveyComponent: React.FC = () => {
             ];
           }
 
-          const survey = new Model(surveyJSON);
-          
-          if (res.event.fordEventID) {
-            survey.questionErrorLocation = "bottom";
-          }
-
-          // Initialize FDS conditionally based on event brand
+          // Initialize FDS conditionally based on event brand BEFORE creating survey model
           const eventBrand = normalizeBrand(res.event.brand);
           console.log(`Event brand detected: ${eventBrand}`);
           
-          // Initialize FDS for Ford/Lincoln brands only
+          // Initialize FDS for Ford/Lincoln brands only - MUST happen before new Model()
           try {
             await initializeFDSForBrand(eventBrand);
           } catch (error) {
             console.error('Failed to initialize FDS:', error);
             // Continue with survey creation even if FDS fails
+          }
+
+          const survey = new Model(surveyJSON);
+          
+          if (res.event.fordEventID) {
+            survey.questionErrorLocation = "bottom";
           }
 
           prepareForSurvey(survey, eventBrand);

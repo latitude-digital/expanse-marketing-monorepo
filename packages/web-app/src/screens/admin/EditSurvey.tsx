@@ -200,6 +200,7 @@ function DashboardScreen() {
 
             newCreator.saveSurveyFunc = (saveNo: number, callback: (saveNo: number, success: boolean) => void) => {
                 console.log("saving questions...")
+                const eventRef = doc(db, "events", eventID).withConverter(EEventConverter);
                 updateDoc(eventRef, {
                     questions: JSON.stringify(newCreator.JSON),
                 }).then(() => {

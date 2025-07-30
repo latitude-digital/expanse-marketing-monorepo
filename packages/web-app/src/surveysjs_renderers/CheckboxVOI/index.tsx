@@ -1,7 +1,7 @@
 import React from "react";
 import { RendererFactory, Serializer } from "survey-core";
 import { ReactQuestionFactory, SurveyQuestionCheckbox } from "survey-react-ui";
-import SegmentedControl from '../../components/SegmentedControl';
+import SegmentedControl from '@ui/ford-ui-components/src/v2/segmented-control/SegmentedControl';
 
 import style from './_index.module.scss'
 import { trim } from "lodash";
@@ -12,7 +12,7 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
     constructor(props: any) {
         super(props);
         this.state = {
-            activeTab: 0
+            selectedTabKey: 'ford-suvs'
         };
 
         const customCSS = props.creator.survey.cssValue.checkboxvoi;
@@ -28,7 +28,11 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
 
         (this as any).getBody = (cssClasses: any) => {
             let filteredItems = this.question.bodyItems;
-            const tabs = VEHICLE_TYPES;
+            const tabs = [
+                { key: 'ford-suvs', label: 'Ford SUVs' },
+                { key: 'ford-cars', label: 'Ford Cars' },
+                { key: 'ford-trucks', label: 'Ford Trucks' }
+            ];
 
             if (this.question.onlyInclude?.length) {
                 const onlyInclude = this.question.onlyInclude?.split(',').map((o: string) => trim(o) ? Number(trim(o)) : null) || [];
@@ -37,19 +41,24 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
                 }
             }
 
-            // Type filtering
+            // Type filtering based on selected tab
+            const selectedTab = tabs.find(tab => tab.key === this.state.selectedTabKey);
+            const vehicleType = selectedTab?.label || 'Ford SUVs';
+            
             filteredItems = filteredItems.filter((item: any) => {
-                return item.jsonObj.type?.toLowerCase() === tabs[this.state.activeTab].toLowerCase() ||
-                    item.jsonObj.type?.toLowerCase() === tabs[this.state.activeTab].replace('Ford ', '').toLowerCase();
+                return item.jsonObj.type?.toLowerCase() === vehicleType.toLowerCase() ||
+                    item.jsonObj.type?.toLowerCase() === vehicleType.replace('Ford ', '').toLowerCase();
             });
 
             return (
                 <div>
                     <div className="flex justify-center">
                         <SegmentedControl 
-                            segments={tabs}
-                            activeTab={this.state.activeTab}
-                            onTabChange={this.setActiveTab}
+                            tabs={tabs}
+                            className="w-[400px]"
+                            selectedKey={this.state.selectedTabKey}
+                            onValueChange={this.setSelectedTabKey}
+                            variant="forms"
                         />
                     </div>
                     <div className={defaultClasses.container}>
@@ -114,8 +123,8 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
         }
     }
 
-    setActiveTab = (index: number) => {
-        this.setState({ activeTab: index });
+    setSelectedTabKey = (key: string) => {
+        this.setState({ selectedTabKey: key });
     }
 }
 

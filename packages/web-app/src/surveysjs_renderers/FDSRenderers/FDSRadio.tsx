@@ -51,6 +51,7 @@ export class FDSRadioRenderer extends SurveyQuestionElementBase {
                     }}
                     data-testid={`fds-radio-${question.name}`}
                     aria-label={question.fullTitle}
+                    className="[&>*]:justify-center"
                 />
             </FDSQuestionWrapper>
         );
