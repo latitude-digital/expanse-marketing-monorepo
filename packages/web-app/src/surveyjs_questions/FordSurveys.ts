@@ -8,6 +8,7 @@ import {
   ICustomQuestionTypeConfigurationVOI,
   ICustomQuestionTypeConfigurationWaiver,
 } from "./interfaces";
+import { handleChoicesByUrl } from "./choicesByUrlHelper";
 
 const fordInit = () => {
   Serializer.addProperty("question", {
@@ -52,6 +53,8 @@ const fordInit = () => {
     },
     onLoaded(question: Question) {
       this.updateOnlyInclude(question);
+      // Use shared utility to handle choicesByUrl for custom question types
+      handleChoicesByUrl(question, 'FordSurveys');
     },
     onPropertyChanged(question: Question, propertyName: string, newValue: any) {
       if (propertyName === "onlyInclude") {
@@ -592,6 +595,10 @@ const fordInit = () => {
         fr: "Sélectionner / Rechercher...",
       },
     },
+    onLoaded(question: Question) {
+      // Use shared utility to handle choicesByUrl for custom question types
+      handleChoicesByUrl(question, 'FordSurveys');
+    }
   } as ICustomQuestionTypeConfiguration);
 
   ComponentCollection.Instance.add({

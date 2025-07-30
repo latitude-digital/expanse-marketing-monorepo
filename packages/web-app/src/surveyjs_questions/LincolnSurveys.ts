@@ -5,6 +5,7 @@ import {
   Serializer,
 } from "survey-core";
 import { ICustomQuestionTypeConfigurationVOI } from "./interfaces";
+import { handleChoicesByUrl } from "./choicesByUrlHelper";
 
 const lincolnInit = () => {
   Serializer.addProperty("question", {
@@ -49,6 +50,8 @@ const lincolnInit = () => {
     },
     onLoaded(question: Question) {
       this.updateOnlyInclude(question);
+      // Use shared utility to handle choicesByUrl for custom question types
+      handleChoicesByUrl(question, 'LincolnSurveys');
     },
     onPropertyChanged(question: Question, propertyName: string, newValue: any) {
       if (propertyName === "onlyInclude") {

@@ -10,6 +10,19 @@ const demoSurveyJSON = {
   "description": "Experience all 6 core question types with real Ford UI components",
   "pages": [
     {
+      "name": "voiTest",
+      "title": "Vehicle of Interest Test",
+      "elements": [
+        {
+          "type": "fordvoi",
+          "name": "fordVehiclesOfInterest",
+          "title": "**Ford Vehicles of Interest**",
+          "description": "Select up to 3 Ford vehicles you're interested in learning more about",
+          "maxSelectedChoices": 3
+        }
+      ]
+    },
+    {
       "name": "selections",
       "title": "Selection Components", 
       "elements": [
@@ -149,7 +162,14 @@ const FDSSurveyDemoScreen: React.FC = () => {
           import("../surveysjs_renderers/FDSRenderers/FDSDropdown"),
           import("../surveysjs_renderers/FDSRenderers/FDSTextArea"),
           import("../surveysjs_renderers/FDSRenderers/FDSToggle"),
+          import("../surveysjs_renderers/CheckboxVOI/index"),
+          import("../surveyjs_questions/FordSurveys"),
         ]);
+        
+        // Initialize Ford question types
+        const FordSurveys = await import("../surveyjs_questions/FordSurveys");
+        FordSurveys.default.fordInit();
+        
         console.log('FDS renderers loaded for demo');
         setFdsLoaded(true);
       } catch (error) {
@@ -307,6 +327,9 @@ const FDSSurveyDemoScreen: React.FC = () => {
             </div>
             <div style={{ padding: '8px', backgroundColor: 'white', borderRadius: '6px', border: '1px solid #e5e7eb' }}>
               🔄 <strong>Toggle</strong><br/>Toggle + Wrapper
+            </div>
+            <div style={{ padding: '8px', backgroundColor: 'white', borderRadius: '6px', border: '1px solid #e5e7eb' }}>
+              🚗 <strong>Ford VOI</strong><br/>SelectionCard + Tabs
             </div>
           </div>
         </div>
