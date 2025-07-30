@@ -15,14 +15,7 @@ import { RadioGroupRowQuestion } from "../surveysjs_renderers/RadioButtonButton"
 import { SurveyBookeoQuestion } from "../surveysjs_renderers/Bookeo";
 import { SurveyQuestionMarkdown } from "../surveysjs_renderers/Markdown";
 import { EmailTextInput } from "../surveysjs_renderers/EmailTextInput";
-// Import FDS renderers to override default SurveyJS renderers
-import { FDSTextRenderer } from "../surveysjs_renderers/FDSRenderers/FDSText";
-import { FDSRadioRenderer } from "../surveysjs_renderers/FDSRenderers/FDSRadio";
-import { FDSCheckboxRenderer } from "../surveysjs_renderers/FDSRenderers/FDSCheckbox";
-import { FDSDropdownRenderer } from "../surveysjs_renderers/FDSRenderers/FDSDropdown";
-import { FDSTextAreaRenderer } from "../surveysjs_renderers/FDSRenderers/FDSTextArea";
-import { FDSToggleRenderer } from "../surveysjs_renderers/FDSRenderers/FDSToggle";
-import "../surveysjs_renderers/FDSRenderers/CustomSurveyQuestion";
+// FDS renderers are now conditionally imported in fdsInitializer.ts
 
 import Showdown from "showdown";
 import { registerIcons } from "./fontAwesomeIcons";
@@ -34,12 +27,6 @@ console.log(
   SurveyBookeoQuestion.name,
   EmailTextInput.name,
   SurveyQuestionMarkdown.name,
-  FDSTextRenderer.name,
-  FDSRadioRenderer.name,
-  FDSCheckboxRenderer.name,
-  FDSDropdownRenderer.name,
-  FDSTextAreaRenderer.name,
-  FDSToggleRenderer.name,
 );
 
 const converter = new Showdown.Converter({
@@ -89,10 +76,9 @@ export const initSurvey = () => {
   surveyLocalization.locales["es"]["optionalText"] = " (Opcional)";
   surveyLocalization.locales["fr"]["optionalText"] = " (Optionnel)";
   
-
-  AllSurveys.globalInit();
-  FordSurveys.fordInit();
-  LincolnSurveys.lincolnInit();
+  // NOTE: Only initialize basic survey features here
+  // FDS and brand-specific questions are now conditionally loaded in fdsInitializer.ts
+  // This ensures admin forms use raw SurveyJS without FDS styling
 };
 
 export const initCreator = (creator: SurveyCreatorModel) => {
@@ -177,7 +163,7 @@ export const initCreator = (creator: SurveyCreatorModel) => {
   creator.toolbox.updateTitles();
 };
 
-export const prepareForSurvey = (thisSurvey: SurveyModel) => {
+export const prepareForSurvey = (thisSurvey: SurveyModel, brand?: string) => {
   // add custom css classes
   thisSurvey.onUpdateQuestionCssClasses.add((survey, options) => {
     if (options.question.name === "signature") {
@@ -195,6 +181,11 @@ export const prepareForSurvey = (thisSurvey: SurveyModel) => {
     //set html
     options.html = str;
   });
+
+  // Log brand-aware preparation
+  if (brand) {
+    console.log(`Survey prepared for brand: ${brand}`);
+  }
 };
 
 export const prepareSurveyOnQuestionAdded = (

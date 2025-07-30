@@ -2,13 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Model } from "survey-core";
 import { Survey } from "survey-react-ui";
 
-// Import all our FDS renderers to ensure they're registered
-import "../surveysjs_renderers/FDSRenderers/FDSText";
-import "../surveysjs_renderers/FDSRenderers/FDSCheckbox";
-import "../surveysjs_renderers/FDSRenderers/FDSRadio";
-import "../surveysjs_renderers/FDSRenderers/FDSDropdown";
-import "../surveysjs_renderers/FDSRenderers/FDSTextArea";
-import "../surveysjs_renderers/FDSRenderers/FDSToggle";
+// FDS renderers will be loaded dynamically when the component mounts
 
 // Demo survey JSON showcasing all FDS components
 const demoSurveyJSON = {
@@ -141,9 +135,35 @@ const FDSSurveyDemoScreen: React.FC = () => {
   const [currentBrand, setCurrentBrand] = useState<'ford' | 'lincoln'>('ford');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [survey, setSurvey] = useState<Model | null>(null);
+  const [fdsLoaded, setFdsLoaded] = useState(false);
 
-  // Initialize survey
+  // Load FDS renderers dynamically when component mounts
   useEffect(() => {
+    const loadFDSRenderers = async () => {
+      try {
+        // Dynamically import all FDS renderers to register them
+        await Promise.all([
+          import("../surveysjs_renderers/FDSRenderers/FDSText"),
+          import("../surveysjs_renderers/FDSRenderers/FDSCheckbox"),
+          import("../surveysjs_renderers/FDSRenderers/FDSRadio"),
+          import("../surveysjs_renderers/FDSRenderers/FDSDropdown"),
+          import("../surveysjs_renderers/FDSRenderers/FDSTextArea"),
+          import("../surveysjs_renderers/FDSRenderers/FDSToggle"),
+        ]);
+        console.log('FDS renderers loaded for demo');
+        setFdsLoaded(true);
+      } catch (error) {
+        console.error('Failed to load FDS renderers for demo:', error);
+        setFdsLoaded(true); // Continue anyway
+      }
+    };
+
+    loadFDSRenderers();
+  }, []);
+
+  // Initialize survey after FDS renderers are loaded
+  useEffect(() => {
+    if (!fdsLoaded) return;
     const surveyModel = new Model(demoSurveyJSON);
     
     // Configure survey for better demo experience
@@ -160,7 +180,7 @@ const FDSSurveyDemoScreen: React.FC = () => {
     });
 
     setSurvey(surveyModel);
-  }, [currentBrand]);
+  }, [fdsLoaded, currentBrand]);
 
   const toggleBrand = () => {
     setCurrentBrand(prev => prev === 'ford' ? 'lincoln' : 'ford');
@@ -295,9 +315,17 @@ const FDSSurveyDemoScreen: React.FC = () => {
       {/* Survey Container with Theme Wrapper */}
       <div style={{ padding: '20px' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          {survey && (
+          {!fdsLoaded ? (
+            <div style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
+              <div>Loading Ford Design System components...</div>
+            </div>
+          ) : survey ? (
             <div id="fd-nxt" className={`${currentBrand}_${theme}`}>
               <Survey model={survey} />
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
+              <div>Initializing survey...</div>
             </div>
           )}
         </div>

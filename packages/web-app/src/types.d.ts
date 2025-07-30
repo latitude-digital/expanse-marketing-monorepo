@@ -29,6 +29,7 @@ type AutoCheckOutDefinition = {
 
 type ExpanseEvent = {
   id: string;
+  brand?: 'Ford' | 'Lincoln' | 'Other';
   fordEventID?: number;
   lincolnEventID?: number;
   surveyType?: "basic" | "preTD" | "postTD";

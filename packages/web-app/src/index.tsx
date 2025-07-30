@@ -24,7 +24,7 @@ import Dashboard from './screens/Dashboard';
 import Charts from './screens/Charts';
 
 import FDSDemo from './screens/FDS_Demo';
-import FDSSurveyDemo from './screens/FDSSurveyDemo';
+const FDSSurveyDemo = React.lazy(() => import('./screens/FDSSurveyDemo'));
 
 import BroncoQuiz from './screens/BroncoQuiz';
 
@@ -49,7 +49,11 @@ root.render(
       <Routes>
         <Route path="/" element={<App />}>
           <Route path="demo" element={<FDSDemo />} />
-          <Route path="fds-survey-demo" element={<FDSSurveyDemo />} />
+          <Route path="fds-survey-demo" element={
+            <React.Suspense fallback={<div>Loading FDS Demo...</div>}>
+              <FDSSurveyDemo />
+            </React.Suspense>
+          } />
           <Route index element={<Home />} />
           <Route path="welcome" element={<Login />} />
           <Route path="auth" element={<Login />} />

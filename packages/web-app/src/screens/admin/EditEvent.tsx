@@ -17,15 +17,20 @@ import _ from 'lodash';
 import { Survey } from 'survey-react-ui';
 import moment from 'moment';
 import Showdown from 'showdown';
+import { initSurvey } from '../../helpers/surveyTemplatesAll';
 
 slk(
     "NDBhNThlYzYtN2EwMy00ZTgxLWIyNGQtOGFkZWJkM2NlNjI3OzE9MjAyNS0wNy0xOSwyPTIwMjUtMDctMTksND0yMDI1LTA3LTE5"
 );
 
+// Initialize basic SurveyJS for admin forms (no FDS components)
+initSurvey();
+
 const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
     toFirestore(event: ExpanseEvent): DocumentData {
         return {
             ...event,
+            brand: event.brand || null,
             questions: JSON.stringify(event.questions || {}),
             theme: JSON.stringify(event.theme || {}),
             preRegDate: event.preRegDate ? Timestamp.fromDate(moment(event.preRegDate).startOf('day').toDate()) : null,
@@ -52,6 +57,7 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
         return {
             id: snapshot.id,
             name: data.name,
+            brand: data.brand || undefined,
             _preEventID: data._preEventID,
             preRegDate: data.preRegDate?.toDate(),
             startDate: data.startDate.toDate(),
@@ -100,6 +106,7 @@ function DashboardScreen() {
             setThisEvent({
                 id: 'new',
                 name: 'New Event',
+                brand: 'Other',
                 questions: {},
                 theme: {},
                 startDate: moment().add(7, 'days').toDate(),
@@ -188,6 +195,20 @@ function DashboardScreen() {
                             ],
                             "startWithNewLine": false,
                             "inputId": "admin-edit-event-form-end-date-input"
+                        },
+                        {
+                            "type": "dropdown",
+                            "name": "brand",
+                            "title": "Event Brand",
+                            "choices": [
+                                { "value": "Other", "text": "Other (Default)" },
+                                { "value": "Ford", "text": "Ford" },
+                                { "value": "Lincoln", "text": "Lincoln" }
+                            ],
+                            "defaultValue": "Other",
+                            "description": "Select the brand for this event. Ford/Lincoln will load brand-specific components and styling. Note: Brand cannot be changed after survey responses are collected.",
+                            "descriptionLocation": "underInput",
+                            "inputId": "admin-edit-event-form-brand-select"
                         },
                         // Ford Event Panel
                         {

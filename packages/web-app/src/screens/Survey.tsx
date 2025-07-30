@@ -49,6 +49,10 @@ import {
   type FileValidationResult
 } from '../utils/surveyUtilities';
 
+// Import brand utilities and FDS initializer
+import { shouldLoadFDS, getBrandTheme, normalizeBrand } from '../utils/brandUtils';
+import { initializeFDSForBrand } from '../helpers/fdsInitializer';
+
 // TypeScript interfaces
 interface RouteParams {
   eventID: string;
@@ -56,6 +60,7 @@ interface RouteParams {
 
 interface SurveyEvent {
   name: string;
+  brand?: string;
   fordEventID?: string;
   disabled?: string;
   _preEventID?: string;
@@ -167,7 +172,6 @@ const SurveyComponent: React.FC = () => {
   const [currentLocale, setCurrentLocale] = useState<string>('');
   const [limitReached, setLimitReached] = useState<boolean>(false);
   const [limitMessage, setLimitMessage] = useState<string>('');
-  const [currentBrand, setCurrentBrand] = useState<'ford' | 'lincoln' | 'unbranded'>('ford');
 
   const converter = new showdown.Converter({
     openLinksInNewWindow: true,
@@ -259,7 +263,19 @@ const SurveyComponent: React.FC = () => {
             survey.questionErrorLocation = "bottom";
           }
 
-          prepareForSurvey(survey);
+          // Initialize FDS conditionally based on event brand
+          const eventBrand = normalizeBrand(res.event.brand);
+          console.log(`Event brand detected: ${eventBrand}`);
+          
+          // Initialize FDS for Ford/Lincoln brands only
+          try {
+            await initializeFDSForBrand(eventBrand);
+          } catch (error) {
+            console.error('Failed to initialize FDS:', error);
+            // Continue with survey creation even if FDS fails
+          }
+
+          prepareForSurvey(survey, eventBrand);
           
           // Configure file questions to use custom preview component
           survey.getAllQuestions().forEach((question: any) => {
@@ -859,67 +875,8 @@ const SurveyComponent: React.FC = () => {
           />
         )}
         <div id="fd-nxt" className={
-          currentBrand === 'ford' ? 'ford_light' : 
-          currentBrand === 'lincoln' ? 'lincoln_light' : 
-          'unbranded'
+          getBrandTheme(thisEvent?.brand)
         }>
-          {/* Brand Switcher with Language Selector */}
-          <div style={{ 
-            padding: '10px', 
-            marginBottom: '10px', 
-            backgroundColor: '#f0f0f0',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <button 
-                onClick={() => {
-                  const nextBrand: 'ford' | 'lincoln' | 'unbranded' = 
-                    currentBrand === 'ford' ? 'lincoln' : 
-                    currentBrand === 'lincoln' ? 'unbranded' : 
-                    'ford';
-                  setCurrentBrand(nextBrand);
-                }}
-                style={{ 
-                  padding: '8px 16px', 
-                  backgroundColor: 
-                    currentBrand === 'ford' ? '#0066cc' : 
-                    currentBrand === 'lincoln' ? '#8B2635' : 
-                    '#666666',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  marginRight: '10px'
-                }}
-              >
-                Switch to {
-                  currentBrand === 'ford' ? 'Lincoln' : 
-                  currentBrand === 'lincoln' ? 'Unbranded' : 
-                  'Ford'
-                }
-              </button>
-              <span style={{ marginLeft: '10px', fontWeight: 'bold' }}>
-                Current Brand: {
-                  currentBrand === 'ford' ? 'Ford' : 
-                  currentBrand === 'lincoln' ? 'Lincoln' : 
-                  'Unbranded'
-                }
-              </span>
-            </div>
-            
-            {/* Language Selector on the right side */}
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <span style={{ marginRight: '10px', fontWeight: 'bold' }}>Language:</span>
-              <LanguageSelector 
-                survey={thisSurvey}
-                supportedLocales={supportedLocales}
-                currentLocale={currentLocale || 'en'}
-                onChange={handleLanguageChange}
-              />
-            </div>
-          </div>
           
           <Survey model={thisSurvey} />
         </div>

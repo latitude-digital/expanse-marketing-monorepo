@@ -20,11 +20,14 @@ import "./admin.css";
 import './EditSurvey.css';
 
 import { initCreator, initSurvey, prepareCreatorOnQuestionAdded, prepareForSurvey, prepareSurveyOnQuestionAdded } from '../../helpers/surveyTemplatesAll';
+import { shouldLoadFDS, getBrandTheme, normalizeBrand } from '../../utils/brandUtils';
+import { initializeFDSForBrand } from '../../helpers/fdsInitializer';
 
 const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
     toFirestore(event: ExpanseEvent): DocumentData {
         return {
             ...event,
+            brand: event.brand || null,
             questions: JSON.stringify(event.questions),
             theme: JSON.stringify(event.theme),
             preRegDate: event.preRegDate ? Timestamp.fromDate(event.preRegDate) : undefined,
@@ -40,6 +43,7 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
         return {
             id: snapshot.id,
             name: data.name,
+            brand: data.brand || undefined,
             _preEventID: data._preEventID,
             preRegDate: data.preRegDate?.toDate(),
             startDate: data.startDate.toDate(),
@@ -56,8 +60,6 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
     },
 };
 
-initSurvey();
-
 function DashboardScreen() {
     const navigate = useNavigate();
     const params = useParams();
@@ -65,6 +67,7 @@ function DashboardScreen() {
     const [user, userLoading, userError] = useAuthState(auth);
     const [thisEvent, setThisEvent] = useState<ExpanseEvent>();
     const [creator, setCreator] = useState<SurveyCreator>();
+    const [initializationComplete, setInitializationComplete] = useState(false);
 
     const db = getFirestore(app);
     const eventID: string = params.eventID!;
@@ -83,10 +86,38 @@ function DashboardScreen() {
         // get the event
         const eventRef = doc(db, "events", eventID).withConverter(EEventConverter);
 
-        getDoc(eventRef).then((event) => {
+        getDoc(eventRef).then(async (event) => {
             const eventData = event.data();
             setThisEvent(eventData);
 
+            // Initialize FDS conditionally based on event brand
+            const eventBrand = normalizeBrand(eventData?.brand);
+            console.log(`Survey Creator - Event brand detected: ${eventBrand}`);
+            
+            try {
+                // Initialize FDS for Ford/Lincoln events, otherwise use basic SurveyJS
+                if (shouldLoadFDS(eventBrand)) {
+                    await initializeFDSForBrand(eventBrand);
+                    console.log(`FDS initialized for ${eventBrand} event`);
+                } else {
+                    initSurvey(); // Basic SurveyJS initialization for non-branded events
+                    console.log('Basic SurveyJS initialized for non-branded event');
+                }
+            } catch (error) {
+                console.error('Failed to initialize survey system:', error);
+                // Fallback to basic initialization
+                initSurvey();
+            }
+            
+            setInitializationComplete(true);
+        });
+    }, [userLoading, eventID]);
+
+    // Separate useEffect for creator initialization that depends on FDS initialization
+    useEffect(() => {
+        if (!initializationComplete || !thisEvent) return;
+
+        const createSurveyCreator = async () => {
             const creatorOptions: ICreatorOptions = {
                 previewOrientation: "portrait",
                 // Enable file uploads for image handling
@@ -103,7 +134,8 @@ function DashboardScreen() {
             initCreator(newCreator);
 
             newCreator.onSurveyInstanceCreated.add((creator, options) => {
-                prepareForSurvey(options.survey);
+                const eventBrand = normalizeBrand(thisEvent?.brand);
+                prepareForSurvey(options.survey, eventBrand);
 
                 // hide options for radiobuttongroup
                 if (options.area == "designer-tab") {
@@ -164,7 +196,7 @@ function DashboardScreen() {
                 }
             });
 
-            newCreator.JSON = eventData?.questions;
+            newCreator.JSON = thisEvent?.questions;
 
             newCreator.saveSurveyFunc = (saveNo: number, callback: (saveNo: number, success: boolean) => void) => {
                 console.log("saving questions...")
@@ -294,14 +326,28 @@ function DashboardScreen() {
             });
 
             setCreator(newCreator);
-        });
-    }, [userLoading]);
+        };
+
+        createSurveyCreator();
+    }, [initializationComplete, thisEvent, eventID]);
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }} className="ford_light">
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <h1>Edit Event {thisEvent?.id}</h1>
 
-            {creator && <SurveyCreatorComponent creator={creator} style={{ flex: 1 }} />}
+            {!initializationComplete ? (
+                <div style={{ padding: '20px', textAlign: 'center' }}>
+                    Loading survey editor...
+                </div>
+            ) : creator ? (
+                <div id="fd-nxt" className={getBrandTheme(thisEvent?.brand)} style={{ flex: 1 }}>
+                    <SurveyCreatorComponent creator={creator} style={{ flex: 1 }} />
+                </div>
+            ) : (
+                <div style={{ padding: '20px', textAlign: 'center' }}>
+                    Initializing creator...
+                </div>
+            )}
         </div>
     );
 }
