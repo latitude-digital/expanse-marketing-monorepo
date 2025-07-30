@@ -2,6 +2,7 @@ import React from "react";
 import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
 import { QuestionRadiogroupModel } from "survey-core";
 import { RadioButtonGroup } from "@ui/ford-ui-components/src/v2/radio/RadioButtonGroup";
+import { FDSQuestionWrapper } from "./FDSShared/FDSQuestionWrapper";
 import { useQuestionValidation, renderLabel, renderDescription, getOptionalText } from "./FDSShared";
 
 export class FDSRadioRenderer extends SurveyQuestionElementBase {
@@ -28,31 +29,30 @@ export class FDSRadioRenderer extends SurveyQuestionElementBase {
             value: choice.value
         }));
 
-        // Handle labels that might contain JSX elements
-        const labelContent = renderLabel(question.fullTitle);
-        const groupLabel = typeof labelContent === 'string' ? labelContent : question.fullTitle;
-        
-        const descriptionContent = renderDescription(question.description);
-        const description = typeof descriptionContent === 'string' ? descriptionContent : question.description;
-
         return (
-            <RadioButtonGroup
-                groupLabel={groupLabel}
-                description={description}
-                options={options}
-                value={question.value || ""}
+            <FDSQuestionWrapper
+                label={question.fullTitle}
+                description={question.description}
+                isRequired={question.isRequired}
                 isInvalid={isInvalid}
                 errorMessage={errorMessage}
-                isDisabled={question.isReadOnly}
-                onChange={(value: string) => {
-                    question.value = value;
-                }}
-                onBlur={() => {
-                    question.validate();
-                }}
-                data-testid={`fds-radio-${question.name}`}
-                aria-label={question.fullTitle}
-            />
+                question={question}
+            >
+                <RadioButtonGroup
+                    options={options}
+                    value={question.value || ""}
+                    isInvalid={isInvalid}
+                    isDisabled={question.isReadOnly}
+                    onChange={(value: string) => {
+                        question.value = value;
+                    }}
+                    onBlur={() => {
+                        question.validate();
+                    }}
+                    data-testid={`fds-radio-${question.name}`}
+                    aria-label={question.fullTitle}
+                />
+            </FDSQuestionWrapper>
         );
     }
 }
