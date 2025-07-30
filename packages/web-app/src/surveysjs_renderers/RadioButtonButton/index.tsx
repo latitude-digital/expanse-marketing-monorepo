@@ -1,7 +1,7 @@
 import React, {  } from "react";
 import { ItemValue, RendererFactory, Serializer, SurveyModel, surveyLocalization } from "survey-core";
 import { ReactQuestionFactory, SurveyQuestionRadiogroup } from "survey-react-ui";
-import StyledSelectionCard from "@ui/ford-ui-components/src/v2/selection-card/default/StyledSelectionCard";
+import UnstyledSelectionCard from "@ui/ford-ui-components/src/v2/selection-card/default/UnstyledSelectionCard";
 import { FieldError } from "@ui/ford-ui-components/src/components/ui/field-error";
 import Icon from "@ui/ford-ui-components/src/v2/icon/Icon";
 import Showdown from 'showdown';
@@ -58,7 +58,7 @@ export class RadioGroupRowQuestion extends SurveyQuestionRadiogroup {
             }
 
             return (
-                <StyledSelectionCard
+                <UnstyledSelectionCard
                     key={item.id}
                     id={inputId}
                     name={this.question.name}
@@ -70,7 +70,15 @@ export class RadioGroupRowQuestion extends SurveyQuestionRadiogroup {
                     description={item.title}
                     tags={[]}
                     variant="none"
-                    className="ford-component-selection-card"
+                    customClassnames={{
+                        root: 'rounded-ford-radius-xl overflow-hidden border-2 border-transparent [&:has(.peer:checked)]:border-ford-fill-interactive hover:[&:has(.peer:not(:checked))]:border-ford-stroke-interactive-hover focus-within:outline-none focus-within:ring-2 focus-within:ring-ford-stroke-strongest(focus) bg-ford-fill-highcontrast(default)',
+                        label: 'group flex w-full justify-between items-center py-ford-space-xl px-ford-space-lg cursor-pointer rounded-ford-radius-xl overflow-hidden border border-ford-stroke-subtle(dividers) [&:has(.peer:checked)]:border-transparent hover:bg-ford-opacity-hover-default',
+                        input: 'peer opacity-0 absolute top-0 left-0 h-ford-space-xl w-ford-space-xl',
+                        header: {
+                            container: 'flex flex-col items-center w-full',
+                            description: 'text-center'
+                        }
+                    }}
                 />
             )
         }
