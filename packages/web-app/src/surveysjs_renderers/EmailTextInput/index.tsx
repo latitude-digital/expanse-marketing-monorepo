@@ -1,12 +1,16 @@
 import React from "react";
-import { ElementFactory, LocalizableString, QuestionTextModel, Serializer, surveyLocalization } from "survey-core";
-import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
+import { ElementFactory, LocalizableString, QuestionTextModel, Serializer, surveyLocalization, defaultCss } from "survey-core";
+import { ReactQuestionFactory, SurveyQuestionElementBase, SurveyQuestionText } from "survey-react-ui";
 import { StyledTextField } from "@ui/ford-ui-components/src/v2/inputField/Input";
 import { vsprintf } from 'sprintf-js';
+import { normalizeBrand } from '../../utils/brandUtils';
 
 const CUSTOM_QUESTION_TYPE = "emailtextinput";
 
-// CSS classes will be handled by SurveyJS v2.x automatically
+// Ensure custom question type inherits SurveyJS text styling (SurveyJS 2.x version of defaultV2Css pattern)
+if (defaultCss && defaultCss[CUSTOM_QUESTION_TYPE] === undefined) {
+    defaultCss[CUSTOM_QUESTION_TYPE] = defaultCss["text"];
+}
 
 // A model that extends the Question class and inherits all its properties and methods
 export class QuestionEmailTextModel extends QuestionTextModel {
@@ -68,10 +72,10 @@ Serializer.addClass(
     "question"
 );
 
-export class EmailTextInput extends SurveyQuestionElementBase {
+// Brand-aware email input that extends different base classes based on brand
+class EmailTextInputFordUI extends SurveyQuestionElementBase {
     constructor(props: any) {
         super(props);
-
         this.question.locDidYouMeanQuestion.setLocaleText('en', 'Did you mean %s?');
         this.question.locDidYouMeanQuestion.setLocaleText('es', '¿Quisiste decir %s?');
         this.question.locDidYouMeanQuestion.setLocaleText('fr', 'Vouliez-vous dire %s?');
@@ -87,18 +91,12 @@ export class EmailTextInput extends SurveyQuestionElementBase {
 
     protected renderElement(): JSX.Element {
         const question = this.question;
-        
-        // Get the question title and handle required/optional indication
         const title = question.fullTitle;
         const isRequired = question.isRequired;
-        
-        // Get error message if validation failed
         const errorMessage = question.errors.length > 0 
             ? (question.errors[0].getText ? question.errors[0].getText() : question.errors[0].text)
             : undefined;
         const isInvalid = question.errors.length > 0;
-        
-        // Get localized optional text for Ford UI component based on current survey locale
         const currentLocale = question.survey.locale || 'en';
         const optionalText = surveyLocalization.locales[currentLocale]?.["optionalText"] || " (Optional)";
         
@@ -119,7 +117,6 @@ export class EmailTextInput extends SurveyQuestionElementBase {
                         question.value = value;
                     }}
                     onBlur={() => {
-                        // Trigger validation on blur
                         question.validate();
                     }}
                     data-testid={`email-text-${question.name}`}
@@ -131,27 +128,88 @@ export class EmailTextInput extends SurveyQuestionElementBase {
 
     renderDidYouMean = () => {
         const questionString = vsprintf((this.question.locDidYouMeanQuestion as LocalizableString).getLocaleText(this.question.getLocale() || 'en'), [this.question.didYouMean]);
-
         return (
-            <>
-                <div className="sd-action-bar" style={{ paddingTop: '0.5em', order: 3 }}>
-                    <div className="sv-action" onClick={() => {
-                        this.question.value = this.question.didYouMean;
-                        this.question.validate();
-                    }}>
-                        <div className="sv-action__content">
-                            <label className="sd-action" style={{ backgroundColor: 'var(--sjs-special-yellow-light)' }} aria-label={this.question.didYouMean}>
-                                <span>{questionString}</span>
-                            </label>
-                        </div>
+            <div className="sd-action-bar" style={{ paddingTop: '0.5em', order: 3 }}>
+                <div className="sv-action" onClick={() => {
+                    this.question.value = this.question.didYouMean;
+                    this.question.validate();
+                }}>
+                    <div className="sv-action__content">
+                        <label className="sd-action" style={{ backgroundColor: 'var(--sjs-special-yellow-light)' }} aria-label={this.question.didYouMean}>
+                            <span>{questionString}</span>
+                        </label>
                     </div>
                 </div>
-
-
-            </>
-        )
+            </div>
+        );
     }
 }
+
+class EmailTextInputDefault extends SurveyQuestionText {
+    constructor(props: any) {
+        super(props);
+        this.question.locDidYouMeanQuestion.setLocaleText('en', 'Did you mean %s?');
+        this.question.locDidYouMeanQuestion.setLocaleText('es', '¿Quisiste decir %s?');
+        this.question.locDidYouMeanQuestion.setLocaleText('fr', 'Vouliez-vous dire %s?');
+
+        // Override renderInput to add didYouMean functionality to default SurveyJS text input
+        (this as any).renderInput = () => {
+            return (
+                <>
+                    {super.renderInput()}
+                    {this.question.didYouMean && this.renderDidYouMean()}
+                </>
+            );
+        };
+    }
+
+    protected get question(): QuestionEmailTextModel {
+        return this.questionBase as QuestionEmailTextModel;
+    }
+
+    renderDidYouMean = () => {
+        const questionString = vsprintf((this.question.locDidYouMeanQuestion as LocalizableString).getLocaleText(this.question.getLocale() || 'en'), [this.question.didYouMean]);
+        return (
+            <div className="sd-action-bar" style={{ paddingTop: '0.5em', order: 3 }}>
+                <div className="sv-action" onClick={() => {
+                    this.question.value = this.question.didYouMean;
+                    this.question.validate();
+                }}>
+                    <div className="sv-action__content">
+                        <label className="sd-action" style={{ backgroundColor: 'var(--sjs-special-yellow-light)' }} aria-label={this.question.didYouMean}>
+                            <span>{questionString}</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+}
+
+// Factory function that chooses the right renderer based on brand
+export const EmailTextInput = (props: any) => {
+    // Detect current brand from wrapper element
+    const wrapperElement = document.getElementById('fd-nxt');
+    let shouldUseFordUI = false;
+    
+    if (wrapperElement) {
+        // Detect brand from CSS class on wrapper element
+        if (wrapperElement.classList.contains('ford_light') || 
+            wrapperElement.classList.contains('ford_dark') ||
+            wrapperElement.classList.contains('lincoln_light') || 
+            wrapperElement.classList.contains('lincoln_dark')) {
+            shouldUseFordUI = true;
+        }
+    }
+    
+    console.log(`[EmailTextInput Factory] Using Ford UI: ${shouldUseFordUI}`);
+    
+    if (shouldUseFordUI) {
+        return React.createElement(EmailTextInputFordUI, props);
+    } else {
+        return React.createElement(EmailTextInputDefault, props);
+    }
+};
 
 ReactQuestionFactory.Instance.registerQuestion(
     CUSTOM_QUESTION_TYPE,

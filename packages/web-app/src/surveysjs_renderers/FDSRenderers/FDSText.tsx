@@ -95,10 +95,5 @@ ReactQuestionFactory.Instance.registerQuestion(
     }
 );
 
-// Also register for email text input type
-ReactQuestionFactory.Instance.registerQuestion(
-    "emailtextinput",
-    (props) => {
-        return React.createElement(FDSTextRenderer, props);
-    }
-);
+// NOTE: Do NOT register "emailtextinput" here - it has its own brand-aware factory
+// in EmailTextInput/index.tsx that chooses between Ford UI and default SurveyJS rendering
