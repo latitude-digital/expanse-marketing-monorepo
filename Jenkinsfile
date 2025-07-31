@@ -37,7 +37,7 @@ pipeline {
 			sshagent(credentials: ['new_ford_github']) {
 				sh '''
 					mkdir -p ~/.ssh
-					ssh-keyscan -H ford.github.com >> ~/.ssh/known_hosts
+					ssh-keyscan -H github.ford.com >> ~/.ssh/known_hosts
 					ssh-keyscan -H github.com >> ~/.ssh/known_hosts
 					git submodule sync --recursive
 					git submodule update --init --recursive
