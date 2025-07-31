@@ -35,7 +35,7 @@ RUN pnpm config set store-dir /home/latitude_user/.pnpm && \
     pnpm config set cache-dir /home/latitude_user/.pnpm/cache
 
 # Copy package files (this layer will be cached if package.json doesn't change)
-COPY --chown=latitude_user:latitude_user package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY --chown=latitude_user:latitude_user package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY --chown=latitude_user:latitude_user packages/web-app/package.json ./packages/web-app/
 COPY --chown=latitude_user:latitude_user packages/firebase/package.json ./packages/firebase/
 
