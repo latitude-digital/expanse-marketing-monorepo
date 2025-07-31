@@ -37,7 +37,7 @@ RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY --chown=latitude_user:latitude_user . .
 
 # Run sync script to set up Ford UI CSS properly
-RUN chmod +x ./packages/web-app/scripts/sync-ford-ui.sh && ./packages/web-app/scripts/sync-ford-ui.sh
+RUN ls -la packages/web-app/scripts/ && bash packages/web-app/scripts/sync-ford-ui.sh
 
 # Expose port (if needed for development)
 EXPOSE 8001
