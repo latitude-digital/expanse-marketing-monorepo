@@ -32,9 +32,18 @@ pipeline {
 
 			sh "pnpm config get cache-dir"
 			sh "cd packages/web-app && pnpm version --no-git-tag-version --no-commit-hooks --new-version ${env.VERSION_NUMBER}"
+			
+			// Handle submodule authentication first
 			sshagent(credentials: ['CI_FORD_GITHUB', 'e5cf0947-b15a-4372-81a1-be32aaf0d466']) {
-				sh "pnpm install --frozen-lockfile"
+				sh '''
+					mkdir -p ~/.ssh
+					ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+					git submodule sync --recursive
+					git submodule update --init --recursive
+					pnpm install --frozen-lockfile
+				'''
 			}
+			
 			sh "pwd"
 			sh "whoami"
 			sh "cd packages/web-app && pnpm sentry-cli releases new ${env.BUILD_NUMBER}"
