@@ -69,7 +69,12 @@ cp "$FORD_SOURCE/ford/ford-font-families.css" "$WEB_APP_DEST/ford/"
 echo "🔧 Copying and fixing Lincoln font families (protocol-relative URLs → HTTPS)..."
 cp "$FORD_SOURCE/lincoln/lincoln-font-families.css" "$WEB_APP_DEST/lincoln/"
 # Fix protocol-relative URLs to use HTTPS (Lincoln servers require HTTPS)
-sed -i '' 's|//www\.lincoln\.com|https://www.lincoln.com|g' "$WEB_APP_DEST/lincoln/lincoln-font-families.css"
+# Use portable sed syntax (works on both macOS and Linux)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    sed -i '' 's|//www\.lincoln\.com|https://www.lincoln.com|g' "$WEB_APP_DEST/lincoln/lincoln-font-families.css"
+else
+    sed -i 's|//www\.lincoln\.com|https://www.lincoln.com|g' "$WEB_APP_DEST/lincoln/lincoln-font-families.css"
+fi
 
 # Semantic variables are already included in the theme-scoped ford.css and lincoln.css files
 echo "✅ Semantic variables (radius, spacing, border-width) included in theme-scoped CSS files"

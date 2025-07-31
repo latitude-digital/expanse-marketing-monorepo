@@ -39,7 +39,12 @@ pipeline {
 				pnpm config get cache-dir
 			'''
 			
-			sh "cd packages/web-app && npm version --no-git-tag-version --no-commit-hooks --new-version ${env.VERSION_NUMBER}"
+			// Update version using sed instead of npm version to avoid dependency conflicts
+			sh """
+				cd packages/web-app
+				sed -i 's/"version": "[^"]*"/"version": "${env.VERSION_NUMBER}"/' package.json
+				echo "Updated web-app version to ${env.VERSION_NUMBER}"
+			"""
 			
 			// Handle submodule authentication first
 			sshagent(credentials: ['CI_FORD_GITHUB', 'e5cf0947-b15a-4372-81a1-be32aaf0d466']) {
