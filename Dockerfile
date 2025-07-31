@@ -28,6 +28,7 @@ USER latitude_user
 # Copy package files
 COPY --chown=latitude_user:latitude_user package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY --chown=latitude_user:latitude_user packages/web-app/package.json ./packages/web-app/
+COPY --chown=latitude_user:latitude_user packages/ford-ui ./packages/ford-ui/
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
