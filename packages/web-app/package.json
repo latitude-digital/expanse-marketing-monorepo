@@ -1,6 +1,6 @@
 {
   "name": "@expanse/web-app",
-  "version": "0.1.0",
+  "version": "1.0.1",
   "private": true,
   "dependencies": {
     "@progress/kendo-licensing": "1.3.5",
@@ -71,7 +71,7 @@
     "perf:lighthouse": "node scripts/lighthouse-ci.js lighthouse",
     "perf:webvitals": "node scripts/lighthouse-ci.js webvitals",
     "perf:all": "node scripts/lighthouse-ci.js all",
-    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org latitude-digital --project expanse-marketing ./dist && sentry-cli sourcemaps upload --org latitude-digital --project expanse-marketing ./dist"
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org latitude-digital --project expanse-marketing ./build && sentry-cli sourcemaps upload --org latitude-digital --project expanse-marketing ./build"
   },
   "eslintConfig": {
     "extends": [
