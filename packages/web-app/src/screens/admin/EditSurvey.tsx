@@ -23,6 +23,8 @@ import "./admin.css";
 import './EditSurvey.css';
 
 import { initCreator, initSurvey, prepareCreatorOnQuestionAdded, prepareForSurvey, prepareSurveyOnQuestionAdded } from '../../helpers/surveyTemplatesAll';
+import { initCreatorFord, prepareCreatorOnQuestionAddedFord } from '../../helpers/surveyTemplatesFord';
+import { initCreatorLincoln, prepareCreatorOnQuestionAddedLincoln } from '../../helpers/surveyTemplatesLincoln';
 import { shouldLoadFDS, getBrandTheme, normalizeBrand } from '../../utils/brandUtils';
 import { initializeFDSForBrand } from '../../helpers/fdsInitializer';
 
@@ -163,10 +165,20 @@ function DashboardScreen() {
                 });
             };
 
+            // Initialize creator with base settings
             initCreator(newCreator);
+            
+            // Apply brand-specific creator settings
+            const eventBrand = normalizeBrand(thisEvent?.brand);
+            if (eventBrand === 'Ford') {
+                initCreatorFord(newCreator);
+                console.log('Ford creator settings applied');
+            } else if (eventBrand === 'Lincoln') {
+                initCreatorLincoln(newCreator);
+                console.log('Lincoln creator settings applied');
+            }
 
             newCreator.onSurveyInstanceCreated.add((creator, options) => {
-                const eventBrand = normalizeBrand(thisEvent?.brand);
                 prepareForSurvey(options.survey, eventBrand);
 
                 // hide options for radiobuttongroup
@@ -201,7 +213,15 @@ function DashboardScreen() {
             });
 
             newCreator.onQuestionAdded.add((sender, options) => {
+                // Call base question handler
                 prepareCreatorOnQuestionAdded(sender, options);
+                
+                // Call brand-specific question handler
+                if (eventBrand === 'Ford') {
+                    prepareCreatorOnQuestionAddedFord(sender, options);
+                } else if (eventBrand === 'Lincoln') {
+                    prepareCreatorOnQuestionAddedLincoln(sender, options);
+                }
             });
 
             // radioGroup

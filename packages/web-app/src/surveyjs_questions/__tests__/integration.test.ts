@@ -1,5 +1,5 @@
 import { ComponentCollection } from 'survey-core';
-import { AllSurveys, FordSurveys, LincolnSurveys } from '../index';
+import { AllSurveys, FordSurveys, LincolnSurveys, FMCSurveys } from '../index';
 
 describe('Custom Question Integration', () => {
   beforeEach(() => {
@@ -29,6 +29,28 @@ describe('Custom Question Integration', () => {
     });
   });
 
+  describe('FMCSurveys', () => {
+    it('should register shared FMC question types', () => {
+      FMCSurveys.fmcInit();
+      
+      const expectedQuestions = [
+        'gender',
+        'agebracket',
+        'howlikelyacquire',
+        'inmarkettiming',
+        'adultwaiver',
+        'minorwaiver',
+        'vehicledrivenmostmake'
+      ];
+      
+      expectedQuestions.forEach(questionType => {
+        const component = ComponentCollection.Instance.getCustomQuestionByName(questionType);
+        expect(component).toBeDefined();
+        expect(component.name).toBe(questionType);
+      });
+    });
+  });
+
   describe('FordSurveys', () => {
     it('should register Ford-specific question types', () => {
       FordSurveys.fordInit();
@@ -37,14 +59,7 @@ describe('Custom Question Integration', () => {
         'fordvoi',
         'fordoptin',
         'fordrecommend',
-        'gender',
-        'agebracket',
-        'howlikelyacquire',
         'howlikelypurchasingford',
-        'inmarkettiming',
-        'adultwaiver',
-        'minorwaiver',
-        'vehicledrivenmostmake',
         'fordrecommendpost',
         'howlikelypurchasingfordpost'
       ];
@@ -77,12 +92,14 @@ describe('Custom Question Integration', () => {
   describe('All question types together', () => {
     it('should register all question types without conflicts', () => {
       AllSurveys.globalInit();
+      FMCSurveys.fmcInit();
       FordSurveys.fordInit();
       LincolnSurveys.lincolnInit();
       
       // Test a few key questions from each category
       const testQuestions = [
         'firstname', // AllSurveys
+        'gender',    // FMCSurveys
         'fordvoi',   // FordSurveys  
         'lincolnvoi' // LincolnSurveys
       ];

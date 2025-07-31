@@ -121,23 +121,8 @@ export const initCreator = (creator: SurveyCreatorModel) => {
     { name: "lastname", category: "__0pii" },
     { name: "email", category: "__0pii" },
     { name: "phone", category: "__0pii" },
-    // Ford Questions
-    { name: "fordvoi", category: "__fordCategory" },
-    { name: "fordoptin", category: "__fordCategory" },
-    { name: "fordrecommend", category: "__fordCategory" },
-    { name: "fordrecommendpost", category: "__fordCategory" },
-    { name: "gender", category: "__fordCategory" },
-    { name: "agebracket", category: "__fordCategory" },
-    { name: "howlikelyacquire", category: "__fordCategory" },
-    { name: "howlikelypurchasingford", category: "__fordCategory" },
-    { name: "howlikelypurchasingfordpost", category: "__fordCategory" },
-    { name: "inmarkettiming", category: "__fordCategory" },
-    { name: "adultwaiver", category: "__fordCategory" },
-    { name: "minorwaiver", category: "__fordCategory" },
-    { name: "vehicledrivenmostmake", category: "__fordCategory" },
-    // Lincoln Questions
-    { name: "lincolnvoi", category: "__lincolnCategory" },
-    { name: "lincolnoptin", category: "__lincolnCategory" },
+    // Note: Ford and Lincoln questions are now assigned dynamically 
+    // in their respective brand-specific template files
   ]);
 
   const md = creator.toolbox.getItemByName("markdown");
