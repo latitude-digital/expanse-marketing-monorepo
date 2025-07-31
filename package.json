@@ -16,7 +16,7 @@
     "firebase:emulators": "firebase emulators:start",
     "deploy:production": "pnpm build && firebase deploy",
     "ford-ui:update": "git submodule update --init --recursive && cd packages/ford-ui && git pull origin develop && nx build @ui/ford-ui-components && cd ../.. && ./packages/web-app/scripts/sync-ford-ui.sh",
-    "postinstall": "mkdir -p packages/web-app/src/styles/ford packages/web-app/src/styles/lincoln && cp packages/ford-ui/packages/@ui/ford-ui-components/src/styles/ford/* packages/web-app/src/styles/ford/ && cp packages/ford-ui/packages/@ui/ford-ui-components/src/styles/lincoln/* packages/web-app/src/styles/lincoln/ && sed -i '' 's/:root {/.ford_light {/' packages/web-app/src/styles/ford/_variables.css && sed -i '' 's/:root {/.lincoln_light {/' packages/web-app/src/styles/lincoln/_variables.css"
+    "postinstall": "echo 'CSS sync handled by sync-ford-ui.sh script'"
   },
   "keywords": ["monorepo", "expanse", "marketing", "survey", "saas"],
   "author": "Latitude Digital",
