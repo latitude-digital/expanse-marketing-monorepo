@@ -1,8 +1,8 @@
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
 import { QuestionTextModel } from "survey-core";
 import { StyledTextField } from "@ui/ford-ui-components/src/v2/inputField/Input";
-import { renderLabel, renderDescription, getOptionalText, useQuestionValidation } from "./FDSShared/utils";
+import { renderLabel, renderDescription, getOptionalText } from "./FDSShared/utils";
 
 interface ParsedAddress {
   formatted_address?: string;
@@ -29,94 +29,15 @@ export class FDSTextRenderer extends SurveyQuestionElementBase {
 
     protected renderElement(): JSX.Element {
         const question = this.question;
-        const { isInvalid, errorMessage } = useQuestionValidation(question);
         const inputType = this.getInputType();
         const optionalText = getOptionalText(question);
         
-        // Address autocomplete functionality
-        const inputRef = useRef<any>();
-        const autoCompleteRef = useRef<google.maps.places.Autocomplete>();
-
-        useEffect(() => {
-            const questionData = question as any;
-            const hasAutocomplete = questionData.addressAutocompleteConfig;
-            
-            if (hasAutocomplete && inputRef.current) {
-                const defaultConfig = {
-                    types: ['address'],
-                    fields: ['address_components', 'formatted_address'],
-                    componentRestrictions: {
-                        country: ['us'],
-                    },
-                };
-
-                const mergedConfig = {
-                    ...defaultConfig,
-                    ...questionData.addressAutocompleteConfig,
-                    // Ensure componentRestrictions is properly merged
-                    componentRestrictions: {
-                        ...defaultConfig.componentRestrictions,
-                        ...questionData.addressAutocompleteConfig?.componentRestrictions,
-                    },
-                };
-
-                autoCompleteRef.current = new window.google.maps.places.Autocomplete(
-                    inputRef.current.inputElement,
-                    mergedConfig,
-                );
-                
-                autoCompleteRef.current.addListener("place_changed", async function () {
-                    const place = await autoCompleteRef.current!.getPlace();
-
-                    const ParsedData: ParsedAddress = {
-                        formatted_address: place.formatted_address,
-                    };
-
-                    const postalData = place.address_components?.find(item => item.types.includes("postal_code"));
-                    const countryData = place.address_components?.find(item => item.types.includes("country"));
-                    const addressData = place.address_components?.find(item => item.types.includes("administrative_area_level_1"));
-                    const cityData = place.address_components?.find(item => item.types.includes("locality"));
-                    const routeData = place.address_components?.find(item => item.types.includes("route"));
-                    const streetNumberData = place.address_components?.find(item => item.types.includes("street_number"));
-                    
-                    ParsedData.address1 = ([streetNumberData?.long_name, routeData?.long_name].join(' ')).trim();
-                    ParsedData.city = (cityData == null) ? "" : cityData.long_name;
-                    ParsedData.state = (addressData == null) ? "" : addressData.short_name;
-                    ParsedData.zip = (postalData == null) ? "" : postalData.long_name;
-                    ParsedData.country = (countryData == null) ? "" : countryData.short_name;
-
-                    if (questionData.addressAutocompleteConfig?.addressPartMap) {
-                        const thisMap = questionData.addressAutocompleteConfig?.addressPartMap;
-                        
-                        // Get the survey instance to update other fields
-                        const survey = question.survey;
-                        
-                        let key: keyof typeof thisMap;
-                        for (key in thisMap) {
-                            const fieldName = thisMap[key]!;
-                            const fieldValue = ParsedData[key];
-                            
-                            // Find the question in the survey and update its value
-                            const targetQuestion = survey.getQuestionByName(fieldName);
-                            if (targetQuestion && fieldValue) {
-                                targetQuestion.value = fieldValue;
-                            }
-                        }
-                    }
-                });
-
-                // Cleanup function
-                return () => {
-                    if (autoCompleteRef.current) {
-                        google.maps.event.clearInstanceListeners(autoCompleteRef.current);
-                    }
-                };
-            }
-        }, [question]);
+        // Get validation state from question
+        const isInvalid = question.errors && question.errors.length > 0;
+        const errorMessage = isInvalid ? question.errors[0]?.text : undefined;
         
         return (
             <StyledTextField
-                ref={inputRef}
                 label={renderLabel(question.fullTitle)}
                 description={renderDescription(question.description)}
                 isRequired={question.isRequired}
