@@ -30,11 +30,14 @@ COPY --chown=latitude_user:latitude_user package.json pnpm-lock.yaml pnpm-worksp
 COPY --chown=latitude_user:latitude_user packages/web-app/package.json ./packages/web-app/
 COPY --chown=latitude_user:latitude_user packages/ford-ui ./packages/ford-ui/
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Install dependencies (skip postinstall scripts that need full codebase)
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Copy the rest of the application
 COPY --chown=latitude_user:latitude_user . .
+
+# Run sync script to set up Ford UI CSS properly
+RUN ./packages/web-app/scripts/sync-ford-ui.sh
 
 # Expose port (if needed for development)
 EXPOSE 8001
