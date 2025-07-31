@@ -34,9 +34,10 @@ pipeline {
 			sh "cd packages/web-app && pnpm version --no-git-tag-version --no-commit-hooks --new-version ${env.VERSION_NUMBER}"
 			
 			// Handle submodule authentication first
-			sshagent(credentials: ['CI_FORD_GITHUB', 'e5cf0947-b15a-4372-81a1-be32aaf0d466']) {
+			sshagent(credentials: ['new_ford_github']) {
 				sh '''
 					mkdir -p ~/.ssh
+					ssh-keyscan -H ford.github.com >> ~/.ssh/known_hosts
 					ssh-keyscan -H github.com >> ~/.ssh/known_hosts
 					git submodule sync --recursive
 					git submodule update --init --recursive
