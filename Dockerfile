@@ -41,7 +41,8 @@ COPY --chown=latitude_user:latitude_user packages/firebase/package.json ./packag
 
 # Pre-install dependencies (this layer will be cached if lockfile doesn't change)
 # Note: In Jenkins, this step is skipped due to volume mounts, but helps local builds
-RUN pnpm install --frozen-lockfile --prefer-offline --config.auto-install-peers=false --config.strict-peer-dependencies=false || pnpm install --frozen-lockfile --config.auto-install-peers=false --config.strict-peer-dependencies=false
+# Use --no-frozen-lockfile to handle peer dependency conflicts gracefully
+RUN pnpm install --prefer-offline || pnpm install
 
 # Copy ford-ui for CSS files
 COPY --chown=latitude_user:latitude_user packages/ford-ui ./packages/ford-ui/

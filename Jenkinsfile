@@ -54,8 +54,8 @@ pipeline {
 					echo "Cache stats before install:"
 					ls -la /home/latitude_user/.pnpm/ || echo "No cache directory found"
 					
-					# Install all dependencies with legacy peer deps to handle React 16/17 vs 18 conflicts
-					pnpm install --frozen-lockfile --config.auto-install-peers=false --config.strict-peer-dependencies=false
+					# Install all dependencies - lockfile now includes peer dependency settings
+					pnpm install --frozen-lockfile
 					
 					# Show cache stats after install
 					echo "Cache stats after install:"
