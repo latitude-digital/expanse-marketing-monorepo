@@ -59,8 +59,8 @@ pipeline {
 					echo "Cache stats before install:"
 					ls -la /home/latitude_user/.pnpm/ || echo "No cache directory found"
 					
-					# Install all dependencies - use no-frozen-lockfile to handle container environment differences
-					pnpm install --no-frozen-lockfile
+					# Install all dependencies - use prefer-offline to leverage cache
+					pnpm install --prefer-offline
 					
 					# Show cache stats after install
 					echo "Cache stats after install:"
