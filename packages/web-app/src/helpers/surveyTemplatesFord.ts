@@ -54,6 +54,24 @@ export const initCreatorFord = (creator: SurveyCreatorModel) => {
     { name: "minorwaiver", category: "__fordCategory" },
     { name: "vehicledrivenmostmake", category: "__fordCategory" },
   ]);
+
+  // Apply Ford-specific category sorting - Ford Questions first
+  creator.toolbox.categories = creator.toolbox.categories.sort((a: any, b: any) => {
+    const getPriority = (name: string) => {
+      if (name === "__fordCategory") return 1;
+      if (name === "__lincolnCategory") return 2; 
+      if (name === "__0pii") return 3;
+      if (name.startsWith("__")) return 4;
+      return 5;
+    };
+
+    return getPriority(a.name) - getPriority(b.name);
+  });
+
+  // Open Ford Questions category by default
+  creator.toolbox.collapseAllCategories();
+  creator.toolbox.expandCategory("__fordCategory");
+  creator.toolbox.updateTitles();
 };
 
 export const prepareCreatorOnQuestionAddedFord = (
