@@ -82,8 +82,6 @@ pipeline {
 	}
 	stage("Build") {
 		steps {
-			// Sync Ford UI before building
-			sh "./packages/web-app/scripts/sync-ford-ui.sh"
 			// Build web-app with environment variables
 			sh "cd packages/web-app && VITE_ENV=${env.VITE_ENV} pnpm run build"
 		}
