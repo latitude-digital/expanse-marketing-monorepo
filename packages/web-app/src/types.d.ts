@@ -50,4 +50,5 @@ type ExpanseEvent = {
   theme: IExtendedTheme | ITheme;
   survey_count_limit?: number;
   limit_reached_message?: string;
+  showLanguageChooser?: boolean;
 };

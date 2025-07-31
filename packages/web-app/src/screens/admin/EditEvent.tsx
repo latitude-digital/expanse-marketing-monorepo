@@ -47,6 +47,7 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
             checkOutEmail: event.checkOutEmail || null,
             survey_count_limit: event.survey_count_limit || null,
             limit_reached_message: event.limit_reached_message || null,
+            showLanguageChooser: event.showLanguageChooser !== undefined ? event.showLanguageChooser : false,
         };
     },
     fromFirestore(
@@ -76,6 +77,7 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
             surveyType: data.surveyType || null,
             survey_count_limit: data.survey_count_limit || undefined,
             limit_reached_message: data.limit_reached_message || undefined,
+            showLanguageChooser: data.showLanguageChooser !== undefined ? data.showLanguageChooser : false,
         };
     },
 };
@@ -111,6 +113,7 @@ function DashboardScreen() {
                 theme: {},
                 startDate: moment().add(7, 'days').toDate(),
                 endDate: moment().add(7, 'days').toDate(),
+                showLanguageChooser: true,
             });
         } else {
             // get the event
@@ -461,6 +464,14 @@ function DashboardScreen() {
                                     "html": "<div id='markdown-preview' style='padding: 10px; border: 1px solid #ccc; border-radius: 4px; background-color: #f9f9f9; margin-top: 10px;'><p style='color: #666;'>Markdown preview will appear here</p></div>"
                                 }
                             ]
+                        },
+                        {
+                            "type": "boolean",
+                            "name": "showLanguageChooser",
+                            "title": "Show Language Chooser",
+                            "description": "Display language selector in the survey when multiple languages are available",
+                            "descriptionLocation": "underInput",
+                            "defaultValue": true
                         },
                         {
                             "type": "boolean",

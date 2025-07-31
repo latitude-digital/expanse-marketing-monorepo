@@ -892,7 +892,7 @@ const SurveyComponent: React.FC = () => {
                 display: 'flex', 
                 justifyContent: 'flex-end' 
               }}>
-                {supportedLocales.length > 1 && (
+                {supportedLocales.length > 1 && (thisEvent?.showLanguageChooser === true) && (
                   <FordLanguageSelector
                     survey={thisSurvey}
                     supportedLocales={supportedLocales}
@@ -905,7 +905,7 @@ const SurveyComponent: React.FC = () => {
           )
         }
         {/* Show standard language selector only for non-Ford surveys */}
-        {supportedLocales.length > 1 && !thisEvent?.fordEventID && (
+        {supportedLocales.length > 1 && !thisEvent?.fordEventID && (thisEvent?.showLanguageChooser === true) && (
           <LanguageSelector 
             survey={thisSurvey}
             supportedLocales={supportedLocales}
