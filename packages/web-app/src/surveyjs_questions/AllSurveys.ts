@@ -4,6 +4,9 @@ import {
   Serializer,
 } from "survey-core";
 
+import usStates from "../data/us-states.json";
+import canadianProvinces from "../data/canadian-provinces.json";
+
 const globalInit = () => {
 
   // Add _ffs property to both question and panel types
@@ -261,36 +264,18 @@ const globalInit = () => {
         ],
       },
       {
-        type: "text",
+        type: "dropdown",
         name: "state",
         isRequired: true,
         startWithNewLine: false,
         title: {
           en: "State",
-          es: "Provincia",
-          fr: "Province",
+          es: "Estado",
+          fr: "État",
         },
-        maxLength: 2,
-        validators: [
-          {
-            type: "text",
-            text: {
-              en: "Invalid State",
-              es: "Provincia Inválida",
-              fr: "Province non valide",
-            },
-            minLength: 2,
-          },
-          {
-            type: "regex",
-            text: {
-              en: "Invalid State",
-              es: "Provincia Inválida",
-              fr: "Province non valide",
-            },
-            regex: "^[A-Za-z][A-Za-z\\s-]*$",
-          },
-        ],
+        choices: usStates,
+        searchEnabled: true,
+        allowClear: false,
       },
       {
         type: "text",
@@ -427,36 +412,18 @@ const globalInit = () => {
         ],
       },
       {
-        type: "text",
+        type: "dropdown",
         name: "state",
         isRequired: false,
         startWithNewLine: false,
         title: {
           en: "State",
-          es: "Provincia",
-          fr: "Province",
+          es: "Estado",
+          fr: "État",
         },
-        maxLength: 2,
-        validators: [
-          {
-            type: "text",
-            text: {
-              en: "Invalid State",
-              es: "Provincia Inválida",
-              fr: "Province non valide",
-            },
-            minLength: 2,
-          },
-          {
-            type: "regex",
-            text: {
-              en: "Invalid State",
-              es: "Provincia Inválida",
-              fr: "Province non valide",
-            },
-            regex: "^[A-Za-z][A-Za-z\\s-]*$",
-          },
-        ],
+        choices: usStates,
+        searchEnabled: true,
+        allowClear: false,
       },
       {
         type: "text",
@@ -596,7 +563,7 @@ const globalInit = () => {
         ],
       },
       {
-        type: "text",
+        type: "dropdown",
         name: "state",
         isRequired: true,
         startWithNewLine: false,
@@ -605,27 +572,9 @@ const globalInit = () => {
           es: "Provincia",
           fr: "Province",
         },
-        maxLength: 2,
-        validators: [
-          {
-            type: "text",
-            text: {
-              en: "Invalid Province",
-              es: "Provincia Inválida",
-              fr: "Province non valide",
-            },
-            minLength: 2,
-          },
-          {
-            type: "regex",
-            text: {
-              en: "Invalid Province",
-              es: "Provincia Inválida",
-              fr: "Province non valide",
-            },
-            regex: "^[A-Za-z][A-Za-z\\s-]*$",
-          },
-        ],
+        choices: canadianProvinces,
+        searchEnabled: true,
+        allowClear: false,
       },
       {
         type: "text",
@@ -762,7 +711,7 @@ const globalInit = () => {
         ],
       },
       {
-        type: "text",
+        type: "dropdown",
         name: "state",
         isRequired: true,
         startWithNewLine: false,
@@ -771,27 +720,9 @@ const globalInit = () => {
           es: "Estado/Provincia",
           fr: "État/Province",
         },
-        maxLength: 10,
-        validators: [
-          {
-            type: "text",
-            text: {
-              en: "Invalid State/Province",
-              es: "Estado/Provincia Inválida",
-              fr: "État/Province non valide",
-            },
-            minLength: 2,
-          },
-          {
-            type: "regex",
-            text: {
-              en: "Invalid State/Province",
-              es: "Estado/Provincia Inválida", 
-              fr: "État/Province non valide",
-            },
-            regex: "^[A-Za-z][A-Za-z\\s-]*$",
-          },
-        ],
+        choices: usStates,
+        searchEnabled: true,
+        allowClear: false,
       },
       {
         type: "text",
