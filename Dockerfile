@@ -9,7 +9,7 @@ RUN addgroup -g ${GID} latitude_user 2>/dev/null || addgroup latitude_user && \
     adduser -D -u ${UID} -G latitude_user latitude_user
 
 # Install pnpm
-RUN npm install -g pnpm@8
+RUN npm install -g pnpm@9
 
 # Set environment variables
 ENV VITE_ENV=${VITE_ENV}
@@ -26,7 +26,7 @@ RUN chown -R latitude_user:latitude_user /app
 USER latitude_user
 
 # Copy package files
-COPY --chown=latitude_user:latitude_user package.json pnpm-lock.yaml ./
+COPY --chown=latitude_user:latitude_user package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY --chown=latitude_user:latitude_user packages/web-app/package.json ./packages/web-app/
 
 # Install dependencies
