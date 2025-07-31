@@ -19,8 +19,10 @@ ENV VITE_ENV=${VITE_ENV}
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
-# Create app directory
+# Create app directory and pnpm cache directory
 WORKDIR /app
+RUN mkdir -p /home/latitude_user/.pnpm && \
+    chown -R latitude_user:latitude_user /home/latitude_user/.pnpm
 
 # Change ownership to latitude_user
 RUN chown -R latitude_user:latitude_user /app
@@ -28,12 +30,18 @@ RUN chown -R latitude_user:latitude_user /app
 # Switch to the created user
 USER latitude_user
 
-# Copy package files
+# Configure pnpm store location for cache persistence
+RUN pnpm config set store-dir /home/latitude_user/.pnpm && \
+    pnpm config set cache-dir /home/latitude_user/.pnpm/cache
+
+# Copy package files (this layer will be cached if package.json doesn't change)
 COPY --chown=latitude_user:latitude_user package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY --chown=latitude_user:latitude_user packages/web-app/package.json ./packages/web-app/
+COPY --chown=latitude_user:latitude_user packages/firebase/package.json ./packages/firebase/
 
-# Install only web-app dependencies to speed up build
-RUN pnpm install --filter @expanse/web-app --frozen-lockfile --ignore-scripts
+# Pre-install dependencies (this layer will be cached if lockfile doesn't change)
+# Note: In Jenkins, this step is skipped due to volume mounts, but helps local builds
+RUN pnpm install --frozen-lockfile --prefer-offline || pnpm install --frozen-lockfile
 
 # Copy ford-ui for CSS files
 COPY --chown=latitude_user:latitude_user packages/ford-ui ./packages/ford-ui/

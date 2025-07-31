@@ -4,7 +4,7 @@ pipeline {
 	agent {
 		dockerfile {
 			label "docker"
-			args "-v /Users/latitude_user/.jenkins/caches/pnpm:/home/latitude_user/.pnpm"
+			args "-v /Users/latitude_user/.jenkins/caches/pnpm:/home/latitude_user/.pnpm -v /Users/latitude_user/.jenkins/caches/node_modules:/app/node_modules"
 			additionalBuildArgs "--build-arg UID=501 --build-arg VITE_ENV=${env.VITE_ENV ?: 'development'}"
 		}
 	}
@@ -30,18 +30,36 @@ pipeline {
 				writeFile file: '.npmrc', text: readFile(env.JFROG_NPMRC)
 			}
 
-			sh "pnpm config get cache-dir"
+			// Configure pnpm cache and store
+			sh '''
+				pnpm config set store-dir /home/latitude_user/.pnpm
+				pnpm config set cache-dir /home/latitude_user/.pnpm/cache
+				echo "PNPM cache configuration:"
+				pnpm config get store-dir
+				pnpm config get cache-dir
+			'''
+			
 			sh "cd packages/web-app && pnpm version --no-git-tag-version --no-commit-hooks --new-version ${env.VERSION_NUMBER}"
 			
 			// Handle submodule authentication first
-			sshagent(credentials: ['new_ford_github']) {
+			sshagent(credentials: ['CI_FORD_GITHUB', 'e5cf0947-b15a-4372-81a1-be32aaf0d466']) {
 				sh '''
 					mkdir -p ~/.ssh
 					ssh-keyscan -H github.ford.com >> ~/.ssh/known_hosts
 					ssh-keyscan -H github.com >> ~/.ssh/known_hosts
 					git submodule sync --recursive
 					git submodule update --init --recursive
+					
+					# Show cache stats before install
+					echo "Cache stats before install:"
+					ls -la /home/latitude_user/.pnpm/ || echo "No cache directory found"
+					
+					# Install with cache enabled
 					pnpm install --frozen-lockfile
+					
+					# Show cache stats after install
+					echo "Cache stats after install:"
+					ls -la /home/latitude_user/.pnpm/
 				'''
 			}
 			
