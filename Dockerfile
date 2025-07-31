@@ -28,10 +28,12 @@ USER latitude_user
 # Copy package files
 COPY --chown=latitude_user:latitude_user package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY --chown=latitude_user:latitude_user packages/web-app/package.json ./packages/web-app/
-COPY --chown=latitude_user:latitude_user packages/ford-ui ./packages/ford-ui/
 
-# Install dependencies (skip postinstall scripts that need full codebase)
-RUN pnpm install --frozen-lockfile --ignore-scripts
+# Install only web-app dependencies to speed up build
+RUN pnpm install --filter @expanse/web-app --frozen-lockfile --ignore-scripts
+
+# Copy ford-ui for CSS files
+COPY --chown=latitude_user:latitude_user packages/ford-ui ./packages/ford-ui/
 
 # Copy the rest of the application
 COPY --chown=latitude_user:latitude_user . .

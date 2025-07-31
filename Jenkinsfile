@@ -141,7 +141,7 @@ def notifyBuild(String buildStatus = 'STARTED') {
 }
 
 def getVersionNumber() {
-	return "0.1.${env.BUILD_NUMBER}";
+	return "1.0.${env.BUILD_NUMBER}";
 }
 
 def getDeployServer(branchName) {
