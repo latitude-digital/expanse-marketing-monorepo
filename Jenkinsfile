@@ -5,7 +5,7 @@ pipeline {
 		dockerfile {
 			label "docker"
 			args "-v /Users/latitude_user/.jenkins/caches/pnpm:/home/latitude_user/.pnpm"
-			additionalBuildArgs "--build-arg UID=\\$(id -u latitude_user) --build-arg GID=\\$(id -g latitude_user) --build-arg VITE_ENV=${env.VITE_ENV}"
+			additionalBuildArgs "--build-arg UID=\\\$(id -u latitude_user) --build-arg GID=\\\$(id -g latitude_user) --build-arg VITE_ENV=${env.VITE_ENV}"
 		}
 	}
 	environment {
