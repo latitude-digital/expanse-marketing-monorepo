@@ -22,3 +22,14 @@ fds-integration-edge-cases.log
 test-fds-text.html
 comprehensive-fds-test-survey.json
 rebuild.md
+
+# Ford UI build artifacts (keep source, exclude builds)
+packages/ford-ui/dist/
+packages/ford-ui/node_modules/
+packages/ford-ui/.nx/
+packages/ford-ui/tmp/
+packages/ford-ui/**/.next/
+packages/ford-ui/**/node_modules/
+packages/ford-ui/**/dist/
+packages/ford-ui/**/build/
+packages/ford-ui/**/*.tsbuildinfo

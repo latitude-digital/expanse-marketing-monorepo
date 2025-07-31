@@ -39,7 +39,7 @@ pipeline {
 				pnpm config get cache-dir
 			'''
 			
-			sh "cd packages/web-app && pnpm version --no-git-tag-version --no-commit-hooks --new-version ${env.VERSION_NUMBER}"
+			sh "cd packages/web-app && npm version --no-git-tag-version --no-commit-hooks --new-version ${env.VERSION_NUMBER}"
 			
 			// Handle submodule authentication first
 			sshagent(credentials: ['CI_FORD_GITHUB', 'e5cf0947-b15a-4372-81a1-be32aaf0d466']) {
@@ -54,8 +54,8 @@ pipeline {
 					echo "Cache stats before install:"
 					ls -la /home/latitude_user/.pnpm/ || echo "No cache directory found"
 					
-					# Install with cache enabled
-					pnpm install --frozen-lockfile
+					# Install all dependencies with legacy peer deps to handle React 16/17 vs 18 conflicts
+					pnpm install --frozen-lockfile --config.auto-install-peers=false --config.strict-peer-dependencies=false
 					
 					# Show cache stats after install
 					echo "Cache stats after install:"
@@ -134,17 +134,17 @@ def notifyBuild(String buildStatus = 'STARTED') {
 
 	// Override default values based on build status
 	if (buildStatus == 'STARTED') {
-		color = 'BLUE'
+		def color = 'BLUE'
 		colorCode = '#1F51FF'
 	} else if (buildStatus == 'SUCCESSFUL') {
-		color = 'GREEN'
+		def color = 'GREEN'
 		colorCode = '#00FF00'
 		message += "\\n<${env.DEPLOY_DOMAIN}>"
 	} else if (buildStatus == 'CANCELED') {
-		color = 'GRAY'
+		def color = 'GRAY'
 		colorCode = '#333333'
 	} else {
-		color = 'RED'
+		def color = 'RED'
 		colorCode = '#FF0000'
 	}
 
