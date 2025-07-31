@@ -1,3 +1,6 @@
 packages:
-  - "packages/*"
-  - "packages/ford-ui/packages/@ui/*"
+  - packages/*
+  - packages/ford-ui/packages/@ui/*
+
+onlyBuiltDependencies:
+  - survey-analytics
