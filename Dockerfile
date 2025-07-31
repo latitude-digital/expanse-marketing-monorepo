@@ -1,5 +1,8 @@
 FROM node:20-alpine
 
+# Install git and openssh for Jenkins git operations
+RUN apk add --no-cache git openssh
+
 ARG UID=1000
 ARG GID=1000
 ARG VITE_ENV=development
