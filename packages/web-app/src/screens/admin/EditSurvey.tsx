@@ -9,6 +9,9 @@ import app from '../../services/firebase';
 
 import { QuestionRadiogroupModel, Serializer } from "survey-core";
 import { SurveyCreatorComponent, SurveyCreator } from "survey-creator-react";
+import { registerCreatorTheme, registerSurveyTheme } from "survey-creator-core";
+import SurveyTheme from "survey-core/themes";
+import SurveyCreatorTheme from "survey-creator-core/themes";
 
 import _ from 'lodash';
 import { ICreatorOptions } from 'survey-creator-core';
@@ -22,6 +25,10 @@ import './EditSurvey.css';
 import { initCreator, initSurvey, prepareCreatorOnQuestionAdded, prepareForSurvey, prepareSurveyOnQuestionAdded } from '../../helpers/surveyTemplatesAll';
 import { shouldLoadFDS, getBrandTheme, normalizeBrand } from '../../utils/brandUtils';
 import { initializeFDSForBrand } from '../../helpers/fdsInitializer';
+
+// Register SurveyJS themes for theme editor functionality
+registerSurveyTheme(SurveyTheme); // Add predefined Form Library UI themes
+registerCreatorTheme(SurveyCreatorTheme); // Add predefined Survey Creator UI themes
 
 const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
     toFirestore(event: ExpanseEvent): DocumentData {
@@ -125,11 +132,36 @@ function DashboardScreen() {
                 showLogicTab: true,
                 isAutoSave: false,
                 showSaveButton: true,
-                showThemeTab: false,
+                showThemeTab: true,
                 showTranslationTab: true,
             };
 
             const newCreator = new SurveyCreator(creatorOptions);
+
+            // Initialize theme if it exists in the event data
+            if (thisEvent?.theme) {
+                try {
+                    newCreator.theme = thisEvent.theme;
+                    console.log('Loaded existing theme from event data');
+                } catch (error) {
+                    console.warn('Failed to load existing theme:', error);
+                }
+            }
+
+            // Add theme saving functionality
+            newCreator.saveThemeFunc = (saveNo: number, callback: (saveNo: number, success: boolean) => void) => {
+                console.log("Saving theme...");
+                const eventRef = doc(db, "events", eventID).withConverter(EEventConverter);
+                updateDoc(eventRef, {
+                    theme: JSON.stringify(newCreator.theme),
+                }).then(() => {
+                    console.log("Theme saved!");
+                    callback(saveNo, true);
+                }).catch((error) => {
+                    console.error("Failed to save theme:", error);
+                    callback(saveNo, false);
+                });
+            };
 
             initCreator(newCreator);
 

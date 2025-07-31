@@ -1,0 +1,92 @@
+/* Ford UI Navigation Button Styles */
+.ford-nav-button {
+  /* Ford UI Button Base Styles */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-family: var(--font-body-2-regular-font-family);
+  font-size: calc(var(--font-body-2-regular-font-size) * 1px);
+  font-weight: var(--font-body-2-regular-font-weight);
+  line-height: calc(var(--font-body-2-regular-line-height) * 1px);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  min-height: 44px;
+  min-width: 120px;
+}
+
+/* Primary Button (Next/Complete) */
+.ford-nav-next,
+.ford-nav-complete {
+  background-color: var(--semantic-color-fill-onlight-interactive);
+  color: var(--semantic-color-text-onlight-inverted-default);
+  border-color: var(--semantic-color-fill-onlight-interactive);
+}
+
+.ford-nav-next:hover,
+.ford-nav-complete:hover {
+  background-color: var(--semantic-color-fill-onlight-interactive-hover);
+  border-color: var(--semantic-color-fill-onlight-interactive-hover);
+}
+
+.ford-nav-next:active,
+.ford-nav-complete:active {
+  background-color: var(--semantic-color-fill-onlight-interactive-pressed);
+  border-color: var(--semantic-color-fill-onlight-interactive-pressed);
+}
+
+/* Secondary Button (Previous) */
+.ford-nav-previous {
+  background-color: transparent;
+  color: var(--semantic-color-fill-onlight-interactive);
+  border-color: var(--semantic-color-fill-onlight-interactive);
+}
+
+.ford-nav-previous:hover {
+  background-color: var(--semantic-color-fill-onlight-interactive-hover);
+  color: var(--semantic-color-text-onlight-inverted-default);
+  border-color: var(--semantic-color-fill-onlight-interactive-hover);
+}
+
+.ford-nav-previous:active {
+  background-color: var(--semantic-color-fill-onlight-interactive-pressed);
+  color: var(--semantic-color-text-onlight-inverted-default);
+  border-color: var(--semantic-color-fill-onlight-interactive-pressed);
+}
+
+/* Navigation Container Styling */
+.sv-action-bar {
+  padding: 24px 0;
+  border-top: 1px solid var(--semantic-color-stroke-onlight-subtle-default);
+  margin-top: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Hide default SurveyJS button styles for Ford navigation */
+.ford-nav-button.sv-btn,
+.ford-nav-button.sv-action {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font: inherit !important;
+  color: inherit !important;
+}
+
+/* Focus states for accessibility */
+.ford-nav-button:focus {
+  outline: 2px solid var(--semantic-color-stroke-onlight-focus);
+  outline-offset: 2px;
+}
+
+/* Disabled state */
+.ford-nav-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
