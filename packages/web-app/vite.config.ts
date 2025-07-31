@@ -12,7 +12,7 @@ export default defineConfig(({ command, mode }) => {
     // Build configuration to match CRA output structure
     build: {
       outDir: 'build',
-      sourcemap: true, // For Sentry integration
+      sourcemap: true, // For debugging - but exclude .map files from upload
       chunkSizeWarningLimit: 1000, // Increase chunk size warning limit
       rollupOptions: {
         output: {

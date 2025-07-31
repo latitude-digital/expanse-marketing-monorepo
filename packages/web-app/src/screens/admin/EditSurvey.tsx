@@ -27,6 +27,7 @@ import { initCreatorFord, prepareCreatorOnQuestionAddedFord } from '../../helper
 import { initCreatorLincoln, prepareCreatorOnQuestionAddedLincoln } from '../../helpers/surveyTemplatesLincoln';
 import { shouldLoadFDS, getBrandTheme, normalizeBrand } from '../../utils/brandUtils';
 import { initializeFDSForBrand } from '../../helpers/fdsInitializer';
+import { AllSurveys } from '../../surveyjs_questions';
 
 // Register SurveyJS themes for theme editor functionality
 registerSurveyTheme(SurveyTheme); // Add predefined Form Library UI themes
@@ -109,13 +110,20 @@ function DashboardScreen() {
                     await initializeFDSForBrand(eventBrand);
                     console.log(`FDS initialized for ${eventBrand} event`);
                 } else {
-                    initSurvey(); // Basic SurveyJS initialization for non-branded events
-                    console.log('Basic SurveyJS initialized for non-branded event');
+                    // For non-branded events, initialize basic SurveyJS and universal questions
+                    initSurvey(); // Basic SurveyJS initialization
+                    AllSurveys.globalInit(); // Initialize universal questions (firstname, lastname, email, etc.)
+                    console.log('Basic SurveyJS and universal questions initialized for non-branded event');
                 }
             } catch (error) {
                 console.error('Failed to initialize survey system:', error);
-                // Fallback to basic initialization
+                // Fallback to basic initialization with universal questions
                 initSurvey();
+                try {
+                    AllSurveys.globalInit();
+                } catch (fallbackError) {
+                    console.error('Failed to initialize universal questions in fallback:', fallbackError);
+                }
             }
             
             setInitializationComplete(true);

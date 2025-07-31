@@ -79,10 +79,14 @@ echo -e "${GREEN}✅ Application built${NC}"
 # Step 7: Deploy to S3
 echo -e "${YELLOW}☁️  Deploying to S3${NC}"
 
-# Upload all files except index.html with 1-week cache
-echo -e "${BLUE}Uploading assets with cache headers...${NC}"
+# Upload all files except index.html and .map files with 1-week cache
+echo -e "${BLUE}Uploading assets with cache headers (excluding .map files)...${NC}"
+aws configure set default.s3.max_concurrent_requests 20
+aws configure set default.s3.max_bandwidth 100MB/s
 aws s3 sync build/ s3://${DEPLOY_BUCKET}/ \
     --exclude "index.html" \
+    --exclude "*.map" \
+    --exclude "**/*.map" \
     --cache-control "max-age=604800" \
     --delete
 
