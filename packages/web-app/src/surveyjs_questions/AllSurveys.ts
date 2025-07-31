@@ -24,6 +24,7 @@ const globalInit = () => {
     isSerializable: true,
   });
 
+
   // Add _ffs property to custom question types that need it
   Serializer.addProperty("autocompleteaddress", {
     name: "_ffs",
