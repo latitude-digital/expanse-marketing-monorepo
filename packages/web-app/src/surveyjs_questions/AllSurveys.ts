@@ -24,6 +24,14 @@ const globalInit = () => {
     isSerializable: true,
   });
 
+  // Add addressAutocompleteConfig property to text questions so it can be passed through
+  Serializer.addProperty("text", {
+    name: "addressAutocompleteConfig",
+    displayName: "Address Autocomplete Config",
+    type: "object",
+    category: "data",
+    isSerializable: true,
+  });
 
   // Add _ffs property to custom question types that need it
   Serializer.addProperty("autocompleteaddress", {
