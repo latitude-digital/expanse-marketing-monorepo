@@ -41,6 +41,22 @@ const globalInit = () => {
     isSerializable: true,
   });
 
+  Serializer.addProperty("autocompleteaddresscan", {
+    name: "_ffs",
+    displayName: "FFS question",
+    type: "text",
+    category: "data",
+    isSerializable: true,
+  });
+
+  Serializer.addProperty("autocompleteaddressall", {
+    name: "_ffs",
+    displayName: "FFS question",
+    type: "text",
+    category: "data",
+    isSerializable: true,
+  });
+
   Serializer.addProperty("firstname", {
     name: "_ffs",
     displayName: "FFS question",
@@ -164,7 +180,7 @@ const globalInit = () => {
 
   ComponentCollection.Instance.add({
     name: "autocompleteaddress",
-    title: "Google Autocomplete Address",
+    title: "Autocomplete Address (US)",
     iconName: "icon-house-circle-check",
     showInToolbox: true,
     onInit: () => {
@@ -330,7 +346,7 @@ const globalInit = () => {
 
   ComponentCollection.Instance.add({
     name: "autocompleteaddress2",
-    title: "Google Autocomplete Address Zip Only",
+    title: "Autocomplete Address Zip Only (US)",
     iconName: "icon-house-circle-check",
     showInToolbox: true,
     onInit: () => {
@@ -475,6 +491,340 @@ const globalInit = () => {
             },
             regex:
               "^[0-9]{5}(?:-[0-9]{4})?$|^[A-Za-z][0-9][A-Za-z][\\s\\-]?[0-9][A-Za-z][0-9]$",
+          },
+        ],
+      },
+      {
+        // this is a hidden question that is used to store the country from google autocomplete
+        type: "text",
+        name: "country",
+        title: {
+          en: "Country",
+          es: "País",
+          fr: "Pays",
+        },
+        visible: false,
+        isRequired: false,
+        valueName: "country",
+      },
+    ],
+  } as ICustomQuestionTypeConfiguration);
+
+  ComponentCollection.Instance.add({
+    name: "autocompleteaddresscan",
+    title: "Autocomplete Address (CAN)",
+    iconName: "icon-house-circle-check",
+    showInToolbox: true,
+    onInit: () => {
+      Serializer.getProperty("autocompleteaddresscan", "name").readOnly = true;
+      Serializer.getProperty("autocompleteaddresscan", "_ffs").readOnly = true;
+    },
+    elementsJSON: [
+      {
+        type: "text",
+        name: "address1",
+        title: {
+          en: "Street Address",
+          es: "Dirección 1",
+          fr: "Adresse",
+        },
+        isRequired: true,
+        autocomplete: "address-line1",
+        addressAutocompleteConfig: {
+          addressPartMap: {
+            address1: "address1",
+            address2: "address2",
+            city: "city",
+            state: "state",
+            zip: "zip",
+          },
+          componentRestrictions: {
+            country: ["ca"],
+          },
+        },
+        validators: [
+          {
+            type: "text",
+            text: {
+              en: "Invalid Address",
+              es: "Dirección Inválida",
+              fr: "Adresse non valide",
+            },
+            minLength: 5,
+          },
+        ],
+      },
+      {
+        type: "text",
+        name: "address2",
+        startWithNewLine: false,
+        title: {
+          en: "Apt/Suite/Other",
+          es: "Apto/Suite/Otro",
+          fr: "Appartement/Suite/Autre",
+        },
+        autocomplete: "address-line2",
+      },
+      {
+        type: "text",
+        name: "city",
+        title: {
+          en: "City",
+          es: "Ciudad",
+          fr: "Ville",
+        },
+        isRequired: true,
+        validators: [
+          {
+            type: "text",
+            text: {
+              en: "Invalid City",
+              es: "Ciudad Inválida",
+              fr: "Ville non valide",
+            },
+            minLength: 2,
+          },
+          {
+            type: "regex",
+            text: {
+              en: "Invalid City",
+              es: "Ciudad Inválida",
+              fr: "Ville non valide",
+            },
+            regex: "^[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\\s-]*$",
+          },
+        ],
+      },
+      {
+        type: "text",
+        name: "state",
+        isRequired: true,
+        startWithNewLine: false,
+        title: {
+          en: "Province",
+          es: "Provincia",
+          fr: "Province",
+        },
+        maxLength: 2,
+        validators: [
+          {
+            type: "text",
+            text: {
+              en: "Invalid Province",
+              es: "Provincia Inválida",
+              fr: "Province non valide",
+            },
+            minLength: 2,
+          },
+          {
+            type: "regex",
+            text: {
+              en: "Invalid Province",
+              es: "Provincia Inválida",
+              fr: "Province non valide",
+            },
+            regex: "^[A-Za-z][A-Za-z\\s-]*$",
+          },
+        ],
+      },
+      {
+        type: "text",
+        name: "zip",
+        isRequired: true,
+        valueName: "zip_code",
+        maxLength: "7",
+        startWithNewLine: false,
+        title: {
+          en: "Postal Code",
+          es: "Código Postal",
+          fr: "Code Postal",
+        },
+        autocomplete: "postal-code",
+        validators: [
+          {
+            type: "text",
+            text: {
+              en: "Invalid Postal Code",
+              es: "Código Postal Inválido",
+              fr: "Code Postal Non Valide",
+            },
+            minLength: 5,
+          },
+          // Canadian postal code regex
+          {
+            type: "regex",
+            text: {
+              en: "Invalid Postal Code",
+              es: "Código Postal Inválido",
+              fr: "Code Postal Non Valide",
+            },
+            regex: "^[A-Za-z][0-9][A-Za-z][\\s\\-]?[0-9][A-Za-z][0-9]$",
+          },
+        ],
+      },
+      {
+        // this is a hidden question that is used to store the country from google autocomplete
+        type: "text",
+        name: "country",
+        title: {
+          en: "Country",
+          es: "País",
+          fr: "Pays",
+        },
+        visible: false,
+        isRequired: false,
+        valueName: "country",
+      },
+    ],
+  } as ICustomQuestionTypeConfiguration);
+
+  ComponentCollection.Instance.add({
+    name: "autocompleteaddressall",
+    title: "Autocomplete Address (ALL)",
+    iconName: "icon-house-circle-check",
+    showInToolbox: true,
+    onInit: () => {
+      Serializer.getProperty("autocompleteaddressall", "name").readOnly = true;
+      Serializer.getProperty("autocompleteaddressall", "_ffs").readOnly = true;
+    },
+    elementsJSON: [
+      {
+        type: "text",
+        name: "address1",
+        title: {
+          en: "Street Address",
+          es: "Dirección 1",
+          fr: "Adresse",
+        },
+        isRequired: true,
+        autocomplete: "address-line1",
+        addressAutocompleteConfig: {
+          addressPartMap: {
+            address1: "address1",
+            address2: "address2",
+            city: "city",
+            state: "state",
+            zip: "zip",
+          },
+          // No country restrictions for ALL version
+        },
+        validators: [
+          {
+            type: "text",
+            text: {
+              en: "Invalid Address",
+              es: "Dirección Inválida",
+              fr: "Adresse non valide",
+            },
+            minLength: 5,
+          },
+        ],
+      },
+      {
+        type: "text",
+        name: "address2",
+        startWithNewLine: false,
+        title: {
+          en: "Apt/Suite/Other",
+          es: "Apto/Suite/Otro",
+          fr: "Appartement/Suite/Autre",
+        },
+        autocomplete: "address-line2",
+      },
+      {
+        type: "text",
+        name: "city",
+        title: {
+          en: "City",
+          es: "Ciudad",
+          fr: "Ville",
+        },
+        isRequired: true,
+        validators: [
+          {
+            type: "text",
+            text: {
+              en: "Invalid City",
+              es: "Ciudad Inválida",
+              fr: "Ville non valide",
+            },
+            minLength: 2,
+          },
+          {
+            type: "regex",
+            text: {
+              en: "Invalid City",
+              es: "Ciudad Inválida",
+              fr: "Ville non valide",
+            },
+            regex: "^[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\\s-]*$",
+          },
+        ],
+      },
+      {
+        type: "text",
+        name: "state",
+        isRequired: true,
+        startWithNewLine: false,
+        title: {
+          en: "State/Province",
+          es: "Estado/Provincia",
+          fr: "État/Province",
+        },
+        maxLength: 10,
+        validators: [
+          {
+            type: "text",
+            text: {
+              en: "Invalid State/Province",
+              es: "Estado/Provincia Inválida",
+              fr: "État/Province non valide",
+            },
+            minLength: 2,
+          },
+          {
+            type: "regex",
+            text: {
+              en: "Invalid State/Province",
+              es: "Estado/Provincia Inválida", 
+              fr: "État/Province non valide",
+            },
+            regex: "^[A-Za-z][A-Za-z\\s-]*$",
+          },
+        ],
+      },
+      {
+        type: "text",
+        name: "zip",
+        isRequired: true,
+        valueName: "zip_code",
+        maxLength: "12",
+        startWithNewLine: false,
+        title: {
+          en: "Zip/Postal Code",
+          es: "Código Postal",
+          fr: "Code Postal",
+        },
+        autocomplete: "postal-code",
+        validators: [
+          {
+            type: "text",
+            text: {
+              en: "Invalid Zip/Postal Code",
+              es: "Código Postal Inválido",
+              fr: "Code Postal Non Valide",
+            },
+            minLength: 3,
+          },
+          // Combined regex for US zip codes, Canadian postal codes, and other international formats
+          {
+            type: "regex",
+            text: {
+              en: "Invalid Zip/Postal Code",
+              es: "Código Postal Inválido",
+              fr: "Code Postal Non Valide",
+            },
+            regex: "^[0-9]{5}(?:-[0-9]{4})?$|^[A-Za-z][0-9][A-Za-z][\\s\\-]?[0-9][A-Za-z][0-9]$|^[A-Za-z0-9\\s\\-]{3,12}$",
           },
         ],
       },

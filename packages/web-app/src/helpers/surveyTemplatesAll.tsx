@@ -117,6 +117,8 @@ export const initCreator = (creator: SurveyCreatorModel) => {
     { name: "optin", category: "choice" },
     { name: "autocompleteaddress", category: "__0pii" },
     { name: "autocompleteaddress2", category: "__0pii" },
+    { name: "autocompleteaddresscan", category: "__0pii" },
+    { name: "autocompleteaddressall", category: "__0pii" },
     { name: "firstname", category: "__0pii" },
     { name: "lastname", category: "__0pii" },
     { name: "email", category: "__0pii" },
@@ -179,13 +181,27 @@ export const prepareSurveyOnQuestionAdded = (
 ) => {
   options.survey.onAfterRenderQuestionInput.add((survey, questionOptions) => {
     if (questionOptions.question.name === "address1") {
+      // Get the parent question to determine which autocomplete type this is
+      const parentQuestion = survey.getAllQuestions().find((q) => 
+        q.elements && q.elements.some((element: any) => element.name === "address1")
+      );
+      
+      let countryRestrictions = { country: ["us"] }; // Default to US
+      
+      // Override country restrictions based on question type
+      if (parentQuestion) {
+        if (parentQuestion.getType() === "autocompleteaddresscan") {
+          countryRestrictions = { country: ["ca"] };
+        } else if (parentQuestion.getType() === "autocompleteaddressall") {
+          countryRestrictions = {}; // No restrictions
+        }
+      }
+      
       const autocomplete = new google.maps.places.Autocomplete(
         questionOptions.htmlElement as HTMLInputElement,
         {
           types: ["address"],
-          componentRestrictions: {
-            country: ["us"],
-          },
+          componentRestrictions: countryRestrictions,
           fields: ["address_components", "formatted_address"],
           ...questionOptions.question.addressAutocompleteConfig,
         }
@@ -269,6 +285,20 @@ export const prepareCreatorOnQuestionAdded = (
 
   if (options.question.getType() === "autocompleteaddress2") {
     console.log("autocompleteaddress2 question added");
+    options.question.name = "address_group";
+    options.question._ffs = "address_group";
+    options.question.titleLocation = "hidden";
+  }
+
+  if (options.question.getType() === "autocompleteaddresscan") {
+    console.log("autocompleteaddresscan question added");
+    options.question.name = "address_group";
+    options.question._ffs = "address_group";
+    options.question.titleLocation = "hidden";
+  }
+
+  if (options.question.getType() === "autocompleteaddressall") {
+    console.log("autocompleteaddressall question added");
     options.question.name = "address_group";
     options.question._ffs = "address_group";
     options.question.titleLocation = "hidden";
