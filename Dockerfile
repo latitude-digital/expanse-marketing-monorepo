@@ -4,8 +4,8 @@ ARG UID=1000
 ARG GID=1000
 ARG VITE_ENV=development
 
-# Create user with specified UID/GID
-RUN addgroup -g ${GID} latitude_user && \
+# Create user with specified UID/GID (handle existing group gracefully)
+RUN addgroup -g ${GID} latitude_user 2>/dev/null || addgroup latitude_user && \
     adduser -D -u ${UID} -G latitude_user latitude_user
 
 # Install pnpm
