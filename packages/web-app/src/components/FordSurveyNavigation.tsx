@@ -63,8 +63,8 @@ export const FordSurveyNavigation: React.FC<FordSurveyNavigationProps> = ({
     survey.tryComplete();
   };
 
-  // Don't render navigation if survey is completed
-  if (survey.state === 'completed') {
+  // Don't render navigation if survey is not in running state
+  if (survey.state !== 'running') {
     return null;
   }
 
@@ -75,7 +75,8 @@ export const FordSurveyNavigation: React.FC<FordSurveyNavigationProps> = ({
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        margin: '0 24px',
+        margin: '24px 24px 0 24px',
+        paddingTop: '16px',
         borderTop: '1px solid var(--semantic-color-stroke-onlight-subtle-default)'
       }}
     >
