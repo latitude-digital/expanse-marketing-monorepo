@@ -30,7 +30,9 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
         style={{ 
           padding: '5px 10px', 
           borderRadius: '4px',
-          border: '1px solid #ccc' 
+          border: '1px solid #ccc',
+          minWidth: '120px',
+          width: 'auto'
         }}
       >
         {supportedLocales.map(locale => (

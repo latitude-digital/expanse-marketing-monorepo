@@ -53,8 +53,9 @@ import {
 import { shouldLoadFDS, getBrandTheme, normalizeBrand } from '../utils/brandUtils';
 import { initializeFDSForBrand } from '../helpers/fdsInitializer';
 
-// Import custom Ford navigation
+// Import custom Ford navigation and GlobalHeader
 import { FordSurveyNavigation } from '../components/FordSurveyNavigation';
+import GlobalHeader from '../components/GlobalHeader';
 
 // TypeScript interfaces
 interface RouteParams {
@@ -72,6 +73,8 @@ interface SurveyEvent {
   surveyType?: string;
   questions: string;
   theme?: string;
+  showHeader?: boolean;
+  showLanguageChooser?: boolean;
 }
 
 interface PreSurvey {
@@ -883,29 +886,24 @@ const SurveyComponent: React.FC = () => {
     thisSurvey ?
       <div className="gdux-ford">
         {
-          thisEvent?.fordEventID && (
-            <div className="fds-logo-only-header" style={{ position: 'relative', justifyContent: 'space-between' }}>
-              <div style={{ flex: '1' }}></div>
-              <img src={logo} alt="Ford" className="fds-header-logo" />
-              <div style={{ 
-                flex: '1', 
-                display: 'flex', 
-                justifyContent: 'flex-end' 
-              }}>
-                {supportedLocales.length > 1 && (thisEvent?.showLanguageChooser === true) && (
-                  <FordLanguageSelector
-                    survey={thisSurvey}
-                    supportedLocales={supportedLocales}
-                    currentLocale={currentLocale}
-                    onChange={handleLanguageChange}
-                  />
-                )}
-              </div>
-            </div>
-          )
+          (() => {
+            const currentBrand = normalizeBrand(thisEvent?.brand);
+            const shouldShowHeader = (currentBrand === 'Ford' || currentBrand === 'Lincoln') 
+              && thisEvent?.showHeader !== false; // Default to true if not specified
+            
+            return shouldShowHeader && (
+              <GlobalHeader
+                brand={currentBrand}
+                showLanguageChooser={thisEvent?.showLanguageChooser === true && supportedLocales.length > 1}
+                supportedLocales={supportedLocales}
+                currentLocale={currentLocale}
+                onLanguageChange={handleLanguageChange}
+              />
+            );
+          })()
         }
-        {/* Show standard language selector only for non-Ford surveys */}
-        {supportedLocales.length > 1 && !thisEvent?.fordEventID && (thisEvent?.showLanguageChooser === true) && (
+        {/* Show standard language selector only for non-Ford/Lincoln surveys */}
+        {supportedLocales.length > 1 && normalizeBrand(thisEvent?.brand) === 'Other' && (thisEvent?.showLanguageChooser === true) && (
           <LanguageSelector 
             survey={thisSurvey}
             supportedLocales={supportedLocales}

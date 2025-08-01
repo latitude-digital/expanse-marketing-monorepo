@@ -48,6 +48,7 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
             survey_count_limit: event.survey_count_limit || null,
             limit_reached_message: event.limit_reached_message || null,
             showLanguageChooser: event.showLanguageChooser !== undefined ? event.showLanguageChooser : false,
+            showHeader: event.showHeader !== undefined ? event.showHeader : true,
         };
     },
     fromFirestore(
@@ -78,6 +79,7 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
             survey_count_limit: data.survey_count_limit || undefined,
             limit_reached_message: data.limit_reached_message || undefined,
             showLanguageChooser: data.showLanguageChooser !== undefined ? data.showLanguageChooser : false,
+            showHeader: data.showHeader !== undefined ? data.showHeader : true,
         };
     },
 };
@@ -114,6 +116,7 @@ function DashboardScreen() {
                 startDate: moment().add(7, 'days').toDate(),
                 endDate: moment().add(7, 'days').toDate(),
                 showLanguageChooser: true,
+                showHeader: true,
             });
         } else {
             // get the event
@@ -472,6 +475,15 @@ function DashboardScreen() {
                             "description": "Display language selector in the survey when multiple languages are available",
                             "descriptionLocation": "underInput",
                             "defaultValue": true
+                        },
+                        {
+                            "type": "boolean",
+                            "name": "showHeader",
+                            "title": "Show Header",
+                            "description": "Display Ford/Lincoln branded header at the top of the survey",
+                            "descriptionLocation": "underInput",
+                            "defaultValue": true,
+                            "visibleIf": "{brand} = 'Ford' or {brand} = 'Lincoln'"
                         },
                         {
                             "type": "boolean",

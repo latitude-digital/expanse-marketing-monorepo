@@ -51,4 +51,5 @@ type ExpanseEvent = {
   survey_count_limit?: number;
   limit_reached_message?: string;
   showLanguageChooser?: boolean;
+  showHeader?: boolean;
 };
