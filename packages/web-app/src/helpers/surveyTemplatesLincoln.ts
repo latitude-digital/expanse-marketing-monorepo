@@ -43,6 +43,7 @@ export const initCreatorLincoln = (creator: SurveyCreatorModel) => {
     { name: "lincolnvoi", category: "__lincolnCategory" },
     { name: "lincolnoptin", category: "__lincolnCategory" },
     { name: "lincolnoverallopinion", category: "__lincolnCategory" },
+    { name: "lincolnoverallopinionpost", category: "__lincolnCategory" },
     // FMC shared questions for Lincoln category
     { name: "gender", category: "__lincolnCategory" },
     { name: "agebracket", category: "__lincolnCategory" },
@@ -129,6 +130,28 @@ export const prepareCreatorOnQuestionAddedLincoln = (
         "What is your overall opinion or impression of Lincoln?",
       es: "¿Cuál es su opinión o impresión general sobre Lincoln?",
       fr: "Quelle est votre opinion ou impression générale sur Lincoln?",
+    });
+
+    options.question.descriptionLocation = "underInput";
+    options.question.locDescription.setJson({
+      en:
+        "Please click on the response that indicates your preference.",
+      es: "Por favor, haga clic en la respuesta que indica su preferencia.",
+      fr: "Veuillez cliquer sur la réponse qui indique votre préférence.",
+    });
+  }
+
+  if (options.question.getType() === "lincolnoverallopinionpost") {
+    console.log("lincolnoverallopinionpost question added");
+    options.question.name = "lincolnOverallOpinionPost";
+    options.question._ffs = "overallOpinionPost";
+    options.question.isRequired = true;
+
+    options.question.locTitle.setJson({
+      en:
+        "Now that you've experienced a vehicle what is your overall opinion or impression of Lincoln?",
+      es: "Ahora que ha experimentado un vehículo, ¿cuál es su opinión o impresión general sobre Lincoln?",
+      fr: "Maintenant que vous avez expérimenté un véhicule, quelle est votre opinion ou impression générale sur Lincoln?",
     });
 
     options.question.descriptionLocation = "underInput";

@@ -135,7 +135,30 @@ const lincolnInit = () => {
       maxRateDescription: "Excellent",
     },
   } as ICustomQuestionTypeConfiguration);
-};
+
+
+  ComponentCollection.Instance.add({
+    name: "lincolnoverallopinionpost",
+    title: "Lincoln Overall Opinion Post",
+    iconName: "icon-rating",
+    showInToolbox: true,
+    inheritBaseProps: true,
+    onInit: () => {
+      Serializer.getProperty("lincolnoverallopinion", "name").readOnly = true;
+      Serializer.getProperty("lincolnoverallopinion", "_ffs").readOnly = true;
+    },
+    questionJSON: {
+      type: "rating",
+      name: "overall_opinion",
+      title: "Now that you've experienced a vehicle what is your overall opinion or impression of Lincoln?",
+      description:
+        "Please click on the response that indicates your preference. ",
+      rateCount: 10,
+      rateMax: 10,
+      minRateDescription: "Poor",
+      maxRateDescription: "Excellent",
+    },
+  } as ICustomQuestionTypeConfiguration);};
 
 export default {
   lincolnInit,
