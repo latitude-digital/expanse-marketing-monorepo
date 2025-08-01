@@ -36,21 +36,44 @@ export class FDSTextRenderer extends SurveyQuestionElementBase {
         const isInvalid = question.errors && question.errors.length > 0;
         const errorMessage = isInvalid ? question.errors[0]?.text : undefined;
         
+        // Determine if this question uses pattern masking
+        const usesMasking = question.maskType === "pattern" && question.maskSettings?.pattern;
+        
+        // Get display value (masked if applicable)
+        const getDisplayValue = (): string => {
+            const rawValue = question.value || "";
+            if (usesMasking) {
+                return this.applyInputMask(rawValue, question.maskSettings.pattern);
+            }
+            return rawValue;
+        };
+        
         return (
             <StyledTextField
                 label={renderLabel(question.fullTitle)}
                 description={renderDescription(question.description)}
                 isRequired={question.isRequired}
                 requiredMessage={optionalText}
-                placeholder={question.placeholder || ""}
-                value={question.value || ""}
+                placeholder={usesMasking 
+                    ? this.getMaskPlaceholder(question.maskSettings.pattern) 
+                    : (question.placeholder || "")}
+                value={getDisplayValue()}
                 isInvalid={isInvalid}
                 errorMessage={errorMessage}
                 type={inputType}
                 isDisabled={question.isReadOnly}
                 autoComplete={question.autocomplete}
                 onChange={(value: string) => {
-                    question.value = value;
+                    if (usesMasking) {
+                        // Store only the unmasked (digits-only) value in the question
+                        const unmaskedValue = this.removeMaskFormatting(value);
+                        question.value = unmaskedValue;
+                        
+                        // Force re-render to show masked display
+                        this.forceUpdate();
+                    } else {
+                        question.value = value;
+                    }
                 }}
                 onBlur={() => {
                     // Trigger validation on blur
@@ -85,6 +108,39 @@ export class FDSTextRenderer extends SurveyQuestionElementBase {
             default:
                 return "text";
         }
+    }
+
+    private applyInputMask(value: string, pattern: string): string {
+        // Remove any existing formatting
+        const cleanValue = value.replace(/\D/g, '');
+        
+        let maskedValue = '';
+        let valueIndex = 0;
+        
+        for (let i = 0; i < pattern.length && valueIndex < cleanValue.length; i++) {
+            const patternChar = pattern[i];
+            
+            if (patternChar === '9') {
+                // Insert digit
+                maskedValue += cleanValue[valueIndex];
+                valueIndex++;
+            } else {
+                // Insert literal character (like -, (, ), etc.)
+                maskedValue += patternChar;
+            }
+        }
+        
+        return maskedValue;
+    }
+
+    private getMaskPlaceholder(pattern: string): string {
+        // Convert pattern to placeholder by replacing 9s with underscores
+        return pattern.replace(/9/g, '_');
+    }
+
+    private removeMaskFormatting(maskedValue: string): string {
+        // Remove all non-digit characters for storage
+        return maskedValue.replace(/\D/g, '');
     }
 }
 
