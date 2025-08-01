@@ -109,6 +109,8 @@ export const initCreator = (creator: SurveyCreatorModel) => {
 
   const enLocale = editorLocalization.getLocale("en");
   enLocale.toolboxCategories["__0pii"] = "Personal Information Questions";
+  enLocale.toolboxCategories["__0fmc"] = "FMC Questions";
+  enLocale.toolboxCategories["__1wav"] = "Waivers";
   enLocale.toolboxCategories["__fordCategory"] = "Ford Questions";
   enLocale.toolboxCategories["__lincolnCategory"] = "Lincoln Questions";
 
@@ -123,6 +125,13 @@ export const initCreator = (creator: SurveyCreatorModel) => {
     { name: "lastname", category: "__0pii" },
     { name: "email", category: "__0pii" },
     { name: "phone", category: "__0pii" },
+    { name: "adultwaiver", category: "__1wav" },
+    { name: "minorwaiver", category: "__1wav" },
+    { name: "gender", category: "__0fmc" },
+    { name: "agebracket", category: "__0fmc" },
+    { name: "howlikelyacquire", category: "__0fmc" },
+    { name: "inmarkettiming", category: "__0fmc" },
+    { name: "vehicledrivenmostmake", category: "__0fmc" },
     // Note: Ford and Lincoln questions are now assigned dynamically 
     // in their respective brand-specific template files
   ]);
@@ -426,6 +435,67 @@ export const prepareCreatorOnQuestionAdded = (
       en: "Standard message and data rates may apply.",
       es: "Pueden aplicar las tarifas normales para mensajes de texto y datos.",
       fr: "Les tarifs standard pour les messages et les données peuvent s'appliquer.",
+    });
+  }
+
+  // FMC Question handlers - universal for all brands
+  if (options.question.getType() === "gender") {
+    console.log("gender question added");
+    options.question.name = "gender";
+    options.question._ffs = "gender";
+    options.question.locTitle.setJson({
+      en: "Gender?",
+      es: "Sexo",
+      fr: "Genre"
+    });
+  }
+
+  if (options.question.getType() === "agebracket") {
+    console.log("age_bracket question added");
+    options.question.name = "ageBracket";
+    options.question._ffs = "age_bracket";
+    options.question.locTitle.setJson({
+      en: "May I ask your age?",
+      es: "¿Puedo preguntar su edad?",
+      fr: "Puis-je vous demander votre âge?"
+    });
+  }
+
+  if (options.question.getType() === "howlikelyacquire") {
+    console.log("how_likely_acquire question added");
+    options.question.name = "howLikelyAcquire";
+    options.question._ffs = "how_likely_acquire";
+    options.question.isRequired = true;
+
+    options.question.locTitle.setJson({
+      en: "How do you plan to acquire your next vehicle?",
+      es: "¿Cómo piensas adquirir tu próximo vehículo?",
+      fr: "Comment prévoyez-vous d'acquérir votre prochain véhicule?"
+    });
+  }
+
+  if (options.question.getType() === "inmarkettiming") {
+    console.log("in_market_timing question added");
+    options.question.name = "inMarketTiming";
+    options.question._ffs = "in_market_timing";
+    options.question.isRequired = true;
+
+    options.question.locTitle.setJson({
+      en: "When do you plan to acquire your next vehicle?",
+      es: "¿Cuándo piensas adquirir tu próximo vehículo?",
+      fr: "Quand prévoyez-vous d'acheter votre prochain véhicule?"
+    });
+  }
+
+  if (options.question.getType() === "vehicledrivenmostmake") {
+    console.log("vehicledrivenmostmake question added");
+    options.question.name = "vehicleDrivenMostMake";
+    options.question._ffs = "vehicle_driven_most_make_id";
+
+    options.question.locTitle.setJson({
+      en: "What vehicle do you drive most often?",
+      es: "¿Qué vehículo conduces con mayor frecuencia?",
+      fr: "Quel véhicule conduisez-vous le plus souvent?"
     });
   }
 

@@ -8,6 +8,12 @@ import { ICustomQuestionTypeConfigurationVOI } from "./interfaces";
 import { handleChoicesByUrl } from "./choicesByUrlHelper";
 
 const lincolnInit = () => {
+  // Prevent double registration
+  if (ComponentCollection.Instance.getCustomQuestionByName("lincolnvoi")) {
+    console.log('LincolnSurveys already initialized, skipping...');
+    return;
+  }
+
   Serializer.addProperty("question", {
     name: "_ffs",
     displayName: "FFS question",

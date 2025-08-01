@@ -10,6 +10,12 @@ import {
 import { handleChoicesByUrl } from "./choicesByUrlHelper";
 
 const fordInit = () => {
+  // Prevent double registration
+  if (ComponentCollection.Instance.getCustomQuestionByName("fordvoi")) {
+    console.log('FordSurveys already initialized, skipping...');
+    return;
+  }
+
   Serializer.addProperty("question", {
     name: "_ffs",
     displayName: "FFS question",
