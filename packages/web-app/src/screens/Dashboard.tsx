@@ -11,6 +11,11 @@ import { ensureCloudFrontAccess } from '../services/cloudFrontAuth';
 import { Model, Question, slk } from "survey-core";
 import { AgGridReact } from 'ag-grid-react';
 import { ColDef, GridApi, GridReadyEvent, ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
+
+// Import custom survey question definitions
+import AllSurveys from '../surveyjs_questions/AllSurveys';
+import FordSurveys from '../surveyjs_questions/FordSurveys';
+import LincolnSurveys from '../surveyjs_questions/LincolnSurveys';
 // Import AG Grid CSS
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-material.css';
@@ -27,6 +32,11 @@ import * as XLSX from 'xlsx';
 slk(
   "NDBhNThlYzYtN2EwMy00ZTgxLWIyNGQtOGFkZWJkM2NlNjI3OzE9MjAyNS0wNy0xOSwyPTIwMjUtMDctMTksND0yMDI1LTA3LTE5"
 );
+
+// Initialize custom survey question definitions
+AllSurveys.globalInit();
+FordSurveys.fordInit();
+LincolnSurveys.lincolnInit();
 
 // Convert SurveyJS questions to AG Grid column definitions
 const convertQuestionsToColumns = (questions: Question[], showMetadata: boolean = false, surveyModel?: Model): ColDef[] => {
@@ -249,7 +259,7 @@ const convertQuestionsToColumns = (questions: Question[], showMetadata: boolean 
     }
     
     // For autocompleteaddress questions, create columns for address components
-    if (questionType === 'autocompleteaddress' || questionType === 'autocompleteaddress2') {
+    if (questionType === 'autocompleteaddress' || questionType === 'autocompleteaddress2' || questionType === 'autocompleteaddresscan') {
       const addressFields = [
         { name: 'address1', title: 'Address' },
         { name: 'city', title: 'City' },
