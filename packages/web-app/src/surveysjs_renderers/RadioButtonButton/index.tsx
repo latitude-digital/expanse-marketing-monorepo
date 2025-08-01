@@ -105,6 +105,9 @@ export class RadioGroupRowQuestion extends SurveyQuestionRadiogroup {
         const processedDescription = processMarkdown(question.description);
         
         
+        // Check description location setting
+        const showDescriptionAbove = !question.descriptionLocation || question.descriptionLocation !== "underInput";
+        
         return (
             <div className="fds-radio-group-container">
                 {/* Question title - styled to match FDSText/StyledTextField */}
@@ -130,8 +133,8 @@ export class RadioGroupRowQuestion extends SurveyQuestionRadiogroup {
                     </div>
                 )}
                 
-                {/* Description - positioned under title, above error and radio buttons */}
-                {processedDescription && (
+                {/* Description - positioned under title, above error and radio buttons (when descriptionLocation is not "underInput") */}
+                {processedDescription && showDescriptionAbove && (
                     <div className="text-ford-caption-semibold text-text-onlight-subtle mb-2" style={{ 
                         fontFamily: 'var(--font-family-primary, "Averta", "Arial", sans-serif)'
                     }}>
@@ -153,6 +156,15 @@ export class RadioGroupRowQuestion extends SurveyQuestionRadiogroup {
                         {this.getItems({}, this.question.bodyItems)}
                     </div>
                 </div>
+                
+                {/* Description - positioned under radio buttons (when descriptionLocation is "underInput") */}
+                {processedDescription && !showDescriptionAbove && (
+                    <div className="text-ford-caption-semibold text-text-onlight-subtle mt-2" style={{ 
+                        fontFamily: 'var(--font-family-primary, "Averta", "Arial", sans-serif)'
+                    }}>
+                        {processedDescription.includes('<') ? <HtmlContent html={processedDescription} /> : processedDescription}
+                    </div>
+                )}
             </div>
         );
     }

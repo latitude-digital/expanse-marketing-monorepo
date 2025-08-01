@@ -361,6 +361,23 @@ const fordInit = () => {
       ],
     },
   } as ICustomQuestionTypeConfiguration);
+
+  ComponentCollection.Instance.add({
+    name: "sweepstakesOptIn",
+    title: "Sweepstakes Opt-In",
+    iconName: "icon-checkbox",
+    showInToolbox: true,
+    inheritBaseProps: true,
+    questionJSON: {
+      type: "radiogroup",
+      renderAs: "radiobuttongroup",
+      name: "sweepstakesOptIn",
+      title: "Are you at least 18 years old and would you like to register win a 2025 Mets wrapped Bronco?",
+      description: "NO PURCHASE NECESSARY TO ENTER OR WIN. TRAVEL NOT INCLUDED. Open to legal residents of New York: the five (5) Boroughs of New York City and residents of Nassau, Suffolk, Ulster, Orange, Rockland, Sullivan, Dutchess, Putnam, Westchester counties); New Jersey: residents of Sussex, Warren, Morris, Hunterdon, Somerset, Passaic, Bergen, Hudson, Essex, Union, Middlesex, Monmouth, Ocean counties; and Connecticut: residents of New Haven, Fairfield, Litchfield counties who are 18+ at time of entry. Enter by 11:59 PM ET on August 31, 2025. Odds of winning depend on number of eligible entries received. Void where prohibited. Restrictions apply: see Official Rules at [https://blueoval.events/2025_NY_Mets_Official_Rules](https://blueoval.events/2025_NY_Mets_Official_Rules) Sponsor: Tri-State and Upstate FDAF, INC.",
+      descriptionLocation: "underInput",
+      choices: ["Yes", "No"]
+    },
+  } as ICustomQuestionTypeConfiguration);
 };
 
 export default {

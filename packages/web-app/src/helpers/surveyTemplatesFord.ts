@@ -53,6 +53,7 @@ export const initCreatorFord = (creator: SurveyCreatorModel) => {
     { name: "adultwaiver", category: "__fordCategory" },
     { name: "minorwaiver", category: "__fordCategory" },
     { name: "vehicledrivenmostmake", category: "__fordCategory" },
+    { name: "sweepstakesOptIn", category: "__fordCategory" },
   ]);
 
   // Apply Ford-specific category sorting - Ford Questions first

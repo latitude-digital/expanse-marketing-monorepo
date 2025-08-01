@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useNavigate, useParams } from "react-router-dom";
 import { getFirestore, doc, getDoc, Timestamp, FirestoreDataConverter, DocumentData, QueryDocumentSnapshot, SnapshotOptions, updateDoc } from "firebase/firestore";
@@ -10,6 +10,7 @@ import app from '../../services/firebase';
 import { QuestionRadiogroupModel, Serializer } from "survey-core";
 import { SurveyCreatorComponent, SurveyCreator } from "survey-creator-react";
 import { registerCreatorTheme, registerSurveyTheme } from "survey-creator-core";
+import { ReactQuestionFactory } from "survey-react-ui";
 import SurveyTheme from "survey-core/themes";
 import SurveyCreatorTheme from "survey-creator-core/themes";
 
@@ -136,6 +137,8 @@ function DashboardScreen() {
 
         const createSurveyCreator = async () => {
             const creatorOptions: ICreatorOptions = {
+                showHeaderInEmptySurvey: true,
+                
                 previewOrientation: "portrait",
                 // Enable file uploads for image handling
                 questionTypes: ["boolean", "checkbox", "comment", "dropdown", "tagbox", "expression", "html", "image", "imagepicker", "matrix", "matrixdropdown", "matrixdynamic", "multipletext", "panel", "paneldynamic", "radiogroup", "rating", "ranking", "text", "markdown", "file"],
