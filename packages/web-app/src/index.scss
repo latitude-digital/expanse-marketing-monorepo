@@ -33,6 +33,21 @@
   color: var(--semantic-color-text-onlight-moderate-default);
 }
 
+/* Global Ford UI dropdown/combobox height fixes */
+/* Fix minimum height for dropdown options list to show at least 4 items */
+[role="listbox"],
+.fds-select-listbox,
+[data-testid*="dropdown"] [role="listbox"],
+[data-testid*="select"] [role="listbox"],
+[data-testid*="combobox"] [role="listbox"],
+/* Target Ford UI SelectDropdown component specifically */
+.react-aria-Popover [role="listbox"],
+.react-aria-ListBox {
+  min-height: 160px !important; /* ~4em equivalent, shows ~4-5 options minimum */
+  max-height: 240px !important; /* Keep reasonable max height */
+  overflow-y: auto !important; /* Ensure scrolling works */
+}
+
 /* Fix incomplete Ford UI typography classes - Ford UI presets only generate partial classes */
 /* These complete typography classes ensure proper font inheritance for all Ford UI components */
 

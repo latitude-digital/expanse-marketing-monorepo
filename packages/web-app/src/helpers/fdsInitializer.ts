@@ -25,6 +25,7 @@ async function loadFDSRenderers(): Promise<void> {
     const { FDSRadioRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSRadio');
     const { FDSCheckboxRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSCheckbox');
     const { FDSDropdownRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSDropdown');
+    const { FDSTagboxRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSTagbox');
     const { FDSTextAreaRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSTextArea');
     const { FDSToggleRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSToggle');
     const { FDSRatingRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSRating');
