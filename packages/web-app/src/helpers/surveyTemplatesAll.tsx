@@ -184,25 +184,30 @@ export const prepareSurveyOnQuestionAdded = (
   
   // Function to initialize Google Places on an address input
   const initializeGooglePlaces = (inputElement: HTMLInputElement, survey: any) => {
-    console.log('Initializing Google Places on input:', {
-      tagName: inputElement.tagName,
-      testId: inputElement.getAttribute('data-testid'),
-      autocomplete: inputElement.autocomplete,
-      id: inputElement.id
-    });
-
     // Determine country restrictions based on survey questions
     let countryRestrictions = { country: ["us"] }; // Default to US
     const allQuestions = survey.getAllQuestions();
+    
     const parentQuestion = allQuestions.find((q: any) => 
       q.elements && q.elements.some((element: any) => element.name === "address1")
     );
     
+    // First check - look for specific question types
     if (parentQuestion) {
       if (parentQuestion.getType() === "autocompleteaddresscan") {
         countryRestrictions = { country: ["ca"] };
       } else if (parentQuestion.getType() === "autocompleteaddressall") {
         countryRestrictions = {}; // No restrictions
+      }
+    } else {
+      // Fallback check - look for Canadian address indicators in the DOM
+      const hasProvince = !!document.querySelector('input[aria-label="Province"]') || 
+                         !!Array.from(document.querySelectorAll('*')).find(el => el.textContent?.includes('Province'));
+      const hasPostalCode = !!document.querySelector('input[aria-label="Postal Code"]') || 
+                           !!Array.from(document.querySelectorAll('*')).find(el => el.textContent?.includes('Postal Code'));
+      
+      if (hasProvince && hasPostalCode) {
+        countryRestrictions = { country: ["ca"] };
       }
     }
 
@@ -283,13 +288,15 @@ export const prepareSurveyOnQuestionAdded = (
               const element = node as Element;
               
               // Look for address1 inputs that have been added
-              const addressInputs = element.querySelectorAll('input[data-testid="fds-text-address1"]');
+              // Support both Ford UI inputs and standard SurveyJS inputs
+              const addressInputs = element.querySelectorAll(
+                'input[data-testid="fds-text-address1"], input[aria-label="Street Address"], input[autocomplete="address-line1"]'
+              );
               addressInputs.forEach((input) => {
                 const inputElement = input as HTMLInputElement;
                 
                 // Check if Google Places is already initialized (has pac-target-input class)
                 if (!inputElement.classList.contains('pac-target-input')) {
-                  console.log('Found new address1 input, initializing Google Places');
                   initializeGooglePlaces(inputElement, options.survey);
                 }
               });
@@ -307,11 +314,13 @@ export const prepareSurveyOnQuestionAdded = (
 
     // Also check for existing address inputs that might already be in the DOM
     setTimeout(() => {
-      const existingAddressInputs = document.querySelectorAll('input[data-testid="fds-text-address1"]');
+      // Support both Ford UI inputs and standard SurveyJS inputs
+      const existingAddressInputs = document.querySelectorAll(
+        'input[data-testid="fds-text-address1"], input[aria-label="Street Address"], input[autocomplete="address-line1"]'
+      );
       existingAddressInputs.forEach((input) => {
         const inputElement = input as HTMLInputElement;
         if (!inputElement.classList.contains('pac-target-input')) {
-          console.log('Found existing address1 input, initializing Google Places');
           initializeGooglePlaces(inputElement, options.survey);
         }
       });
