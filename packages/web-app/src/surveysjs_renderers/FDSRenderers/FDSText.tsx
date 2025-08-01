@@ -48,6 +48,7 @@ export class FDSTextRenderer extends SurveyQuestionElementBase {
                 errorMessage={errorMessage}
                 type={inputType}
                 isDisabled={question.isReadOnly}
+                autoComplete={question.autocomplete}
                 onChange={(value: string) => {
                     question.value = value;
                 }}
