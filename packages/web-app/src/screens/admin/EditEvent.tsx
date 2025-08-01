@@ -37,6 +37,7 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
             startDate: Timestamp.fromDate(moment(event.startDate).startOf('day').toDate()),
             endDate: Timestamp.fromDate(moment(event.endDate).endOf('day').toDate()),
             fordEventID: event.fordEventID || null,
+            lincolnEventID: event.lincolnEventID || null,
             surveyType: event.surveyType || null,
             _preEventID: event._preEventID || null,
             thanks: event.thanks || null,
@@ -76,6 +77,7 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
             theme: JSON.parse(data.theme),
             thanks: data.thanks,
             fordEventID: data.fordEventID || undefined,
+            lincolnEventID: data.lincolnEventID || undefined,
             surveyType: data.surveyType || null,
             survey_count_limit: data.survey_count_limit || undefined,
             limit_reached_message: data.limit_reached_message || undefined,
@@ -224,6 +226,7 @@ function DashboardScreen() {
                             "type": "panel",
                             "name": "fordEventPanel",
                             "title": "Ford Event Configuration",
+                            "visibleIf": "{brand} = 'Ford'",
                             "elements": [
                                 {
                                     "type": "text",
@@ -244,6 +247,23 @@ function DashboardScreen() {
                                         { "value": "preTD", "text": "PreTD" },
                                         { "value": "postTD", "text": "PostTD" }
                                     ]
+                                }
+                            ]
+                        },
+                        // Lincoln Event Panel
+                        {
+                            "type": "panel",
+                            "name": "lincolnEventPanel",
+                            "title": "Lincoln Event Configuration",
+                            "visibleIf": "{brand} = 'Lincoln'",
+                            "elements": [
+                                {
+                                    "type": "text",
+                                    "name": "lincolnEventID",
+                                    "title": "Lincoln Event ID",
+                                    "description": "The Lincoln Event ID is used for internal tracking",
+                                    "descriptionLocation": "underInput",
+                                    "inputId": "admin-edit-event-form-lincoln-event-id-input"
                                 }
                             ]
                         },
@@ -703,6 +723,7 @@ function DashboardScreen() {
             eventData._preEventID = sender.data._preEventID || null;
             eventData.thanks = sender.data.thanks || null;
             eventData.fordEventID = sender.data.fordEventID || null;
+            eventData.lincolnEventID = sender.data.lincolnEventID || null;
             // Clear surveyType if fordEventID is empty
             eventData.surveyType = (sender.data.fordEventID && sender.data.surveyType) ? sender.data.surveyType : null;
 
