@@ -179,91 +179,152 @@ export const prepareSurveyOnQuestionAdded = (
   creator: SurveyCreatorModel,
   options: SurveyInstanceCreatedEvent
 ) => {
-  options.survey.onAfterRenderQuestionInput.add((survey, questionOptions) => {
-    if (questionOptions.question.name === "address1") {
-      // Get the parent question to determine which autocomplete type this is
-      const parentQuestion = survey.getAllQuestions().find((q) => 
-        q.elements && q.elements.some((element: any) => element.name === "address1")
-      );
-      
-      let countryRestrictions = { country: ["us"] }; // Default to US
-      
-      // Override country restrictions based on question type
-      if (parentQuestion) {
-        if (parentQuestion.getType() === "autocompleteaddresscan") {
-          countryRestrictions = { country: ["ca"] };
-        } else if (parentQuestion.getType() === "autocompleteaddressall") {
-          countryRestrictions = {}; // No restrictions
-        }
+  console.log('prepareSurveyOnQuestionAdded called, survey questions:', 
+    options.survey.getAllQuestions().map(q => ({ name: q.name, type: q.getType() })));
+  
+  // Function to initialize Google Places on an address input
+  const initializeGooglePlaces = (inputElement: HTMLInputElement, survey: any) => {
+    console.log('Initializing Google Places on input:', {
+      tagName: inputElement.tagName,
+      testId: inputElement.getAttribute('data-testid'),
+      autocomplete: inputElement.autocomplete,
+      id: inputElement.id
+    });
+
+    // Determine country restrictions based on survey questions
+    let countryRestrictions = { country: ["us"] }; // Default to US
+    const allQuestions = survey.getAllQuestions();
+    const parentQuestion = allQuestions.find((q: any) => 
+      q.elements && q.elements.some((element: any) => element.name === "address1")
+    );
+    
+    if (parentQuestion) {
+      if (parentQuestion.getType() === "autocompleteaddresscan") {
+        countryRestrictions = { country: ["ca"] };
+      } else if (parentQuestion.getType() === "autocompleteaddressall") {
+        countryRestrictions = {}; // No restrictions
       }
-      
-      const autocomplete = new google.maps.places.Autocomplete(
-        questionOptions.htmlElement as HTMLInputElement,
-        {
-          types: ["address"],
-          componentRestrictions: countryRestrictions,
-          fields: ["address_components", "formatted_address"],
-          ...questionOptions.question.addressAutocompleteConfig,
-        }
+    }
+
+    const autocomplete = new google.maps.places.Autocomplete(
+      inputElement,
+      {
+        types: ["address"],
+        componentRestrictions: countryRestrictions,
+        fields: ["address_components", "formatted_address"],
+      }
+    );
+
+    autocomplete.addListener("place_changed", async function () {
+      const place = await autocomplete.getPlace();
+
+      const ParsedData: Record<string, any> = {
+        formatted_address: place.formatted_address,
+      };
+
+      const postalData = place.address_components?.find((item) =>
+        item.types.includes("postal_code")
+      );
+      const countryData = place.address_components?.find((item) =>
+        item.types.includes("country")
+      );
+      const addressData = place.address_components?.find((item) =>
+        item.types.includes("administrative_area_level_1")
+      );
+      const cityData = place.address_components?.find((item) =>
+        item.types.includes("locality")
+      );
+      const routeData = place.address_components?.find((item) =>
+        item.types.includes("route")
+      );
+      const streetNumberData = place.address_components?.find((item) =>
+        item.types.includes("street_number")
       );
 
-      autocomplete.addListener("place_changed", async function () {
-        const place = await autocomplete.getPlace();
+      ParsedData.address1 = [
+        streetNumberData?.long_name,
+        routeData?.long_name,
+      ]
+        .join(" ")
+        .trim();
+      ParsedData.city = cityData == null ? "" : cityData.long_name;
+      ParsedData.state = addressData == null ? "" : addressData.short_name;
+      ParsedData.zip_code = postalData == null ? "" : postalData.long_name;
+      ParsedData.country = countryData == null ? "" : countryData.short_name;
 
-        const ParsedData: Record<string, any> = {
-          formatted_address: place.formatted_address,
-        };
+      const isComposite = survey.getQuestionByName("address_group");
+      if (isComposite) {
+        survey.setValue("address_group", ParsedData);
+      } else {
+        [
+          "address1",
+          "city",
+          "state",
+          "zip_code",
+          "country",
+        ].forEach((key) => {
+          try {
+            survey.setValue(key, ParsedData[key]);
+          } catch (e) {
+            console.log("error", e);
+          }
+        });
+      }
+    });
+  };
 
-        const postalData = place.address_components?.find((item) =>
-          item.types.includes("postal_code")
-        );
-        const countryData = place.address_components?.find((item) =>
-          item.types.includes("country")
-        );
-        const addressData = place.address_components?.find((item) =>
-          item.types.includes("administrative_area_level_1")
-        );
-        const cityData = place.address_components?.find((item) =>
-          item.types.includes("locality")
-        );
-        const routeData = place.address_components?.find((item) =>
-          item.types.includes("route")
-        );
-        const streetNumberData = place.address_components?.find((item) =>
-          item.types.includes("street_number")
-        );
-
-        ParsedData.address1 = [
-          streetNumberData?.long_name,
-          routeData?.long_name,
-        ]
-          .join(" ")
-          .trim();
-        ParsedData.city = cityData == null ? "" : cityData.long_name;
-        ParsedData.state = addressData == null ? "" : addressData.short_name;
-        ParsedData.zip_code = postalData == null ? "" : postalData.long_name;
-        ParsedData.country = countryData == null ? "" : countryData.short_name;
-
-        const isComposite = survey.getQuestionByName("address_group");
-        if (isComposite) {
-          survey.setValue("address_group", ParsedData);
-        } else {
-          [
-            "address1",
-            "city",
-            "state",
-            "zip_code",
-            "country",
-          ].forEach((key) => {
-            try {
-              survey.setValue(key, ParsedData[key]);
-            } catch (e) {
-              console.log("error", e);
+  // Use MutationObserver to detect when address inputs are added to the DOM
+  const observeAddressInputs = () => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              const element = node as Element;
+              
+              // Look for address1 inputs that have been added
+              const addressInputs = element.querySelectorAll('input[data-testid="fds-text-address1"]');
+              addressInputs.forEach((input) => {
+                const inputElement = input as HTMLInputElement;
+                
+                // Check if Google Places is already initialized (has pac-target-input class)
+                if (!inputElement.classList.contains('pac-target-input')) {
+                  console.log('Found new address1 input, initializing Google Places');
+                  initializeGooglePlaces(inputElement, options.survey);
+                }
+              });
             }
           });
         }
       });
-    }
+    });
+
+    // Start observing
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+
+    // Also check for existing address inputs that might already be in the DOM
+    setTimeout(() => {
+      const existingAddressInputs = document.querySelectorAll('input[data-testid="fds-text-address1"]');
+      existingAddressInputs.forEach((input) => {
+        const inputElement = input as HTMLInputElement;
+        if (!inputElement.classList.contains('pac-target-input')) {
+          console.log('Found existing address1 input, initializing Google Places');
+          initializeGooglePlaces(inputElement, options.survey);
+        }
+      });
+    }, 500); // Small delay to ensure DOM is ready
+  };
+
+  // Start observing for address inputs
+  observeAddressInputs();
+
+  // Keep the original event handlers for other functionality
+  options.survey.onAfterRenderQuestionInput.add((survey, questionOptions) => {
+    console.log('onAfterRenderQuestionInput fired for question:', questionOptions.question.name, 
+      'type:', questionOptions.question.getType());
   });
 };
 
