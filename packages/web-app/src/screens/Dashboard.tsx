@@ -38,6 +38,26 @@ AllSurveys.globalInit();
 FordSurveys.fordInit();
 LincolnSurveys.lincolnInit();
 
+// Helper function to intelligently format array values
+const formatArrayValue = (value: any): string => {
+  if (!Array.isArray(value)) {
+    return String(value);
+  }
+  
+  // Check if this is an array of single characters (likely from incorrectly split string)
+  const hasOnlyCharacters = value.every(item => 
+    typeof item === 'string' && item.length === 1
+  );
+  
+  if (hasOnlyCharacters && value.length > 3) {
+    // Likely a string that was incorrectly split into characters, rejoin without commas
+    return value.join('');
+  } else {
+    // Normal array of meaningful values, join with commas
+    return value.map(v => String(v)).join(', ');
+  }
+};
+
 // Convert SurveyJS questions to AG Grid column definitions
 const convertQuestionsToColumns = (questions: Question[], showMetadata: boolean = false, surveyModel?: Model): ColDef[] => {
   console.log('=== convertQuestionsToColumns called ===');
@@ -157,8 +177,7 @@ const convertQuestionsToColumns = (questions: Question[], showMetadata: boolean 
               return '';
             }
             if (Array.isArray(params.value)) {
-              // Convert array to comma-delimited string
-              return params.value.map(v => String(v)).join(', ');
+              return formatArrayValue(params.value);
             }
             return params.value;
           }
@@ -203,8 +222,7 @@ const convertQuestionsToColumns = (questions: Question[], showMetadata: boolean 
                   return '';
                 }
                 if (Array.isArray(params.value)) {
-                  // Convert array to comma-delimited string
-                  return params.value.map(v => String(v)).join(', ');
+                  return formatArrayValue(params.value);
                 }
                 // Try to get display value if available
                 if (surveyModel && params.value) {
@@ -431,6 +449,18 @@ const convertQuestionsToColumns = (questions: Question[], showMetadata: boolean 
             return '';
           }
           
+          // Debug logging for vehicleOfInterest
+          if (params.colDef.field === 'vehicleOfInterest') {
+            console.log('vehicleOfInterest valueFormatter:', {
+              value: params.value,
+              type: typeof params.value,
+              isArray: Array.isArray(params.value),
+              length: params.value?.length,
+              firstFewItems: Array.isArray(params.value) ? params.value.slice(0, 5) : 'not array'
+            });
+          }
+          
+          
           // Check if this is a zip code field
           const fieldName = params.colDef.field || '';
           const headerName = params.colDef.headerName || '';
@@ -454,16 +484,9 @@ const convertQuestionsToColumns = (questions: Question[], showMetadata: boolean 
           if (surveyModel && params.colDef.field) {
             const question = surveyModel.getQuestionByName(params.colDef.field);
             if (question) {
-              // Handle arrays - convert each value to display value
+              // Handle arrays - use smart array formatting instead of SurveyJS displayValue
               if (Array.isArray(params.value)) {
-                const originalValue = question.value;
-                const displayValues = params.value.map(val => {
-                  question.value = val;
-                  const displayVal = question.displayValue;
-                  return displayVal || val;
-                });
-                question.value = originalValue;
-                return displayValues.join(', ');
+                return formatArrayValue(params.value);
               }
               // Handle single values
               const originalValue = question.value;
@@ -476,8 +499,7 @@ const convertQuestionsToColumns = (questions: Question[], showMetadata: boolean 
           
           // Fallback to default formatting
           if (Array.isArray(params.value)) {
-            // Convert array to comma-delimited string
-            return params.value.map(v => String(v)).join(', ');
+            return formatArrayValue(params.value);
           }
           if (typeof params.value === 'object') {
             try {
@@ -879,8 +901,7 @@ function DashboardScreen() {
                 
                 // Fallback to default formatting
                 if (Array.isArray(params.value)) {
-                  // Convert array to comma-delimited string
-                  return params.value.map(v => String(v)).join(', ');
+                  return formatArrayValue(params.value);
                 }
                 if (typeof params.value === 'object') {
                   try {
