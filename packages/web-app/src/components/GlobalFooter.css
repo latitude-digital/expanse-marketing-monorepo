@@ -1,0 +1,333 @@
+.global-footer-container {
+    padding: 24px 120px;
+    background-color: var(--semantic-color-fill-onlight-subtle);
+    border-top: 1px solid #d0d0d0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: 48px;
+}
+
+@media (max-width: 767px) {
+    .global-footer-container {
+        padding: 16px;
+        gap: 44px;
+    }
+
+    /* Lincoln mobile: stack logo above links */
+    .global-footer-lincoln-content {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 24px !important;
+    }
+}
+
+/* Desktop: Language and Logo side by side - Ford only */
+@media (min-width: 768px) {
+    .global-footer-container.brand-ford {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-rows: auto auto;
+        gap: 24px;
+        align-items: start;
+    }
+
+    .global-footer-container.brand-ford .global-footer-language-change {
+        grid-column: 1;
+        grid-row: 1;
+        justify-self: start;
+    }
+
+    .global-footer-container.brand-ford .global-footer-logo {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+    }
+
+    .global-footer-container.brand-ford .global-footer-links-section {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        justify-self: center;
+    }
+
+    /* Lincoln: Horizontal layout - logo left, links to the right */
+    .global-footer-container.brand-lincoln {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 24px;
+    }
+
+    .global-footer-lincoln-content {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+
+    .global-footer-container.brand-lincoln .global-footer-logo {
+        flex-shrink: 0;
+    }
+
+    .global-footer-container.brand-lincoln .global-footer-links-section {
+        flex: 1;
+        justify-content: flex-start;
+    }
+}
+
+.global-footer-language-change {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    max-width: 200px;
+    height: 36px;
+}
+
+.global-footer-globe-icon {
+    width: 38px;
+    height: 36px;
+    flex-shrink: 0;
+}
+
+.global-footer-language-select {
+    margin-left: 16px;
+    color: var(--semantic-color-text-onlight-moderate-default);
+    font-size: 16px;
+    line-height: 24px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    min-width: 60px;
+    width: auto;
+}
+
+/* Ford-specific language styling */
+.global-footer-container.brand-ford .global-footer-language-select {
+    font-family: 'Ford F-1', Arial, sans-serif;
+}
+
+/* Lincoln-specific language styling */
+.global-footer-container.brand-lincoln .global-footer-language-select {
+    font-family: 'LincolnFont', Arial, sans-serif;
+}
+
+.global-footer-language-select:focus {
+    outline: 2px solid var(--semantic-color-interactive-onlight-focus);
+    border-radius: 4px;
+}
+
+/* Language dropdown container for Ford */
+.global-footer-language-dropdown-container {
+    position: relative;
+    margin-left: 16px;
+    min-width: 120px;
+    width: auto;
+}
+
+/* Language dropdown button for Ford */
+.global-footer-language-dropdown-button {
+    color: var(--semantic-color-text-onlight-moderate-default);
+    font-size: 16px;
+    line-height: 24px;
+    font-family: 'Ford F-1', Arial, sans-serif;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    min-width: 120px;
+}
+
+.global-footer-language-dropdown-button:hover {
+    background-color: var(--semantic-color-fill-onlight-subtle-hover, #f5f5f5);
+}
+
+.global-footer-language-dropdown-button:focus {
+    outline: 2px solid var(--semantic-color-interactive-onlight-focus);
+}
+
+.global-footer-dropdown-arrow {
+    margin-left: 8px;
+    flex-shrink: 0;
+}
+
+.global-footer-language-dropdown {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    background-color: var(--semantic-color-fill-onlight-subtle);
+    border: 1px solid var(--semantic-color-stroke-onlight-subtle);
+    border-radius: 4px;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 120px;
+    width: auto;
+    z-index: 9999;
+    margin-bottom: 4px;
+}
+
+.global-footer-language-dropdown-option {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--semantic-color-text-onlight-moderate-default);
+    font-size: 16px;
+    text-align: left;
+    transition: background-color 0.2s ease;
+    font-family: 'Ford F-1', Arial, sans-serif;
+    white-space: nowrap;
+}
+
+.global-footer-language-dropdown-option:hover {
+    background-color: var(--semantic-color-fill-onlight-subtle-hover, #f5f5f5);
+}
+
+.global-footer-language-dropdown-option.selected {
+    font-weight: 600;
+}
+
+/* Links Section */
+.global-footer-links-section {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+/* Lincoln links should be left-aligned */
+.global-footer-container.brand-lincoln .global-footer-links-section {
+    justify-content: flex-start;
+    line-height: 1.2;
+    gap: 12px;
+}
+
+@media (max-width: 767px) {
+    .global-footer-links-section {
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        gap: 8px;
+    }
+
+    /* Lincoln mobile: ensure proper spacing between logo and links */
+    .global-footer-container.brand-lincoln .global-footer-lincoln-content {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 32px !important;
+    }
+
+    /* Lincoln mobile: override the tight desktop gap */
+    .global-footer-container.brand-lincoln .global-footer-logo {
+        margin-bottom: 24px !important;
+    }
+}
+
+.global-footer-link {
+    color: var(--semantic-color-text-onlight-moderate-default);
+    font-size: 11px;
+    line-height: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    text-decoration: none !important;
+}
+
+/* Ford-specific link styling */
+.global-footer-container.brand-ford .global-footer-link {
+    font-family: 'Ford F-1', Arial, sans-serif;
+}
+
+/* Lincoln-specific link styling */
+.global-footer-container.brand-lincoln .global-footer-link {
+    font-family: 'LincolnFont', Arial, sans-serif;
+    line-height: 1.1;
+}
+
+.global-footer-link:hover,
+.global-footer-link:focus,
+.global-footer-link:active,
+.global-footer-link:visited {
+    color: var(--semantic-color-text-onlight-moderate-default);
+    text-decoration: none !important;
+}
+
+.global-footer-privacy-icon {
+    width: 29px;
+    height: 16px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+/* Brand Logo */
+.global-footer-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 767px) {
+    .global-footer-logo {
+        align-self: flex-start;
+        width: auto;
+        justify-content: flex-start;
+    }
+}
+
+.global-footer-logo-image {
+    height: 31px;
+    width: auto;
+}
+
+/* Ford oval logo should be smaller */
+.global-footer-container.brand-ford .global-footer-logo-image {
+    height: 24px;
+}
+
+/* Lincoln star logo should be larger for better visibility */
+.global-footer-container.brand-lincoln .global-footer-logo-image {
+    height: 50px;
+    width: auto;
+}
+
+/* Lincoln-specific styling */
+.global-footer-container.brand-lincoln {
+    background-color: #293338;
+    border-top: 1px solid #ffffff;
+    color: #ffffff;
+}
+
+.global-footer-container.brand-lincoln .global-footer-link {
+    color: #ffffff;
+}
+
+.global-footer-container.brand-lincoln .global-footer-link:hover,
+.global-footer-container.brand-lincoln .global-footer-link:focus,
+.global-footer-container.brand-lincoln .global-footer-link:active,
+.global-footer-container.brand-lincoln .global-footer-link:visited {
+    color: #ffffff;
+}
+
+/* Make Lincoln logo white */
+.global-footer-container.brand-lincoln .global-footer-logo-image {
+    filter: brightness(0) invert(1);
+}
+
+/* Make Lincoln Privacy Choices icon white */
+.global-footer-container.brand-lincoln .global-footer-privacy-icon {
+    filter: brightness(0) invert(1);
+}

@@ -737,3 +737,207 @@ Visual rendering handled by existing FDS renderers with Ford/Lincoln/Unbranded t
 - All question definitions now co-located with visual renderers
 - Maintains exact same API and functionality as before
 - No changes required to existing survey JSON or templates
+
+## GlobalHeader Component Architecture
+
+### Overview: Brand-Specific Header Implementation
+
+The GlobalHeader component (`packages/web-app/src/components/GlobalHeader.tsx`) provides brand-specific headers for Ford and Lincoln surveys with integrated language selection functionality. The component is designed to match the official Ford.com and Lincoln.com header patterns.
+
+### Component Usage
+
+```typescript
+import GlobalHeader from '../components/GlobalHeader';
+
+<GlobalHeader
+  brand={currentBrand}
+  showLanguageChooser={event?.showLanguageChooser === true}
+  supportedLocales={supportedLocales}
+  currentLocale={currentLocale}
+  onLanguageChange={handleLanguageChange}
+/>
+```
+
+### Brand-Specific Design Patterns
+
+**Ford Header**:
+- Height: 56px (matches Ford.com)
+- Horizontal padding: 16px
+- Logo: Ford oval logo (80x31 viewBox, styled to 74x28px)
+- Language selector: Globe icon + full language names ("English", "Spanish", "French")
+- Dropdown width: 120px (auto-width for full names)
+
+**Lincoln Header**:
+- Height: 70px (matches Lincoln.com)
+- Horizontal padding: 20px
+- Logo: Lincoln star logo (113x40 viewBox, styled to 102x36px)
+- Language selector: 2-letter codes only ("EN", "ES", "FR")
+- Dropdown width: 80px (fixed width for short codes)
+
+### Language Selector Architecture
+
+#### Dual Language Selector System
+
+The application uses a **dual language selector system** to handle different brand requirements:
+
+1. **GlobalHeader Language Selector** (Ford/Lincoln brands)
+   - Integrated into brand-specific headers
+   - Ford: Globe icon + full language names
+   - Lincoln: 2-letter language codes only
+   - Filters out non-language values like 'Other'
+
+2. **Standard LanguageSelector** (Unbranded/Other)
+   - Used for non-Ford/Lincoln surveys
+   - Basic HTML `<select>` dropdown
+   - Located in `packages/web-app/src/components/LanguageSelector.tsx`
+
+#### Language Selector Logic in Survey.tsx
+
+**CRITICAL**: The logic for which language selector to show is based on `brand`, not `fordEventID`:
+
+```typescript
+// Show GlobalHeader for Ford/Lincoln brands
+const shouldShowHeader = (currentBrand === 'Ford' || currentBrand === 'Lincoln') 
+  && thisEvent?.showHeader !== false;
+
+// Show standard language selector only for Other/Unbranded
+{supportedLocales.length > 1 && normalizeBrand(thisEvent?.brand) === 'Other' && (thisEvent?.showLanguageChooser === true) && (
+  <LanguageSelector 
+    survey={thisSurvey}
+    supportedLocales={supportedLocales}
+    currentLocale={currentLocale}
+    onChange={handleLanguageChange}
+  />
+)}
+```
+
+**Why This Matters**:
+- Ford events have `fordEventID` but Lincoln events don't
+- Both Ford and Lincoln should use GlobalHeader language selector
+- Only Other/Unbranded events should use standard language selector
+- Using brand check instead of ID check prevents duplicate language selectors
+
+### Language Display Patterns
+
+#### Language Name Mapping
+
+```typescript
+const getLanguageDisplayName = (locale: string) => {
+  const languageNames: Record<string, string> = {
+    'en': 'English',
+    'es': brand === 'Ford' ? 'Spanish' : 'Español',  // Ford uses English, Lincoln uses native
+    'fr': 'French'
+  };
+  return languageNames[locale] || locale;
+};
+```
+
+#### Locale Filtering
+
+The GlobalHeader automatically filters out invalid locale values:
+
+```typescript
+const filteredSupportedLocales = supportedLocales.filter(locale => 
+  locale !== 'Other' && locale !== 'other' && locale.length <= 5
+);
+```
+
+This prevents brand names or other non-language values from appearing in language dropdowns.
+
+### Header Integration with Survey System
+
+#### ExpanseEvent Type Definition
+
+```typescript
+type ExpanseEvent = {
+  id: string;
+  brand?: 'Ford' | 'Lincoln' | 'Other';
+  showHeader?: boolean;              // Controls header visibility
+  showLanguageChooser?: boolean;     // Controls language selector visibility
+  // ... other properties
+};
+```
+
+#### Admin Configuration
+
+Headers can be controlled via the admin interface (`packages/web-app/src/screens/admin/EditEvent.tsx`):
+
+- **Brand Selection**: Dropdown with 'Other', 'Ford', 'Lincoln' options
+- **Show Header Toggle**: Checkbox to enable/disable header display
+- **Show Language Chooser Toggle**: Checkbox to enable/disable language selector
+
+### Common Issues and Solutions
+
+#### Issue 1: Duplicate Language Selectors
+
+**Symptoms**: Both GlobalHeader language selector and standard language selector appear
+**Cause**: Incorrect brand-based logic in Survey.tsx
+**Solution**: Ensure `normalizeBrand(thisEvent?.brand) === 'Other'` is used for standard selector
+
+#### Issue 2: Language Dropdown Width Issues
+
+**Symptoms**: Text overlaps with dropdown caret
+**Cause**: Insufficient width for language names
+**Solution**: 
+- Ford: `minWidth: '120px', width: 'auto'` (accommodates full names)
+- Lincoln: `minWidth: '80px', width: '80px'` (fixed width for codes)
+- Standard: `minWidth: '120px', width: 'auto'` (accommodates full names)
+
+#### Issue 3: "Other" Appearing in Language Options
+
+**Symptoms**: "Other" shows as a language option instead of actual languages
+**Cause**: Non-language values passed in supportedLocales array
+**Solution**: Filter locales in GlobalHeader before using:
+```typescript
+const filteredSupportedLocales = supportedLocales.filter(locale => 
+  locale !== 'Other' && locale !== 'other' && locale.length <= 5
+);
+```
+
+#### Issue 4: Header Heights Don't Match Official Websites
+
+**Symptoms**: Headers look different from Ford.com/Lincoln.com
+**Cause**: Incorrect height/padding values
+**Solution**: Use exact measurements from official sites:
+- Ford: 56px height, 16px horizontal padding
+- Lincoln: 70px height, 20px horizontal padding
+
+### Development Workflow
+
+#### Adding New Language Support
+
+1. Update `getLanguageDisplayName` in GlobalHeader.tsx
+2. Add proper language name for Ford vs Lincoln display patterns
+3. Test both GlobalHeader and standard LanguageSelector components
+4. Verify filtering works correctly
+
+#### Testing Brand-Specific Headers
+
+1. **Ford Test**: Create event with `brand: 'Ford'`, verify globe icon + full names
+2. **Lincoln Test**: Create event with `brand: 'Lincoln'`, verify 2-letter codes only
+3. **Unbranded Test**: Create event with `brand: 'Other'`, verify standard selector only
+4. **Width Test**: Verify no text/caret overlap in all dropdown states
+
+#### Header Spacing Verification
+
+Compare with official websites using browser DevTools:
+- Ford.com navigation: 56px height, specific padding patterns
+- Lincoln.com navigation: 70px height, different spacing approach
+
+### File Locations
+
+**Core Files**:
+- `packages/web-app/src/components/GlobalHeader.tsx` - Main brand header component
+- `packages/web-app/src/components/LanguageSelector.tsx` - Standard language selector
+- `packages/web-app/src/screens/Survey.tsx` - Integration and rendering logic
+- `packages/web-app/src/utils/brandUtils.ts` - Brand normalization utilities
+
+**Asset Files**:
+- `packages/web-app/src/assets/ford-oval-logo.svg` - Ford brand logo
+- `packages/web-app/src/assets/lincoln-logo.svg` - Lincoln brand logo  
+- `packages/web-app/src/assets/icons/ford/globe.svg` - Language selector globe icon
+
+**Type Definitions**:
+- `packages/web-app/src/types.d.ts` - ExpanseEvent interface with header properties
+
+This architecture ensures consistent, brand-appropriate headers across the survey platform while maintaining flexibility for different brand requirements and language display patterns.

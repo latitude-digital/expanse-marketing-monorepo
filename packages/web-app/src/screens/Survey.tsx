@@ -30,7 +30,7 @@ import "survey-core/survey-core.min.css";
 
 import "./Surveys.css";
 import { prepareForSurvey, prepareSurveyOnQuestionAdded } from "../helpers/surveyTemplatesAll";
-import FordFooter from "../components/FordFooter";
+import GlobalFooter from "../components/GlobalFooter";
 import { createDefaultFordSurvey } from '../helpers/fordSurvey';
 import { mapSurveyToFordSurvey } from '../helpers/mapSurveyToFord';
 import { getCustomContentLocales, getDefaultLocale } from '../helpers/surveyLocaleHelper';
@@ -930,10 +930,23 @@ const SurveyComponent: React.FC = () => {
             );
           })()}
         </div>
+        {/* GlobalFooter - Show for Ford/Lincoln brands only */}
         {
-          thisEvent?.fordEventID && (
-            <FordFooter />
-          )
+          (() => {
+            const currentBrand = normalizeBrand(thisEvent?.brand);
+            const shouldShowFooter = (currentBrand === 'Ford' || currentBrand === 'Lincoln') 
+              && thisEvent?.showFooter !== false; // Default to true if not specified
+            
+            return shouldShowFooter && (
+              <GlobalFooter
+                brand={currentBrand}
+                supportedLanguages={supportedLocales}
+                currentLocale={currentLocale}
+                onLanguageChange={handleLanguageChange}
+                showLanguageSelector={thisEvent?.showLanguageChooser === true && supportedLocales.length > 1}
+              />
+            );
+          })()
         }
       </div>
       :

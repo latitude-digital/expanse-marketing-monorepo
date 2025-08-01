@@ -52,4 +52,5 @@ type ExpanseEvent = {
   limit_reached_message?: string;
   showLanguageChooser?: boolean;
   showHeader?: boolean;
+  showFooter?: boolean;
 };

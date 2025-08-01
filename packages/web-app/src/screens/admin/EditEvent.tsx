@@ -49,6 +49,7 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
             limit_reached_message: event.limit_reached_message || null,
             showLanguageChooser: event.showLanguageChooser !== undefined ? event.showLanguageChooser : false,
             showHeader: event.showHeader !== undefined ? event.showHeader : true,
+            showFooter: event.showFooter !== undefined ? event.showFooter : true,
         };
     },
     fromFirestore(
@@ -80,6 +81,7 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
             limit_reached_message: data.limit_reached_message || undefined,
             showLanguageChooser: data.showLanguageChooser !== undefined ? data.showLanguageChooser : false,
             showHeader: data.showHeader !== undefined ? data.showHeader : true,
+            showFooter: data.showFooter !== undefined ? data.showFooter : true,
         };
     },
 };
@@ -117,6 +119,7 @@ function DashboardScreen() {
                 endDate: moment().add(7, 'days').toDate(),
                 showLanguageChooser: true,
                 showHeader: true,
+                showFooter: true,
             });
         } else {
             // get the event
@@ -481,6 +484,15 @@ function DashboardScreen() {
                             "name": "showHeader",
                             "title": "Show Header",
                             "description": "Display Ford/Lincoln branded header at the top of the survey",
+                            "descriptionLocation": "underInput",
+                            "defaultValue": true,
+                            "visibleIf": "{brand} = 'Ford' or {brand} = 'Lincoln'"
+                        },
+                        {
+                            "type": "boolean",
+                            "name": "showFooter",
+                            "title": "Show Footer",
+                            "description": "Display Ford/Lincoln branded footer at the bottom of the survey",
                             "descriptionLocation": "underInput",
                             "defaultValue": true,
                             "visibleIf": "{brand} = 'Ford' or {brand} = 'Lincoln'"
