@@ -42,6 +42,7 @@ export const initCreatorLincoln = (creator: SurveyCreatorModel) => {
   creator.toolbox.changeCategories([
     { name: "lincolnvoi", category: "__lincolnCategory" },
     { name: "lincolnoptin", category: "__lincolnCategory" },
+    { name: "lincolnoverallopinion", category: "__lincolnCategory" },
     // FMC shared questions for Lincoln category
     { name: "gender", category: "__lincolnCategory" },
     { name: "agebracket", category: "__lincolnCategory" },
@@ -105,7 +106,7 @@ export const prepareCreatorOnQuestionAddedLincoln = (
       en:
         "Please email me communications, including product and service information, surveys and special offers from Lincoln and its retailers.",
       es: "Por favor, envíenme comunicaciones, incluyendo información sobre productos y servicios, encuestas y ofertas especiales de Lincoln y sus minoristas.",
-      fr: "",
+      fr: "Veuillez m'envoyer des communications, y compris des informations sur les produits et services, des enquêtes et des offres spéciales de Lincoln et de ses détaillants.",
     });
 
     options.question.descriptionLocation = "underInput";
@@ -114,6 +115,28 @@ export const prepareCreatorOnQuestionAddedLincoln = (
         "Lincoln respects your privacy and treats your personal information with care. [Click here to read Lincoln's privacy policy.](https://lincoln.com/help/privacy/)",
       es: "Lincoln respeta su confidencialidad y trata su información personal con respeto. [Haga clic aquí para consultar la política de confidencialidad de Lincoln.](https://es.lincoln.com/help/privacy/)",
       fr: "Lincoln respecte votre vie privée et traite vos informations personnelles avec soin. [Cliquez ici pour lire la politique de confidentialité de Lincoln.](https://lincoln.com/help/privacy/)",
+    });
+  }
+
+  if (options.question.getType() === "lincolnoverallopinion") {
+    console.log("lincolnoverallopinion question added");
+    options.question.name = "lincolnOverallOpinion";
+    options.question._ffs = "overallOpinion";
+    options.question.isRequired = true;
+
+    options.question.locTitle.setJson({
+      en:
+        "What is your overall opinion or impression of Lincoln?",
+      es: "¿Cuál es su opinión o impresión general sobre Lincoln?",
+      fr: "Quelle est votre opinion ou impression générale sur Lincoln?",
+    });
+
+    options.question.descriptionLocation = "underInput";
+    options.question.locDescription.setJson({
+      en:
+        "Please click on the response that indicates your preference.",
+      es: "Por favor, haga clic en la respuesta que indica su preferencia.",
+      fr: "Veuillez cliquer sur la réponse qui indique votre préférence.",
     });
   }
 

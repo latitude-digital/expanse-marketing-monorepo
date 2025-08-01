@@ -50,7 +50,9 @@ const TEMPLATE_QUESTION_TYPES = [
   'vehicledrivenmostmake',
   // Lincoln template types
   'lincolnvoi',
-  'lincolnoptin'
+  'lincolnoptin',
+  'lincolnoverallopinion',
+  'lincolnoverallopinionpost'
 ];
 
 /**

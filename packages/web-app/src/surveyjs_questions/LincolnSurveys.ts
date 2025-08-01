@@ -39,7 +39,7 @@ const lincolnInit = () => {
         es: "Me interesaría recibir más información sobre los siguientes vehículos.",
         fr: "Je suis intéressé à recevoir plus d'informations sur les véhicules suivants.",
       },
-      "description": {
+      description: {
         en: "Select up to 3 Lincoln vehicles you're interested in learning more about.",
         es: "Seleccione hasta 3 vehículos Lincoln sobre los que le gustaría obtener más información.",
         fr: "Sélectionnez jusqu'à 3 véhicules Lincoln qui vous intéressent pour en savoir plus.",
@@ -56,7 +56,7 @@ const lincolnInit = () => {
     onLoaded(question: Question) {
       this.updateOnlyInclude(question);
       // Use shared utility to handle choicesByUrl for custom question types
-      handleChoicesByUrl(question, 'LincolnSurveys');
+      handleChoicesByUrl(question, "LincolnSurveys");
     },
     onPropertyChanged(question: Question, propertyName: string, newValue: any) {
       if (propertyName === "onlyInclude") {
@@ -110,6 +110,29 @@ const lincolnInit = () => {
           },
         },
       ],
+    },
+  } as ICustomQuestionTypeConfiguration);
+
+  ComponentCollection.Instance.add({
+    name: "lincolnoverallopinion",
+    title: "Lincoln Overall Opinion",
+    iconName: "icon-rating",
+    showInToolbox: true,
+    inheritBaseProps: true,
+    onInit: () => {
+      Serializer.getProperty("lincolnoverallopinion", "name").readOnly = true;
+      Serializer.getProperty("lincolnoverallopinion", "_ffs").readOnly = true;
+    },
+    questionJSON: {
+      type: "rating",
+      name: "overall_opinion",
+      title: "What is your overall opinion or impression of Lincoln?",
+      description:
+        "Please click on the response that indicates your preference. ",
+      rateCount: 10,
+      rateMax: 10,
+      minRateDescription: "Poor",
+      maxRateDescription: "Excellent",
     },
   } as ICustomQuestionTypeConfiguration);
 };

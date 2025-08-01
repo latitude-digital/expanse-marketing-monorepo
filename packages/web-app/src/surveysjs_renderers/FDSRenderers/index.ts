@@ -5,6 +5,7 @@ export { FDSCheckboxRenderer } from './FDSCheckbox';
 export { FDSDropdownRenderer } from './FDSDropdown';
 export { FDSTextAreaRenderer } from './FDSTextArea';
 export { FDSToggleRenderer } from './FDSToggle';
+export { FDSRatingRenderer } from './FDSRating';
 
 // Export shared utilities
 export * from './FDSShared';

@@ -27,6 +27,7 @@ async function loadFDSRenderers(): Promise<void> {
     const { FDSDropdownRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSDropdown');
     const { FDSTextAreaRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSTextArea');
     const { FDSToggleRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSToggle');
+    const { FDSRatingRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSRating');
     
     // Import custom survey question renderer
     await import('../surveysjs_renderers/FDSRenderers/CustomSurveyQuestion');
