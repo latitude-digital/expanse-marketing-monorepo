@@ -38,21 +38,24 @@ export class FDSRadioRenderer extends SurveyQuestionElementBase {
                 errorMessage={errorMessage}
                 question={question}
             >
-                <RadioButtonGroup
-                    options={options}
-                    value={question.value || ""}
-                    isInvalid={isInvalid}
-                    isDisabled={question.isReadOnly}
-                    onChange={(value: string) => {
-                        question.value = value;
-                    }}
-                    onBlur={() => {
-                        question.validate();
-                    }}
-                    data-testid={`fds-radio-${question.name}`}
-                    aria-label={question.fullTitle}
-                    className="[&>*]:justify-center"
-                />
+                {/* Wrapper with relative positioning to contain absolutely positioned radio inputs */}
+                <div className="relative">
+                    <RadioButtonGroup
+                        options={options}
+                        value={question.value || ""}
+                        isInvalid={isInvalid}
+                        isDisabled={question.isReadOnly}
+                        onChange={(value: string) => {
+                            question.value = value;
+                        }}
+                        onBlur={() => {
+                            question.validate();
+                        }}
+                        data-testid={`fds-radio-${question.name}`}
+                        aria-label={question.fullTitle}
+                        className="[&>*]:justify-center"
+                    />
+                </div>
             </FDSQuestionWrapper>
         );
     }

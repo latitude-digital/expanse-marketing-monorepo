@@ -147,9 +147,11 @@ export class RadioGroupRowQuestion extends SurveyQuestionRadiogroup {
                     </div>
                 )}
                 
-                {/* Radio button group */}
-                <div className={style.radio_group_row}>
-                    {this.getItems({}, this.question.bodyItems)}
+                {/* Radio button group - wrapped with relative positioning */}
+                <div className="relative">
+                    <div className={style.radio_group_row}>
+                        {this.getItems({}, this.question.bodyItems)}
+                    </div>
                 </div>
             </div>
         );
