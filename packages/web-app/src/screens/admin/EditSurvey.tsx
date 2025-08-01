@@ -256,7 +256,20 @@ function DashboardScreen() {
                 }
             });
 
-            newCreator.JSON = thisEvent?.questions;
+            // Ensure survey has required properties for header rendering
+            const surveyJSON = thisEvent?.questions || {};
+            
+            // Set default headerView and description if missing (prevents header display issues)
+            if (!surveyJSON.headerView) {
+                surveyJSON.headerView = "advanced";
+                console.log('[Admin] Setting default headerView: advanced');
+            }
+            if (!surveyJSON.description) {
+                surveyJSON.description = " ";
+                console.log('[Admin] Setting default description for header compatibility');
+            }
+            
+            newCreator.JSON = surveyJSON;
 
             newCreator.saveSurveyFunc = (saveNo: number, callback: (saveNo: number, success: boolean) => void) => {
                 console.log("saving questions...")

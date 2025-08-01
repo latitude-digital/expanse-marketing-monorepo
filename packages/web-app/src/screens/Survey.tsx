@@ -248,6 +248,18 @@ const SurveyComponent: React.FC = () => {
           }
 
           const surveyJSON = JSON.parse(res.event.questions);
+          const eventTheme = JSON.parse(res.event.theme || `{"cssVariables": {}}`);
+
+          // Auto-fix missing headerView when theme has header configuration
+          if (eventTheme.header && !surveyJSON.headerView) {
+            console.log('[Header Debug] Auto-fixing missing headerView for survey with theme header configuration');
+            surveyJSON.headerView = "advanced";
+            // Also ensure description is not null (SurveyJS may require this for header rendering)
+            if (!surveyJSON.description) {
+              surveyJSON.description = " ";
+              console.log('[Header Debug] Auto-fixing missing description for header');
+            }
+          }
 
           // Set default properties before creating model (can be overridden by survey definition)
           const defaultSurveyProperties = {
@@ -280,8 +292,6 @@ const SurveyComponent: React.FC = () => {
             console.error('Failed to initialize FDS:', error);
             // Continue with survey creation even if FDS fails
           }
-
-          const eventTheme = JSON.parse(res.event.theme || `{"cssVariables": {}}`);
 
           const survey = new Model(defaultSurveyProperties);
           
