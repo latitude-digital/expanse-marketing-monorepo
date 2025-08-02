@@ -264,6 +264,18 @@ function DashboardScreen() {
                                     "description": "The Lincoln Event ID is used for internal tracking",
                                     "descriptionLocation": "underInput",
                                     "inputId": "admin-edit-event-form-lincoln-event-id-input"
+                                },
+                                {
+                                    "type": "radiogroup",
+                                    "name": "surveyType",
+                                    "title": "Survey Type",
+                                    "visibleIf": "{lincolnEventID} != ''",
+                                    "defaultValue": "basic",
+                                    "choices": [
+                                        { "value": "basic", "text": "Basic" },
+                                        { "value": "preTD", "text": "PreTD" },
+                                        { "value": "postTD", "text": "PostTD" }
+                                    ]
                                 }
                             ]
                         },
@@ -724,8 +736,8 @@ function DashboardScreen() {
             eventData.thanks = sender.data.thanks || null;
             eventData.fordEventID = sender.data.fordEventID || null;
             eventData.lincolnEventID = sender.data.lincolnEventID || null;
-            // Clear surveyType if fordEventID is empty
-            eventData.surveyType = (sender.data.fordEventID && sender.data.surveyType) ? sender.data.surveyType : null;
+            // Clear surveyType if both fordEventID and lincolnEventID are empty
+            eventData.surveyType = ((sender.data.fordEventID || sender.data.lincolnEventID) && sender.data.surveyType) ? sender.data.surveyType : null;
 
             // Handle email configurations based on enablePreRegistration toggle
             if (sender.data.enablePreRegistration) {

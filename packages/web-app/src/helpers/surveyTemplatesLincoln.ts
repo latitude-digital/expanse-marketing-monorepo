@@ -124,7 +124,7 @@ export const prepareCreatorOnQuestionAddedLincoln = (
   if (options.question.getType() === "lincolnoverallopinion") {
     console.log("lincolnoverallopinion question added");
     options.question.name = "lincolnOverallOpinion";
-    options.question._ffs = "overallOpinion";
+    options.question._ffs = "custom.overallOpinion";
     options.question.isRequired = true;
 
     options.question.locTitle.setJson({
@@ -146,7 +146,7 @@ export const prepareCreatorOnQuestionAddedLincoln = (
   if (options.question.getType() === "lincolnoverallopinionpost") {
     console.log("lincolnoverallopinionpost question added");
     options.question.name = "lincolnOverallOpinionPost";
-    options.question._ffs = "overallOpinionPost";
+    options.question._ffs = "custom.overallOpinionPost";
     options.question.isRequired = true;
 
     options.question.locTitle.setJson({
