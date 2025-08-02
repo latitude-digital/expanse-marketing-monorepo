@@ -43,6 +43,7 @@ export const initCreatorFord = (creator: SurveyCreatorModel) => {
 
   creator.toolbox.changeCategories([
     { name: "fordvoi", category: "__fordCategory" },
+    { name: "fordvehiclesdriven", category: "__fordCategory" },
     { name: "fordoptin", category: "__fordCategory" },
     { name: "fordrecommend", category: "__fordCategory" },
     { name: "fordrecommendpost", category: "__fordCategory" },

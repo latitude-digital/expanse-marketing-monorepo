@@ -9,12 +9,22 @@ import {
 } from "./interfaces";
 import { handleChoicesByUrl } from "./choicesByUrlHelper";
 
+// Global flag to prevent multiple initialization
+let fordQuestionsInitialized = false;
+
 const fordInit = () => {
-  // Prevent double registration
-  if (ComponentCollection.Instance.getCustomQuestionByName("fordvoi")) {
-    console.log('FordSurveys already initialized, skipping...');
+  // Prevent multiple initialization
+  if (fordQuestionsInitialized) {
+    console.log('Ford questions already initialized, skipping...');
     return;
   }
+
+  console.log('Initializing Ford questions for the first time...');
+  // Register individual questions to avoid module caching issues
+  
+  // Register fordvoi if it doesn't exist
+  if (!ComponentCollection.Instance.getCustomQuestionByName("fordvoi")) {
+    console.log('Registering Ford VOI question type...');
 
   Serializer.addProperty("question", {
     name: "_ffs",
@@ -78,8 +88,42 @@ const fordInit = () => {
       }
     },
   } as ICustomQuestionTypeConfigurationVOI);
+  }
 
-  ComponentCollection.Instance.add({
+  // Register fordvehiclesdriven if it doesn't exist - NEW QUESTION TYPE
+  if (!ComponentCollection.Instance.getCustomQuestionByName("fordvehiclesdriven")) {
+    console.log('Registering new fordvehiclesdriven question type...');
+    ComponentCollection.Instance.add({
+      name: "fordvehiclesdriven",
+      title: "Ford Vehicles Driven",
+      iconName: "icon-cars",
+      showInToolbox: true,
+      inheritBaseProps: true,
+      questionJSON: {
+        type: "checkbox",
+        name: "vehiclesDriven",
+        _ffs: "vehiclesDriven",
+        title: {
+          en: "Please select the Ford vehicles that you experienced today.",
+        },
+        description: {
+          en: "Please select the vehicles in the order you experienced them.",
+        },
+        renderAs: "fordvehiclesdriven",
+        choicesByUrl: {
+          url: "https://cdn.latitudewebservices.com/vehicles/ford.json",
+          valueName: "id",
+          titleName: "name",
+          image: "image",
+        },
+      },
+    } as ICustomQuestionTypeConfigurationVOI);
+  }
+
+  // Register other Ford questions if they don't exist
+  if (!ComponentCollection.Instance.getCustomQuestionByName("fordoptin")) {
+    console.log('Registering Ford optin question type...');
+    ComponentCollection.Instance.add({
     name: "fordoptin",
     title: "Ford Opt-In",
     iconName: "icon-thumbs-up",
@@ -112,6 +156,7 @@ const fordInit = () => {
       ],
     },
   } as ICustomQuestionTypeConfiguration);
+  }
 
   ComponentCollection.Instance.add({
     name: "fordrecommend",
@@ -384,6 +429,10 @@ const fordInit = () => {
       choices: ["Yes", "No"]
     },
   } as ICustomQuestionTypeConfiguration);
+
+  // Mark Ford questions as initialized
+  fordQuestionsInitialized = true;
+  console.log('Ford questions initialization completed');
 };
 
 export default {
