@@ -28,7 +28,7 @@ import { initCreatorFord, prepareCreatorOnQuestionAddedFord } from '../../helper
 import { initCreatorLincoln, prepareCreatorOnQuestionAddedLincoln } from '../../helpers/surveyTemplatesLincoln';
 import { shouldLoadFDS, getBrandTheme, normalizeBrand } from '../../utils/brandUtils';
 import { initializeFDSForBrand } from '../../helpers/fdsInitializer';
-import { AllSurveys } from '../../surveyjs_questions';
+import { AllSurveys, FordSurveys, LincolnSurveys } from '../../surveyjs_questions';
 
 // Register SurveyJS themes for theme editor functionality
 registerSurveyTheme(SurveyTheme); // Add predefined Form Library UI themes
@@ -111,9 +111,10 @@ function DashboardScreen() {
                     await initializeFDSForBrand(eventBrand);
                     console.log(`FDS initialized for ${eventBrand} event`);
                 } else {
-                    // For non-branded events, initialize basic SurveyJS and universal questions
+                    // For non-branded events, initialize basic SurveyJS with universal questions only
                     initSurvey(); // Basic SurveyJS initialization
                     AllSurveys.globalInit(); // Initialize universal questions (firstname, lastname, email, etc.)
+                    
                     console.log('Basic SurveyJS and universal questions initialized for non-branded event');
                 }
             } catch (error) {

@@ -177,6 +177,21 @@ function DashboardScreen() {
                             "inputId": "admin-edit-event-form-id-input"
                         },
                         {
+                            "type": "dropdown",
+                            "name": "brand",
+                            "title": "Event Brand",
+                            "choices": [
+                                { "value": "Other", "text": "Other (Default)" },
+                                { "value": "Ford", "text": "Ford" },
+                                { "value": "Lincoln", "text": "Lincoln" }
+                            ],
+                            "defaultValue": "Other",
+                            "description": "Select the brand for this event. Ford/Lincoln will load brand-specific components and styling. Note: Brand cannot be changed after survey responses are collected.",
+                            "descriptionLocation": "underInput",
+                            "inputId": "admin-edit-event-form-brand-select",
+                            "startWithNewLine": false
+                        },
+                        {
                             "type": "text",
                             "name": "name",
                             "title": "Event Name",
@@ -207,20 +222,6 @@ function DashboardScreen() {
                             "startWithNewLine": false,
                             "inputId": "admin-edit-event-form-end-date-input"
                         },
-                        {
-                            "type": "dropdown",
-                            "name": "brand",
-                            "title": "Event Brand",
-                            "choices": [
-                                { "value": "Other", "text": "Other (Default)" },
-                                { "value": "Ford", "text": "Ford" },
-                                { "value": "Lincoln", "text": "Lincoln" }
-                            ],
-                            "defaultValue": "Other",
-                            "description": "Select the brand for this event. Ford/Lincoln will load brand-specific components and styling. Note: Brand cannot be changed after survey responses are collected.",
-                            "descriptionLocation": "underInput",
-                            "inputId": "admin-edit-event-form-brand-select"
-                        },
                         // Ford Event Panel
                         {
                             "type": "panel",
@@ -240,13 +241,29 @@ function DashboardScreen() {
                                     "type": "radiogroup",
                                     "name": "surveyType",
                                     "title": "Survey Type",
-                                    "visibleIf": "{fordEventID} != ''",
                                     "defaultValue": "basic",
                                     "choices": [
                                         { "value": "basic", "text": "Basic" },
                                         { "value": "preTD", "text": "PreTD" },
                                         { "value": "postTD", "text": "PostTD" }
                                     ]
+                                },
+                                {
+                                    "type": "boolean",
+                                    "name": "showHeader",
+                                    "title": "Show Header",
+                                    "description": "Display Ford branded header at the top of the survey",
+                                    "descriptionLocation": "underInput",
+                                    "defaultValue": true
+                                },
+                                {
+                                    "type": "boolean",
+                                    "name": "showFooter",
+                                    "title": "Show Footer",
+                                    "description": "Display Ford branded footer at the bottom of the survey",
+                                    "descriptionLocation": "underInput",
+                                    "defaultValue": true,
+                                    "startWithNewLine": false
                                 }
                             ]
                         },
@@ -269,13 +286,29 @@ function DashboardScreen() {
                                     "type": "radiogroup",
                                     "name": "surveyType",
                                     "title": "Survey Type",
-                                    "visibleIf": "{lincolnEventID} != ''",
                                     "defaultValue": "basic",
                                     "choices": [
                                         { "value": "basic", "text": "Basic" },
                                         { "value": "preTD", "text": "PreTD" },
                                         { "value": "postTD", "text": "PostTD" }
                                     ]
+                                },
+                                {
+                                    "type": "boolean",
+                                    "name": "showHeader",
+                                    "title": "Show Header",
+                                    "description": "Display Lincoln branded header at the top of the survey",
+                                    "descriptionLocation": "underInput",
+                                    "defaultValue": true
+                                },
+                                {
+                                    "type": "boolean",
+                                    "name": "showFooter",
+                                    "title": "Show Footer",
+                                    "description": "Display Lincoln branded footer at the bottom of the survey",
+                                    "descriptionLocation": "underInput",
+                                    "defaultValue": true,
+                                    "startWithNewLine": false
                                 }
                             ]
                         },
@@ -510,24 +543,6 @@ function DashboardScreen() {
                             "description": "Display language selector in the survey when multiple languages are available",
                             "descriptionLocation": "underInput",
                             "defaultValue": true
-                        },
-                        {
-                            "type": "boolean",
-                            "name": "showHeader",
-                            "title": "Show Header",
-                            "description": "Display Ford/Lincoln branded header at the top of the survey",
-                            "descriptionLocation": "underInput",
-                            "defaultValue": true,
-                            "visibleIf": "{brand} = 'Ford' or {brand} = 'Lincoln'"
-                        },
-                        {
-                            "type": "boolean",
-                            "name": "showFooter",
-                            "title": "Show Footer",
-                            "description": "Display Ford/Lincoln branded footer at the bottom of the survey",
-                            "descriptionLocation": "underInput",
-                            "defaultValue": true,
-                            "visibleIf": "{brand} = 'Ford' or {brand} = 'Lincoln'"
                         },
                         {
                             "type": "boolean",
