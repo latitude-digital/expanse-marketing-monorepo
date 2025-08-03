@@ -20,7 +20,7 @@ import Showdown from 'showdown';
 import { initSurvey } from '../../helpers/surveyTemplatesAll';
 
 slk(
-    "NDBhNThlYzYtN2EwMy00ZTgxLWIyNGQtOGFkZWJkM2NlNjI3OzE9MjAyNS0wNy0xOSwyPTIwMjUtMDctMTksND0yMDI1LTA3LTE5"
+    "NDBhNThlYzYtN2EwMy00ZTgxLWIyNGQtOGFkZWJkM2NlNjI3OzE9MjAyNi0wNy0xOSwyPTIwMjYtMDctMTksND0yMDI2LTA3LTE5"
 );
 
 // Initialize basic SurveyJS for admin forms (no FDS components)
@@ -37,6 +37,7 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
             startDate: Timestamp.fromDate(moment(event.startDate).startOf('day').toDate()),
             endDate: Timestamp.fromDate(moment(event.endDate).endOf('day').toDate()),
             fordEventID: event.fordEventID || null,
+            lincolnEventID: event.lincolnEventID || null,
             surveyType: event.surveyType || null,
             _preEventID: event._preEventID || null,
             thanks: event.thanks || null,
@@ -76,6 +77,7 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
             theme: JSON.parse(data.theme),
             thanks: data.thanks,
             fordEventID: data.fordEventID || undefined,
+            lincolnEventID: data.lincolnEventID || undefined,
             surveyType: data.surveyType || null,
             survey_count_limit: data.survey_count_limit || undefined,
             limit_reached_message: data.limit_reached_message || undefined,
@@ -175,6 +177,21 @@ function DashboardScreen() {
                             "inputId": "admin-edit-event-form-id-input"
                         },
                         {
+                            "type": "dropdown",
+                            "name": "brand",
+                            "title": "Event Brand",
+                            "choices": [
+                                { "value": "Other", "text": "Other (Default)" },
+                                { "value": "Ford", "text": "Ford" },
+                                { "value": "Lincoln", "text": "Lincoln" }
+                            ],
+                            "defaultValue": "Other",
+                            "description": "Select the brand for this event. Ford/Lincoln will load brand-specific components and styling. Note: Brand cannot be changed after survey responses are collected.",
+                            "descriptionLocation": "underInput",
+                            "inputId": "admin-edit-event-form-brand-select",
+                            "startWithNewLine": false
+                        },
+                        {
                             "type": "text",
                             "name": "name",
                             "title": "Event Name",
@@ -205,25 +222,12 @@ function DashboardScreen() {
                             "startWithNewLine": false,
                             "inputId": "admin-edit-event-form-end-date-input"
                         },
-                        {
-                            "type": "dropdown",
-                            "name": "brand",
-                            "title": "Event Brand",
-                            "choices": [
-                                { "value": "Other", "text": "Other (Default)" },
-                                { "value": "Ford", "text": "Ford" },
-                                { "value": "Lincoln", "text": "Lincoln" }
-                            ],
-                            "defaultValue": "Other",
-                            "description": "Select the brand for this event. Ford/Lincoln will load brand-specific components and styling. Note: Brand cannot be changed after survey responses are collected.",
-                            "descriptionLocation": "underInput",
-                            "inputId": "admin-edit-event-form-brand-select"
-                        },
                         // Ford Event Panel
                         {
                             "type": "panel",
                             "name": "fordEventPanel",
                             "title": "Ford Event Configuration",
+                            "visibleIf": "{brand} = 'Ford'",
                             "elements": [
                                 {
                                     "type": "text",
@@ -237,13 +241,74 @@ function DashboardScreen() {
                                     "type": "radiogroup",
                                     "name": "surveyType",
                                     "title": "Survey Type",
-                                    "visibleIf": "{fordEventID} != ''",
                                     "defaultValue": "basic",
                                     "choices": [
                                         { "value": "basic", "text": "Basic" },
                                         { "value": "preTD", "text": "PreTD" },
                                         { "value": "postTD", "text": "PostTD" }
                                     ]
+                                },
+                                {
+                                    "type": "boolean",
+                                    "name": "showHeader",
+                                    "title": "Show Header",
+                                    "description": "Display Ford branded header at the top of the survey",
+                                    "descriptionLocation": "underInput",
+                                    "defaultValue": true
+                                },
+                                {
+                                    "type": "boolean",
+                                    "name": "showFooter",
+                                    "title": "Show Footer",
+                                    "description": "Display Ford branded footer at the bottom of the survey",
+                                    "descriptionLocation": "underInput",
+                                    "defaultValue": true,
+                                    "startWithNewLine": false
+                                }
+                            ]
+                        },
+                        // Lincoln Event Panel
+                        {
+                            "type": "panel",
+                            "name": "lincolnEventPanel",
+                            "title": "Lincoln Event Configuration",
+                            "visibleIf": "{brand} = 'Lincoln'",
+                            "elements": [
+                                {
+                                    "type": "text",
+                                    "name": "lincolnEventID",
+                                    "title": "Lincoln Event ID",
+                                    "description": "The Lincoln Event ID is used for internal tracking",
+                                    "descriptionLocation": "underInput",
+                                    "inputId": "admin-edit-event-form-lincoln-event-id-input"
+                                },
+                                {
+                                    "type": "radiogroup",
+                                    "name": "surveyType",
+                                    "title": "Survey Type",
+                                    "defaultValue": "basic",
+                                    "choices": [
+                                        { "value": "basic", "text": "Basic" },
+                                        { "value": "preTD", "text": "PreTD" },
+                                        { "value": "postTD", "text": "PostTD" }
+                                    ]
+                                },
+                                {
+                                    "type": "boolean",
+                                    "name": "showHeader",
+                                    "title": "Show Header",
+                                    "description": "Display Lincoln branded header at the top of the survey",
+                                    "descriptionLocation": "underInput",
+                                    "defaultValue": true
+                                },
+                                {
+                                    "type": "boolean",
+                                    "name": "showFooter",
+                                    "title": "Show Footer",
+                                    "description": "Display Lincoln branded footer at the bottom of the survey",
+                                    "descriptionLocation": "underInput",
+                                    "defaultValue": true,
+                                    "startWithNewLine": false
                                 }
                             ]
                         },
@@ -481,24 +546,6 @@ function DashboardScreen() {
                         },
                         {
                             "type": "boolean",
-                            "name": "showHeader",
-                            "title": "Show Header",
-                            "description": "Display Ford/Lincoln branded header at the top of the survey",
-                            "descriptionLocation": "underInput",
-                            "defaultValue": true,
-                            "visibleIf": "{brand} = 'Ford' or {brand} = 'Lincoln'"
-                        },
-                        {
-                            "type": "boolean",
-                            "name": "showFooter",
-                            "title": "Show Footer",
-                            "description": "Display Ford/Lincoln branded footer at the bottom of the survey",
-                            "descriptionLocation": "underInput",
-                            "defaultValue": true,
-                            "visibleIf": "{brand} = 'Ford' or {brand} = 'Lincoln'"
-                        },
-                        {
-                            "type": "boolean",
                             "name": "editSurvey",
                             "defaultValue": false,
                             "visible": false,
@@ -703,8 +750,9 @@ function DashboardScreen() {
             eventData._preEventID = sender.data._preEventID || null;
             eventData.thanks = sender.data.thanks || null;
             eventData.fordEventID = sender.data.fordEventID || null;
-            // Clear surveyType if fordEventID is empty
-            eventData.surveyType = (sender.data.fordEventID && sender.data.surveyType) ? sender.data.surveyType : null;
+            eventData.lincolnEventID = sender.data.lincolnEventID || null;
+            // Clear surveyType if both fordEventID and lincolnEventID are empty
+            eventData.surveyType = ((sender.data.fordEventID || sender.data.lincolnEventID) && sender.data.surveyType) ? sender.data.surveyType : null;
 
             // Handle email configurations based on enablePreRegistration toggle
             if (sender.data.enablePreRegistration) {

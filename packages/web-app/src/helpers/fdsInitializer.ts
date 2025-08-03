@@ -57,17 +57,16 @@ export async function initializeFDSForBrand(brand: string): Promise<void> {
       // Load FDS renderers with useAsDefault: true
       await loadFDSRenderers();
 
-      // Initialize shared FMC questions first (contains common Ford/Lincoln questions)
-      FMCSurveys.fmcInit();
-      console.log('FMC shared questions initialized');
 
       // Initialize brand-specific questions
       if (brand === 'Ford') {
+        FMCSurveys.fmcInit();
         FordSurveys.fordInit();
-        console.log('Ford-specific questions initialized');
+        console.log('FMC and Ford-specific questions initialized');
       } else if (brand === 'Lincoln') {
+        FMCSurveys.fmcInit();
         LincolnSurveys.lincolnInit();
-        console.log('Lincoln-specific questions initialized');
+        console.log('FMC and Lincoln-specific questions initialized');
       }
 
       console.log(`FDS initialization complete for ${brand}`);

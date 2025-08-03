@@ -17,8 +17,14 @@ import { getApiUrl, ENDPOINTS } from "../config/api";
 
 // Import custom SurveyJS renderers
 import { CheckboxVOIQuestion } from "../surveysjs_renderers/CheckboxVOI";
+import { CheckboxVehiclesDrivenQuestion } from "../surveysjs_renderers/CheckboxVehiclesDriven";
+import { CheckboxFordVehiclesDrivenQuestion } from "../surveysjs_renderers/CheckboxFordVehiclesDriven";
 import { RadioGroupRowQuestion } from "../surveysjs_renderers/RadioButtonButton";
 import { SurveyBookeoQuestion } from "../surveysjs_renderers/Bookeo";
+
+// Force execution of renderer registration by referencing the class
+console.log('Survey.tsx: CheckboxVehiclesDrivenQuestion loaded:', CheckboxVehiclesDrivenQuestion);
+console.log('Survey.tsx: CheckboxFordVehiclesDrivenQuestion loaded:', CheckboxFordVehiclesDrivenQuestion);
 // EmailTextInput removed - FDSTextRenderer handles all text inputs including email with proper required field support
 import "../surveysjs_renderers/FilePreview";
 
@@ -33,6 +39,7 @@ import { prepareForSurvey, prepareSurveyOnQuestionAdded } from "../helpers/surve
 import GlobalFooter from "../components/GlobalFooter";
 import { createDefaultFordSurvey } from '../helpers/fordSurvey';
 import { mapSurveyToFordSurvey } from '../helpers/mapSurveyToFord';
+import { mapSurveyToLincolnSurvey } from '../helpers/mapSurveyToLincoln';
 import { getCustomContentLocales, getDefaultLocale } from '../helpers/surveyLocaleHelper';
 import { LanguageSelector, FordLanguageSelector } from '../components/LanguageSelector';
 
@@ -66,6 +73,7 @@ interface SurveyEvent {
   name: string;
   brand?: string;
   fordEventID?: string;
+  lincolnEventID?: string;
   disabled?: string;
   _preEventID?: string;
   survey_count_limit?: number;
@@ -295,7 +303,7 @@ const SurveyComponent: React.FC = () => {
 
           const survey = new Model(defaultSurveyProperties);
           
-          if (res.event.fordEventID) {
+          if (res.event.fordEventID || res.event.lincolnEventID) {
             survey.questionErrorLocation = "bottom";
           }
 
@@ -578,7 +586,7 @@ const SurveyComponent: React.FC = () => {
             const defaultValues: SurveyData = {
               'start_time': new Date(),
               'survey_date': new Date(),
-              'event_id': res.event.fordEventID || params.eventID,
+              'event_id': res.event.fordEventID || res.event.lincolnEventID || params.eventID,
               'app_version': 'surveyjs_1.0',
               'abandoned': 0,
               '_utm': extractUTM(),
@@ -857,6 +865,115 @@ const SurveyComponent: React.FC = () => {
                   }
 
                   console.log('saved voi');
+                }
+              }
+
+              // If this is a Lincoln event, also save to Lincoln API
+              if (res.event.lincolnEventID) {
+                console.log('[Lincoln Event] Starting Lincoln API submission process');
+                console.log('[Lincoln Event] Event ID:', res.event.lincolnEventID);
+                
+                const lincolnSurvey = mapSurveyToLincolnSurvey(survey, surveyData, res.event);
+                console.log('[Lincoln Event] lincolnSurvey from mapSurveyToLincolnSurvey:', JSON.stringify(lincolnSurvey, null, 2));
+                
+                // Merge lincolnSurvey with surveyData to ensure all expected fields are present
+                const mergedLincolnSurveyData = { ...lincolnSurvey, ...surveyData };
+                console.log('[Lincoln Event] mergedLincolnSurveyData before final adjustments:', JSON.stringify(mergedLincolnSurveyData, null, 2));
+                
+                // Ensure microsite_email_template is present (even if null)
+                if (!mergedLincolnSurveyData.microsite_email_template) {
+                  mergedLincolnSurveyData.microsite_email_template = null;
+                }
+                
+                // Log signature fields for debugging
+                console.log('[Lincoln Event] Signature fields before API call:', {
+                  signature: mergedLincolnSurveyData.signature,
+                  minor_signature: mergedLincolnSurveyData.minor_signature,
+                  signature_type: typeof mergedLincolnSurveyData.signature,
+                  minor_signature_type: typeof mergedLincolnSurveyData.minor_signature
+                });
+                
+                const lincolnPayload = [mergedLincolnSurveyData];
+
+                console.log('[Lincoln Event] Final payload being sent to Lincoln API:', lincolnPayload);
+
+                // Save to Lincoln API
+                const lincolnRes = await fetch(getApiUrl(ENDPOINTS.LINCOLN_SURVEY_UPLOAD), {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'GTB-ACCESS-KEY': '91827364',
+                  },
+                  body: JSON.stringify(lincolnPayload),
+                });
+
+                if (!lincolnRes.ok) {
+                  throw new Error(lincolnRes.statusText);
+                }
+
+                const lincolnData = await lincolnRes.json();
+                console.log('saved to lincoln api', lincolnData);
+
+                // If there are vehicles of interest, save those too
+                if ((lincolnSurvey as any).voi && (lincolnSurvey as any).voi.length) {
+                  const voiBody = (lincolnSurvey as any).voi.map((vehicle_id: string) => ({
+                    event_id: res.event.lincolnEventID,
+                    device_survey_guid: surveyData.device_survey_guid || '',
+                    survey_date: new Date().toISOString(),
+                    vehicle_id,
+                    app_version: 'expanse_2.0',
+                    abandoned: false,
+                    custom_data: {
+                      survey_type: res.event.surveyType || 'basic'
+                    }
+                  }));
+
+                  const lincolnVoiRes = await fetch(getApiUrl(ENDPOINTS.LINCOLN_VEHICLES_INTERESTED), {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'GTB-ACCESS-KEY': '91827364',
+                    },
+                    body: JSON.stringify(voiBody),
+                  });
+
+                  if (!lincolnVoiRes.ok) {
+                    throw new Error(lincolnVoiRes.statusText);
+                  }
+
+                  console.log('saved lincoln voi');
+                }
+
+                // If there's a driven vehicle, save that too
+                if (mergedLincolnSurveyData.vehicle_driven_most_make_id || mergedLincolnSurveyData.vehicle_driven_most_model_id) {
+                  const drivenBody = [{
+                    event_id: res.event.lincolnEventID,
+                    device_survey_guid: surveyData.device_survey_guid || '',
+                    survey_date: new Date().toISOString(),
+                    make_id: mergedLincolnSurveyData.vehicle_driven_most_make_id,
+                    model_id: mergedLincolnSurveyData.vehicle_driven_most_model_id,
+                    year: mergedLincolnSurveyData.vehicle_driven_most_year,
+                    app_version: 'expanse_2.0',
+                    abandoned: false,
+                    custom_data: {
+                      survey_type: res.event.surveyType || 'basic'
+                    }
+                  }];
+
+                  const lincolnDrivenRes = await fetch(getApiUrl(ENDPOINTS.LINCOLN_VEHICLES_DRIVEN), {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'GTB-ACCESS-KEY': '91827364',
+                    },
+                    body: JSON.stringify(drivenBody),
+                  });
+
+                  if (!lincolnDrivenRes.ok) {
+                    throw new Error(lincolnDrivenRes.statusText);
+                  }
+
+                  console.log('saved lincoln driven vehicle');
                 }
               }
 

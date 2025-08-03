@@ -6,8 +6,22 @@
   margin-bottom: 40px;
   scrollbar-width: thin;
   overflow: scroll;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 
   @media (min-width: 768px) {
     height: 375px;
   }
+}
+
+/* Fix for text wrapping in waiver/markdown content */
+.waiver-scroll-view p,
+.waiver-scroll-view div,
+p {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  width: 100% !important;
+  max-width: 100% !important;
 }

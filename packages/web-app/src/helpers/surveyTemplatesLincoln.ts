@@ -28,6 +28,7 @@ registerIcons([
 export const initSurveyLincoln = () => {
   // surveyLocalization.supportedLocales = ["en", "es", "fr"];
 
+  // Initialize Lincoln-specific questions
   LincolnSurveys.lincolnInit();
 
   DefaultFonts.unshift("ProximaNovaRgRegular", "lincolnmillerbblack");
@@ -38,20 +39,19 @@ export const initCreatorLincoln = (creator: SurveyCreatorModel) => {
 
   const enLocale = editorLocalization.getLocale("en");
   enLocale.toolboxCategories["__lincolnCategory"] = "Lincoln Questions";
+  enLocale.toolboxCategories["__0fmc"] = "FMC Questions";
 
   creator.toolbox.changeCategories([
     { name: "lincolnvoi", category: "__lincolnCategory" },
     { name: "lincolnoptin", category: "__lincolnCategory" },
     { name: "lincolnoverallopinion", category: "__lincolnCategory" },
     { name: "lincolnoverallopinionpost", category: "__lincolnCategory" },
-    // FMC shared questions for Lincoln category
-    { name: "gender", category: "__lincolnCategory" },
-    { name: "agebracket", category: "__lincolnCategory" },
-    { name: "howlikelyacquire", category: "__lincolnCategory" },
-    { name: "inmarkettiming", category: "__lincolnCategory" },
-    { name: "adultwaiver", category: "__lincolnCategory" },
-    { name: "minorwaiver", category: "__lincolnCategory" },
-    { name: "vehicledrivenmostmake", category: "__lincolnCategory" },
+    // FMC questions
+    { name: "gender", category: "__0fmc" },
+    { name: "agebracket", category: "__0fmc" },
+    { name: "howlikelyacquire", category: "__0fmc" },
+    { name: "inmarkettiming", category: "__0fmc" },
+    { name: "vehicledrivenmostmake", category: "__0fmc" },
   ]);
 
   // Apply Lincoln-specific category sorting - Lincoln Questions first
@@ -60,8 +60,10 @@ export const initCreatorLincoln = (creator: SurveyCreatorModel) => {
       if (name === "__lincolnCategory") return 1;
       if (name === "__fordCategory") return 2;
       if (name === "__0pii") return 3;
-      if (name.startsWith("__")) return 4;
-      return 5;
+      if (name === "__0fmc") return 4;
+      if (name === "__1wav") return 5;
+      if (name.startsWith("__")) return 6;
+      return 7;
     };
 
     return getPriority(a.name) - getPriority(b.name);
@@ -122,7 +124,7 @@ export const prepareCreatorOnQuestionAddedLincoln = (
   if (options.question.getType() === "lincolnoverallopinion") {
     console.log("lincolnoverallopinion question added");
     options.question.name = "lincolnOverallOpinion";
-    options.question._ffs = "overallOpinion";
+    options.question._ffs = "custom.overallOpinion";
     options.question.isRequired = true;
 
     options.question.locTitle.setJson({
@@ -144,7 +146,7 @@ export const prepareCreatorOnQuestionAddedLincoln = (
   if (options.question.getType() === "lincolnoverallopinionpost") {
     console.log("lincolnoverallopinionpost question added");
     options.question.name = "lincolnOverallOpinionPost";
-    options.question._ffs = "overallOpinionPost";
+    options.question._ffs = "custom.overallOpinionPost";
     options.question.isRequired = true;
 
     options.question.locTitle.setJson({
@@ -163,81 +165,4 @@ export const prepareCreatorOnQuestionAddedLincoln = (
     });
   }
 
-  // FMC shared question handlers for Lincoln
-  if (options.question.getType() === "gender") {
-    console.log("gender question added");
-    options.question.name = "gender";
-    options.question._ffs = "gender";
-    options.question.locTitle.setJson({
-      en: "Gender?",
-      es: "Sexo",
-      fr: "Genre"
-    });
-  }
-
-  if (options.question.getType() === "agebracket") {
-    console.log("age_bracket question added");
-    options.question.name = "ageBracket";
-    options.question._ffs = "age_bracket";
-    options.question.locTitle.setJson({
-      en: "May I ask your age?",
-      es: "¿Puedo preguntar su edad?",
-      fr: "Puis-je vous demander votre âge?"
-    });
-  }
-
-  if (options.question.getType() === "howlikelyacquire") {
-    console.log("how_likely_acquire question added");
-    options.question.name = "howLikelyAcquire";
-    options.question._ffs = "how_likely_acquire";
-    options.question.isRequired = true;
-
-    options.question.locTitle.setJson({
-      en: "How do you plan to acquire your next vehicle?",
-      es: "¿Cómo piensas adquirir tu próximo vehículo?",
-      fr: "Comment prévoyez-vous d'acquérir votre prochain véhicule?"
-    });
-  }
-
-  if (options.question.getType() === "inmarkettiming") {
-    console.log("in_market_timing question added");
-    options.question.name = "inMarketTiming";
-    options.question._ffs = "in_market_timing";
-    options.question.isRequired = true;
-
-    options.question.locTitle.setJson({
-      en: "When do you plan to acquire your next vehicle?",
-      es: "¿Cuándo piensas adquirir tu próximo vehículo?",
-      fr: "Quand prévoyez-vous d'acheter votre prochain véhicule?"
-    });
-  }
-
-  if (options.question.getType() === "adultwaiver") {
-    options.question.name = "adultWaiver";
-    options.question._ffs = "signature";
-
-    options.question.locTitle.setJson({
-      en: "Please read and sign the waiver below",
-      es: "Por favor, lea y firme el siguiente documento de exoneración de responsabilidad",
-      fr: "Veuillez lire et signer le document ci-dessous"
-    });
-  }
-
-  if (options.question.getType() === "minorwaiver") {
-    options.question.name = "minorWaiver";
-    options.question._ffs = "minor_signature";
-    options.question.titleLocation = "hidden";
-  }
-
-  if (options.question.getType() === "vehicledrivenmostmake") {
-    options.question.name = "vehicleDrivenMostMake";
-    options.question._ffs = "vehicle_driven_most_make_id";
-
-    // TODO: validate the spanish/french translations
-    options.question.locTitle.setJson({
-      en: "What vehicle do you drive most often?",
-      es: "¿Qué vehículo conduces con mayor frecuencia?",
-      fr: "Quel véhicule conduisez-vous le plus souvent?"
-    });
-  }
 };

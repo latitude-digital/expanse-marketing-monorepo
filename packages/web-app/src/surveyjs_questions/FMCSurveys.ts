@@ -4,12 +4,15 @@ import {
   Question,
   Serializer,
 } from "survey-core";
-import {
-  ICustomQuestionTypeConfigurationWaiver,
-} from "./interfaces";
 import { handleChoicesByUrl } from "./choicesByUrlHelper";
 
 const fmcInit = () => {
+  // Prevent double registration
+  if (ComponentCollection.Instance.getCustomQuestionByName("gender")) {
+    console.log('FMCSurveys already initialized, skipping...');
+    return;
+  }
+
   ComponentCollection.Instance.add({
     name: "gender",
     title: "Gender",
@@ -159,199 +162,6 @@ const fmcInit = () => {
     },
   } as ICustomQuestionTypeConfiguration);
 
-  ComponentCollection.Instance.add({
-    name: "adultwaiver",
-    title: "Adult Waiver",
-    iconName: "icon-pen-field",
-    showInToolbox: true,
-    inheritBaseProps: true,
-    onInit: () => {
-      Serializer.getProperty("adultwaiver", "name").readOnly = true;
-      Serializer.getProperty("adultwaiver", "_ffs").readOnly = true;
-      Serializer.addProperty("adultwaiver", {
-        name: "waiverMarkdown",
-        displayName: "Waiver Markdown",
-        type: "text",
-        category: "general",
-        isSerializable: true,
-      });
-    },
-    elementsJSON: [
-      {
-        type: "markdown",
-        name: "waiverText",
-        scrollView: true,
-      },
-      {
-        type: "text",
-        name: "signature",
-        title: {
-          en: "Signature",
-          es: "Firma",
-          fr: "Signature",
-        },
-        isRequired: true,
-        placeholder: {
-          en: "Type to Sign",
-          es: "Escribe para firmar",
-          fr: "Écrivez pour signer",
-        },
-      },
-      {
-        type: "checkbox",
-        name: "waiver_agree",
-        titleLocation: "hidden",
-        isRequired: true,
-        choices: [
-          {
-            value: 1,
-            text: {
-              en: "By typing your name you indicate that you have read and agree to the waiver provided here.",
-              es: "Al escribir tu nombre, indicas que has leído y aceptas el acuerdo proporcionado aquí.",
-              fr: "En écrivant votre nom, vous indiquez que vous avez lu et accepté l'accord fourni ici.",
-            },
-          },
-        ],
-      },
-    ],
-    onUpdateQuestionCssClasses(question, element, cssClasses) {
-      if (question.name === "signature") {
-        cssClasses.root += " signatureInput";
-      }
-    },
-    onLoaded(question: Question) {
-      this.updateMarkdown(question);
-    },
-    onPropertyChanged(question: Question, propertyName: string, newValue: any) {
-      if (propertyName === "waiverMarkdown") {
-        this.updateMarkdown(question);
-      }
-    },
-    updateMarkdown(question: Question) {
-      const markdownBox = question.getQuestionByName("waiverText");
-      if (!!markdownBox) {
-        markdownBox.markdown = question.waiverMarkdown;
-      }
-    },
-  } as ICustomQuestionTypeConfigurationWaiver);
-
-  ComponentCollection.Instance.add({
-    name: "minorwaiver",
-    title: "Minor Waiver",
-    iconName: "icon-pen-field",
-    showInToolbox: true,
-    inheritBaseProps: true,
-    onInit: () => {
-      Serializer.getProperty("minorwaiver", "name").readOnly = true;
-      Serializer.getProperty("minorwaiver", "_ffs").readOnly = true;
-      Serializer.addProperty("minorwaiver", {
-        name: "waiverMarkdown",
-        displayName: "Waiver Markdown",
-        type: "text",
-        category: "general",
-        isSerializable: true,
-      });
-    },
-    elementsJSON: [
-      {
-        type: "radiogroup",
-        renderAs: "radiobuttongroup",
-        name: "minorsYesNo",
-        title: {
-          en: "I have minors accompanying me",
-          es: "Tengo menores acompañándome",
-          fr: "J'ai des mineurs avec moi",
-        },
-        isRequired: true,
-        choices: [
-          {
-            value: "1",
-            text: {
-              en: "Yes",
-              es: "Si",
-              fr: "Oui",
-            },
-          },
-          {
-            value: "0",
-            text: {
-              en: "No",
-              es: "No",
-              fr: "Non",
-            },
-          },
-        ],
-      },
-      {
-        type: "markdown",
-        name: "minorWaiverText",
-        scrollView: true,
-        visibleIf: "{composite.minorsYesNo} = '1'",
-      },
-      {
-        type: "text",
-        name: "minorName1",
-        visibleIf: "{composite.minorsYesNo} = '1'",
-        title: {
-          en: "Full Name of Minor 1",
-          es: "Nombre completo del menor 1",
-          fr: "Nom complet du mineur 1",
-        },
-        isRequired: true,
-      },
-      {
-        type: "text",
-        name: "minorName2",
-        visibleIf: "{composite.minorsYesNo} = '1'",
-        title: {
-          en: "Full Name of Minor 2",
-          es: "Nombre completo del menor 2",
-          fr: "Nom complet du mineur 2",
-        },
-      },
-      {
-        type: "text",
-        name: "minorName3",
-        visibleIf: "{composite.minorsYesNo} = '1'",
-        title: {
-          en: "Full Name of Minor 3",
-          es: "Nombre completo del menor 3",
-          fr: "Nom complet du mineur 3",
-        },
-      },
-      {
-        type: "text",
-        name: "minorSignature",
-        visibleIf: "{composite.minorsYesNo} = '1'",
-        title: {
-          en: "Parent/Guardian Signature",
-          es: "Firma del padre/tutor",
-          fr: "Signature du parent/tuteur",
-        },
-        isRequired: true,
-        placeholder: "Type to Sign",
-      },
-    ],
-    onUpdateQuestionCssClasses(question, element, cssClasses) {
-      if (question.name === "minorSignature") {
-        cssClasses.root += " signatureInput";
-      }
-    },
-    onLoaded(question: Question) {
-      this.updateMarkdown(question);
-    },
-    onPropertyChanged(question: Question, propertyName: string, newValue: any) {
-      if (propertyName === "waiverMarkdown") {
-        this.updateMarkdown(question);
-      }
-    },
-    updateMarkdown(question: Question) {
-      const markdownBox = question.getQuestionByName("minorWaiverText");
-      if (!!markdownBox) {
-        markdownBox.markdown = question.waiverMarkdown;
-      }
-    },
-  } as ICustomQuestionTypeConfigurationWaiver);
 
   ComponentCollection.Instance.add({
     name: "vehicledrivenmostmake",

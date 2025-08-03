@@ -25,9 +25,26 @@
     "concurrently": "^8.2.2"
   },
   "dependencies": {
-    "react-aria": "^3.35.0"
+    "@next/env": "^15.4.5",
+    "@react-aria/button": "^3.10.2",
+    "@react-aria/focus": "^3.19.0",
+    "@react-aria/interactions": "^3.22.5",
+    "@react-aria/textfield": "^3.15.2",
+    "@react-aria/utils": "^3.26.0",
+    "dotenv": "^16.4.7",
+    "react-aria": "^3.35.0",
+    "react-aria-components": "^1.7.0"
   },
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "resolutions": {
+    "axios": "1.7.4",
+    "path-to-regexp": "0.1.10",
+    "yaml": "2.2.2",
+    "@react-types/shared": "^3.26.0",
+    "@types/react": "18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "styled-components": "^5.1.26"
+  }
 }

@@ -90,6 +90,9 @@ interface ApiEndpoints {
   SURVEY_UPLOAD: string;
   SURVEY_UPLOAD_V10: string;
   SURVEY_UPLOAD_V11: string;
+  LINCOLN_SURVEY_UPLOAD: string;
+  LINCOLN_VEHICLES_INTERESTED: string;
+  LINCOLN_VEHICLES_DRIVEN: string;
   VEHICLES_INSERT: string;
   EVENTS_CHECK: string;
   EVENTS_QR: string;
@@ -111,6 +114,9 @@ export const ENDPOINTS: ApiEndpoints = {
   SURVEY_UPLOAD: '/survey/upload/v9',
   SURVEY_UPLOAD_V10: '/survey/upload/v10',
   SURVEY_UPLOAD_V11: '/survey/upload/v11',
+  LINCOLN_SURVEY_UPLOAD: 'https://api.latitudeshowtracker.com/events/v1/survey/insert/v13',
+  LINCOLN_VEHICLES_INTERESTED: 'https://api.latitudeshowtracker.com/events/v1/survey/insert/vehicles/interested',
+  LINCOLN_VEHICLES_DRIVEN: 'https://api.latitudeshowtracker.com/events/v1/survey/insert/vehicles/driven',
   VEHICLES_INSERT: '/survey/insert/vehicles',
   EVENTS_CHECK: '/events/check/v2',
   EVENTS_QR: '/events/qr',
