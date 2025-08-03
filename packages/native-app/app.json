@@ -99,7 +99,17 @@
       },
       "eas": {
         "projectId": "your-project-id"
-      }
+      },
+      "NODE_ENV": "development",
+      "EXPO_PUBLIC_API_URL": "http://localhost:3000",
+      "EXPO_PUBLIC_WEB_APP_URL": "http://localhost:8002",
+      "EXPO_PUBLIC_APP_ENV": "development",
+      "EXPO_PUBLIC_DEBUG_MODE": "true",
+      "EXPO_PUBLIC_ENABLE_LOGGING": "true",
+      "EXPO_PUBLIC_SYNC_INTERVAL_MS": "30000",
+      "EXPO_PUBLIC_MAX_RETRY_ATTEMPTS": "3",
+      "EXPO_PUBLIC_OFFLINE_STORAGE_LIMIT_MB": "100",
+      "EXPO_PUBLIC_DB_ENCRYPTION_KEY": "default-dev-key-change-in-prod"
     }
   }
 }

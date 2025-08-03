@@ -15,7 +15,11 @@
       },
       "env": {
         "NODE_ENV": "development",
-        "EXPO_PUBLIC_API_URL": "http://localhost:3000"
+        "EXPO_PUBLIC_API_URL": "http://localhost:3000",
+        "EXPO_PUBLIC_WEB_APP_URL": "http://localhost:8002",
+        "EXPO_PUBLIC_APP_ENV": "development",
+        "EXPO_PUBLIC_DEBUG_MODE": "true",
+        "EXPO_PUBLIC_ENABLE_LOGGING": "true"
       }
     },
     "preview": {
@@ -29,7 +33,11 @@
       },
       "env": {
         "NODE_ENV": "staging",
-        "EXPO_PUBLIC_API_URL": "https://staging-api.expansemarketing.com"
+        "EXPO_PUBLIC_API_URL": "https://staging-api.expansemarketing.com",
+        "EXPO_PUBLIC_WEB_APP_URL": "https://staging.expansemarketing.com",
+        "EXPO_PUBLIC_APP_ENV": "staging",
+        "EXPO_PUBLIC_DEBUG_MODE": "false",
+        "EXPO_PUBLIC_ENABLE_LOGGING": "true"
       }
     },
     "production": {
@@ -42,7 +50,11 @@
       },
       "env": {
         "NODE_ENV": "production",
-        "EXPO_PUBLIC_API_URL": "https://api.expansemarketing.com"
+        "EXPO_PUBLIC_API_URL": "https://api.expansemarketing.com",
+        "EXPO_PUBLIC_WEB_APP_URL": "https://app.expansemarketing.com",
+        "EXPO_PUBLIC_APP_ENV": "production",
+        "EXPO_PUBLIC_DEBUG_MODE": "false",
+        "EXPO_PUBLIC_ENABLE_LOGGING": "false"
       }
     }
   },
