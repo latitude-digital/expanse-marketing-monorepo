@@ -1,5 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 import { environment } from '../config/environment';
+import { DatabaseMigrationManager } from './database-migrations';
+import { DatabaseOperations } from './database-operations';
 
 /**
  * Database encryption configuration
@@ -42,6 +44,7 @@ export class DatabaseService {
   private database: SQLite.SQLiteDatabase | null = null;
   private readonly dbName = 'expanse_survey.db';
   private config: DatabaseConfig;
+  private operations: DatabaseOperations | null = null;
 
   constructor(config: DatabaseConfig = {}) {
     if (DatabaseService.instance) {
@@ -75,12 +78,24 @@ export class DatabaseService {
     try {
       this.database = await SQLite.openDatabaseAsync(this.dbName);
       await this.configureDatabase();
-      await this.createTables();
+      await this.runMigrations();
       await this.createIndexes();
     } catch (error) {
       console.error('Database initialization failed:', error);
       throw error;
     }
+  }
+
+  /**
+   * Run database migrations to current version
+   */
+  private async runMigrations(): Promise<void> {
+    if (!this.database) {
+      throw new Error('Database not initialized');
+    }
+    
+    const migrationManager = new DatabaseMigrationManager(this.database);
+    await migrationManager.runMigrations();
   }
 
   /**
@@ -128,6 +143,17 @@ export class DatabaseService {
       await this.initialize();
     }
     return this.database!;
+  }
+
+  /**
+   * Get database operations instance
+   */
+  async getOperations(): Promise<DatabaseOperations> {
+    if (!this.operations) {
+      const db = await this.getDatabase();
+      this.operations = new DatabaseOperations(db);
+    }
+    return this.operations;
   }
 
   /**
