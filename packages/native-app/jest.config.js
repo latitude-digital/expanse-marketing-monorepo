@@ -2,9 +2,8 @@ module.exports = {
   preset: 'jest-expo',
   testEnvironment: 'node',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
-  // Note: jest-native is deprecated, using built-in matchers from @testing-library/react-native v12.4+
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg)'
+    'node_modules/(?!(expo-sqlite|expo-constants|@expo|expo-modules-core))'
   ],
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
