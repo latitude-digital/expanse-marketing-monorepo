@@ -10,16 +10,18 @@ import { StyleSheet, Text, View, SafeAreaView } from 'react-native';
 // Import shared types to verify import resolution
 import type { ExpanseEvent, Brand } from '@expanse/shared/types';
 
-// Import WebView test component
+// Import WebView test components
 import TestWebView from './src/components/TestWebView';
+import FDSWebViewTest from './src/components/FDSWebViewTest';
 
 export default function App() {
   const [testBrand] = React.useState<Brand>('Ford');
+  const [currentTest, setCurrentTest] = React.useState<'basic' | 'fds'>('fds');
   
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="auto" />
-      <TestWebView />
+      {currentTest === 'basic' ? <TestWebView /> : <FDSWebViewTest />}
     </SafeAreaView>
   );
 }
