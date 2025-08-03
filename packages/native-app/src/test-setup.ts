@@ -22,7 +22,7 @@ jest.mock('expo-constants', () => ({
 }));
 
 // Global test environment variables
-global.__DEV__ = true;
+(global as any).__DEV__ = true;
 global.process = global.process || {};
 global.process.env = global.process.env || {};
 

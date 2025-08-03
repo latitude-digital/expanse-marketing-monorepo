@@ -270,7 +270,7 @@ const FDSWebViewTest: React.FC = () => {
                     "colorPalette": "light",
                     "isPanelless": false,
                     "cssVariables": {
-                        "--sjs-primary-color": "var(--semantic-color-fill-onlight-interactive, ${testResults.cssLoaded ? 'inherit' : 'var(--test-primary-color)'})",
+                        "--sjs-primary-color": "var(--semantic-color-fill-onlight-interactive, ${testResults?.cssLoaded ? 'inherit' : 'var(--test-primary-color)'})",
                         "--sjs-font-family": "var(--font-body-1-regular-font-family, var(--test-font-family))"
                     }
                 };
