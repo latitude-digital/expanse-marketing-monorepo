@@ -1,0 +1,3 @@
+- always start the dev web server with port 8002
+- before starting the dev web server, check to make sure the port is available. If it's not, kill it becuase you forgot you started it.
+- use ios-simulator to do native app testing
