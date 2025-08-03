@@ -54,7 +54,7 @@
     "yup": "^0.32.11"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --port ${PORT:-8001}",
     "start": "vite",
     "start:production": "VITE_ENV=production vite",
     "start:staging": "VITE_ENV=staging vite",
@@ -127,7 +127,8 @@
     "sass": "^1.54.5",
     "tailwindcss": "3",
     "typescript": "*",
-    "vite": "^5.1.4"
+    "vite": "^5.1.4",
+    "vite-console-forward-plugin": "^2.0.1"
   },
   "resolutions": {
     "styled-components": "^5.1.26",
