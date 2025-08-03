@@ -626,7 +626,7 @@ importers:
         specifier: ^7.1.17
         version: 7.1.17(react-native@0.79.5(@babel/core@7.28.0)(@types/react@18.3.1)(react@19.0.0))(react@19.0.0)
       '@react-navigation/stack':
-        specifier: ^6.4.0
+        specifier: ^6.4.1
         version: 6.4.1(@react-navigation/native@7.1.17(react-native@0.79.5(@babel/core@7.28.0)(@types/react@18.3.1)(react@19.0.0))(react@19.0.0))(react-native-gesture-handler@2.24.0(react-native@0.79.5(@babel/core@7.28.0)(@types/react@18.3.1)(react@19.0.0))(react@19.0.0))(react-native-safe-area-context@5.4.0(react-native@0.79.5(@babel/core@7.28.0)(@types/react@18.3.1)(react@19.0.0))(react@19.0.0))(react-native-screens@4.11.1(react-native@0.79.5(@babel/core@7.28.0)(@types/react@18.3.1)(react@19.0.0))(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@18.3.1)(react@19.0.0))(react@19.0.0)
       '@testing-library/react-native':
         specifier: ^13.2.2
