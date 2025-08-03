@@ -5,20 +5,41 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
-      "resizeMode": "contain",
+      "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "privacy": "public",
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "supportsTablet": false,
+      "supportsTablet": true,
       "orientation": "portrait",
       "bundleIdentifier": "com.expansemarketing.surveyapp",
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "requireFullScreen": true,
+      "statusBarHidden": false,
+      "statusBarStyle": "dark",
+      "infoPlist": {
+        "UILaunchStoryboardName": "SplashScreen",
+        "UIViewControllerBasedStatusBarAppearance": false,
+        "UIStatusBarHidden": false,
+        "UIDeviceOrientationPortrait": true,
+        "UIDeviceOrientationPortraitUpsideDown": false,
+        "UIDeviceOrientationLandscapeLeft": false,
+        "UIDeviceOrientationLandscapeRight": false,
+        "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait"],
+        "UISupportedInterfaceOrientations~ipad": ["UIInterfaceOrientationPortrait"],
+        "NSCameraUsageDescription": "This app needs access to camera for driver's license scanning and document capture.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to photo library for uploading documents and images.",
+        "NSLocationWhenInUseUsageDescription": "This app may use location for event-specific surveys."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -27,7 +48,26 @@
       },
       "package": "com.expansemarketing.surveyapp",
       "versionCode": 1,
-      "orientation": "portrait"
+      "orientation": "portrait",
+      "screenOrientation": "portrait",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_NETWORK_STATE",
+        "INTERNET",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "category": ["DEFAULT", "BROWSABLE"],
+          "data": {
+            "scheme": "expanse-survey"
+          }
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
