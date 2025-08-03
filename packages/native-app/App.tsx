@@ -13,15 +13,25 @@ import type { ExpanseEvent, Brand } from '@expanse/shared/types';
 // Import WebView test components
 import TestWebView from './src/components/TestWebView';
 import FDSWebViewTest from './src/components/FDSWebViewTest';
+import CustomRendererTest from './src/components/CustomRendererTest';
 
 export default function App() {
   const [testBrand] = React.useState<Brand>('Ford');
-  const [currentTest, setCurrentTest] = React.useState<'basic' | 'fds'>('fds');
+  const [currentTest, setCurrentTest] = React.useState<'basic' | 'fds' | 'custom'>('custom');
+  
+  const renderTestComponent = () => {
+    switch (currentTest) {
+      case 'basic': return <TestWebView />;
+      case 'fds': return <FDSWebViewTest />;
+      case 'custom': return <CustomRendererTest />;
+      default: return <CustomRendererTest />;
+    }
+  };
   
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="auto" />
-      {currentTest === 'basic' ? <TestWebView /> : <FDSWebViewTest />}
+      {renderTestComponent()}
     </SafeAreaView>
   );
 }
