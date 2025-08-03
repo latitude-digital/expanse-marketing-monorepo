@@ -5,21 +5,22 @@
 
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView } from 'react-native';
 
 // Import shared types to verify import resolution
 import type { ExpanseEvent, Brand } from '@expanse/shared/types';
+
+// Import WebView test component
+import TestWebView from './src/components/TestWebView';
 
 export default function App() {
   const [testBrand] = React.useState<Brand>('Ford');
   
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Expanse Survey App</Text>
-      <Text style={styles.subtitle}>Native Ford/Lincoln Survey Collection</Text>
-      <Text style={styles.info}>Test Brand: {testBrand}</Text>
+    <SafeAreaView style={styles.container}>
       <StatusBar style="auto" />
-    </View>
+      <TestWebView />
+    </SafeAreaView>
   );
 }
 
