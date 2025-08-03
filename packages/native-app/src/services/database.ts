@@ -1,4 +1,14 @@
 import * as SQLite from 'expo-sqlite';
+import { environment } from '../config/environment';
+
+/**
+ * Database encryption configuration
+ */
+export interface DatabaseConfig {
+  encryptionKey?: string;
+  enableWAL?: boolean;
+  enableForeignKeys?: boolean;
+}
 
 export interface DatabaseSchema {
   events: {
@@ -31,12 +41,31 @@ export class DatabaseService {
   private static instance: DatabaseService;
   private database: SQLite.SQLiteDatabase | null = null;
   private readonly dbName = 'expanse_survey.db';
+  private config: DatabaseConfig;
 
-  constructor() {
+  constructor(config: DatabaseConfig = {}) {
     if (DatabaseService.instance) {
       return DatabaseService.instance;
     }
     DatabaseService.instance = this;
+    this.config = {
+      enableWAL: true,
+      enableForeignKeys: true,
+      ...config
+    };
+  }
+
+  /**
+   * Create a database service with encryption configured from environment
+   */
+  static createEncrypted(): DatabaseService {
+    const encryptionKey = environment.database?.encryptionKey || process.env.EXPO_PUBLIC_DB_ENCRYPTION_KEY;
+    
+    return new DatabaseService({
+      encryptionKey,
+      enableWAL: true,
+      enableForeignKeys: true
+    });
   }
 
   /**
@@ -45,12 +74,50 @@ export class DatabaseService {
   async initialize(): Promise<void> {
     try {
       this.database = await SQLite.openDatabaseAsync(this.dbName);
+      await this.configureDatabase();
       await this.createTables();
       await this.createIndexes();
     } catch (error) {
       console.error('Database initialization failed:', error);
       throw error;
     }
+  }
+
+  /**
+   * Configure database settings including encryption, WAL mode, and foreign keys
+   */
+  private async configureDatabase(): Promise<void> {
+    if (!this.database) {
+      throw new Error('Database not initialized');
+    }
+
+    // Set encryption key if provided (requires SQLCipher)
+    if (this.config.encryptionKey) {
+      try {
+        await this.database.execAsync(`PRAGMA key = '${this.config.encryptionKey}'`);
+      } catch (error) {
+        console.warn('SQLCipher encryption not available, continuing without encryption:', error);
+      }
+    }
+
+    // Enable WAL mode for better performance
+    if (this.config.enableWAL) {
+      try {
+        await this.database.execAsync('PRAGMA journal_mode = WAL');
+      } catch (error) {
+        console.warn('WAL mode not available:', error);
+      }
+    }
+
+    // Enable foreign key constraints
+    if (this.config.enableForeignKeys) {
+      await this.database.execAsync('PRAGMA foreign_keys = ON');
+    }
+
+    // Set additional performance settings
+    await this.database.execAsync('PRAGMA synchronous = NORMAL');
+    await this.database.execAsync('PRAGMA cache_size = 10000');
+    await this.database.execAsync('PRAGMA temp_store = MEMORY');
   }
 
   /**

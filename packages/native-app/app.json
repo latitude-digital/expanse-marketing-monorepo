@@ -76,7 +76,13 @@
     "scheme": "expanse-survey",
     "plugins": [
       "expo-router",
-      "expo-sqlite",
+      [
+        "expo-sqlite", 
+        {
+          "enableFTS": true,
+          "useSQLCipher": true
+        }
+      ],
       [
         "expo-camera",
         {
