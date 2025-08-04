@@ -11,8 +11,11 @@ import { Question } from "survey-core";
  * @param contextName - Name for logging context (e.g., 'FordSurveys', 'LincolnSurveys')
  */
 export const handleChoicesByUrl = (question: Question, contextName: string = 'SurveyJS') => {
-  // Only proceed if question has no choices but has choicesByUrl configuration
-  if (question.choices.length === 0 && question.choicesByUrl) {
+  // Check if choices already have originalData
+  const hasOriginalData = question.choices.length > 0 && question.choices.some((choice: any) => choice.originalData);
+  
+  // Proceed if question has choicesByUrl configuration and either no choices OR choices without originalData
+  if (question.choicesByUrl && (question.choices.length === 0 || !hasOriginalData)) {
     const { url, valueName, titleName, titleText } = question.choicesByUrl;
     
     if (!url) {
@@ -36,8 +39,6 @@ export const handleChoicesByUrl = (question: Question, contextName: string = 'Su
           originalData: item  // Store complete original Ford JSON data
         }));
         
-        console.log(`[${contextName}] choicesByUrlHelper: Created ${choices.length} choices with originalData`);
-        
         // Apply sorting based on data structure
         let sortedChoices = choices;
         
@@ -60,7 +61,6 @@ export const handleChoicesByUrl = (question: Question, contextName: string = 'Su
         
         // Set the choices on the question
         question.choices = sortedChoices;
-        console.log(`[${contextName}] choicesByUrlHelper: Set ${sortedChoices.length} choices on question ${question.name}`);
       })
       .catch(error => {
         console.error(`[${contextName}] Failed to fetch choices for question ${question.name} from ${url}:`, error);

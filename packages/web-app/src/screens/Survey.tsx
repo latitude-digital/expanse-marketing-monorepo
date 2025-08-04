@@ -1002,7 +1002,7 @@ const SurveyComponent: React.FC = () => {
       Sentry.captureException(err);
       alert(err);
     });
-  }, [user, params.eventID, navigate, location, thisEvent?.surveyType, thisPreSurvey]);
+  }, [user, params.eventID, navigate, location]);
 
   return (
     limitReached ?

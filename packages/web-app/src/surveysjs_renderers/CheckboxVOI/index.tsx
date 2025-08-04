@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { RendererFactory, Serializer } from "survey-core";
 import { ReactQuestionFactory, SurveyQuestionCheckbox } from "survey-react-ui";
 import SegmentedControl from '@ui/ford-ui-components/src/v2/segmented-control/SegmentedControl';
@@ -19,6 +19,43 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
 
         // No custom CSS classes needed - using Ford UI SelectionCard
 
+        // Helper method to rebuild originalDataMap from current choices
+        // Since SurveyJS strips originalData, we need to fetch it fresh when choices are updated
+        (this as any).rebuildOriginalDataMap = async () => {
+            const originalDataMap = new Map();
+            
+            // Check if choices already have originalData (shouldn't happen due to SurveyJS processing)
+            const hasOriginalData = this.question.choices.some((choice: any) => choice.originalData);
+            
+            if (!hasOriginalData && this.question.choicesByUrl?.url) {
+                try {
+                    const response = await fetch(this.question.choicesByUrl.url);
+                    const data = await response.json();
+                    
+                    // Map the fetched data to choices by matching values
+                    this.question.choices.forEach((choice: any, index: number) => {
+                        const originalItem = data.find((item: any) => item.id == choice.value);
+                        if (originalItem) {
+                            originalDataMap.set(choice.value, originalItem);
+                            originalDataMap.set(String(choice.value), originalItem);
+                        }
+                    });
+                } catch (error) {
+                    console.error(`Failed to fetch vehicle data for VOI component:`, error);
+                }
+            } else {
+                // Fallback to existing originalData if present
+                this.question.choices.forEach((choice: any, index: number) => {
+                    if (choice.originalData) {
+                        originalDataMap.set(choice.value, choice.originalData);
+                        originalDataMap.set(String(choice.value), choice.originalData);
+                    }
+                });
+            }
+            
+            (this as any).originalDataMap = originalDataMap;
+        };
+        
         (this as any).getBody = (cssClasses: any) => {
             // Detect brand from choicesByUrl or question type name
             const isFordBrand = this.isFordBrand();
@@ -29,47 +66,52 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
                 { key: 'ford-trucks', label: 'Ford Trucks' }
             ];
 
-            // Create mapping from item ID to original JSON data
-            const originalDataMap = new Map();
+            // Use existing originalDataMap if it has data, otherwise create new one
+            let originalDataMap = (this as any).originalDataMap;
+            if (!originalDataMap || originalDataMap.size === 0) {
+                originalDataMap = new Map();
+            }
             
-            // Fetch vehicle JSON data directly since SurveyJS loses originalData
-            // Use the URL from the question configuration
-            const vehicleJsonUrl = this.question.choicesByUrl?.url || 'https://cdn.latitudewebservices.com/vehicles/ford.json';
-            
-            // Check if we've already cached the vehicle data to avoid repeated fetches
-            if (!(this as any).vehiclesCache) {
-                // Store a promise so multiple renders don't trigger multiple fetches
-                if (!(this as any).vehicleDataPromise) {
-                    (this as any).vehicleDataPromise = fetch(vehicleJsonUrl)
-                        .then(response => response.json())
-                        .then(data => {
-                            (this as any).vehiclesCache = data;
-                            
-                            // Create the mapping
-                            data.forEach((vehicle: any) => {
-                                originalDataMap.set(vehicle.id, vehicle);
-                                originalDataMap.set(String(vehicle.id), vehicle); // Also store as string
-                            });
-                            
-                            // Store the mapping for use in renderItem
-                            (this as any).originalDataMap = originalDataMap;
-                            
-                            // Force a re-render to show the vehicles
-                            this.setState({});
-                            
-                            return data;
-                        })
-                        .catch(error => {
-                            console.error('VOI getBody: Failed to fetch vehicles:', error);
-                            return [];
-                        });
-                }
-            } else {
+            // Set up listener for choices changes if not already set up
+            if (!this.choicesUpdateHandlerSet) {
+                this.choicesUpdateHandlerSet = true;
                 
-                // Use cached data to create the mapping
-                (this as any).vehiclesCache.forEach((vehicle: any) => {
-                    originalDataMap.set(vehicle.id, vehicle);
-                    originalDataMap.set(String(vehicle.id), vehicle);
+                // Add a listener to react when choices are updated
+                this.question.onPropertyChanged.add(async (sender: any, options: any) => {
+                    if (options.name === 'choices' && options.newValue && options.newValue.length > 0) {
+                        // Rebuild originalDataMap from the new choices (now async)
+                        await this.rebuildOriginalDataMap();
+                        // Force re-render
+                        this.forceUpdate();
+                    }
+                });
+                
+                // Also set up a backup timer to check for data periodically
+                const checkForData = async () => {
+                    const hasData = this.question.choices.some((choice: any) => choice.originalData);
+                    const hasChoices = this.question.choices.length > 0;
+                    
+                    if (hasChoices && !hasData && this.question.choicesByUrl?.url) {
+                        await this.rebuildOriginalDataMap();
+                        this.forceUpdate();
+                    } else if (!hasChoices) {
+                        // Check again in 500ms if no choices yet
+                        setTimeout(checkForData, 500);
+                    }
+                };
+                setTimeout(checkForData, 1000); // Start checking after 1 second
+            }
+            
+            // Only build originalDataMap from choices if we don't have existing data
+            if (originalDataMap.size === 0) {
+                // Use the choices that were already loaded by choicesByUrlHelper (called in onLoaded)
+                // This avoids duplicate fetching and race conditions
+                this.question.choices.forEach((choice: any, index: number) => {
+                    if (choice.originalData) {
+                        // The choicesByUrlHelper stores complete original data
+                        originalDataMap.set(choice.value, choice.originalData);
+                        originalDataMap.set(String(choice.value), choice.originalData);
+                    }
                 });
                 
                 // Store the mapping for use in renderItem
@@ -103,9 +145,6 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
                     return itemType === vehicleType;
                 });
             }
-            
-            // Store the mapping for use in renderItem
-            (this as any).originalDataMap = originalDataMap;
 
             // Get validation state for FDS wrapper
             const errorMessage = this.question.errors?.length > 0 ? this.question.errors[0].text : undefined;
@@ -124,7 +163,7 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
                         <div className="flex justify-center mb-6">
                             <SegmentedControl 
                                 tabs={tabs}
-                                className="w-[360px]"
+                                className="w-full max-w-[360px]"
                                 selectedKey={this.state.selectedTabKey}
                                 onValueChange={this.setSelectedTabKey}
                                 variant="forms"
@@ -139,13 +178,25 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
         }
 
         (this as any).renderItem = (item: any, isFirst: boolean, cssClasses: any, index?: string) => {
-            // Get original JSON data using the mapping created in getBody
+            // Get original JSON data using the mapping created by rebuildOriginalDataMap
             const originalDataMap = (this as any).originalDataMap || new Map();
-            const originalData = originalDataMap.get(item.value);
+            const originalData = originalDataMap.get(item.value) || originalDataMap.get(String(item.value));
             const imageFilename = originalData?.image;
-            
-            
             const imageURL = imageFilename ? `https://cdn.latitudewebservices.com/vehicles/images/${imageFilename}` : null;
+            
+            // Create memoized image component that re-renders when imageURL changes
+            const ImageDisplay = React.memo(({ imageURL, title }: { imageURL: string | null, title: string }) => {
+                return imageURL ? (
+                    <img 
+                        alt={title} 
+                        src={imageURL} 
+                        className="object-contain w-full max-h-30"
+                        onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                        }}
+                    />
+                ) : null;
+            });
             
             const inputId = `input_${this.question.name}_${item.id}`;
             const isChecked = this.question.isItemSelected(item);
@@ -203,7 +254,7 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
 
             // Use Ford UI StyledSelectionCardSmall with image as icon and name as caption
             return (
-                <div key={`${item.id}-${isChecked}`} className="w-36">
+                <div key={item.id} className="w-36">
                     <StyledSelectionCardSmall
                         id={inputId}
                         name={this.question.name}
@@ -214,18 +265,7 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
                         variant="none"
                         contentAligned="center"
                         headline={<div dangerouslySetInnerHTML={headline} />}
-                        icon={imageURL ? (
-                            <img 
-                                alt={item.title} 
-                                src={imageURL} 
-                                className="object-contain w-full max-h-30"
-                                onError={(e) => {
-                                    e.currentTarget.style.display = 'none';
-                                }}
-                            />
-                        ) : (
-                            <div className="text-gray-400 text-xs">No image</div>
-                        )}
+                        icon={<ImageDisplay imageURL={imageURL} title={item.title} />}
                     />
                 </div>
             )
