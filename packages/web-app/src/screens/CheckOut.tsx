@@ -349,13 +349,7 @@ function CheckOutScreen() {
               setQRModalUser(null);
             }}>Close</Button>
             <Button themeColor="primary" onClick={() => {
-              navigate(`/s/${params.eventID}`,
-                {
-                  state: {
-                    preSurveyID: qrModalUser.id,
-                  }
-                }
-              );
+              navigate(`/s/${params.eventID}?pid=${qrModalUser.id}`);
             }}>Go to Survey</Button>
           </DialogActionsBar>
         </Dialog>
