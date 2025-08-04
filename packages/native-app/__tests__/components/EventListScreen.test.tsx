@@ -14,25 +14,25 @@ jest.mock('@react-navigation/native', () => ({
 const mockEvents: ExpanseEvent[] = [
   {
     id: '1',
-    eventName: 'Ford Test Drive Event',
+    name: 'Ford Test Drive Event',
     brand: 'Ford',
-    eventDate: new Date().toISOString(),
-    location: 'Ford Dealership',
-    description: 'Experience the latest Ford vehicles',
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    startDate: new Date(),
+    endDate: new Date(Date.now() + 8 * 60 * 60 * 1000), // 8 hours later
+    disabled: undefined,
+    questions: {},
+    theme: {},
+    thanks: 'Experience the latest Ford vehicles'
   },
   {
     id: '2',
-    eventName: 'Lincoln Luxury Experience',
+    name: 'Lincoln Luxury Experience',
     brand: 'Lincoln',
-    eventDate: new Date(Date.now() - 86400000).toISOString(), // Yesterday
-    location: 'Lincoln Showroom',
-    description: 'Discover Lincoln luxury',
-    isActive: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    startDate: new Date(Date.now() - 86400000), // Yesterday
+    endDate: new Date(Date.now() - 86400000 + 8 * 60 * 60 * 1000), // Yesterday + 8 hours
+    disabled: 'Event is disabled',
+    questions: {},
+    theme: {},
+    thanks: 'Discover Lincoln luxury'
   },
 ];
 

@@ -67,12 +67,12 @@ const EventCard: React.FC<EventCardProps> = ({ event, onPress, style }) => {
           {(event.brand || 'Other').toUpperCase()}
         </Text>
         <View style={[styles.statusBadge, 
-          event.isActive ? styles.activeBadge : styles.inactiveBadge
+          !event.disabled ? styles.activeBadge : styles.inactiveBadge
         ]}>
           <Text style={[styles.statusText,
-            event.isActive ? styles.activeStatusText : styles.inactiveStatusText
+            !event.disabled ? styles.activeStatusText : styles.inactiveStatusText
           ]}>
-            {event.isActive ? 'Active' : 'Inactive'}
+            {!event.disabled ? 'Active' : 'Disabled'}
           </Text>
         </View>
       </View>
@@ -80,12 +80,12 @@ const EventCard: React.FC<EventCardProps> = ({ event, onPress, style }) => {
       {/* Event Content */}
       <View style={styles.content}>
         <Text style={styles.eventTitle} numberOfLines={2}>
-          {event.eventName || 'Unnamed Event'}
+          {event.name || 'Unnamed Event'}
         </Text>
 
-        {event.description && (
+        {event.thanks && (
           <Text style={styles.eventDescription} numberOfLines={3}>
-            {event.description}
+            {event.thanks}
           </Text>
         )}
 
@@ -93,40 +93,30 @@ const EventCard: React.FC<EventCardProps> = ({ event, onPress, style }) => {
         <View style={styles.dateTimeContainer}>
           <View style={styles.dateTime}>
             <Text style={styles.dateLabel}>Date</Text>
-            <Text style={styles.dateValue}>{formatDate(event.eventDate)}</Text>
+            <Text style={styles.dateValue}>{formatDate(event.startDate.toISOString())}</Text>
           </View>
-          {event.eventDate && (
-            <View style={styles.dateTime}>
-              <Text style={styles.dateLabel}>Time</Text>
-              <Text style={styles.dateValue}>{formatTime(event.eventDate)}</Text>
-            </View>
-          )}
+          <View style={styles.dateTime}>
+            <Text style={styles.dateLabel}>Time</Text>
+            <Text style={styles.dateValue}>{formatTime(event.startDate.toISOString())}</Text>
+          </View>
         </View>
 
-        {/* Location */}
-        {event.location && (
-          <View style={styles.locationContainer}>
-            <Text style={styles.locationLabel}>Location</Text>
-            <Text style={styles.locationValue} numberOfLines={1}>
-              {event.location}
-            </Text>
-          </View>
-        )}
+        {/* Location - Not available in current interface */}
 
         {/* Survey Info */}
         <View style={styles.surveyInfo}>
           <View style={styles.surveyItem}>
             <Text style={styles.surveyLabel}>Survey</Text>
             <Text style={styles.surveyValue}>
-              {event.surveyName || 'Default Survey'}
+              {event.name || 'Default Survey'}
             </Text>
           </View>
           
-          {event.expectedResponses && (
+          {event.survey_count_limit && (
             <View style={styles.surveyItem}>
-              <Text style={styles.surveyLabel}>Target</Text>
+              <Text style={styles.surveyLabel}>Limit</Text>
               <Text style={styles.surveyValue}>
-                {event.expectedResponses} responses
+                {event.survey_count_limit} responses
               </Text>
             </View>
           )}

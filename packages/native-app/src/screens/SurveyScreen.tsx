@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import type { ExpanseEvent } from '@expanse/shared/types';
-import SurveyWebView, { SurveyCompletionData } from '../components/SurveyWebView';
+import SurveyWebViewSPA, { SurveyCompletionData } from '../components/SurveyWebViewSPA';
 import { themeProvider } from '../utils/theme-provider';
 import { offlineDetector } from '../utils/offline-detector';
 import { DatabaseService } from '../services/database';
@@ -136,7 +136,7 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
       'Survey Error',
       `An error occurred while loading the survey: ${error.message}`,
       [
-        { text: 'Retry', onPress: () => navigation.replace('Survey' as never, { event: displayEvent } as never) },
+        { text: 'Retry', onPress: () => (navigation as any).replace('Survey', { event: displayEvent }) },
         { text: 'Exit', onPress: handleExitSurvey }
       ]
     );
@@ -212,27 +212,27 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
           <Text style={styles.eventTitle} numberOfLines={1}>
             {displayEvent.eventName || 'Survey'}
           </Text>
-          <TouchableOpacity
-            style={[styles.exitHeaderButton, { borderColor: brandColor }]}
-            onPress={handleBackNavigation}
-          >
-            <Text style={[styles.exitHeaderButtonText, { color: brandColor }]}>
-              Exit
-            </Text>
-          </TouchableOpacity>
-        </View>
-        
-        {!isOnline && (
-          <View style={styles.offlineWarning}>
-            <Text style={styles.offlineWarningText}>
-              ⚠️ No internet connection - survey may not load properly
-            </Text>
+          <View style={styles.headerActions}>
+            <View style={styles.statusIndicator}>
+              <View style={[styles.statusDot, { backgroundColor: isOnline ? '#28A745' : '#FFC107' }]} />
+              <Text style={styles.statusText}>
+                {isOnline ? 'Online' : 'Offline'}
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={[styles.exitHeaderButton, { borderColor: brandColor }]}
+              onPress={handleBackNavigation}
+            >
+              <Text style={[styles.exitHeaderButtonText, { color: brandColor }]}>
+                Exit
+              </Text>
+            </TouchableOpacity>
           </View>
-        )}
+        </View>
       </View>
 
-      {/* Survey WebView */}
-      <SurveyWebView
+      {/* Survey WebView SPA */}
+      <SurveyWebViewSPA
         event={displayEvent}
         onSurveyComplete={handleSurveyComplete}
         onSurveyError={handleSurveyError}
@@ -348,17 +348,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  offlineWarning: {
-    backgroundColor: '#FFF3CD',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginTop: 8,
-    borderRadius: 6,
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  offlineWarningText: {
-    fontSize: 12,
-    color: '#856404',
-    textAlign: 'center',
+  statusIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 12,
+    backgroundColor: 'transparent',
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 4,
+  },
+  statusText: {
+    fontSize: 11,
+    color: '#666666',
+    fontWeight: '500',
   },
   webviewContainer: {
     flex: 1,

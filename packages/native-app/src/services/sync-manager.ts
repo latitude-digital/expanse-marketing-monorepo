@@ -47,10 +47,10 @@ export type SyncCompletionCallback = (metrics: SyncMetrics) => void;
 
 export class SyncManager {
   private static instance: SyncManager;
-  private dbService: DatabaseService;
+  private dbService!: DatabaseService;
   private operations: DatabaseOperations | null = null;
   private isSyncing = false;
-  private syncInterval: NodeJS.Timeout | null = null;
+  private syncInterval: ReturnType<typeof setTimeout> | null = null;
   private maxRetries = 3;
   private baseRetryDelayMs = 1000;
   private progressCallback: SyncProgressCallback | null = null;
@@ -274,11 +274,11 @@ export class SyncManager {
    */
   private async syncToFirestore(payload: any): Promise<SyncResult> {
     try {
-      const response = await fetch(`${environment.api.baseUrl}/api/save-survey`, {
+      const response = await fetch(`${environment.apiUrl}/api/save-survey`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${environment.api.firebaseApiKey}`,
+          'Authorization': `Bearer ${environment.firebase.apiKey}`,
         },
         body: JSON.stringify(payload.surveyResponse),
       });
@@ -318,7 +318,7 @@ export class SyncManager {
       const surveyData = payload.surveyResponse;
       
       // First call: Survey upload
-      const surveyResponse = await fetch(`${environment.api.baseUrl}/api/ford/survey-upload`, {
+      const surveyResponse = await fetch(`${environment.apiUrl}/api/ford/survey-upload`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -339,7 +339,7 @@ export class SyncManager {
 
       // Second call: Vehicle data (if present)
       if (surveyData.vehicles && surveyData.vehicles.length > 0) {
-        const vehicleResponse = await fetch(`${environment.api.baseUrl}/api/ford/vehicles-insert`, {
+        const vehicleResponse = await fetch(`${environment.apiUrl}/api/ford/vehicles-insert`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -383,7 +383,7 @@ export class SyncManager {
       const surveyData = payload.surveyResponse;
       
       // First call: Survey upload
-      const surveyResponse = await fetch(`${environment.api.baseUrl}/api/lincoln/survey-upload`, {
+      const surveyResponse = await fetch(`${environment.apiUrl}/api/lincoln/survey-upload`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -404,7 +404,7 @@ export class SyncManager {
 
       // Second call: Vehicles interested
       if (surveyData.vehiclesInterested && surveyData.vehiclesInterested.length > 0) {
-        const interestedResponse = await fetch(`${environment.api.baseUrl}/api/lincoln/vehicles-interested`, {
+        const interestedResponse = await fetch(`${environment.apiUrl}/api/lincoln/vehicles-interested`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -426,7 +426,7 @@ export class SyncManager {
 
       // Third call: Vehicles driven
       if (surveyData.vehiclesDriven && surveyData.vehiclesDriven.length > 0) {
-        const drivenResponse = await fetch(`${environment.api.baseUrl}/api/lincoln/vehicles-driven`, {
+        const drivenResponse = await fetch(`${environment.apiUrl}/api/lincoln/vehicles-driven`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -3,7 +3,6 @@
     "name": "Expanse Survey App",
     "slug": "expanse-survey-app",
     "version": "1.0.0",
-    "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
@@ -14,28 +13,24 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "privacy": "public",
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
       "supportsTablet": true,
-      "orientation": "portrait",
       "bundleIdentifier": "com.expansemarketing.surveyapp",
       "buildNumber": "1",
       "requireFullScreen": true,
-      "statusBarHidden": false,
-      "statusBarStyle": "dark",
       "infoPlist": {
         "UILaunchStoryboardName": "SplashScreen",
         "UIViewControllerBasedStatusBarAppearance": false,
         "UIStatusBarHidden": false,
         "UIDeviceOrientationPortrait": true,
-        "UIDeviceOrientationPortraitUpsideDown": false,
+        "UIDeviceOrientationPortraitUpsideDown": true,
         "UIDeviceOrientationLandscapeLeft": false,
         "UIDeviceOrientationLandscapeRight": false,
-        "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait"],
-        "UISupportedInterfaceOrientations~ipad": ["UIInterfaceOrientationPortrait"],
+        "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait", "UIInterfaceOrientationPortraitUpsideDown"],
+        "UISupportedInterfaceOrientations~ipad": ["UIInterfaceOrientationPortrait", "UIInterfaceOrientationPortraitUpsideDown"],
         "NSCameraUsageDescription": "This app needs access to camera for driver's license scanning and document capture.",
         "NSPhotoLibraryUsageDescription": "This app needs access to photo library for uploading documents and images.",
         "NSLocationWhenInUseUsageDescription": "This app may use location for event-specific surveys."
@@ -48,8 +43,6 @@
       },
       "package": "com.expansemarketing.surveyapp",
       "versionCode": 1,
-      "orientation": "portrait",
-      "screenOrientation": "portrait",
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",

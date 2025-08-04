@@ -71,9 +71,21 @@ export interface ExpanseEvent {
   
   // Content and configuration
   name: string;
+  eventName?: string;          // Display name for the event (legacy property)
+  eventDate?: string;          // Event date in ISO string format
+  location?: string;           // Event location
+  surveyName?: string;         // Name of the survey
+  expectedResponses?: number;  // Expected number of responses
+  createdAt?: string;          // Creation timestamp
+  updatedAt?: string;          // Last update timestamp
+  description?: string;        // Event description
+  surveyJSON?: string;         // Raw survey JSON (for legacy compatibility)
   questions: SurveyDefinition;  // SurveyJS survey definition
   theme: SurveyTheme;          // Visual theme configuration
   thanks?: string;             // Completion message
+  
+  // Event status
+  isActive?: boolean;          // Whether the event is currently active
   
   // Display behavior
   checkInDisplay?: Record<string, string>;

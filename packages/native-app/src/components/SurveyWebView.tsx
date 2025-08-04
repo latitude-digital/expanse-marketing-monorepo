@@ -61,19 +61,72 @@ const SurveyWebView: React.FC<SurveyWebViewProps> = ({
   /**
    * Generate survey URL with proper parameters
    */
-  const getSurveyUrl = useCallback((): string => {
-    const baseUrl = environment.webApp.baseUrl;
-    const params = new URLSearchParams({
-      eventId: event.id,
-      brand: event.brand || 'Other',
-      mode: 'kiosk',
-      platform: 'mobile',
-      // Add timestamp to prevent caching issues
-      _t: Date.now().toString(),
-    });
-
-    return `${baseUrl}/survey?${params.toString()}`;
-  }, [event]);
+  const getSurveyHTML = useCallback((): string => {
+    const surveyJson = JSON.stringify(event.questions);
+    const brandColor = event.brand === 'Ford' ? '#0066CC' : 
+                       event.brand === 'Lincoln' ? '#8B1538' : '#666666';
+    
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey</title>
+    <script src="https://unpkg.com/survey-core@1.9.131/survey.core.min.js"></script>
+    <script src="https://unpkg.com/survey-js-ui@1.9.131/survey-js-ui.min.js"></script>
+    <link href="https://unpkg.com/survey-core@1.9.131/defaultV2.min.css" type="text/css" rel="stylesheet">
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background-color: #f8f9fa;
+        }
+        .sv_main { 
+            background-color: white; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .sv-btn { background-color: ${brandColor} !important; }
+        .sv-btn:hover { background-color: ${brandColor}dd !important; }
+        .sv_progress_bar > span { background-color: ${brandColor} !important; }
+        .sv_q_radiogroup_control_item input[type=radio]:checked + label:before { 
+            background-color: ${brandColor} !important; 
+        }
+        .sv_q_rating_item.sv_q_rating_item_active { background-color: ${brandColor} !important; }
+    </style>
+</head>
+<body>
+    <div id="surveyContainer"></div>
+    <script>
+        const surveyJson = ${surveyJson};
+        
+        const survey = new Survey.Model(surveyJson);
+        
+        survey.onComplete.add(function (result) {
+            const completionData = {
+                surveyId: 'survey-' + Date.now(),
+                eventId: '${event.id}',
+                responses: result.data,
+                completedAt: new Date().toISOString(),
+                duration: Date.now() - ${Date.now()}
+            };
+            
+            // Send completion data to React Native
+            if (window.ReactNativeWebView) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({
+                    type: 'survey_complete',
+                    data: completionData
+                }));
+            }
+        });
+        
+        survey.render(document.getElementById("surveyContainer"));
+    </script>
+</body>
+</html>`;
+  }, [event.questions, event.id, event.brand]);
 
   /**
    * Inject custom CSS and JavaScript for mobile optimization
@@ -320,7 +373,7 @@ const SurveyWebView: React.FC<SurveyWebViewProps> = ({
    */
   const shouldStartLoadWithRequest = useCallback((request: any): boolean => {
     const { url } = request;
-    const webAppUrl = environment.webApp.baseUrl;
+    const webAppUrl = environment.webAppUrl;
     
     // Only allow navigation within web app domain
     return url.startsWith(webAppUrl) || url.startsWith('about:blank');
@@ -356,12 +409,12 @@ const SurveyWebView: React.FC<SurveyWebViewProps> = ({
     <View style={[styles.container, style]}>
       <WebView
         ref={webViewRef}
-        source={{ uri: getSurveyUrl() }}
+        source={{ html: getSurveyHTML() }}
         onMessage={handleMessage}
         onLoadStart={handleLoadStart}
         onError={handleError}
         onNavigationStateChange={handleNavigationStateChange}
-        shouldStartLoadWithRequest={shouldStartLoadWithRequest}
+        onShouldStartLoadWithRequest={shouldStartLoadWithRequest}
         injectedJavaScript={getInjectedJavaScript()}
         javaScriptEnabled={true}
         domStorageEnabled={true}

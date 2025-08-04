@@ -34,14 +34,14 @@ jest.mock('../../src/utils/offline-detector', () => ({
 
 const mockEvent: ExpanseEvent = {
   id: 'test-event-1',
-  eventName: 'Ford Test Drive Event',
+  name: 'Ford Test Drive Event',
   brand: 'Ford',
-  eventDate: new Date().toISOString(),
-  location: 'Ford Dealership',
-  description: 'Experience the latest Ford vehicles',
-  isActive: true,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  startDate: new Date(),
+  endDate: new Date(Date.now() + 8 * 60 * 60 * 1000), // 8 hours later
+  disabled: undefined,
+  questions: {},
+  theme: {},
+  thanks: 'Experience the latest Ford vehicles'
 };
 
 describe('SurveyWebView', () => {

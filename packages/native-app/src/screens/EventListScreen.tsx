@@ -9,7 +9,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router';
 import type { ExpanseEvent, Brand } from '@expanse/shared/types';
 
 export type EventFilter = 'all' | 'current' | 'past' | 'future';
@@ -27,7 +27,7 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
   onRefresh,
   onEventPress,
 }) => {
-  const navigation = useNavigation();
+  // Using Expo Router instead of React Navigation
   const [filter, setFilter] = useState<EventFilter>('current');
   const [refreshing, setRefreshing] = useState(false);
 
@@ -52,17 +52,17 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
     switch (filter) {
       case 'current':
         return events.filter(event => {
-          const eventDate = new Date(event.eventDate || event.createdAt || now);
+          const eventDate = new Date(event.startDate || now);
           return eventDate >= todayStart && eventDate <= todayEnd;
         });
       case 'past':
         return events.filter(event => {
-          const eventDate = new Date(event.eventDate || event.createdAt || now);
+          const eventDate = new Date(event.startDate || now);
           return eventDate < todayStart;
         });
       case 'future':
         return events.filter(event => {
-          const eventDate = new Date(event.eventDate || event.createdAt || now);
+          const eventDate = new Date(event.startDate || now);
           return eventDate > todayEnd;
         });
       case 'all':
@@ -77,10 +77,10 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
     if (onEventPress) {
       onEventPress(event);
     } else {
-      // Default navigation behavior
-      navigation.navigate('EventDetail' as never, { eventId: event.id } as never);
+      // Default navigation behavior using Expo Router
+      router.push(`/event/${event.id}`);
     }
-  }, [navigation, onEventPress]);
+  }, [onEventPress]);
 
   const getBrandColor = (brand?: Brand): string => {
     switch (brand?.toLowerCase()) {
@@ -114,33 +114,33 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
       onPress={() => handleEventPress(event)}
     >
       <View style={styles.eventHeader}>
-        <Text style={styles.eventTitle}>{event.eventName || 'Unnamed Event'}</Text>
+        <Text style={styles.eventTitle}>{event.name || 'Unnamed Event'}</Text>
         <Text style={[styles.eventBrand, { color: getBrandColor(event.brand) }]}>
           {(event.brand || 'Other').toUpperCase()}
         </Text>
       </View>
       
       <Text style={styles.eventDate}>
-        {event.eventDate ? new Date(event.eventDate).toLocaleDateString() : 'No date set'}
+        {event.startDate ? new Date(event.startDate).toLocaleDateString() : 'No date set'}
       </Text>
       
-      {event.description && (
+      {event.thanks && (
         <Text style={styles.eventDescription} numberOfLines={2}>
-          {event.description}
+          {event.thanks}
         </Text>
       )}
       
       <View style={styles.eventFooter}>
         <Text style={styles.eventLocation}>
-          {event.location || 'Location TBD'}
+          {'Location TBD'}
         </Text>
         <View style={[styles.statusBadge, 
-          event.isActive ? styles.activeBadge : styles.inactiveBadge
+          !event.disabled ? styles.activeBadge : styles.inactiveBadge
         ]}>
           <Text style={[styles.statusText,
-            event.isActive ? styles.activeStatusText : styles.inactiveStatusText
+            !event.disabled ? styles.activeStatusText : styles.inactiveStatusText
           ]}>
-            {event.isActive ? 'Active' : 'Inactive'}
+            {!event.disabled ? 'Active' : 'Disabled'}
           </Text>
         </View>
       </View>

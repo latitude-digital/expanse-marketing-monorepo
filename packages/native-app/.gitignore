@@ -85,3 +85,7 @@ junit.xml
 # Temporary folders
 tmp/
 temp/
+
+# Native folders (prebuild)
+/android
+/ios

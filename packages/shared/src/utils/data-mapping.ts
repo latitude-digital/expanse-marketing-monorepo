@@ -301,3 +301,91 @@ export function extractVehicleOfInterestIds(surveyData: BaseSurveyAnswers): stri
   
   return surveyData.voi!.filter(id => typeof id === 'string' && id.length > 0);
 }
+
+/**
+ * Map survey response to Firestore format
+ * Used by sync-manager for Firestore endpoint
+ */
+export function mapSurveyResponseToFirestore(
+  surveyResponse: any,
+  event: ExpanseEvent
+): BaseSurveyAnswers {
+  return normalizeSurveyData({
+    ...surveyResponse,
+    event_id: event.id,
+    survey_type: event.surveyType || 'basic',
+    device_survey_guid: surveyResponse.device_survey_guid || createDeviceSurveyGuid(),
+  });
+}
+
+/**
+ * Map survey response to Ford API format
+ * Used by sync-manager for Ford API endpoint
+ */
+export function mapSurveyResponseToFordAPI(
+  surveyResponse: any,
+  event: ExpanseEvent
+): { survey: FordSurveyAnswers; vehicles?: FordVehicleOfInterest[] } {
+  const fordSurvey = mapToFordSurvey(surveyResponse, event);
+  const result: { survey: FordSurveyAnswers; vehicles?: FordVehicleOfInterest[] } = {
+    survey: fordSurvey
+  };
+
+  // Add vehicles if VOI data exists
+  if (hasVehicleOfInterest(surveyResponse)) {
+    const voiIds = extractVehicleOfInterestIds(surveyResponse);
+    if (voiIds.length > 0) {
+      result.vehicles = createFordVOIPayload(voiIds, fordSurvey.device_survey_guid || createDeviceSurveyGuid());
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Map survey response to Lincoln API format
+ * Used by sync-manager for Lincoln API endpoint
+ */
+export function mapSurveyResponseToLincolnAPI(
+  surveyResponse: any,
+  event: ExpanseEvent
+): { 
+  survey: LincolnSurveyAnswers; 
+  vehiclesInterested?: LincolnVehicleOfInterest[];
+  vehiclesDriven?: LincolnVehicleDriven[];
+} {
+  const lincolnSurvey = mapToLincolnSurvey(surveyResponse, event);
+  const deviceGuid = lincolnSurvey.device_survey_guid || createDeviceSurveyGuid();
+  const eventId = event.lincolnEventID || event.id;
+  const surveyType = event.surveyType || 'basic';
+
+  const result: { 
+    survey: LincolnSurveyAnswers; 
+    vehiclesInterested?: LincolnVehicleOfInterest[];
+    vehiclesDriven?: LincolnVehicleDriven[];
+  } = {
+    survey: lincolnSurvey
+  };
+
+  // Add vehicles interested if VOI data exists
+  if (hasVehicleOfInterest(surveyResponse)) {
+    const voiIds = extractVehicleOfInterestIds(surveyResponse);
+    if (voiIds.length > 0) {
+      result.vehiclesInterested = createLincolnVOIPayload(voiIds, deviceGuid, eventId, surveyType);
+    }
+  }
+
+  // Add driven vehicles if data exists
+  if (lincolnSurvey.vehicle_driven_most_make_id || lincolnSurvey.vehicle_driven_most_model_id) {
+    result.vehiclesDriven = createLincolnDrivenPayload(
+      lincolnSurvey.vehicle_driven_most_make_id,
+      lincolnSurvey.vehicle_driven_most_model_id,
+      lincolnSurvey.vehicle_driven_most_year,
+      deviceGuid,
+      eventId,
+      surveyType
+    );
+  }
+
+  return result;
+}

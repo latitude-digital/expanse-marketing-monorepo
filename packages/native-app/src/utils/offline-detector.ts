@@ -137,9 +137,10 @@ export class OfflineDetector {
     }
 
     // If environment specifies wifi-only sync, check for wifi
-    if (environment.sync?.wifiOnly) {
-      return this.isWifiConnected();
-    }
+    // WiFi-only mode not available in current config
+    // if (environment.sync?.wifiOnly) {
+    //   return this.isWifiConnected();
+    // }
 
     return true;
   }
@@ -188,7 +189,7 @@ export class OfflineDetector {
    * Test connectivity to a specific URL
    */
   async testConnectivity(url?: string): Promise<boolean> {
-    const testUrl = url || environment.api.baseUrl || 'https://www.google.com';
+    const testUrl = url || environment.apiUrl || 'https://www.google.com';
     
     try {
       const controller = new AbortController();

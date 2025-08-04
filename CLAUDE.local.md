@@ -1,3 +1,4 @@
 - always start the dev web server with port 8002
 - before starting the dev web server, check to make sure the port is available. If it's not, kill it becuase you forgot you started it.
 - use ios-simulator to do native app testing
+- to start the app you need to make sure metro is not running, then you can cd into packages/native-app and run "npx expo run:ios"... just remember it's a forever running process.

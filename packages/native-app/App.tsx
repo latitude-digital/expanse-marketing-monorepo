@@ -116,42 +116,30 @@ export default function App() {
       const mockEvents: ExpanseEvent[] = [
         {
           id: 'ford-event-1',
-          eventName: 'Ford F-150 Lightning Experience',
+          name: 'Ford F-150 Lightning Experience',
           brand: 'Ford',
-          eventDate: new Date().toISOString(),
-          location: 'Ford Dealership Downtown',
-          description: 'Experience the all-electric F-150 Lightning',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          surveyName: 'Ford Lightning Survey',
-          expectedResponses: 50,
+          startDate: new Date(),
+          endDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
+          questions: { pages: [] },
+          theme: { cssVariables: {} },
         },
         {
           id: 'lincoln-event-1',
-          eventName: 'Lincoln Aviator Luxury Test Drive',
+          name: 'Lincoln Aviator Luxury Test Drive',
           brand: 'Lincoln',
-          eventDate: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
-          location: 'Lincoln Showroom',
-          description: 'Discover the luxury of Lincoln Aviator',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          surveyName: 'Lincoln Luxury Experience',
-          expectedResponses: 25,
+          startDate: new Date(Date.now() + 86400000), // Tomorrow
+          endDate: new Date(Date.now() + 2 * 86400000), // Day after tomorrow
+          questions: { pages: [] },
+          theme: { cssVariables: {} },
         },
         {
           id: 'other-event-1',
-          eventName: 'General Automotive Survey',
+          name: 'General Automotive Survey',
           brand: 'Other',
-          eventDate: new Date(Date.now() - 86400000).toISOString(), // Yesterday
-          location: 'Convention Center',
-          description: 'General automotive preferences survey',
-          isActive: false,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          surveyName: 'Automotive Preferences',
-          expectedResponses: 100,
+          startDate: new Date(Date.now() - 86400000), // Yesterday
+          endDate: new Date(Date.now() - 43200000), // 12 hours ago
+          questions: { pages: [] },
+          theme: { cssVariables: {} },
         },
       ];
 
@@ -236,7 +224,7 @@ export default function App() {
               headerShown: true,
             }}
           >
-            {(props) => (
+            {(props: any) => (
               <EventListScreen
                 {...props}
                 events={events}
@@ -249,8 +237,8 @@ export default function App() {
           <Stack.Screen 
             name="EventDetail" 
             component={EventDetailScreen}
-            options={({ route }) => ({
-              title: (route.params as any)?.event?.eventName || 'Event Details',
+            options={({ route }: any) => ({
+              title: (route.params as any)?.event?.name || 'Event Details',
               headerShown: true,
             })}
           />
@@ -263,7 +251,7 @@ export default function App() {
               gestureEnabled: false, // Prevent swipe back during survey
             }}
           >
-            {(props) => (
+            {(props: any) => (
               <SurveyScreen
                 {...props}
                 onSurveyComplete={handleSurveyComplete}

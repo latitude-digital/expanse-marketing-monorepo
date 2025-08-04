@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { router } from 'expo-router';
 import type { ExpanseEvent, Brand } from '@expanse/shared/types';
 import { themeProvider } from '../utils/theme-provider';
 import { offlineDetector } from '../utils/offline-detector';
@@ -27,14 +27,10 @@ const EventDetailScreen: React.FC<EventDetailScreenProps> = ({
   onLaunchSurvey,
   onRefresh,
 }) => {
-  const navigation = useNavigation();
-  const route = useRoute();
+  // Accept the event as a prop (from the route component)
+  const displayEvent = event;
   const [refreshing, setRefreshing] = useState(false);
   const [isOnline, setIsOnline] = useState(offlineDetector.isOnline());
-
-  // Get event from route params if not provided via props
-  const eventFromRoute = (route.params as any)?.event;
-  const displayEvent = event || eventFromRoute;
 
   useEffect(() => {
     // Subscribe to connectivity changes
@@ -69,20 +65,14 @@ const EventDetailScreen: React.FC<EventDetailScreenProps> = ({
   const handleLaunchSurvey = () => {
     if (!displayEvent) return;
 
-    if (!isOnline) {
-      Alert.alert(
-        'No Internet Connection',
-        'Survey requires an internet connection to load properly.',
-        [{ text: 'OK' }]
-      );
-      return;
-    }
+    // Survey now works offline with self-contained SPA architecture
+    // No internet connection required
 
     if (onLaunchSurvey) {
       onLaunchSurvey(displayEvent);
     } else {
-      // Default navigation behavior
-      navigation.navigate('Survey' as never, { event: displayEvent } as never);
+      // Default navigation behavior using Expo Router
+      router.push(`/survey/${displayEvent.id}`);
     }
   };
 
@@ -139,7 +129,7 @@ const EventDetailScreen: React.FC<EventDetailScreenProps> = ({
         <View style={styles.errorContainer}>
           <Text style={styles.errorTitle}>Event Not Found</Text>
           <Text style={styles.errorText}>The requested event could not be loaded.</Text>
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>Go Back</Text>
           </TouchableOpacity>
         </View>
@@ -246,17 +236,14 @@ const EventDetailScreen: React.FC<EventDetailScreenProps> = ({
             styles.launchButton,
             { backgroundColor: brandColor },
             !displayEvent.isActive && styles.disabledButton,
-            !isOnline && styles.disabledButton,
           ]}
           onPress={handleLaunchSurvey}
-          disabled={!displayEvent.isActive || !isOnline}
+          disabled={!displayEvent.isActive}
         >
           <Text style={styles.launchButtonText}>
             {!displayEvent.isActive 
               ? 'Event Inactive' 
-              : !isOnline 
-                ? 'No Internet Connection'
-                : 'Launch Survey'
+              : 'Launch Survey'
             }
           </Text>
         </TouchableOpacity>

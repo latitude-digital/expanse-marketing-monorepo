@@ -13,7 +13,7 @@ export class DatabaseOperations {
   async createEvent(event: Omit<DatabaseSchema['events'], 'created_at' | 'updated_at'>): Promise<string> {
     const id = event.id || uuidv4();
     await this.database.runAsync(
-      'INSERT INTO events (id, brand, config, cached_at) VALUES (?, ?, ?, ?)',
+      'INSERT OR REPLACE INTO events (id, brand, config, cached_at) VALUES (?, ?, ?, ?)',
       [id, event.brand, event.config, event.cached_at]
     );
     return id;
@@ -96,6 +96,15 @@ export class DatabaseOperations {
     return id;
   }
 
+  // Alias for sync-manager compatibility
+  async createSyncQueueItem(item: { id: string; type: string; payload: string; retry_count: number; last_attempt?: number; created_at?: number; }): Promise<string> {
+    await this.database.runAsync(
+      'INSERT INTO sync_queue (id, type, payload, retry_count, last_attempt) VALUES (?, ?, ?, ?, ?)',
+      [item.id, item.type, item.payload, item.retry_count || 0, item.last_attempt || null]
+    );
+    return item.id;
+  }
+
   async getSyncQueueItems(type?: DatabaseSchema['sync_queue']['type']): Promise<DatabaseSchema['sync_queue'][]> {
     const query = type 
       ? 'SELECT * FROM sync_queue WHERE type = ? ORDER BY created_at ASC'
@@ -104,6 +113,17 @@ export class DatabaseOperations {
     
     const result = await this.database.getAllAsync(query, params);
     return result as DatabaseSchema['sync_queue'][];
+  }
+
+  // Alias for sync-manager compatibility
+  async getPendingSyncItems(): Promise<DatabaseSchema['sync_queue'][]> {
+    return this.getSyncQueueItems();
+  }
+
+  // Alias for sync-manager compatibility
+  async getPendingSyncItemCount(): Promise<number> {
+    const result = await this.database.getAllAsync('SELECT COUNT(*) as count FROM sync_queue');
+    return (result[0] as any)?.count || 0;
   }
 
   async updateSyncQueueItem(id: string, updates: Partial<Omit<DatabaseSchema['sync_queue'], 'id' | 'created_at'>>): Promise<void> {
@@ -118,6 +138,16 @@ export class DatabaseOperations {
 
   async removeSyncQueueItem(id: string): Promise<void> {
     await this.database.runAsync('DELETE FROM sync_queue WHERE id = ?', [id]);
+  }
+
+  // Alias for sync-manager compatibility
+  async deleteSyncQueueItem(id: string): Promise<void> {
+    return this.removeSyncQueueItem(id);
+  }
+
+  // Clear all sync queue items
+  async clearSyncQueue(): Promise<void> {
+    await this.database.runAsync('DELETE FROM sync_queue');
   }
 
   // Utility Operations

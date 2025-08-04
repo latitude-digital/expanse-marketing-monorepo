@@ -43,7 +43,7 @@ export class DatabaseService {
   private static instance: DatabaseService;
   private database: SQLite.SQLiteDatabase | null = null;
   private readonly dbName = 'expanse_survey.db';
-  private config: DatabaseConfig;
+  private config: DatabaseConfig = {};
   private operations: DatabaseOperations | null = null;
 
   constructor(config: DatabaseConfig = {}) {
