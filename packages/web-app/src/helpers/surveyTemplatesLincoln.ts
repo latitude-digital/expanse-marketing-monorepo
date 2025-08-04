@@ -44,6 +44,8 @@ export const initCreatorLincoln = (creator: SurveyCreatorModel) => {
   creator.toolbox.changeCategories([
     { name: "lincolnvoi", category: "__lincolnCategory" },
     { name: "lincolnoptin", category: "__lincolnCategory" },
+    { name: "lincolnrecommend", category: "__lincolnCategory" },
+    { name: "lincolnrecommendpost", category: "__lincolnCategory" },
     { name: "lincolnoverallopinion", category: "__lincolnCategory" },
     { name: "lincolnoverallopinionpost", category: "__lincolnCategory" },
     // FMC questions
@@ -140,6 +142,34 @@ export const prepareCreatorOnQuestionAddedLincoln = (
         "Please click on the response that indicates your preference.",
       es: "Por favor, haga clic en la respuesta que indica su preferencia.",
       fr: "Veuillez cliquer sur la réponse qui indique votre préférence.",
+    });
+  }
+
+  if (options.question.getType() === "lincolnrecommend") {
+    console.log("lincolnrecommend question added");
+    options.question.name = "howLikelyRecommend";
+    options.question._ffs = "how_likely_recommend";
+    options.question.isRequired = true;
+    options.question.buttonSize = "large";
+
+    options.question.locTitle.setJson({
+      en: "How likely are you to recommend Lincoln to a friend, relative or colleague?",
+      es: "¿Qué tan probable es que recomiende Lincoln a un amigo, familiar o colega?",
+      fr: "Quelle est la probabilité que vous recommandiez Lincoln à un ami, un parent ou un collègue?",
+    });
+  }
+
+  if (options.question.getType() === "lincolnrecommendpost") {
+    console.log("lincolnrecommendpost question added");
+    options.question.name = "howLikelyRecommend (post event)";
+    options.question._ffs = "how_likely_recommend_post";
+    options.question.isRequired = true;
+    options.question.buttonSize = "large";
+
+    options.question.locTitle.setJson({
+      en: "Based on your experience today, how likely are you to recommend Lincoln to a friend, relative or colleague?",
+      es: "Basándose en su experiencia de hoy, ¿qué tan probable es que recomiende Lincoln a un amigo, familiar o colega?",
+      fr: "Sur la base de votre expérience d'aujourd'hui, quelle est la probabilité que vous recommandiez Lincoln à un ami, un parent ou un collègue?",
     });
   }
 

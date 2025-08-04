@@ -243,6 +243,140 @@ const lincolnInit = () => {
   } else {
     console.log('lincolnvehiclesdriven already exists, skipping registration');
   }
+
+  // Register lincolnrecommend if it doesn't exist
+  if (!ComponentCollection.Instance.getCustomQuestionByName("lincolnrecommend")) {
+    ComponentCollection.Instance.add({
+      name: "lincolnrecommend",
+      title: "How Likely Recommend Lincoln",
+      iconName: "icon-people-arrows",
+      showInToolbox: true,
+      inheritBaseProps: true,
+      onInit: () => {
+        Serializer.getProperty("lincolnrecommend", "name").readOnly = true;
+        Serializer.getProperty("lincolnrecommend", "_ffs").readOnly = true;
+      },
+      questionJSON: {
+        type: "radiogroup",
+        title: {
+          en: "How likely are you to recommend Lincoln to a friend or colleague?",
+          es: "¿Qué tan probable es que recomiende Lincoln a un amigo o colega?",
+          fr: "Quelle est la probabilité que vous recommandiez Lincoln à un ami ou collègue?",
+        },
+        renderAs: "radiobuttongroup",
+        isRequired: true,
+        choices: [
+          {
+            value: 1,
+            text: {
+              en: "Definitely Will NOT Recommend",
+              es: "Definitivamente NO recomendaré",
+              fr: "Je ne recommanderai certainement PAS",
+            },
+          },
+          {
+            value: 2,
+            text: {
+              en: "Probably Will NOT Recommend",
+              es: "Probablemente NO recomendaré",
+              fr: "Je ne recommanderai probablement PAS",
+            },
+          },
+          {
+            value: 3,
+            text: {
+              en: "Maybe Will / Maybe Will Not Recommend",
+              es: "Tal vez recomendaré / Tal vez no recomendaré",
+              fr: "Peut-être que je recommanderai / Peut-être que je ne recommanderai pas",
+            },
+          },
+          {
+            value: 4,
+            text: {
+              en: "Probably Will Recommend",
+              es: "Probablemente recomendaré",
+              fr: "Je recommanderai probablement",
+            },
+          },
+          {
+            value: 5,
+            text: {
+              en: "Definitely Will Recommend",
+              es: "Definitivamente recomendaré",
+              fr: "Je recommanderai certainement",
+            },
+          },
+        ],
+      },
+    } as ICustomQuestionTypeConfiguration);
+  }
+
+  // Register lincolnrecommendpost if it doesn't exist
+  if (!ComponentCollection.Instance.getCustomQuestionByName("lincolnrecommendpost")) {
+    ComponentCollection.Instance.add({
+      name: "lincolnrecommendpost",
+      title: "How Likely Recommend Lincoln (post event)",
+      iconName: "icon-people-arrows",
+      showInToolbox: true,
+      inheritBaseProps: true,
+      onInit: () => {
+        Serializer.getProperty("lincolnrecommendpost", "name").readOnly = true;
+        Serializer.getProperty("lincolnrecommendpost", "_ffs").readOnly = true;
+      },
+      questionJSON: {
+        type: "radiogroup",
+        title: {
+          en: "After this experience, how likely are you to recommend Lincoln to a friend or colleague?",
+          es: "Después de esta experiencia, ¿qué tan probable es que recomiende Lincoln a un amigo o colega?",
+          fr: "Après cette expérience, quelle est la probabilité que vous recommandiez Lincoln à un ami ou collègue?",
+        },
+        renderAs: "radiobuttongroup",
+        isRequired: true,
+        choices: [
+          {
+            value: 1,
+            text: {
+              en: "Definitely Will NOT Recommend",
+              es: "Definitivamente NO recomendaré",
+              fr: "Je ne recommanderai certainement PAS",
+            },
+          },
+          {
+            value: 2,
+            text: {
+              en: "Probably Will NOT Recommend",
+              es: "Probablemente NO recomendaré",
+              fr: "Je ne recommanderai probablement PAS",
+            },
+          },
+          {
+            value: 3,
+            text: {
+              en: "Maybe Will / Maybe Will Not Recommend",
+              es: "Tal vez recomendaré / Tal vez no recomendaré",
+              fr: "Peut-être que je recommanderai / Peut-être que je ne recommanderai pas",
+            },
+          },
+          {
+            value: 4,
+            text: {
+              en: "Probably Will Recommend",
+              es: "Probablemente recomendaré",
+              fr: "Je recommanderai probablement",
+            },
+          },
+          {
+            value: 5,
+            text: {
+              en: "Definitely Will Recommend",
+              es: "Definitivamente recomendaré",
+              fr: "Je recommanderai certainement",
+            },
+          },
+        ],
+      },
+    } as ICustomQuestionTypeConfiguration);
+  }
 };
 
 export default {
