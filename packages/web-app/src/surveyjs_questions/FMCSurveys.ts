@@ -67,24 +67,32 @@ const fmcInit = () => {
           text: { en: "18 to 24", es: "18 a 24", fr: "18 à 24" },
         },
         {
-          value: "25 - 34",
-          text: { en: "25 to 34", es: "25 a 34", fr: "25 à 34" },
+          value: "25 - 29",
+          text: { en: "25 to 29", es: "25 a 29", fr: "25 à 29" },
         },
         {
-          value: "35 - 44",
-          text: { en: "35 to 44", es: "35 a 44", fr: "35 à 44" },
+          value: "30 - 34",
+          text: { en: "30 to 34", es: "30 a 34", fr: "30 à 34" },
         },
         {
-          value: "45 - 54",
-          text: { en: "45 to 54", es: "45 a 54", fr: "45 à 54" },
+          value: "35 - 39",
+          text: { en: "35 to 39", es: "35 a 39", fr: "35 à 39" },
         },
         {
-          value: "55 - 64",
-          text: { en: "55 to 64", es: "55 a 64", fr: "55 à 64" },
+          value: "40 - 44",
+          text: { en: "40 to 44", es: "40 a 44", fr: "40 à 44" },
         },
         {
-          value: "65+",
-          text: { en: "65 or older", es: "65 o más", fr: "65 ou plus" },
+          value: "45 - 49",
+          text: { en: "45 to 49", es: "45 a 49", fr: "45 à 49" },
+        },
+        {
+          value: "50 - 59",
+          text: { en: "50 to 59", es: "50 a 59", fr: "50 à 59" },
+        },
+        {
+          value: "Over 60",
+          text: { en: "Over 60", es: "Más de 60", fr: "Plus de 60" },
         },
       ],
     },
