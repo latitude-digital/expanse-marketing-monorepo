@@ -893,7 +893,7 @@ const SurveyComponent: React.FC = () => {
                   minor_signature_type: typeof mergedLincolnSurveyData.minor_signature
                 });
                 
-                const lincolnPayload = [mergedLincolnSurveyData];
+                const lincolnPayload = mergedLincolnSurveyData;
 
                 console.log('[Lincoln Event] Final payload being sent to Lincoln API:', lincolnPayload);
 
@@ -902,7 +902,7 @@ const SurveyComponent: React.FC = () => {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
-                    'GTB-ACCESS-KEY': '91827364',
+                    'Authorization': '91827364',
                   },
                   body: JSON.stringify(lincolnPayload),
                 });
@@ -932,7 +932,7 @@ const SurveyComponent: React.FC = () => {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
-                      'GTB-ACCESS-KEY': '91827364',
+                      'Authorization': '91827364',
                     },
                     body: JSON.stringify(voiBody),
                   });
@@ -964,7 +964,7 @@ const SurveyComponent: React.FC = () => {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
-                      'GTB-ACCESS-KEY': '91827364',
+                      'Authorization': '91827364',
                     },
                     body: JSON.stringify(drivenBody),
                   });

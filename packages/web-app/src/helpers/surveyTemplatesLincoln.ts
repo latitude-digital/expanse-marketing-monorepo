@@ -107,9 +107,9 @@ export const prepareCreatorOnQuestionAddedLincoln = (
 
     options.question.locTitle.setJson({
       en:
-        "Please email me communications, including product and service information, surveys and special offers from Lincoln and its retailers.",
-      es: "Por favor, envíenme comunicaciones, incluyendo información sobre productos y servicios, encuestas y ofertas especiales de Lincoln y sus minoristas.",
-      fr: "Veuillez m'envoyer des communications, y compris des informations sur les produits et services, des enquêtes et des offres spéciales de Lincoln et de ses détaillants.",
+        "Please email me communications including product information, offers, and incentives from Lincoln and the local retailer.",
+      es: "Quiero recibir comunicaciones, incluidas información sobre productos y servicios, encuestas, y ofertas especiales de Lincoln y sus minoristas.",
+      fr: "Je souhaite recevoir des communications, y des informations sur les produits et services, des enquêtes, et des offres spéciales de Lincoln et de son détaillant.",
     });
 
     options.question.descriptionLocation = "underInput";

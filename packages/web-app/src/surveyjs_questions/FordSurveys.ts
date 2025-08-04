@@ -132,9 +132,9 @@ const fordInit = () => {
     questionJSON: {
       type: "radiogroup",
       title: {
-        en: "Please email me communications, including product and service information, surveys and special offers from Ford and its retailers.",
-        es: "Por favor, envíenme comunicaciones, incluyendo información sobre productos y servicios, encuestas y ofertas especiales de Ford y sus minoristas.",
-        fr: "Veuillez m'envoyer des communications, y compris des informations sur les produits et services, des enquêtes et des offres spéciales de Ford et de ses détaillants.",
+        en: "Please email me communications including product information, offers, and incentives from Ford Motor Company and the local dealer.",
+        es: "Quiero recibir comunicaciones, incluidas información sobre productos y servicios, encuestas, y ofertas especiales de Ford Motor Company y sus concesionarios.",
+        fr: "Je souhaite recevoir des communications, y des informations sur les produits et services, des enquêtes, et des offres spéciales de Ford Motor Company et de son concessionnaire.",
       },
       description: {
         en: "Ford Motor Company respects your privacy and treats your personal information with care. [Click here to read Ford Motor Company's privacy policy.](https://ford.com/help/privacy/)",

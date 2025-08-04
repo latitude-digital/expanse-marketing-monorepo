@@ -4,6 +4,7 @@ import { ReactQuestionFactory, SurveyQuestionRadiogroup } from "survey-react-ui"
 import UnstyledSelectionCard from "@ui/ford-ui-components/src/v2/selection-card/default/UnstyledSelectionCard";
 import { FieldError } from "@ui/ford-ui-components/src/components/ui/field-error";
 import Icon from "@ui/ford-ui-components/src/v2/icon/Icon";
+import { Typography } from "@ui/ford-ui-components/src/v2/typography/Typography";
 import Showdown from 'showdown';
 
 import style from './_index.module.scss'
@@ -110,35 +111,26 @@ export class RadioGroupRowQuestion extends SurveyQuestionRadiogroup {
         
         return (
             <div className="fds-radio-group-container">
-                {/* Question title - styled to match FDSText/StyledTextField */}
+                {/* Question title - using Ford UI Typography component for proper font inheritance */}
                 {title && (
-                    <div className="fds-radio-group-title" style={{ 
-                        marginBottom: '0.5rem',
-                        color: 'var(--semantic-color-text-onlight-moderate-default)',
-                        fontSize: '16px',
-                        fontWeight: '400',
-                        lineHeight: '1.5',
-                        fontFamily: 'var(--font-family-primary, "Averta", "Arial", sans-serif)'
-                    }}>
-                        {processedTitle.includes('<') ? <HtmlContent html={processedTitle} /> : processedTitle}
+                    <div className="fds-radio-group-title" style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                        <Typography variant="body2" weight="regular" color="moderate">
+                            {processedTitle.includes('<') ? <HtmlContent html={processedTitle} /> : processedTitle}
+                        </Typography>
                         {!isRequired && (
-                            <span style={{ 
-                                color: 'var(--semantic-color-text-onlight-subtle-default)',
-                                fontSize: '14px',
-                                fontWeight: '400'
-                            }}>
+                            <Typography variant="body2" color="subtle">
                                 {optionalText}
-                            </span>
+                            </Typography>
                         )}
                     </div>
                 )}
                 
                 {/* Description - positioned under title, above error and radio buttons (when descriptionLocation is not "underInput") */}
                 {processedDescription && showDescriptionAbove && (
-                    <div className="text-ford-caption-semibold text-text-onlight-subtle mb-2" style={{ 
-                        fontFamily: 'var(--font-family-primary, "Averta", "Arial", sans-serif)'
-                    }}>
-                        {processedDescription.includes('<') ? <HtmlContent html={processedDescription} /> : processedDescription}
+                    <div className="mb-2">
+                        <Typography variant="body2" color="subtle">
+                            {processedDescription.includes('<') ? <HtmlContent html={processedDescription} /> : processedDescription}
+                        </Typography>
                     </div>
                 )}
                 
@@ -159,10 +151,10 @@ export class RadioGroupRowQuestion extends SurveyQuestionRadiogroup {
                 
                 {/* Description - positioned under radio buttons (when descriptionLocation is "underInput") */}
                 {processedDescription && !showDescriptionAbove && (
-                    <div className="text-ford-caption-semibold text-text-onlight-subtle mt-2" style={{ 
-                        fontFamily: 'var(--font-family-primary, "Averta", "Arial", sans-serif)'
-                    }}>
-                        {processedDescription.includes('<') ? <HtmlContent html={processedDescription} /> : processedDescription}
+                    <div className="mt-2">
+                        <Typography variant="body2" color="subtle">
+                            {processedDescription.includes('<') ? <HtmlContent html={processedDescription} /> : processedDescription}
+                        </Typography>
                     </div>
                 )}
             </div>

@@ -23,22 +23,23 @@ export const FDSQuestionWrapper: React.FC<FDSQuestionWrapperProps> = ({
   children,
   question
 }) => {
+  // Check description location setting - similar to RadioButtonButton renderer
+  const showDescriptionAbove = !question?.descriptionLocation || question.descriptionLocation !== "underInput";
+
   return (
     <div className="fds-question-wrapper">
-      {/* Question Label - Match built-in Ford UI component styling */}
+      {/* Question Label - Always use Typography component for consistent Ford UI styling */}
       <div className="fds-question-label" style={{ marginBottom: '8px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
         {(() => {
           const processedLabel = processMarkdown(label);
           const hasHtml = processedLabel.includes('<');
           
           if (hasHtml) {
-            // For HTML content, use a span with Typography classes
+            // For HTML content, use Typography component wrapper to ensure font inheritance
             return (
-              <span 
-                className="text-ford-body2-regular"
-                style={{ color: 'var(--semantic-color-text-onlight-moderate-default)' }}
-                dangerouslySetInnerHTML={{ __html: processedLabel }}
-              />
+              <Typography variant="body2" weight="regular" color="moderate">
+                <span dangerouslySetInnerHTML={{ __html: processedLabel }} />
+              </Typography>
             );
           } else {
             // For plain text, use Typography component
@@ -54,21 +55,19 @@ export const FDSQuestionWrapper: React.FC<FDSQuestionWrapperProps> = ({
         )}
       </div>
 
-      {/* Question Description (optional) */}
-      {description && (
+      {/* Question Description (optional) - positioned above form control when descriptionLocation is not "underInput" */}
+      {description && showDescriptionAbove && (
         <div className="fds-question-description" style={{ marginBottom: '12px' }}>
           {(() => {
             const processedDescription = processMarkdown(description);
             const hasHtml = processedDescription.includes('<');
             
             if (hasHtml) {
-              // For HTML content, use a span with Typography classes to match built-in Ford UI descriptions
+              // For HTML content, use Typography component wrapper to ensure font inheritance
               return (
-                <span 
-                  className="text-ford-body2-regular"
-                  style={{ color: 'var(--semantic-color-text-onlight-subtle)' }}
-                  dangerouslySetInnerHTML={{ __html: processedDescription }}
-                />
+                <Typography variant="body2" color="subtle">
+                  <span dangerouslySetInnerHTML={{ __html: processedDescription }} />
+                </Typography>
               );
             } else {
               // For plain text, use Typography component to match built-in Ford UI descriptions
@@ -86,6 +85,32 @@ export const FDSQuestionWrapper: React.FC<FDSQuestionWrapperProps> = ({
       <div className="fds-question-control">
         {children}
       </div>
+
+      {/* Question Description (optional) - positioned below form control when descriptionLocation is "underInput" */}
+      {description && !showDescriptionAbove && (
+        <div className="fds-question-description" style={{ marginTop: '12px' }}>
+          {(() => {
+            const processedDescription = processMarkdown(description);
+            const hasHtml = processedDescription.includes('<');
+            
+            if (hasHtml) {
+              // For HTML content, use Typography component wrapper to ensure font inheritance
+              return (
+                <Typography variant="body2" color="subtle">
+                  <span dangerouslySetInnerHTML={{ __html: processedDescription }} />
+                </Typography>
+              );
+            } else {
+              // For plain text, use Typography component to match built-in Ford UI descriptions
+              return (
+                <Typography variant="body2" color="subtle">
+                  {processedDescription}
+                </Typography>
+              );
+            }
+          })()}
+        </div>
+      )}
 
       {/* Error Message */}
       {isInvalid && errorMessage && (

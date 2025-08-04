@@ -96,10 +96,16 @@ const lincolnInit = () => {
       questionJSON: {
         type: "radiogroup",
         title: {
-          en: "Please email me communications, including product and service information, surveys and special offers from Lincoln and its retailers.",
-          es: "Por favor, envíenme comunicaciones, incluyendo información sobre productos y servicios, encuestas y ofertas especiales de Lincoln y sus minoristas.",
-          fr: "Veuillez m'envoyer des communications, y compris des informations sur les produits et services, des enquêtes et des offres spéciales de Lincoln et de ses détaillants.",
+          en: "Please email me communications including product information, offers, and incentives from Lincoln and the local retailer.",
+          es: "Quiero recibir comunicaciones, incluidas información sobre productos y servicios, encuestas, y ofertas especiales de Lincoln y sus minoristas.",
+          fr: "Je souhaite recevoir des communications, y des informations sur les produits et services, des enquêtes, et des offres spéciales de Lincoln et de son détaillant.",
         },
+        description: {
+          en: "Lincoln respects your privacy and treats your personal information with care. [Click here to read Lincoln's privacy policy.](https://lincoln.com/help/privacy/)",
+          es: "Lincoln respeta su confidencialidad y trata su información personal con respeto. [Haga clic aquí para consultar la política de confidencialidad de Lincoln.](https://es.lincoln.com/help/privacy/)",
+          fr: "Lincoln respecte votre vie privée et traite vos informations personnelles avec soin. [Cliquez ici pour lire la politique de confidentialité de Lincoln.](https://lincoln.com/help/privacy/)",
+        },
+        descriptionLocation: "underInput",
         renderAs: "radiobuttongroup",
         buttonSize: "medium",
         name: "email_opt_in",
