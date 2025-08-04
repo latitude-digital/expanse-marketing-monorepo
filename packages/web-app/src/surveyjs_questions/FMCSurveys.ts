@@ -127,9 +127,9 @@ const fmcInit = () => {
     questionJSON: {
       type: "radiogroup",
       title: {
-        en: "When are you planning to purchase your next vehicle?",
-        es: "¿Cuándo planeas comprar tu próximo vehículo?",
-        fr: "Quand prévoyez-vous acheter votre prochain véhicule?",
+        en: "When do you plan to acquire your next vehicle?",
+        es: "¿Cuándo planeas adquirir tu próximo vehículo?",
+        fr: "Quand prévoyez-vous d'acquérir votre prochain véhicule?",
       },
       renderAs: "radiobuttongroup",
       buttonSize: "large",
