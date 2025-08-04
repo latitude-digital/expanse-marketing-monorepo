@@ -43,6 +43,7 @@ export const initCreatorLincoln = (creator: SurveyCreatorModel) => {
 
   creator.toolbox.changeCategories([
     { name: "lincolnvoi", category: "__lincolnCategory" },
+    { name: "lincolnvehiclesdriven", category: "__lincolnCategory" },
     { name: "lincolnoptin", category: "__lincolnCategory" },
     { name: "lincolnrecommend", category: "__lincolnCategory" },
     { name: "lincolnrecommendpost", category: "__lincolnCategory" },
