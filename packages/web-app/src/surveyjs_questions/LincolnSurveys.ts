@@ -66,6 +66,7 @@ const lincolnInit = () => {
         this.updateOnlyInclude(question);
         // Use shared utility to handle choicesByUrl for custom question types
         handleChoicesByUrl(question, "LincolnSurveys");
+        
       },
       onPropertyChanged(question: Question, propertyName: string, newValue: any) {
         if (propertyName === "onlyInclude") {
@@ -129,6 +130,8 @@ const lincolnInit = () => {
           },
         ],
       },
+      onLoaded(question: Question) {
+      },
     } as ICustomQuestionTypeConfiguration);
   }
 
@@ -154,6 +157,14 @@ const lincolnInit = () => {
         minRateDescription: "Poor",
         maxRateDescription: "Excellent",
       },
+      onLoaded(question: Question) {
+        // Sync validators from parent to child for custom questions
+        const child = question.contentQuestion;
+        if (child && question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+          child.isRequired = true;
+        }
+      },
     } as ICustomQuestionTypeConfiguration);
   }
 
@@ -178,6 +189,14 @@ const lincolnInit = () => {
         rateMax: 10,
         minRateDescription: "Poor",
         maxRateDescription: "Excellent",
+      },
+      onLoaded(question: Question) {
+        // Sync validators from parent to child for custom questions
+        const child = question.contentQuestion;
+        if (child && question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+          child.isRequired = true;
+        }
       },
     } as ICustomQuestionTypeConfiguration);
   }
@@ -226,6 +245,13 @@ const lincolnInit = () => {
         this.updateOnlyInclude(question);
         // Use shared utility to handle choicesByUrl for custom question types
         handleChoicesByUrl(question, "LincolnSurveys");
+        
+        // Sync validators from parent to child for custom questions
+        const child = question.contentQuestion;
+        if (child && question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+          child.isRequired = true;
+        }
       },
       onPropertyChanged(question: Question, propertyName: string, newValue: any) {
         if (propertyName === "onlyInclude") {
@@ -255,6 +281,8 @@ const lincolnInit = () => {
       onInit: () => {
         Serializer.getProperty("lincolnrecommend", "name").readOnly = true;
         Serializer.getProperty("lincolnrecommend", "_ffs").readOnly = true;
+      },
+      onLoaded(question: Question) {
       },
       questionJSON: {
         type: "radiogroup",
@@ -322,6 +350,14 @@ const lincolnInit = () => {
       onInit: () => {
         Serializer.getProperty("lincolnrecommendpost", "name").readOnly = true;
         Serializer.getProperty("lincolnrecommendpost", "_ffs").readOnly = true;
+      },
+      onLoaded(question: Question) {
+        // Fix isRequired inheritance from JSON - this is called AFTER question is created from JSON
+        const jsonDef = question.toJSON();
+        if (jsonDef.isRequired && !question.isRequired) {
+          question.isRequired = jsonDef.isRequired;
+          console.log(`[LincolnSurveys DEBUG] Fixed isRequired inheritance for lincolnrecommendpost ${question.name}: ${question.isRequired}`);
+        }
       },
       questionJSON: {
         type: "radiogroup",

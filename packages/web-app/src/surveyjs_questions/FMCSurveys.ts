@@ -19,6 +19,14 @@ const fmcInit = () => {
     iconName: "icon-genderless",
     showInToolbox: true,
     inheritBaseProps: true,
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
+    },
     questionJSON: {
       type: "radiogroup",
       title: {
@@ -52,6 +60,14 @@ const fmcInit = () => {
     iconName: "icon-calendar-star",
     showInToolbox: true,
     inheritBaseProps: true,
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
+    },
     questionJSON: {
       type: "radiogroup",
       title: {
@@ -104,6 +120,14 @@ const fmcInit = () => {
     iconName: "icon-money-check-dollar-pen",
     showInToolbox: true,
     inheritBaseProps: true,
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
+    },
     questionJSON: {
       type: "radiogroup",
       title: {
@@ -132,6 +156,14 @@ const fmcInit = () => {
     iconName: "icon-calendar-clock",
     showInToolbox: true,
     inheritBaseProps: true,
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
+    },
     questionJSON: {
       type: "radiogroup",
       title: {
@@ -198,6 +230,13 @@ const fmcInit = () => {
     onLoaded(question: Question) {
       // Use shared utility to handle choicesByUrl for custom question types
       handleChoicesByUrl(question, 'FMCSurveys');
+      
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
     }
   } as ICustomQuestionTypeConfiguration);
 };

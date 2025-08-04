@@ -15,16 +15,14 @@ import functions from '../services/functions';
 
 import { getApiUrl, ENDPOINTS } from "../config/api";
 
-// Import custom SurveyJS renderers
-import { CheckboxVOIQuestion } from "../surveysjs_renderers/CheckboxVOI";
-import { CheckboxVehiclesDrivenQuestion } from "../surveysjs_renderers/CheckboxVehiclesDriven";
-import { CheckboxFordVehiclesDrivenQuestion } from "../surveysjs_renderers/CheckboxFordVehiclesDriven";
-import { RadioGroupRowQuestion } from "../surveysjs_renderers/RadioButtonButton";
+// Import FDS custom SurveyJS renderers
+import { CheckboxVOIQuestion } from "../surveysjs_renderers/FDSRenderers/CheckboxVOI";
+import { CheckboxVehiclesDrivenQuestion } from "../surveysjs_renderers/FDSRenderers/CheckboxVehiclesDriven";
+import { RadioGroupRowQuestion } from "../surveysjs_renderers/FDSRenderers/RadioButtonButton";
 import { SurveyBookeoQuestion } from "../surveysjs_renderers/Bookeo";
 
 // Force execution of renderer registration by referencing the class
 console.log('Survey.tsx: CheckboxVehiclesDrivenQuestion loaded:', CheckboxVehiclesDrivenQuestion);
-console.log('Survey.tsx: CheckboxFordVehiclesDrivenQuestion loaded:', CheckboxFordVehiclesDrivenQuestion);
 // EmailTextInput removed - FDSTextRenderer handles all text inputs including email with proper required field support
 import "../surveysjs_renderers/FilePreview";
 
@@ -274,6 +272,73 @@ const SurveyComponent: React.FC = () => {
             "widthMode": "responsive",
             ...surveyJSON // Survey definition can override defaults
           };
+
+          // Preprocess isRequired to working validators BEFORE model creation
+          function preprocessRequiredValidation(surveyJSON) {
+            function processElements(elements) {
+              if (!elements) return;
+              
+              elements.forEach(element => {
+                // Handle questions with isRequired: true
+                if (element.type && element.isRequired === true) {
+                  // Initialize validators array if it doesn't exist
+                  if (!element.validators) {
+                    element.validators = [];
+                  }
+                  
+                  // Check if expression validator already exists
+                  const hasRequiredValidator = element.validators.some(v => 
+                    v.type === 'expression' && v.expression?.includes('notempty')
+                  );
+                  
+                  if (!hasRequiredValidator) {
+                    // Add expression validator for required field
+                    element.validators.push({
+                      type: "expression",
+                      expression: "{self} notempty", 
+                      text: element.requiredErrorText || "This field is required"
+                    });
+                  }
+                  
+                  // Remove the problematic isRequired property
+                  delete element.isRequired;
+                  
+                  console.log(`[Survey Preprocess] Added required validator to question: ${element.name}`);
+                }
+                
+                // Recursively process nested elements (panels, etc.)
+                if (element.elements && Array.isArray(element.elements)) {
+                  processElements(element.elements);
+                }
+                
+                // Handle matrix-type questions
+                if (element.columns) {
+                  processElements(element.columns);
+                }
+                if (element.rows) {
+                  processElements(element.rows);
+                }
+              });
+            }
+            
+            // Process all pages
+            if (surveyJSON.pages && Array.isArray(surveyJSON.pages)) {
+              surveyJSON.pages.forEach(page => {
+                if (page.elements && Array.isArray(page.elements)) {
+                  processElements(page.elements);
+                }
+                // Handle page-level panels
+                if (page.panels) {
+                  processElements(page.panels);
+                }
+              });
+            }
+            
+            return surveyJSON;
+          }
+
+          // Apply the preprocessing
+          preprocessRequiredValidation(defaultSurveyProperties);
 
           if (res.event.disabled && !user) {
             defaultSurveyProperties.showCompleteButton = false;

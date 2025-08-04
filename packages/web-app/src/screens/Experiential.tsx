@@ -14,8 +14,8 @@ import { prepareForSurvey, prepareSurveyOnQuestionAdded } from "../helpers/surve
 import { getApiUrl, ENDPOINTS } from '../config/api';
 import { validateEmailForSurveyJS, type EmailValidationResponse } from '../utils/surveyUtilities';
 
-import { CheckboxVOIQuestion } from "../surveysjs_renderers/CheckboxVOI";
-import { RadioGroupRowQuestion } from "../surveysjs_renderers/RadioButtonButton";
+import { CheckboxVOIQuestion } from "../surveysjs_renderers/FDSRenderers/CheckboxVOI";
+import { RadioGroupRowQuestion } from "../surveysjs_renderers/FDSRenderers/RadioButtonButton";
 
 import "survey-core/survey-core.min.css";
 import "./Surveys.css";

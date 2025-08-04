@@ -117,6 +117,14 @@ const globalInit = () => {
       Serializer.getProperty("firstname", "name").readOnly = true;
       Serializer.getProperty("firstname", "_ffs").readOnly = true;
     },
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
+    },
     questionJSON: {
       type: "text",
       name: "first_name",
@@ -160,6 +168,14 @@ const globalInit = () => {
     onInit: () => {
       Serializer.getProperty("lastname", "name").readOnly = true;
       Serializer.getProperty("lastname", "_ffs").readOnly = true;
+    },
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
     },
     questionJSON: {
       type: "text",
@@ -874,6 +890,14 @@ const globalInit = () => {
       // Ensure isRequired property is inherited from survey definition
       Serializer.addProperty("emailtextinput", "isRequired");
     },
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
+    },
     questionJSON: {
       type: "emailtextinput",
       // type: "text",
@@ -915,6 +939,14 @@ const globalInit = () => {
       // Ensure isRequired property is inherited from survey definition for text type questions
       Serializer.addProperty("text", "isRequired");
     },
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
+    },
     questionJSON: {
       type: "text",
       name: "phone",
@@ -923,6 +955,12 @@ const globalInit = () => {
         es: "Teléfono",
         fr: "Téléphone",
       },
+      description: {
+        en: "Standard message and data rates may apply.",
+        es: "Pueden aplicar las tarifas normales para mensajes de texto y datos.",
+        fr: "Les tarifs standard pour les messages et les données peuvent s'appliquer.",
+      },
+      descriptionLocation: "underInput",
       inputType: "tel",
       autocomplete: "tel",
       maskType: "pattern",
@@ -938,6 +976,14 @@ const globalInit = () => {
     iconName: "icon-checkbox",
     showInToolbox: true,
     inheritBaseProps: true,
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
+    },
     questionJSON: {
       type: "boolean",
       renderAs: "checkbox",

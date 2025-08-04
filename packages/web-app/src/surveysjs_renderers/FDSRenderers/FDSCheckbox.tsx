@@ -22,6 +22,7 @@ export class FDSCheckboxRenderer extends SurveyQuestionElementBase {
         const question = this.question;
         const { isInvalid, errorMessage } = useQuestionValidation(question);
         
+        
         // Get current values (SurveyJS checkboxes store arrays)
         const currentValues = question.value || [];
 

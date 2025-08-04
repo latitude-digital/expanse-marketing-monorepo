@@ -1,33 +1,22 @@
 import React from "react";
 import { RendererFactory, Serializer } from "survey-core";
 import { ReactQuestionFactory, SurveyQuestionCheckbox } from "survey-react-ui";
-import SegmentedControl from '@ui/ford-ui-components/src/v2/segmented-control/SegmentedControl';
 import StyledSelectionCardSmall from '@ui/ford-ui-components/src/v2/selection-card/small/styled/StyledSelectionCardSmall';
 import { Chip } from '@ui/ford-ui-components/src/v2/chip';
-import { FDSQuestionWrapper } from '../FDSRenderers/FDSShared/FDSQuestionWrapper';
+import { FDSQuestionWrapper } from '../FDSShared/FDSQuestionWrapper';
 
-const VEHICLE_TYPES = ["Ford SUVs", "Ford Cars", "Ford Trucks"];
-
-export class CheckboxFordVehiclesDrivenQuestion extends SurveyQuestionCheckbox {
+export class CheckboxVehiclesDrivenQuestion extends SurveyQuestionCheckbox {
     constructor(props: any) {
         super(props);
-        this.state = {
-            selectedTabKey: 'ford-suvs'
-        };
 
         (this as any).getBody = (cssClasses: any) => {
             let filteredItems = this.question.bodyItems;
-            const tabs = [
-                { key: 'ford-suvs', label: 'Ford SUVs' },
-                { key: 'ford-cars', label: 'Ford Cars' },
-                { key: 'ford-trucks', label: 'Ford Trucks' }
-            ];
-
+            
             // Create mapping from item ID to original JSON data
             const originalDataMap = new Map();
             
             // Fetch vehicle JSON data directly since SurveyJS loses originalData
-            const vehicleJsonUrl = this.question.choicesByUrl?.url || 'https://cdn.latitudewebservices.com/vehicles/ford.json';
+            const vehicleJsonUrl = this.question.choicesByUrl?.url || 'https://cdn.latitudewebservices.com/vehicles/lincoln.json';
             
             // Check if we've already cached the vehicle data to avoid repeated fetches
             if (!(this as any).vehiclesCache) {
@@ -53,14 +42,15 @@ export class CheckboxFordVehiclesDrivenQuestion extends SurveyQuestionCheckbox {
                             return data;
                         })
                         .catch(error => {
-                            console.error('FordVehiclesDriven getBody: Failed to fetch vehicles:', error);
+                            console.error('VehiclesDriven getBody: Failed to fetch vehicles:', error);
                             return [];
                         });
                 }
                 // Return early if data is still loading - don't apply filtering yet
+                
                 return (
                     <FDSQuestionWrapper
-                        label={this.question.fullTitle || this.question.title || "Please select the Ford vehicles that you experienced today."}
+                        label={this.question.fullTitle || this.question.title || "Please select the Lincoln vehicles that you experienced today."}
                         description={this.question.description}
                         isRequired={this.question.isRequired}
                         isInvalid={false}
@@ -86,7 +76,7 @@ export class CheckboxFordVehiclesDrivenQuestion extends SurveyQuestionCheckbox {
                 const originalData = originalDataMap.get(item.value);
                 // Include vehicle if notForTD is false or undefined (available for test drive)
                 const isTestDriveable = !originalData?.notForTD;
-                console.log(`FordVehiclesDriven Filter: ${item.text} (${item.value}) - notForTD: ${originalData?.notForTD}, showing: ${isTestDriveable}`);
+                console.log(`VehiclesDriven Filter: ${item.text} (${item.value}) - notForTD: ${originalData?.notForTD}, showing: ${isTestDriveable}`);
                 return isTestDriveable;
             });
 
@@ -97,42 +87,21 @@ export class CheckboxFordVehiclesDrivenQuestion extends SurveyQuestionCheckbox {
                     filteredItems = filteredItems.filter((item: any) => onlyInclude.includes(item.id));
                 }
             }
-
-            // Count test-driveable vehicles to determine if we should show category tabs
-            const testDriveableCount = filteredItems.length;
-            const shouldShowTabs = testDriveableCount >= 7;
-
-            // Apply vehicle type filtering only if we're showing tabs
-            if (shouldShowTabs) {
-                // Type filtering based on selected tab
-                const selectedTab = tabs.find(tab => tab.key === this.state.selectedTabKey);
-                const vehicleType = selectedTab?.label || 'Ford SUVs';
-                
-                // Apply vehicle type filtering based on selected tab
-                filteredItems = filteredItems.filter((item: any) => {
-                    // Look up original data using item value (ID)
-                    const originalData = originalDataMap.get(item.value);
-                    const itemType = originalData?.type;
-                    
-                    if (!itemType) {
-                        return false; // Hide items without type info
-                    }
-                    
-                    return itemType === vehicleType;
-                });
-            }
             
             // Store the mapping for use in renderItem
             (this as any).originalDataMap = originalDataMap;
 
             // Get validation state for FDS wrapper
-            const errorMessage = this.question.errors?.length > 0 ? this.question.errors[0].text : undefined;
-            const isInvalid = this.question.errors?.length > 0;
+            const errorMessage = this.question.errors.length > 0 
+                ? (this.question.errors[0].getText ? this.question.errors[0].getText() : this.question.errors[0].text)
+                : undefined;
+            const isInvalid = this.question.errors.length > 0;
+            
 
             // Get selected vehicles for chips display
             const selectedValues = this.question.value || [];
             const selectedVehicles = selectedValues.map((value: any) => {
-                const item = this.question.bodyItems.find((item: any) => item.value === value);
+                const item = filteredItems.find((item: any) => item.value === value);
                 const originalData = originalDataMap.get(value);
                 return {
                     value,
@@ -143,24 +112,13 @@ export class CheckboxFordVehiclesDrivenQuestion extends SurveyQuestionCheckbox {
 
             return (
                 <FDSQuestionWrapper
-                    label={this.question.fullTitle || this.question.title || "Please select the Ford vehicles that you experienced today."}
+                    label={this.question.fullTitle || this.question.title || "Please select the Lincoln vehicles that you experienced today."}
                     description={this.question.description}
                     isRequired={this.question.isRequired}
                     isInvalid={isInvalid}
                     errorMessage={errorMessage}
                     question={this.question}
                 >
-                    {shouldShowTabs && (
-                        <div className="flex justify-center mb-6">
-                            <SegmentedControl 
-                                tabs={tabs}
-                                className="w-[360px]"
-                                selectedKey={this.state.selectedTabKey}
-                                onValueChange={this.setSelectedTabKey}
-                                variant="forms"
-                            />
-                        </div>
-                    )}
                     <div className="flex flex-wrap justify-center gap-4 mb-6">
                         {this.getItems(cssClasses, filteredItems)}
                     </div>
@@ -274,10 +232,6 @@ export class CheckboxFordVehiclesDrivenQuestion extends SurveyQuestionCheckbox {
         }
     }
 
-    setSelectedTabKey = (key: string) => {
-        this.setState({ selectedTabKey: key });
-    }
-
     removeVehicle = (vehicleValue: any) => {
         const currentValue = this.question.value || [];
         const newValue = currentValue.filter((val: any) => val !== vehicleValue);
@@ -287,18 +241,18 @@ export class CheckboxFordVehiclesDrivenQuestion extends SurveyQuestionCheckbox {
 }
 
 // Register the custom renderer
-console.log('CheckboxFordVehiclesDriven: Registering sv-checkbox-fordvehiclesdriven renderer...');
+console.log('CheckboxVehiclesDriven: Registering sv-checkbox-vehiclesdriven renderer...');
 ReactQuestionFactory.Instance.registerQuestion(
-    "sv-checkbox-fordvehiclesdriven",
+    "sv-checkbox-vehiclesdriven",
     (props) => {
-        console.log('CheckboxFordVehiclesDriven: Creating CheckboxFordVehiclesDrivenQuestion component', props);
-        return React.createElement(CheckboxFordVehiclesDrivenQuestion, props);
+        console.log('CheckboxVehiclesDriven: Creating CheckboxVehiclesDrivenQuestion component', props);
+        return React.createElement(CheckboxVehiclesDrivenQuestion, props);
     }
 );
 
-console.log('CheckboxFordVehiclesDriven: Registering renderer for renderAs="fordvehiclesdriven"...');
+console.log('CheckboxVehiclesDriven: Registering renderer for renderAs="vehiclesdriven"...');
 RendererFactory.Instance.registerRenderer(
     "checkbox",
-    "fordvehiclesdriven",
-    "sv-checkbox-fordvehiclesdriven"
+    "vehiclesdriven",
+    "sv-checkbox-vehiclesdriven"
 );

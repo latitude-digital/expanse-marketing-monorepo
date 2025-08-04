@@ -3,8 +3,8 @@ import { RendererFactory, Serializer } from "survey-core";
 import { ReactQuestionFactory, SurveyQuestionCheckbox } from "survey-react-ui";
 import SegmentedControl from '@ui/ford-ui-components/src/v2/segmented-control/SegmentedControl';
 import StyledSelectionCardSmall from '@ui/ford-ui-components/src/v2/selection-card/small/styled/StyledSelectionCardSmall';
-import { FDSQuestionWrapper } from '../FDSRenderers/FDSShared/FDSQuestionWrapper';
-import { useQuestionValidation } from '../FDSRenderers/FDSShared';
+import { FDSQuestionWrapper } from '../FDSShared/FDSQuestionWrapper';
+import { useQuestionValidation } from '../FDSShared';
 
 import { trim } from "lodash";
 
@@ -147,14 +147,19 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
             }
 
             // Get validation state for FDS wrapper
-            const errorMessage = this.question.errors?.length > 0 ? this.question.errors[0].text : undefined;
+            const errorMessage = this.question.errors.length > 0 
+                ? (this.question.errors[0].getText ? this.question.errors[0].getText() : this.question.errors[0].text)
+                : undefined;
             const isInvalid = this.question.errors?.length > 0;
+            
+            // Use the actual isRequired property from the question
+            const isActuallyRequired = this.question.isRequired;
 
             return (
                 <FDSQuestionWrapper
                     label={this.question.fullTitle || this.question.title || "I am interested in receiving more information on the following vehicles."}
                     description={this.question.description}
-                    isRequired={this.question.isRequired}
+                    isRequired={isActuallyRequired}
                     isInvalid={isInvalid}
                     errorMessage={errorMessage}
                     question={this.question}
@@ -298,6 +303,7 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
         // Default to Ford if we can't detect
         return true;
     }
+
 }
 
 // Restore the image property

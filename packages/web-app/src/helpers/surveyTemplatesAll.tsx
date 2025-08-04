@@ -10,8 +10,8 @@ import {
   SurveyInstanceCreatedEvent,
 } from "survey-creator-core";
 
-import { CheckboxVOIQuestion } from "../surveysjs_renderers/CheckboxVOI";
-import { RadioGroupRowQuestion } from "../surveysjs_renderers/RadioButtonButton";
+import { CheckboxVOIQuestion } from "../surveysjs_renderers/FDSRenderers/CheckboxVOI";
+import { RadioGroupRowQuestion } from "../surveysjs_renderers/FDSRenderers/RadioButtonButton";
 import { SurveyBookeoQuestion } from "../surveysjs_renderers/Bookeo";
 import { SurveyQuestionMarkdown } from "../surveysjs_renderers/Markdown";
 import { EmailTextInput } from "../surveysjs_renderers/EmailTextInput";

@@ -23,8 +23,14 @@ export const FDSQuestionWrapper: React.FC<FDSQuestionWrapperProps> = ({
   children,
   question
 }) => {
+  
   // Check description location setting - similar to RadioButtonButton renderer
   const showDescriptionAbove = !question?.descriptionLocation || question.descriptionLocation !== "underInput";
+
+  // Enhanced required detection: Check both isRequired prop and validators for expression validators with "notempty"
+  const isActuallyRequired = isRequired || (question?.validators && question.validators.some((validator: any) => 
+    validator.type === 'expression' && validator.expression?.includes('notempty')
+  ));
 
   return (
     <div className="fds-question-wrapper">
@@ -50,7 +56,7 @@ export const FDSQuestionWrapper: React.FC<FDSQuestionWrapperProps> = ({
             );
           }
         })()}
-        {!isRequired && (
+        {!isActuallyRequired && (
           <FDSRequiredIndicator question={question} />
         )}
       </div>

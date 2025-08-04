@@ -23,6 +23,7 @@ export class FDSRadioRenderer extends SurveyQuestionElementBase {
         const { isInvalid, errorMessage } = useQuestionValidation(question);
         const optionalText = getOptionalText(question);
         
+        
         // Transform SurveyJS choices to RadioButtonGroup options format
         const options = question.choices.map((choice: any) => ({
             label: choice.text || choice.value,

@@ -75,6 +75,13 @@ const fordInit = () => {
       this.updateOnlyInclude(question);
       // Use shared utility to handle choicesByUrl for custom question types
       handleChoicesByUrl(question, 'FordSurveys');
+      
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
     },
     onPropertyChanged(question: Question, propertyName: string, newValue: any) {
       if (propertyName === "onlyInclude") {
@@ -109,13 +116,24 @@ const fordInit = () => {
         description: {
           en: "Please select the vehicles in the order you experienced them.",
         },
-        renderAs: "fordvehiclesdriven",
+        renderAs: "vehiclesdriven",
         choicesByUrl: {
           url: "https://cdn.latitudewebservices.com/vehicles/ford.json",
           valueName: "id",
           titleName: "name",
           image: "image",
         },
+      },
+      onLoaded(question: Question) {
+        // Use shared utility to handle choicesByUrl for custom question types
+        handleChoicesByUrl(question, 'FordSurveys');
+        
+        // Sync validators from parent to child for custom questions
+        const child = question.contentQuestion;
+        if (child && question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+          child.isRequired = true;
+        }
       },
     } as ICustomQuestionTypeConfigurationVOI);
   }
@@ -155,6 +173,14 @@ const fordInit = () => {
         },
       ],
     },
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
+    },
   } as ICustomQuestionTypeConfiguration);
   }
 
@@ -167,6 +193,14 @@ const fordInit = () => {
     onInit: () => {
       Serializer.getProperty("fordrecommend", "name").readOnly = true;
       Serializer.getProperty("fordrecommend", "_ffs").readOnly = true;
+    },
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
     },
     questionJSON: {
       type: "radiogroup",
@@ -231,6 +265,14 @@ const fordInit = () => {
     iconName: "icon-chart-bar",
     showInToolbox: true,
     inheritBaseProps: true,
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
+    },
     questionJSON: {
       type: "radiogroup",
       title: {
@@ -298,6 +340,14 @@ const fordInit = () => {
       Serializer.getProperty("fordrecommendpost", "name").readOnly = true;
       Serializer.getProperty("fordrecommendpost", "_ffs").readOnly = true;
     },
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
+    },
     questionJSON: {
       type: "radiogroup",
       title: {
@@ -358,6 +408,14 @@ const fordInit = () => {
     iconName: "icon-chart-bar",
     showInToolbox: true,
     inheritBaseProps: true,
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
+    },
     questionJSON: {
       type: "radiogroup",
       title: {
@@ -418,6 +476,14 @@ const fordInit = () => {
     iconName: "icon-checkbox",
     showInToolbox: true,
     inheritBaseProps: true,
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
+    },
     questionJSON: {
       type: "radiogroup",
       renderAs: "radiobuttongroup",

@@ -162,7 +162,7 @@ const FDSSurveyDemoScreen: React.FC = () => {
           import("../surveysjs_renderers/FDSRenderers/FDSDropdown"),
           import("../surveysjs_renderers/FDSRenderers/FDSTextArea"),
           import("../surveysjs_renderers/FDSRenderers/FDSToggle"),
-          import("../surveysjs_renderers/CheckboxVOI/index"),
+          import("../surveysjs_renderers/FDSRenderers/CheckboxVOI/index"),
           import("../surveyjs_questions/FordSurveys"),
         ]);
         

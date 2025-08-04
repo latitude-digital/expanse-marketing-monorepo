@@ -1,42 +1,13 @@
-import React, {  } from "react";
-import { ItemValue, RendererFactory, Serializer, SurveyModel, surveyLocalization } from "survey-core";
+import React from "react";
+import { ItemValue, RendererFactory, Serializer } from "survey-core";
 import { ReactQuestionFactory, SurveyQuestionRadiogroup } from "survey-react-ui";
 import UnstyledSelectionCard from "@ui/ford-ui-components/src/v2/selection-card/default/UnstyledSelectionCard";
-import { FieldError } from "@ui/ford-ui-components/src/components/ui/field-error";
-import Icon from "@ui/ford-ui-components/src/v2/icon/Icon";
-import { Typography } from "@ui/ford-ui-components/src/v2/typography/Typography";
-import Showdown from 'showdown';
+import { FDSQuestionWrapper } from '../FDSShared/FDSQuestionWrapper';
 
 import style from './_index.module.scss'
 
-// Create Showdown converter with same config as FDSText
-const markdownConverter = new Showdown.Converter({
-    openLinksInNewWindow: true,
-});
-
-// Helper function to process markdown text
-const processMarkdown = (text: string): string => {
-    if (!text) return text;
-    
-    // Check if text contains markdown syntax
-    const hasMarkdown = /\*\*.*?\*\*|\*.*?\*|`.*?`|\[.*?\]\(.*?\)/.test(text);
-    
-    if (!hasMarkdown) {
-        return text; // Return as-is if no markdown
-    }
-    
-    // Process markdown to HTML
-    const html = markdownConverter.makeHtml(text);
-    // Remove root paragraphs to match SurveyJS behavior
-    return html.replace(/^<p>(.*)<\/p>$/g, '$1');
-};
-
-// Helper component for HTML content
-const HtmlContent = ({ html }: { html: string }) => (
-    <span dangerouslySetInnerHTML={{ __html: html }} />
-);
-
 export class RadioGroupRowQuestion extends SurveyQuestionRadiogroup {
+
 
     constructor(props: any) {
         super(props);
@@ -88,76 +59,29 @@ export class RadioGroupRowQuestion extends SurveyQuestionRadiogroup {
     renderElement(): JSX.Element {
         const question = this.question;
         
-        // Get the question title and handle required/optional indication
-        const title = question.fullTitle;
-        const isRequired = question.isRequired;
-        
-        // Get error message if validation failed
+        // Get validation state for FDS wrapper
         const errorMessage = question.errors.length > 0 
             ? (question.errors[0].getText ? question.errors[0].getText() : question.errors[0].text)
             : undefined;
+        const isInvalid = question.errors.length > 0;
         
-        // Get localized optional text for Ford UI component based on current survey locale
-        const currentLocale = question.survey.locale || 'en';
-        const optionalText = surveyLocalization.locales[currentLocale]?.["optionalText"] || " (Optional)";
-        
-        // Process markdown for title and description
-        const processedTitle = processMarkdown(title);
-        const processedDescription = processMarkdown(question.description);
-        
-        
-        // Check description location setting
-        const showDescriptionAbove = !question.descriptionLocation || question.descriptionLocation !== "underInput";
         
         return (
-            <div className="fds-radio-group-container">
-                {/* Question title - using Ford UI Typography component for proper font inheritance */}
-                {title && (
-                    <div className="fds-radio-group-title" style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                        <Typography variant="body2" weight="regular" color="moderate">
-                            {processedTitle.includes('<') ? <HtmlContent html={processedTitle} /> : processedTitle}
-                        </Typography>
-                        {!isRequired && (
-                            <Typography variant="body2" color="subtle">
-                                {optionalText}
-                            </Typography>
-                        )}
-                    </div>
-                )}
-                
-                {/* Description - positioned under title, above error and radio buttons (when descriptionLocation is not "underInput") */}
-                {processedDescription && showDescriptionAbove && (
-                    <div className="mb-2">
-                        <Typography variant="body2" color="subtle">
-                            {processedDescription.includes('<') ? <HtmlContent html={processedDescription} /> : processedDescription}
-                        </Typography>
-                    </div>
-                )}
-                
-                {/* Error message - using Ford UI styling pattern */}
-                {errorMessage && (
-                    <div className="flex shrink-0 pt-1 text-sm font-medium text-text-onlight-danger items-center gap-1" style={{ marginBottom: '0.5rem' }}>
-                        <Icon height={16} name="errorCircle" width={16} />
-                        {errorMessage}
-                    </div>
-                )}
-                
+            <FDSQuestionWrapper
+                label={question.fullTitle || question.title}
+                description={question.description}
+                isRequired={question.isRequired}
+                isInvalid={isInvalid}
+                errorMessage={errorMessage}
+                question={question}
+            >
                 {/* Radio button group - wrapped with relative positioning */}
                 <div className="relative">
                     <div className={style.radio_group_row}>
                         {this.getItems({}, this.question.bodyItems)}
                     </div>
                 </div>
-                
-                {/* Description - positioned under radio buttons (when descriptionLocation is "underInput") */}
-                {processedDescription && !showDescriptionAbove && (
-                    <div className="mt-2">
-                        <Typography variant="body2" color="subtle">
-                            {processedDescription.includes('<') ? <HtmlContent html={processedDescription} /> : processedDescription}
-                        </Typography>
-                    </div>
-                )}
-            </div>
+            </FDSQuestionWrapper>
         );
     }
 
