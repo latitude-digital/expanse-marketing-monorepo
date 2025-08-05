@@ -1,6 +1,6 @@
 import React from 'react';
 import { Typography } from "@ui/ford-ui-components/src/v2/typography/Typography";
-import { renderLabel, renderDescription, processMarkdown } from './utils';
+import { renderLabel, renderDescription, processMarkdown, getOptionalText } from './utils';
 import { FDSErrorDisplay } from './FDSErrorDisplay';
 import { FDSRequiredIndicator } from './FDSRequiredIndicator';
 
@@ -32,12 +32,16 @@ export const FDSQuestionWrapper: React.FC<FDSQuestionWrapperProps> = ({
     validator.type === 'expression' && validator.expression?.includes('notempty')
   ));
 
+  // Get the optional text and append it to the label if not required (similar to how StyledTextField works)
+  const optionalText = !isActuallyRequired && question ? getOptionalText(question) : '';
+  const labelWithOptional = label + optionalText;
+
   return (
     <div className="fds-question-wrapper">
       {/* Question Label - Always use Typography component for consistent Ford UI styling */}
-      <div className="fds-question-label" style={{ marginBottom: '8px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+      <div className="fds-question-label" style={{ marginBottom: '8px' }}>
         {(() => {
-          const processedLabel = processMarkdown(label);
+          const processedLabel = processMarkdown(labelWithOptional);
           const hasHtml = processedLabel.includes('<');
           
           if (hasHtml) {
@@ -56,9 +60,6 @@ export const FDSQuestionWrapper: React.FC<FDSQuestionWrapperProps> = ({
             );
           }
         })()}
-        {!isActuallyRequired && (
-          <FDSRequiredIndicator question={question} />
-        )}
       </div>
 
       {/* Question Description (optional) - positioned above form control when descriptionLocation is not "underInput" */}
