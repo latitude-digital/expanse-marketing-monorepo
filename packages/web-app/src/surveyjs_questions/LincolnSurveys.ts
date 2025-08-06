@@ -1,3 +1,15 @@
+/**
+ * Lincoln-specific SurveyJS custom question type definitions
+ * 
+ * ⚠️ IMPORTANT FOR DEVELOPERS:
+ * This file defines the question types and basic structure, but many properties
+ * like _ffs values, titles, and validation are set in:
+ * /src/helpers/surveyTemplatesLincoln.ts
+ * 
+ * If you're looking for where _ffs mappings, question titles, or other
+ * question properties are configured, check surveyTemplatesLincoln.ts!
+ */
+
 import {
   ComponentCollection,
   ICustomQuestionTypeConfiguration,
@@ -23,6 +35,15 @@ const lincolnInit = () => {
     });
   }
 
+  /**
+   * Lincoln Vehicle of Interest (VOI) Question
+   * 
+   * @description Multi-select checkbox for Lincoln vehicles the customer is interested in
+   * @_ffs "voi" - Maps to voi field in Lincoln API
+   * @see /src/helpers/surveyTemplatesLincoln.ts - Where _ffs value and other properties are configured
+   * @api_endpoint LINCOLN_VEHICLES_INTERESTED - Sends selected vehicle_ids to separate endpoint
+   * @max_selections 3 vehicles
+   */
   // Register lincolnvoi if it doesn't exist
   if (!ComponentCollection.Instance.getCustomQuestionByName("lincolnvoi")) {
     ComponentCollection.Instance.add({
@@ -82,6 +103,15 @@ const lincolnInit = () => {
     } as ICustomQuestionTypeConfigurationVOI);
   }
 
+  /**
+   * Lincoln Email Opt-In Question
+   * 
+   * @description Radio button group for Lincoln email marketing consent
+   * @_ffs "emailOptIn" - Maps to email_opt_in field in Lincoln API (1=Yes, 0=No)
+   * @see /src/helpers/surveyTemplatesLincoln.ts - Where _ffs value and privacy policy links are configured
+   * @required true
+   * @privacy_policy Includes links to Lincoln privacy policy
+   */
   // Register lincolnoptin if it doesn't exist
   if (!ComponentCollection.Instance.getCustomQuestionByName("lincolnoptin")) {
     ComponentCollection.Instance.add({
@@ -135,6 +165,15 @@ const lincolnInit = () => {
     } as ICustomQuestionTypeConfiguration);
   }
 
+  /**
+   * Lincoln Overall Opinion (Pre-Event) Question
+   * 
+   * @description 10-point rating scale for pre-event Lincoln brand impression
+   * @_ffs "impression" - Maps to impression field in Lincoln API
+   * @see /src/helpers/surveyTemplatesLincoln.ts - Where _ffs value is configured (was custom.overallOpinion)
+   * @scale 1-10 (Poor to Excellent)
+   * @when Pre-event (before vehicle experience)
+   */
   // Register lincolnoverallopinion if it doesn't exist
   if (!ComponentCollection.Instance.getCustomQuestionByName("lincolnoverallopinion")) {
     ComponentCollection.Instance.add({
@@ -168,6 +207,15 @@ const lincolnInit = () => {
     } as ICustomQuestionTypeConfiguration);
   }
 
+  /**
+   * Lincoln Overall Opinion (Post-Event) Question
+   * 
+   * @description 10-point rating scale for post-event Lincoln brand impression
+   * @_ffs "impression_post" - Maps to impression_post field in Lincoln API
+   * @see /src/helpers/surveyTemplatesLincoln.ts - Where _ffs value is configured (was custom.overallOpinionPost)
+   * @scale 1-10 (Poor to Excellent)
+   * @when Post-event (after vehicle experience)
+   */
   // Register lincolnoverallopinionpost if it doesn't exist
   if (!ComponentCollection.Instance.getCustomQuestionByName("lincolnoverallopinionpost")) {
     ComponentCollection.Instance.add({
@@ -201,6 +249,15 @@ const lincolnInit = () => {
     } as ICustomQuestionTypeConfiguration);
   }
 
+  /**
+   * Lincoln Vehicles Driven Question
+   * 
+   * @description Multi-select checkbox for Lincoln vehicles actually test driven at event
+   * @_ffs "vehiclesDriven" - Maps to vehiclesDriven field, sends to LINCOLN_VEHICLES_DRIVEN endpoint
+   * @api_endpoint LINCOLN_VEHICLES_DRIVEN - Sends vehicle_ids with order_driven sequence
+   * @order_driven Tracks sequence in which vehicles were driven (1st, 2nd, 3rd, etc.)
+   * @note Different from "vehicle driven most often" survey question - this is for event test drives
+   */
   // Register lincolnvehiclesdriven if it doesn't exist - NEW QUESTION TYPE
   if (!ComponentCollection.Instance.getCustomQuestionByName("lincolnvehiclesdriven")) {
     console.log('Registering new lincolnvehiclesdriven question type...');
@@ -270,6 +327,15 @@ const lincolnInit = () => {
     console.log('lincolnvehiclesdriven already exists, skipping registration');
   }
 
+  /**
+   * Lincoln Recommend (Pre-Event) Question
+   * 
+   * @description 5-point recommendation scale for Lincoln brand
+   * @_ffs "how_likely_recommend" - Maps to how_likely_recommend field in Lincoln API
+   * @see /src/helpers/surveyTemplatesLincoln.ts - Where _ffs value and titles are configured
+   * @scale 1-5 (Definitely Will NOT to Definitely Will Recommend)
+   * @when Pre-event (before vehicle experience)
+   */
   // Register lincolnrecommend if it doesn't exist
   if (!ComponentCollection.Instance.getCustomQuestionByName("lincolnrecommend")) {
     ComponentCollection.Instance.add({
@@ -339,6 +405,15 @@ const lincolnInit = () => {
     } as ICustomQuestionTypeConfiguration);
   }
 
+  /**
+   * Lincoln Recommend (Post-Event) Question
+   * 
+   * @description 5-point recommendation scale for Lincoln brand after event
+   * @_ffs "how_likely_recommend_post" - Maps to how_likely_recommend_post field in Lincoln API
+   * @see /src/helpers/surveyTemplatesLincoln.ts - Where _ffs value and titles are configured
+   * @scale 1-5 (Definitely Will NOT to Definitely Will Recommend)
+   * @when Post-event (after vehicle experience)
+   */
   // Register lincolnrecommendpost if it doesn't exist
   if (!ComponentCollection.Instance.getCustomQuestionByName("lincolnrecommendpost")) {
     ComponentCollection.Instance.add({

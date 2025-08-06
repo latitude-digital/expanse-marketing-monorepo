@@ -41,7 +41,8 @@ export function mapSurveyToLincolnSurvey(survey: any, surveyData: any, event?: a
         ffsData['city'] = addressData.city || null;
         ffsData['state'] = addressData.state || null;
         ffsData['zip_code'] = addressData.zip_code || null;
-        ffsData['country_code'] = addressData.country || null;
+        // Use 3-char country code from Google Autocomplete, default to USA
+        ffsData['country_code'] = addressData.country || addressData.country_code || "USA";
       } else if (ffsKey === 'voi') {
         ffsData[ffsKey] = question.value;
       } else if (ffsKey === 'emailOptIn') {
@@ -92,7 +93,36 @@ export function mapSurveyToLincolnSurvey(survey: any, surveyData: any, event?: a
       event_id: event.lincolnEventID,
       survey_type: event.surveyType || "basic"
     } : {}),
+    
+    // Lincoln API v13 specific required fields - default to null except where specified
+    how_familiar_other: null,
+    how_familiar: null,
+    impression: null,
+    impression_pre_navigator: null,
+    impression_post: null,
+    impression_post_navigator: null,
+    impression_other: null,
+    competitive_make: null,
+    how_likely_purchasing_other: null,
+    how_likely_recommend_pre: null,
+    how_likely_recommend_other: null,
+    most_likely_buy_model_id: null,
+    most_likely_buy_model_id_pre: null,
+    most_likely_buy_model_id_post: null,
+    rep_initials: null,
+    drove_bonus_vehicle: null,
+    user_name: null,
+    melissa_data_complete: null,
+    melissa_data_response: null,
+    one_word_impression: null,
+    brand_impression_changed: null,
+    language: (surveyData._language || surveyData.language || "en").substring(0, 2),
   });
+
+  // Ensure country_code defaults to USA if not set by address_group
+  if (!lincolnSurvey.country_code) {
+    lincolnSurvey.country_code = "USA";
+  }
   
 
   // Final safety check - ensure signature fields are strings or null, never objects
@@ -118,9 +148,9 @@ export function mapSurveyToLincolnSurvey(survey: any, surveyData: any, event?: a
     minor_signature_type: typeof lincolnSurvey.minor_signature
   });
 
-  // Ensure custom_data is always present
+  // Ensure custom_data is always present as a valid JSON string
   if (!lincolnSurvey.custom_data) {
-    lincolnSurvey.custom_data = null;
+    lincolnSurvey.custom_data = '{}';
   }
 
   return lincolnSurvey;

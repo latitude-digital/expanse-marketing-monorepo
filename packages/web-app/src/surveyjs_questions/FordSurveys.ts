@@ -1,3 +1,14 @@
+/**
+ * Ford-specific SurveyJS custom question type definitions
+ * 
+ * ⚠️ IMPORTANT FOR DEVELOPERS:
+ * This file defines Ford-specific question types. Unlike Lincoln questions,
+ * Ford questions don't have a separate template configuration file.
+ * Most _ffs values and properties are set directly here.
+ * 
+ * For Lincoln questions, see LincolnSurveys.ts + /src/helpers/surveyTemplatesLincoln.ts
+ */
+
 import {
   ComponentCollection,
   ICustomQuestionTypeConfiguration,
@@ -22,6 +33,15 @@ const fordInit = () => {
   console.log('Initializing Ford questions for the first time...');
   // Register individual questions to avoid module caching issues
   
+  /**
+   * Ford Vehicle of Interest (VOI) Question
+   * 
+   * @description Multi-select checkbox for Ford vehicles the customer is interested in
+   * @_ffs "voi" - Maps to voi field in Ford API
+   * @api_endpoint VEHICLES_INSERT - Sends selected vehicle_ids to Ford endpoint
+   * @max_selections 3 vehicles
+   * @data_source https://cdn.latitudewebservices.com/vehicles/ford.json
+   */
   // Register fordvoi if it doesn't exist
   if (!ComponentCollection.Instance.getCustomQuestionByName("fordvoi")) {
     console.log('Registering Ford VOI question type...');
@@ -97,6 +117,15 @@ const fordInit = () => {
   } as ICustomQuestionTypeConfigurationVOI);
   }
 
+  /**
+   * Ford Vehicles Driven Question
+   * 
+   * @description Multi-select checkbox for Ford vehicles actually test driven at event
+   * @_ffs "vehiclesDriven" - Maps to vehiclesDriven field
+   * @note Ford hasn't implemented the driven endpoint yet (unlike Lincoln)
+   * @data_source https://cdn.latitudewebservices.com/vehicles/ford.json
+   * @future Will eventually send to Ford vehicles driven endpoint when implemented
+   */
   // Register fordvehiclesdriven if it doesn't exist - NEW QUESTION TYPE
   if (!ComponentCollection.Instance.getCustomQuestionByName("fordvehiclesdriven")) {
     console.log('Registering new fordvehiclesdriven question type...');
@@ -138,6 +167,14 @@ const fordInit = () => {
     } as ICustomQuestionTypeConfigurationVOI);
   }
 
+  /**
+   * Ford Email Opt-In Question
+   * 
+   * @description Radio button group for Ford email marketing consent
+   * @_ffs "email_opt_in" - Maps to email_opt_in field in Ford API (1=Yes, 0=No)
+   * @privacy_policy Includes Ford Motor Company privacy policy link
+   * @required true
+   */
   // Register other Ford questions if they don't exist
   if (!ComponentCollection.Instance.getCustomQuestionByName("fordoptin")) {
     console.log('Registering Ford optin question type...');
@@ -184,6 +221,14 @@ const fordInit = () => {
   } as ICustomQuestionTypeConfiguration);
   }
 
+  /**
+   * Ford Recommend (Pre-Event) Question
+   * 
+   * @description 5-point recommendation scale for Ford brand
+   * @_ffs "how_likely_recommend" - Maps to how_likely_recommend field in Ford API
+   * @scale 1-5 (Definitely Will NOT to Definitely Will Recommend)
+   * @when Pre-event (before vehicle experience)
+   */
   ComponentCollection.Instance.add({
     name: "fordrecommend",
     title: "How Likely Recommend Ford",
@@ -259,6 +304,14 @@ const fordInit = () => {
 
 
 
+  /**
+   * Ford Purchase Consideration (Pre-Event) Question
+   * 
+   * @description 5-point scale for Ford vehicle purchase consideration
+   * @_ffs "how_likely_purchasing" - Maps to how_likely_purchasing field in Ford API
+   * @scale 1-5 (Definitely Will NOT to Definitely Will Consider)
+   * @when Pre-event (before vehicle experience)
+   */
   ComponentCollection.Instance.add({
     name: "howlikelypurchasingford",
     title: "How Likely to Purchase Ford",
@@ -330,6 +383,14 @@ const fordInit = () => {
 
 
 
+  /**
+   * Ford Recommend (Post-Event) Question
+   * 
+   * @description 5-point recommendation scale for Ford brand after event
+   * @_ffs "how_likely_recommend_post" - Maps to how_likely_recommend_post field in Ford API
+   * @scale 1-5 (Definitely Will NOT to Definitely Will Recommend)
+   * @when Post-event (after vehicle experience)
+   */
   ComponentCollection.Instance.add({
     name: "fordrecommendpost",
     title: "How Likely Recommend Ford (post event)",
@@ -402,6 +463,14 @@ const fordInit = () => {
     },
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * Ford Purchase Consideration (Post-Event) Question
+   * 
+   * @description 5-point scale for Ford vehicle purchase consideration after event
+   * @_ffs "how_likely_purchasing_post" - Maps to how_likely_purchasing_post field in Ford API
+   * @scale 1-5 (Definitely Will NOT to Definitely Will Consider)
+   * @when Post-event (after vehicle experience)
+   */
   ComponentCollection.Instance.add({
     name: "howlikelypurchasingfordpost",
     title: "How Likely to Purchase Ford (post event)",
@@ -470,6 +539,15 @@ const fordInit = () => {
     },
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * Sweepstakes Opt-In Question
+   * 
+   * @description Radio button group for sweepstakes entry consent
+   * @_ffs Not typically mapped - handled as custom logic
+   * @legal Includes official rules link and age/residency restrictions
+   * @example 2025 Mets Bronco sweepstakes for NY/NJ/CT residents
+   * @age_restriction 18+ years old
+   */
   ComponentCollection.Instance.add({
     name: "sweepstakesOptIn",
     title: "Sweepstakes Opt-In",

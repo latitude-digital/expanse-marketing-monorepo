@@ -1,3 +1,14 @@
+/**
+ * FMC (Ford Motor Company) Demographics & Market Research Questions
+ * 
+ * ⚠️ IMPORTANT FOR DEVELOPERS:
+ * This file defines demographic and market research questions used across Ford/Lincoln surveys.
+ * These questions collect customer insights about age, gender, purchase intent, and current vehicles.
+ * 
+ * Unlike brand-specific questions, these don't typically have template configuration files.
+ * Most _ffs values are set directly in the questionJSON definitions below.
+ */
+
 import {
   ComponentCollection,
   ICustomQuestionTypeConfiguration,
@@ -13,6 +24,14 @@ const fmcInit = () => {
     return;
   }
 
+  /**
+   * Gender Question
+   * 
+   * @description Radio button group for gender identification
+   * @_ffs "gender" - Maps to gender field in APIs
+   * @choices Male, Female, Prefer Not To Say
+   * @demographics Used for market research and customer profiling
+   */
   ComponentCollection.Instance.add({
     name: "gender",
     title: "Gender",
@@ -54,6 +73,15 @@ const fmcInit = () => {
     },
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * Age Bracket Question
+   * 
+   * @description Radio button group for age ranges
+   * @_ffs "age_bracket" - Maps to age_bracket field in APIs
+   * @ranges 18-24, 25-29, 30-34, 35-39, 40-44, 45-49, 50-59, Over 60
+   * @note Ford API merges 18-20 and 21-24 into single 18-24 bracket
+   * @demographics Critical for market segmentation and targeting
+   */
   ComponentCollection.Instance.add({
     name: "agebracket",
     title: "Age Bracket",
@@ -114,6 +142,14 @@ const fmcInit = () => {
     },
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * Vehicle Acquisition Method Question
+   * 
+   * @description Radio button group for preferred vehicle acquisition method
+   * @_ffs "how_likely_acquire" - Maps to how_likely_acquire field in APIs
+   * @choices Purchase, Lease
+   * @market_research Helps dealers understand customer financing preferences
+   */
   ComponentCollection.Instance.add({
     name: "howlikelyacquire",
     title: "How Likely to Acquire",
@@ -150,6 +186,14 @@ const fmcInit = () => {
     },
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * In-Market Timing Question
+   * 
+   * @description Radio button group for vehicle purchase timeline
+   * @_ffs "in_market_timing" - Maps to in_market_timing field in APIs
+   * @timeline 0-30 days, 1-3 months, 4-6 months, 7+ months, No definite plans
+   * @lead_scoring Critical for sales follow-up prioritization
+   */
   ComponentCollection.Instance.add({
     name: "inmarkettiming",
     title: "In Market Timing",
@@ -203,6 +247,15 @@ const fmcInit = () => {
   } as ICustomQuestionTypeConfiguration);
 
 
+  /**
+   * Current Vehicle Make Question
+   * 
+   * @description Dropdown for brand of vehicle customer currently drives most
+   * @_ffs "vehicle_driven_most_make_id" - Maps to vehicle_driven_most_make_id field
+   * @data_source https://cdn.latitudewebservices.com/data/makes.json
+   * @competitive_analysis Used to track conquest vs retention opportunities
+   * @note This is about daily driver, not event test drives (see lincolnvehiclesdriven)
+   */
   ComponentCollection.Instance.add({
     name: "vehicledrivenmostmake",
     title: "Vehicle Make Most Driven",

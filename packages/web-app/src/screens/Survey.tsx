@@ -958,7 +958,7 @@ const SurveyComponent: React.FC = () => {
                   minor_signature_type: typeof mergedLincolnSurveyData.minor_signature
                 });
                 
-                const lincolnPayload = mergedLincolnSurveyData;
+                const lincolnPayload = [mergedLincolnSurveyData];
 
                 console.log('[Lincoln Event] Final payload being sent to Lincoln API:', lincolnPayload);
 
@@ -984,6 +984,7 @@ const SurveyComponent: React.FC = () => {
                   const voiBody = (lincolnSurvey as any).voi.map((vehicle_id: string) => ({
                     event_id: res.event.lincolnEventID,
                     device_survey_guid: surveyData.device_survey_guid || '',
+                    survey_vehicle_guid: uuidv4(),
                     survey_date: new Date().toISOString(),
                     vehicle_id,
                     app_version: 'expanse_2.0',
@@ -1009,21 +1010,21 @@ const SurveyComponent: React.FC = () => {
                   console.log('saved lincoln voi');
                 }
 
-                // If there's a driven vehicle, save that too
-                if (mergedLincolnSurveyData.vehicle_driven_most_make_id || mergedLincolnSurveyData.vehicle_driven_most_model_id) {
-                  const drivenBody = [{
+                // If there are vehicles driven, save those too
+                if ((lincolnSurvey as any).vehiclesDriven && (lincolnSurvey as any).vehiclesDriven.length) {
+                  const drivenBody = (lincolnSurvey as any).vehiclesDriven.map((vehicle_id: string, index: number) => ({
                     event_id: res.event.lincolnEventID,
                     device_survey_guid: surveyData.device_survey_guid || '',
+                    survey_vehicle_guid: uuidv4(),
                     survey_date: new Date().toISOString(),
-                    make_id: mergedLincolnSurveyData.vehicle_driven_most_make_id,
-                    model_id: mergedLincolnSurveyData.vehicle_driven_most_model_id,
-                    year: mergedLincolnSurveyData.vehicle_driven_most_year,
+                    vehicle_id,
+                    order_driven: index + 1,
                     app_version: 'expanse_2.0',
                     abandoned: false,
                     custom_data: {
                       survey_type: res.event.surveyType || 'basic'
                     }
-                  }];
+                  }));
 
                   const lincolnDrivenRes = await fetch(getApiUrl(ENDPOINTS.LINCOLN_VEHICLES_DRIVEN), {
                     method: 'POST',
@@ -1038,7 +1039,7 @@ const SurveyComponent: React.FC = () => {
                     throw new Error(lincolnDrivenRes.statusText);
                   }
 
-                  console.log('saved lincoln driven vehicle');
+                  console.log('saved lincoln driven vehicles');
                 }
               }
 

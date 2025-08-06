@@ -1,3 +1,16 @@
+/**
+ * Universal SurveyJS custom question type definitions
+ * 
+ * ⚠️ IMPORTANT FOR DEVELOPERS:
+ * This file defines question types used across all brands (Ford, Lincoln, Unbranded).
+ * These are basic personal information, address, and waiver questions.
+ * 
+ * For brand-specific questions, see:
+ * - LincolnSurveys.ts (Lincoln-specific questions)
+ * - FordSurveys.ts (Ford-specific questions) 
+ * - FMCSurveys.ts (FMC demographic questions)
+ */
+
 import {
   ComponentCollection,
   ICustomQuestionTypeConfiguration,
@@ -107,6 +120,15 @@ const globalInit = () => {
     isSerializable: true,
   });
 
+  /**
+   * First Name Question
+   * 
+   * @description Text input for user's first name with validation
+   * @_ffs "first_name" - Maps to first_name field in APIs
+   * @validation Min 2 chars, starts with letter, letters/spaces/hyphens only
+   * @autocomplete "given-name"
+   * @required true
+   */
   ComponentCollection.Instance.add({
     name: "firstname",
     title: "First Name",
@@ -159,6 +181,15 @@ const globalInit = () => {
     },
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * Last Name Question
+   * 
+   * @description Text input for user's last name with validation
+   * @_ffs "last_name" - Maps to last_name field in APIs
+   * @validation Min 2 chars, starts with letter, letters/spaces/hyphens only
+   * @autocomplete "family-name"
+   * @required true
+   */
   ComponentCollection.Instance.add({
     name: "lastname",
     title: "Last Name",
@@ -212,6 +243,15 @@ const globalInit = () => {
     },
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * Google Autocomplete Address (US) Question
+   * 
+   * @description Multi-field address input with Google Places autocomplete (US only)
+   * @_ffs "address_group" - Maps to address1, address2, city, state, zip_code, country fields
+   * @autocomplete Google Places API integration
+   * @validation US zip codes, state abbreviations
+   * @fields address1*, address2, city*, state*, zip*, country (hidden)
+   */
   ComponentCollection.Instance.add({
     name: "autocompleteaddress",
     title: "Autocomplete Address (US)",
@@ -378,6 +418,15 @@ const globalInit = () => {
     ],
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * Google Autocomplete Address Zip Only (US) Question
+   * 
+   * @description Simplified address input - requires only zip, other fields optional
+   * @_ffs "address_group" - Maps to address_group field mapping
+   * @autocomplete Google Places API integration
+   * @validation Only zip code required, other fields optional
+   * @use_case Quick address collection when full address not needed
+   */
   ComponentCollection.Instance.add({
     name: "autocompleteaddress2",
     title: "Autocomplete Address Zip Only (US)",
@@ -544,6 +593,15 @@ const globalInit = () => {
     ],
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * Google Autocomplete Address (Canada) Question
+   * 
+   * @description Multi-field address input with Google Places autocomplete (Canada only)
+   * @_ffs "address_group" - Maps to address_group field mapping
+   * @autocomplete Google Places API integration, restricted to Canada
+   * @validation Canadian postal codes, province abbreviations
+   * @country_restriction ["ca"] - Canada only
+   */
   ComponentCollection.Instance.add({
     name: "autocompleteaddresscan",
     title: "Autocomplete Address (CAN)",
@@ -712,6 +770,15 @@ const globalInit = () => {
     ],
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * Google Autocomplete Address (All Countries) Question
+   * 
+   * @description Multi-field address input with Google Places autocomplete (worldwide)
+   * @_ffs "address_group" - Maps to address_group field mapping
+   * @autocomplete Google Places API integration, no country restrictions
+   * @validation Flexible validation for international addresses
+   * @country_restriction None - supports all countries
+   */
   ComponentCollection.Instance.add({
     name: "autocompleteaddressall",
     title: "Autocomplete Address (ALL)",
@@ -878,6 +945,15 @@ const globalInit = () => {
     ],
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * Email Address Question
+   * 
+   * @description Email input with validation and server-side verification
+   * @_ffs "email" - Maps to email field in APIs
+   * @validation Email format + server validation via validateEmail function
+   * @autocomplete "email"
+   * @required true
+   */
   ComponentCollection.Instance.add({
     name: "email",
     title: "Email Address",
@@ -927,6 +1003,15 @@ const globalInit = () => {
     },
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * Phone Number Question
+   * 
+   * @description Phone input with US formatting mask
+   * @_ffs "phone" - Maps to phone field in APIs
+   * @mask "999-999-9999" - US phone format
+   * @autocomplete "tel"
+   * @note Includes SMS consent disclaimer
+   */
   ComponentCollection.Instance.add({
     name: "phone",
     title: "Phone Number",
@@ -970,6 +1055,14 @@ const globalInit = () => {
     },
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * General Email Opt-In Question
+   * 
+   * @description Boolean checkbox for Ford email marketing consent
+   * @_ffs Not typically set - handled by brand-specific opt-ins
+   * @privacy_policy Includes Ford privacy policy link
+   * @note For brand-specific opt-ins, use fordoptin or lincolnoptin instead
+   */
   ComponentCollection.Instance.add({
     name: "optin",
     title: "Check Opt-In",
@@ -1022,6 +1115,15 @@ const globalInit = () => {
     isSerializable: true,
   });
 
+  /**
+   * Adult Waiver Question
+   * 
+   * @description Multi-field waiver with markdown text, signature, and agreement checkbox
+   * @_ffs "signature" - Maps to signature field in APIs (extracted from signature object)
+   * @fields waiverText (markdown), signature* (text), waiver_agree* (checkbox)
+   * @signature_extraction Handles signature object -> string conversion
+   * @legal Requires typed signature and checkbox agreement
+   */
   ComponentCollection.Instance.add({
     name: "adultwaiver",
     title: "Adult Waiver",
@@ -1098,6 +1200,15 @@ const globalInit = () => {
     },
   } as ICustomQuestionTypeConfigurationWaiver);
 
+  /**
+   * Minor Waiver Question
+   * 
+   * @description Conditional waiver for events with minors - shows fields only if minors present
+   * @_ffs "minor_signature" - Maps to minor_signature field (only if minorsYesNo='1')
+   * @conditional All minor fields visible only if "Yes" to having minors
+   * @fields minorsYesNo*, minorWaiverText, minorName1*, minorName2, minorName3, minorSignature*
+   * @signature_handling Parent/guardian signature required only if minors are present
+   */
   ComponentCollection.Instance.add({
     name: "minorwaiver",
     title: "Minor Waiver",
