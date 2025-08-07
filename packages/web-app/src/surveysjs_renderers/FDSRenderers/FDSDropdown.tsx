@@ -62,7 +62,7 @@ const FDSDropdownComponent: React.FC<{ question: QuestionDropdownModel }> = ({ q
             isInvalid={isInvalid}
             errorMessage={errorMessage}
             isRequired={question.isRequired}
-            requiredMessage={optionalText}
+            requiredMessage={!question.isRequired ? optionalText : undefined}
             isDisabled={question.isReadOnly}
             listBoxProps={isSearchable ? { 
                 style: { maxHeight: '240px' }, // Override max-h-60 which seems to be 60px instead of 240px

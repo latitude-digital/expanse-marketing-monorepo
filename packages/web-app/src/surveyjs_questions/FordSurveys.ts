@@ -23,6 +23,19 @@ import { handleChoicesByUrl } from "./choicesByUrlHelper";
 // Global flag to prevent multiple initialization
 let fordQuestionsInitialized = false;
 
+/**
+ * Helper to safely set a property as readonly only if it's defined on the specific type
+ * This prevents accidentally modifying base type properties which affects ALL questions
+ */
+const setPropertyReadOnly = (typeName: string, propertyName: string) => {
+  const prop = Serializer.findProperty(typeName, propertyName);
+  // Only set readonly if the property is defined on this specific type
+  // or if it's a custom property like _ffs that we added
+  if (prop && (prop.classInfo?.name === typeName || propertyName === "_ffs")) {
+    prop.readOnly = true;
+  }
+};
+
 const fordInit = () => {
   // Prevent multiple initialization
   if (fordQuestionsInitialized) {
@@ -236,8 +249,8 @@ const fordInit = () => {
     showInToolbox: true,
     inheritBaseProps: true,
     onInit: () => {
-      Serializer.getProperty("fordrecommend", "name").readOnly = true;
-      Serializer.getProperty("fordrecommend", "_ffs").readOnly = true;
+      setPropertyReadOnly("fordrecommend", "name");
+      setPropertyReadOnly("fordrecommend", "_ffs");
     },
     onLoaded(question: Question) {
       // Sync validators from parent to child for custom questions
@@ -398,8 +411,8 @@ const fordInit = () => {
     showInToolbox: true,
     inheritBaseProps: true,
     onInit: () => {
-      Serializer.getProperty("fordrecommendpost", "name").readOnly = true;
-      Serializer.getProperty("fordrecommendpost", "_ffs").readOnly = true;
+      setPropertyReadOnly("fordrecommendpost", "name");
+      setPropertyReadOnly("fordrecommendpost", "_ffs");
     },
     onLoaded(question: Question) {
       // Sync validators from parent to child for custom questions

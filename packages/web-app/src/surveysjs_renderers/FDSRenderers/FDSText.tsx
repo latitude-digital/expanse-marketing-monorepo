@@ -17,6 +17,22 @@ interface ParsedAddress {
 export class FDSTextRenderer extends SurveyQuestionElementBase {
     constructor(props: any) {
         super(props);
+        
+        // Force re-render when errors change (for composite questions)
+        const question = this.question;
+        if (question) {
+            question.registerFunctionOnPropertyValueChanged("errors", () => {
+                this.forceUpdate();
+            });
+            
+            // Also listen to parent errors if this is a child of a composite
+            const parentQuestion = question.parent;
+            if (parentQuestion) {
+                parentQuestion.registerFunctionOnPropertyValueChanged("errors", () => {
+                    this.forceUpdate();
+                });
+            }
+        }
     }
 
     protected get question(): QuestionTextModel {
@@ -32,9 +48,17 @@ export class FDSTextRenderer extends SurveyQuestionElementBase {
         const inputType = this.getInputType();
         const optionalText = getOptionalText(question);
         
-        // Get validation state from question
-        const isInvalid = question.errors && question.errors.length > 0;
-        const errorMessage = isInvalid ? question.errors[0]?.text : undefined;
+        // Get validation state from question or parent (for composite questions)
+        // For composite questions, the error is on the parent question
+        const parentQuestion = question.parent;
+        
+        const questionErrors = question.errors && question.errors.length > 0 ? question.errors : 
+                              (parentQuestion && parentQuestion.errors && parentQuestion.errors.length > 0 ? parentQuestion.errors : []);
+        const isInvalid = questionErrors.length > 0;
+        // Get error text - it might be in .text or need to call .getText()
+        const errorMessage = isInvalid ? 
+            (questionErrors[0]?.getText ? questionErrors[0].getText() : questionErrors[0]?.text) : 
+            undefined;
         
         // Determine if this question uses pattern masking
         const usesMasking = question.maskType === "pattern" && question.maskSettings?.pattern;
@@ -47,13 +71,15 @@ export class FDSTextRenderer extends SurveyQuestionElementBase {
             }
             return rawValue;
         };
+        // For composite questions, check parent's isRequired too
+        const isRequired = question.isRequired || (parentQuestion && parentQuestion.isRequired);
         
         return (
             <StyledTextField
                 label={renderLabel(question.fullTitle)}
                 description={renderDescription(question.description)}
-                isRequired={question.isRequired}
-                requiredMessage={optionalText}
+                isRequired={isRequired}
+                requiredMessage={!isRequired ? optionalText : undefined}
                 placeholder={usesMasking 
                     ? this.getMaskPlaceholder(question.maskSettings.pattern) 
                     : (question.placeholder || "")}

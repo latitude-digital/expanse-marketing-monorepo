@@ -21,6 +21,19 @@ import {
   ICustomQuestionTypeConfigurationWaiver,
 } from "./interfaces";
 
+/**
+ * Helper to safely set a property as readonly only if it's defined on the specific type
+ * This prevents accidentally modifying base type properties which affects ALL questions
+ */
+const setPropertyReadOnly = (typeName: string, propertyName: string) => {
+  const prop = Serializer.findProperty(typeName, propertyName);
+  // Only set readonly if the property is defined on this specific type
+  // or if it's a custom property like _ffs that we added
+  if (prop && (prop.classInfo?.name === typeName || propertyName === "_ffs")) {
+    prop.readOnly = true;
+  }
+};
+
 const globalInit = () => {
   // Prevent double registration
   if (ComponentCollection.Instance.getCustomQuestionByName("firstname")) {
@@ -134,17 +147,18 @@ const globalInit = () => {
     title: "First Name",
     iconName: "icon-person-circle-question",
     showInToolbox: true,
-    inheritBaseProps: true,
+    inheritBaseProps: ["isRequired", "description", "visible", "enable"],
     onInit: () => {
-      Serializer.getProperty("firstname", "name").readOnly = true;
-      Serializer.getProperty("firstname", "_ffs").readOnly = true;
+      setPropertyReadOnly("firstname", "name");
+      setPropertyReadOnly("firstname", "_ffs");
     },
     onLoaded(question: Question) {
       // Sync validators from parent to child for custom questions
       const child = question.contentQuestion;
       if (child && question.validators?.length > 0) {
         child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+        // Sync isRequired from parent to child
+        child.isRequired = question.isRequired;
       }
     },
     questionJSON: {
@@ -195,17 +209,18 @@ const globalInit = () => {
     title: "Last Name",
     iconName: "icon-person-circle-question",
     showInToolbox: true,
-    inheritBaseProps: true,
+    inheritBaseProps: ["isRequired", "description", "visible", "enable"],
     onInit: () => {
-      Serializer.getProperty("lastname", "name").readOnly = true;
-      Serializer.getProperty("lastname", "_ffs").readOnly = true;
+      setPropertyReadOnly("lastname", "name");
+      setPropertyReadOnly("lastname", "_ffs");
     },
     onLoaded(question: Question) {
       // Sync validators from parent to child for custom questions
       const child = question.contentQuestion;
       if (child && question.validators?.length > 0) {
         child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+        // Sync isRequired from parent to child
+        child.isRequired = question.isRequired;
       }
     },
     questionJSON: {
@@ -258,8 +273,8 @@ const globalInit = () => {
     iconName: "icon-house-circle-check",
     showInToolbox: true,
     onInit: () => {
-      Serializer.getProperty("autocompleteaddress", "name").readOnly = true;
-      Serializer.getProperty("autocompleteaddress", "_ffs").readOnly = true;
+      setPropertyReadOnly("autocompleteaddress", "name");
+      setPropertyReadOnly("autocompleteaddress", "_ffs");
     },
     elementsJSON: [
       {
@@ -433,8 +448,8 @@ const globalInit = () => {
     iconName: "icon-house-circle-check",
     showInToolbox: true,
     onInit: () => {
-      Serializer.getProperty("autocompleteaddress2", "name").readOnly = true;
-      Serializer.getProperty("autocompleteaddress2", "_ffs").readOnly = true;
+      setPropertyReadOnly("autocompleteaddress2", "name");
+      setPropertyReadOnly("autocompleteaddress2", "_ffs");
     },
     elementsJSON: [
       {
@@ -608,8 +623,8 @@ const globalInit = () => {
     iconName: "icon-house-circle-check",
     showInToolbox: true,
     onInit: () => {
-      Serializer.getProperty("autocompleteaddresscan", "name").readOnly = true;
-      Serializer.getProperty("autocompleteaddresscan", "_ffs").readOnly = true;
+      setPropertyReadOnly("autocompleteaddresscan", "name");
+      setPropertyReadOnly("autocompleteaddresscan", "_ffs");
     },
     elementsJSON: [
       {
@@ -785,8 +800,8 @@ const globalInit = () => {
     iconName: "icon-house-circle-check",
     showInToolbox: true,
     onInit: () => {
-      Serializer.getProperty("autocompleteaddressall", "name").readOnly = true;
-      Serializer.getProperty("autocompleteaddressall", "_ffs").readOnly = true;
+      setPropertyReadOnly("autocompleteaddressall", "name");
+      setPropertyReadOnly("autocompleteaddressall", "_ffs");
     },
     elementsJSON: [
       {
@@ -959,19 +974,20 @@ const globalInit = () => {
     title: "Email Address",
     iconName: "icon-at",
     showInToolbox: true,
-    inheritBaseProps: true,
+    inheritBaseProps: ["isRequired", "description", "visible", "enable"],
     onInit: () => {
-      Serializer.getProperty("email", "name").readOnly = true;
-      Serializer.getProperty("email", "_ffs").readOnly = true;
-      // Ensure isRequired property is inherited from survey definition
-      Serializer.addProperty("emailtextinput", "isRequired");
+      setPropertyReadOnly("email", "name");
+      setPropertyReadOnly("email", "_ffs");
+      // REMOVED: Don't add isRequired to base types - it breaks the property grid
+      // Serializer.addProperty("emailtextinput", "isRequired");
     },
     onLoaded(question: Question) {
       // Sync validators from parent to child for custom questions
       const child = question.contentQuestion;
       if (child && question.validators?.length > 0) {
         child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+        // Sync isRequired from parent to child
+        child.isRequired = question.isRequired;
       }
     },
     questionJSON: {
@@ -1017,19 +1033,20 @@ const globalInit = () => {
     title: "Phone Number",
     iconName: "icon-phone",
     showInToolbox: true,
-    inheritBaseProps: true,
+    inheritBaseProps: ["isRequired", "description", "visible", "enable"],
     onInit: () => {
-      Serializer.getProperty("phone", "name").readOnly = true;
-      Serializer.getProperty("phone", "_ffs").readOnly = true;
-      // Ensure isRequired property is inherited from survey definition for text type questions
-      Serializer.addProperty("text", "isRequired");
+      setPropertyReadOnly("phone", "name");
+      setPropertyReadOnly("phone", "_ffs");
+      // REMOVED: Don't add isRequired to text type - it breaks the property grid for ALL text questions
+      // Serializer.addProperty("text", "isRequired");
     },
     onLoaded(question: Question) {
       // Sync validators from parent to child for custom questions
       const child = question.contentQuestion;
       if (child && question.validators?.length > 0) {
         child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+        // Sync isRequired from parent to child
+        child.isRequired = question.isRequired;
       }
     },
     questionJSON: {
@@ -1074,7 +1091,8 @@ const globalInit = () => {
       const child = question.contentQuestion;
       if (child && question.validators?.length > 0) {
         child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+        // Sync isRequired from parent to child
+        child.isRequired = question.isRequired;
       }
     },
     questionJSON: {
@@ -1131,8 +1149,8 @@ const globalInit = () => {
     showInToolbox: true,
     inheritBaseProps: true,
     onInit: () => {
-      Serializer.getProperty("adultwaiver", "name").readOnly = true;
-      Serializer.getProperty("adultwaiver", "_ffs").readOnly = true;
+      setPropertyReadOnly("adultwaiver", "name");
+      setPropertyReadOnly("adultwaiver", "_ffs");
       Serializer.addProperty("adultwaiver", {
         name: "waiverMarkdown",
         displayName: "Waiver Markdown",
@@ -1216,8 +1234,8 @@ const globalInit = () => {
     showInToolbox: true,
     inheritBaseProps: true,
     onInit: () => {
-      Serializer.getProperty("minorwaiver", "name").readOnly = true;
-      Serializer.getProperty("minorwaiver", "_ffs").readOnly = true;
+      setPropertyReadOnly("minorwaiver", "name");
+      setPropertyReadOnly("minorwaiver", "_ffs");
       Serializer.addProperty("minorwaiver", {
         name: "waiverMarkdown",
         displayName: "Waiver Markdown",

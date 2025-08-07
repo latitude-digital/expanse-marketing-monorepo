@@ -114,7 +114,7 @@ class EmailTextInputFordUI extends SurveyQuestionElementBase {
                     label={title}
                     description={renderDescription(question.description)}
                     isRequired={isRequired}
-                    requiredMessage={optionalText}
+                    requiredMessage={!isRequired ? optionalText : undefined}
                     placeholder={question.placeholder || ""}
                     value={question.value || ""}
                     isInvalid={isInvalid}

@@ -300,8 +300,6 @@ const SurveyComponent: React.FC = () => {
                     });
                   }
                   
-                  // Remove the problematic isRequired property
-                  delete element.isRequired;
                   
                   console.log(`[Survey Preprocess] Added required validator to question: ${element.name}`);
                 }

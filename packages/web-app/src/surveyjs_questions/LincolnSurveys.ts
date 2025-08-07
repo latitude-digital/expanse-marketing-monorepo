@@ -19,6 +19,19 @@ import {
 import { ICustomQuestionTypeConfigurationVOI } from "./interfaces";
 import { handleChoicesByUrl } from "./choicesByUrlHelper";
 
+/**
+ * Helper to safely set a property as readonly only if it's defined on the specific type
+ * This prevents accidentally modifying base type properties which affects ALL questions
+ */
+const setPropertyReadOnly = (typeName: string, propertyName: string) => {
+  const prop = Serializer.findProperty(typeName, propertyName);
+  // Only set readonly if the property is defined on this specific type
+  // or if it's a custom property like _ffs that we added
+  if (prop && (prop.classInfo?.name === typeName || propertyName === "_ffs")) {
+    prop.readOnly = true;
+  }
+};
+
 const lincolnInit = () => {
   // Check if lincolnvehiclesdriven already exists, if so skip only that registration
   const vehiclesDrivenExists = ComponentCollection.Instance.getCustomQuestionByName("lincolnvehiclesdriven");
@@ -121,8 +134,8 @@ const lincolnInit = () => {
       showInToolbox: true,
       inheritBaseProps: true,
       onInit: () => {
-        Serializer.getProperty("lincolnoptin", "name").readOnly = true;
-        Serializer.getProperty("lincolnoptin", "_ffs").readOnly = true;
+        setPropertyReadOnly("lincolnoptin", "name");
+        setPropertyReadOnly("lincolnoptin", "_ffs");
       },
       questionJSON: {
         type: "radiogroup",
@@ -183,7 +196,7 @@ const lincolnInit = () => {
       showInToolbox: true,
       inheritBaseProps: true,
       onInit: () => {
-        Serializer.getProperty("lincolnoverallopinion", "name").readOnly = true;
+        setPropertyReadOnly("lincolnoverallopinion", "name");
       },
       questionJSON: {
         type: "rating",
@@ -225,7 +238,7 @@ const lincolnInit = () => {
       showInToolbox: true,
       inheritBaseProps: true,
       onInit: () => {
-        Serializer.getProperty("lincolnoverallopinion", "name").readOnly = true;
+        setPropertyReadOnly("lincolnoverallopinionpost", "name");
       },
       questionJSON: {
         type: "rating",
@@ -345,8 +358,8 @@ const lincolnInit = () => {
       showInToolbox: true,
       inheritBaseProps: true,
       onInit: () => {
-        Serializer.getProperty("lincolnrecommend", "name").readOnly = true;
-        Serializer.getProperty("lincolnrecommend", "_ffs").readOnly = true;
+        setPropertyReadOnly("lincolnrecommend", "name");
+        setPropertyReadOnly("lincolnrecommend", "_ffs");
       },
       onLoaded(question: Question) {
       },
@@ -423,8 +436,8 @@ const lincolnInit = () => {
       showInToolbox: true,
       inheritBaseProps: true,
       onInit: () => {
-        Serializer.getProperty("lincolnrecommendpost", "name").readOnly = true;
-        Serializer.getProperty("lincolnrecommendpost", "_ffs").readOnly = true;
+        setPropertyReadOnly("lincolnrecommendpost", "name");
+        setPropertyReadOnly("lincolnrecommendpost", "_ffs");
       },
       onLoaded(question: Question) {
         // Fix isRequired inheritance from JSON - this is called AFTER question is created from JSON
