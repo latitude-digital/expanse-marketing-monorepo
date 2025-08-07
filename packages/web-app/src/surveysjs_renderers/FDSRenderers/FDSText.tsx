@@ -67,7 +67,15 @@ export class FDSTextRenderer extends SurveyQuestionElementBase {
         const getDisplayValue = (): string => {
             const rawValue = question.value || "";
             if (usesMasking) {
-                return this.applyInputMask(rawValue, question.maskSettings.pattern);
+                const saveMasked = question.maskSettings?.saveMaskedValue === true;
+                
+                if (saveMasked) {
+                    // Value is already masked, return as-is
+                    return rawValue;
+                } else {
+                    // Value is unmasked, apply mask for display
+                    return this.applyInputMask(rawValue, question.maskSettings.pattern);
+                }
             }
             return rawValue;
         };
@@ -91,9 +99,17 @@ export class FDSTextRenderer extends SurveyQuestionElementBase {
                 autoComplete={question.autocomplete}
                 onChange={(value: string) => {
                     if (usesMasking) {
-                        // Store only the unmasked (digits-only) value in the question
-                        const unmaskedValue = this.removeMaskFormatting(value);
-                        question.value = unmaskedValue;
+                        // Check if we should save the masked value
+                        const saveMasked = question.maskSettings?.saveMaskedValue === true;
+                        
+                        if (saveMasked) {
+                            // Store the masked value directly
+                            question.value = this.applyInputMask(value, question.maskSettings.pattern);
+                        } else {
+                            // Store only the unmasked (digits-only) value in the question
+                            const unmaskedValue = this.removeMaskFormatting(this.applyInputMask(value, question.maskSettings.pattern));
+                            question.value = unmaskedValue;
+                        }
                         
                         // Force re-render to show masked display
                         this.forceUpdate();

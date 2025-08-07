@@ -98,3 +98,6 @@ coverage/
 test-results/
 playwright-report/
 playwright/.cache/
+
+# Reference libraries (for development reference only)
+/survey-library

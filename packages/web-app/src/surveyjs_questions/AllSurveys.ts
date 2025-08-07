@@ -1067,6 +1067,7 @@ const globalInit = () => {
       autocomplete: "tel",
       maskType: "pattern",
       maskSettings: {
+          "saveMaskedValue": true,
           "pattern": "999-999-9999"
       }
     },
