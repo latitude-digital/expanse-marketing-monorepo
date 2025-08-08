@@ -41,9 +41,14 @@ const fmcInit = () => {
     onLoaded(question: Question) {
       // Sync validators from parent to child for custom questions
       const child = question.contentQuestion;
-      if (child && question.validators?.length > 0) {
-        child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+      if (child) {
+        // Always sync isRequired from parent to child
+        child.isRequired = question.isRequired;
+        
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
       }
     },
     questionJSON: {
@@ -91,9 +96,14 @@ const fmcInit = () => {
     onLoaded(question: Question) {
       // Sync validators from parent to child for custom questions
       const child = question.contentQuestion;
-      if (child && question.validators?.length > 0) {
-        child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+      if (child) {
+        // Always sync isRequired from parent to child
+        child.isRequired = question.isRequired;
+        
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
       }
     },
     questionJSON: {
@@ -159,9 +169,14 @@ const fmcInit = () => {
     onLoaded(question: Question) {
       // Sync validators from parent to child for custom questions
       const child = question.contentQuestion;
-      if (child && question.validators?.length > 0) {
-        child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+      if (child) {
+        // Always sync isRequired from parent to child
+        child.isRequired = question.isRequired;
+        
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
       }
     },
     questionJSON: {
@@ -203,9 +218,14 @@ const fmcInit = () => {
     onLoaded(question: Question) {
       // Sync validators from parent to child for custom questions
       const child = question.contentQuestion;
-      if (child && question.validators?.length > 0) {
-        child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+      if (child) {
+        // Always sync isRequired from parent to child
+        child.isRequired = question.isRequired;
+        
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
       }
     },
     questionJSON: {
@@ -286,9 +306,14 @@ const fmcInit = () => {
       
       // Sync validators from parent to child for custom questions
       const child = question.contentQuestion;
-      if (child && question.validators?.length > 0) {
-        child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+      if (child) {
+        // Always sync isRequired from parent to child
+        child.isRequired = question.isRequired;
+        
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
       }
     }
   } as ICustomQuestionTypeConfiguration);
