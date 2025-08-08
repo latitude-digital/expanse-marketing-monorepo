@@ -190,11 +190,13 @@ const SurveyComponent: React.FC = () => {
 
                     // Conditionally use DerbySurvey baseSurvey if ffs_ford_campaign is 700397
                     let surveyJSON: any;
-                    if (res.data.ffs_ford_campaign === "700397") {
+                    
+                    if (retCustomData.tailgateURL) {
                         surveyJSON = derbyBaseSurvey;
                     } else {
                         surveyJSON = baseSurvey;
                     }
+                    
                     surveyJSON.title = res.data.event_name;
 
                     // if there are opt-ins, add them
@@ -612,26 +614,18 @@ const SurveyComponent: React.FC = () => {
                     margin: '0 auto 24px auto'
                 }}>
                     <h3 style={{ fontWeight: 700, fontSize: 32 }}>
-                        Enter for a chance to win the <span style={{ whiteSpace: 'nowrap' }}>Ford Stable Contest!</span>
+                        Enter for a chance to win the <span style={{ whiteSpace: 'nowrap' }}>Ford Tailgate Sweepstakes!</span>
                     </h3>
                     <div style={{ marginBottom: 20 }}>
-                        <p>Pick the winning order of the top 10 horses competing in the Kentucky Derby for your chance to win the Ford Stable: F-150® Truck, Bronco® SUV, and a Mustang® Coupe.</p>
-                        {/* <Button
-                            style={{ margin: '12px auto', display: 'block', fontWeight: 700 }}
-                            onClick={() => customData.derbyURL && deviceSurveyGuid ? window.open(`${customData.derbyURL}${deviceSurveyGuid}`, '_blank') : undefined}
-                            variant="primary"
-                            background="onLight"
-                        >
-                            LET'S PLAY
-                        </Button> */}
+                        <p>Enter now for your chance to win a custom, team-wrapped 2025 Ford F-150®, or exciting Lions-themed prizes!</p>
                         <button
                             style={{ margin: '12px auto', display: 'block', fontWeight: 700 }}
-                            onClick={() => customData.derbyURL && deviceSurveyGuid ? window.open(`${customData.derbyURL}${deviceSurveyGuid}`, '_blank') : undefined}
+                            onClick={() => customData.tailgateURL && deviceSurveyGuid ? window.open(`${customData.tailgateURL}${deviceSurveyGuid}`, '_blank') : undefined}
                         >
                             LET'S PLAY
                         </button>
                         <p>No duplicate entry required -- your information is saved.</p>
-                        <p style={{ fontSize: 12 }}>NO PURCH. NEC. 50 US/DC 21+ with valid driver's license. Begins 4/26/25; ends 5/3/25. Visit www.fordstable.com for rules.</p>
+                        <p style={{ fontSize: 12 }}>NO PURCHASE NECESSARY. A purchase will not increase your chances of winning. Sweepstakes begins at 12:00 a.m. ET on 8/7/25 and ends at 11:59:59 p.m. ET on 1/31/26 and includes multiple entry periods. Open to legal residents of 50 U.S./D.C., 18 years of age who have a valid driver's license at the time of entry. <a href="https://fordtailgaterules.com/" target="_blank">Click here</a> for Official Rules, including how to enter, odds, prize details, and restrictions. Void where prohibited. Message and data rates may apply. Sponsor: Ford Motor Company, 16800 Executive Drive, Dearborn, MI 48126.</p>
                     </div>
                 </div>
             )}
