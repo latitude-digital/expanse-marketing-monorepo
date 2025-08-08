@@ -69,10 +69,6 @@ interface ExperienceSurveyPage {
 
 export const baseSurvey: ExperienceSurveyConfiguration = {
   title: 'Ford Experience Survey',
-  logo: 'https://cdn.latitudewebservices.com/logos/Ford_Signature_White.png',
-  logoWidth: 'auto',
-  logoHeight: '3em',
-  logoPosition: 'left',
   completedHtml: '<h3>Thank you for your participation.</h3>',
   focusFirstQuestionAutomatic: false,
   // "cookieName": "1e985076-2794-463a",

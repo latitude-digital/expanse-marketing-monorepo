@@ -220,11 +220,10 @@ export const baseSurvey: SurveySurveyConfiguration = {
               _ffs: 'emailOptIn'
             },
             {
-              type: 'expression',
+              type: 'html',
               name: 'question_header',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
-              title:
-                'Please indicate how well each idea describes Ford on a scale of 1-5 (1 - Strongly Disagree, 5 - Strongly Agree).'
+              html: '<p style="font-weight: 600; margin: 20px 0 10px 0;">Please indicate how well each idea describes Ford on a scale of 1-5 (1 - Strongly Disagree, 5 - Strongly Agree).</p>'
             },
             {
               type: 'rating',
