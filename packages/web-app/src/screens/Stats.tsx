@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 
 import { useNavigate, useParams } from "react-router-dom";
 import auth from '../services/auth';
-import { getFirestore, onSnapshot, doc } from "firebase/firestore";
+import { onSnapshot, doc } from "firebase/firestore";
 
 import { useAuthState } from 'react-firebase-hooks/auth';
 import app from '../services/firebase';
+import db from '../services/db';
 
 import { Model, Question } from "survey-core";
 
@@ -23,7 +24,6 @@ function ResultsScreen() {
     console.error(userError);
   }, [userError]);
 
-  const db = getFirestore(app);
   const eventID:string = params.eventID!;
 
   useEffect(() => {

@@ -9,6 +9,7 @@ import './App.scss';
 
 Sentry.init({
   dsn: "https://d0f53ca4df48eafabf4a663fd814b805@o4506238718967808.ingest.sentry.io/4506747184283648",
+  environment: import.meta.env.VITE_ENV || "production",
   integrations: [
     Sentry.browserTracingIntegration(),
     Sentry.replayIntegration({

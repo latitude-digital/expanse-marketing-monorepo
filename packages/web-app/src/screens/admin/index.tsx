@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 
 import { useNavigate, useParams } from "react-router-dom";
-import { getFirestore, doc, getDoc, collection, query, getDocs, where, orderBy, Query, Timestamp, FirestoreDataConverter, DocumentData, QueryDocumentSnapshot, SnapshotOptions } from "firebase/firestore";
+import { doc, getDoc, collection, query, getDocs, where, orderBy, Query, Timestamp, FirestoreDataConverter, DocumentData, QueryDocumentSnapshot, SnapshotOptions } from "firebase/firestore";
 import { useAuthState } from 'react-firebase-hooks/auth';
 
 import auth from '../../services/auth';
 import app from '../../services/firebase';
+import db from '../../services/db';
 
 import { Model, Question, slk, SurveyModel, ITheme } from "survey-core";
 import { SurveyCreator } from "survey-creator-react";
@@ -76,8 +77,6 @@ function AdminScreen() {
     useEffect(() => {
         console.error(userError);
     }, [userError]);
-
-    const db = getFirestore(app);
 
     useEffect(() => {
         if (userLoading) return;

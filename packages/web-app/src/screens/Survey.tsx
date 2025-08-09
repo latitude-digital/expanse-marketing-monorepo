@@ -9,9 +9,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 import auth from '../services/auth';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { httpsCallable } from 'firebase/functions';
 import app from '../services/firebase';
-import functions from '../services/functions';
+import { checkSurveyLimit as checkSurveyLimitFn, validateSurveyLimit as validateSurveyLimitFn } from '../services/namespacedFunctions';
 
 import { getApiUrl, ENDPOINTS } from "../config/api";
 
@@ -234,10 +233,10 @@ const SurveyComponent: React.FC = () => {
           // Check survey limit if configured
           if (res.event.survey_count_limit && res.event.survey_count_limit > 0) {
             const bypass = searchParams.get('bp');
-            const checkSurveyLimit = httpsCallable(functions, 'checkSurveyLimit');
+            // Use namespaced function for survey limit check
             
             try {
-              const result = await checkSurveyLimit({ 
+              const result = await checkSurveyLimitFn({ 
                 eventId: params.eventID,
                 bypass: bypass 
               }) as SurveyLimitResult;
@@ -744,10 +743,10 @@ const SurveyComponent: React.FC = () => {
             // Check survey limit before allowing submission
             if (res.event.survey_count_limit && res.event.survey_count_limit > 0) {
               const bypass = searchParams.get('bp');
-              const validateSurveyLimit = httpsCallable(functions, 'validateSurveyLimit');
+              // Use namespaced function for survey validation
               
               try {
-                const result = await validateSurveyLimit({ 
+                const result = await validateSurveyLimitFn({ 
                   eventId: params.eventID,
                   bypass: bypass 
                 });

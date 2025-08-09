@@ -1,6 +1,5 @@
-import { httpsCallable } from 'firebase/functions';
 import app from './firebase';
-import functions from './functions';
+import { setCloudFrontCookies as setCloudFrontCookiesFn } from './namespacedFunctions';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { fixCookieBase64Padding } from '../utils/base64Utils';
 
@@ -34,9 +33,8 @@ export const ensureCloudFrontAccess = async (): Promise<void> => {
   // Create new promise for cookie setting
   cookiePromise = (async () => {
     try {
-      const setCloudFrontCookies = httpsCallable(functions, 'setCloudFrontCookies');
-      
-      const result = await setCloudFrontCookies();
+      // Use namespaced function
+      const result = await setCloudFrontCookiesFn();
       const { cookies, expires } = result.data as any;
 
       console.log('CloudFront cookies received:', Object.keys(cookies));

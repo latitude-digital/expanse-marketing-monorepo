@@ -2,11 +2,19 @@
 
 set -euo pipefail
 
+# Load Sentry auth token from environment file if not already set
+if [[ -z "${SENTRY_AUTH_TOKEN:-}" ]]; then
+    if [[ -f "packages/web-app/.env.staging" ]]; then
+        export $(grep SENTRY_AUTH_TOKEN packages/web-app/.env.staging | xargs)
+    fi
+fi
+
 # Check required environment variables
 if [[ -z "${SENTRY_AUTH_TOKEN:-}" ]]; then
     echo "❌ Missing required environment variable: SENTRY_AUTH_TOKEN"
     echo ""
-    echo "Usage: SENTRY_AUTH_TOKEN=<token> ./scripts/staging-build-deploy.zsh [BUILD_NUMBER]"
+    echo "Please ensure SENTRY_AUTH_TOKEN is set in packages/web-app/.env.staging"
+    echo "Or provide it as: SENTRY_AUTH_TOKEN=<token> ./scripts/staging-build-deploy.zsh [BUILD_NUMBER]"
     echo ""
     echo "Optional:"
     echo "  BUILD_NUMBER: Custom build number (default: timestamp)"
@@ -73,7 +81,7 @@ echo -e "${GREEN}✅ Sentry release created${NC}"
 
 # Step 6: Build the application
 echo -e "${YELLOW}🏗️  Building application${NC}"
-VITE_ENV=staging pnpm run build
+pnpm run build:staging
 echo -e "${GREEN}✅ Application built${NC}"
 
 # Step 7: Deploy to S3
@@ -104,7 +112,36 @@ echo -e "${GREEN}✅ Sentry deployment recorded${NC}"
 
 cd ../..
 
+# Step 9: Build Firebase Functions
+echo -e "${YELLOW}🔥 Building Firebase Functions${NC}"
+cd packages/firebase
+
+# Load staging environment variables for Firebase
+if [[ -f .env.staging ]]; then
+    echo -e "${BLUE}Loading Firebase staging environment variables${NC}"
+    export $(cat .env.staging | grep -v '^#' | xargs)
+    # Copy to .env for Firebase deployment to pick up
+    cp .env.staging .env
+fi
+
+npm run build
+echo -e "${GREEN}✅ Firebase Functions built${NC}"
+
+# Step 10: Deploy Firebase Functions (staging namespace only)
+echo -e "${YELLOW}🚀 Deploying Firebase Functions to staging${NC}"
+
+# Deploy only staging functions
+firebase deploy --only functions:staging --project latitude-lead-system
+
+# Deploy Firestore rules and indexes (applies to all databases)
+# Note: Firebase CLI doesn't support database-specific deployment syntax yet
+firebase deploy --only firestore:rules,firestore:indexes --project latitude-lead-system --force
+echo -e "${GREEN}✅ Firebase Functions deployed to staging${NC}"
+
+cd ../..
+
 echo -e "${GREEN}🎉 Staging deployment complete!${NC}"
 echo -e "${GREEN}URL: https://survey.staging.expansemarketing.com/${NC}"
+echo -e "${GREEN}Firebase Functions: Deployed to staging namespace${NC}"
 echo -e "${GREEN}Version: ${VERSION_NUMBER}${NC}"
 echo -e "${GREEN}Build: ${BUILD_NUMBER}${NC}"

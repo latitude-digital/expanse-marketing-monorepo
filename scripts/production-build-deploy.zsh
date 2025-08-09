@@ -2,11 +2,19 @@
 
 set -euo pipefail
 
+# Load Sentry auth token from environment file if not already set
+if [[ -z "${SENTRY_AUTH_TOKEN:-}" ]]; then
+    if [[ -f "packages/web-app/.env.production" ]]; then
+        export $(grep SENTRY_AUTH_TOKEN packages/web-app/.env.production | xargs)
+    fi
+fi
+
 # Check required environment variables
 if [[ -z "${SENTRY_AUTH_TOKEN:-}" ]]; then
     echo "❌ Missing required environment variable: SENTRY_AUTH_TOKEN"
     echo ""
-    echo "Usage: SENTRY_AUTH_TOKEN=<token> ./scripts/production-build-deploy.zsh [BUILD_NUMBER]"
+    echo "Please ensure SENTRY_AUTH_TOKEN is set in packages/web-app/.env.production"
+    echo "Or provide it as: SENTRY_AUTH_TOKEN=<token> ./scripts/production-build-deploy.zsh [BUILD_NUMBER]"
     echo ""
     echo "Optional:"
     echo "  BUILD_NUMBER: Custom build number (default: timestamp)"
@@ -73,7 +81,7 @@ echo -e "${GREEN}✅ Sentry release created${NC}"
 
 # Step 6: Build the application
 echo -e "${YELLOW}🏗️  Building application${NC}"
-VITE_ENV=production pnpm run build
+pnpm run build:production
 echo -e "${GREEN}✅ Application built${NC}"
 
 # Step 7: Deploy to S3
@@ -104,7 +112,34 @@ echo -e "${GREEN}✅ Sentry deployment recorded${NC}"
 
 cd ../..
 
+# Step 9: Build Firebase Functions
+echo -e "${YELLOW}🔥 Building Firebase Functions${NC}"
+cd packages/firebase
+
+# Load production environment variables for Firebase
+if [[ -f .env.production ]]; then
+    echo -e "${BLUE}Loading Firebase production environment variables${NC}"
+    export $(cat .env.production | grep -v '^#' | xargs)
+fi
+
+npm run build
+echo -e "${GREEN}✅ Firebase Functions built${NC}"
+
+# Step 10: Deploy Firebase Functions (prod namespace only)
+echo -e "${YELLOW}🚀 Deploying Firebase Functions to production${NC}"
+
+# Deploy only prod functions
+firebase deploy --only functions:prod --project latitude-lead-system
+
+# Deploy Firestore rules and indexes (applies to all databases)
+# Note: Firebase CLI doesn't support database-specific deployment syntax yet
+firebase deploy --only firestore:rules,firestore:indexes --project latitude-lead-system --force
+echo -e "${GREEN}✅ Firebase Functions deployed to production${NC}"
+
+cd ../..
+
 echo -e "${GREEN}🎉 Production deployment complete!${NC}"
-echo -e "${GREEN}URL: https://expansemarketing.com/${NC}"
+echo -e "${GREEN}URL: https://survey.expansemarketing.com/${NC}"
+echo -e "${GREEN}Firebase Functions: Deployed to prod namespace${NC}"
 echo -e "${GREEN}Version: ${VERSION_NUMBER}${NC}"
 echo -e "${GREEN}Build: ${BUILD_NUMBER}${NC}"

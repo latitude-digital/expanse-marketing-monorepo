@@ -1,11 +1,12 @@
 import { useEffect, useState, useRef } from 'react';
 
 import { useNavigate, useParams } from "react-router-dom";
-import { getFirestore, doc, getDoc, collection, query, getDocs } from "firebase/firestore";
+import { doc, getDoc, collection, query, getDocs } from "firebase/firestore";
 import auth from '../services/auth';
 
 import { useAuthState } from 'react-firebase-hooks/auth';
 import app from '../services/firebase';
+import db from '../services/db';
 import { ensureCloudFrontAccess } from '../services/cloudFrontAuth';
 
 import { Model, Question, slk } from "survey-core";
@@ -555,7 +556,6 @@ function DashboardScreen() {
   // Debug logging
   console.log('Dashboard render - columnDefs:', columnDefs.length, 'answers:', allAnswers?.length, 'questions:', allQuestions?.length);
 
-  const db = getFirestore(app);
   const eventID: string = params.eventID!;
 
   useEffect(() => {

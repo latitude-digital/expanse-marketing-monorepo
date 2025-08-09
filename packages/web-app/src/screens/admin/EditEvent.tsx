@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 
 import { useNavigate, useParams } from "react-router-dom";
-import { getFirestore, doc, getDoc, Timestamp, FirestoreDataConverter, DocumentData, QueryDocumentSnapshot, SnapshotOptions, setDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, Timestamp, FirestoreDataConverter, DocumentData, QueryDocumentSnapshot, SnapshotOptions, setDoc, updateDoc } from "firebase/firestore";
 import { useAuthState } from 'react-firebase-hooks/auth';
 
 import auth from '../../services/auth';
 import app from '../../services/firebase';
+import db from '../../services/db';
 
 import { slk, SurveyModel } from "survey-core";
 
@@ -96,7 +97,6 @@ function DashboardScreen() {
     const [thisEvent, setThisEvent] = useState<ExpanseEvent>();
     const [thisSurvey, setThisSurvey] = useState<SurveyModel>();
 
-    const db = getFirestore(app);
     const eventID: string = params.eventID!;
 
     useEffect(() => {

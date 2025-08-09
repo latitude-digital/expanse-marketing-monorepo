@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 
 import { useNavigate, useParams } from "react-router-dom";
-import { getFirestore, doc, getDoc, Timestamp, FirestoreDataConverter, DocumentData, QueryDocumentSnapshot, SnapshotOptions, updateDoc } from "firebase/firestore";
+import { doc, getDoc, Timestamp, FirestoreDataConverter, DocumentData, QueryDocumentSnapshot, SnapshotOptions, updateDoc } from "firebase/firestore";
 import { useAuthState } from 'react-firebase-hooks/auth';
 
 import auth from '../../services/auth';
 import app from '../../services/firebase';
+import db from '../../services/db';
 
 import { QuestionRadiogroupModel, Serializer } from "survey-core";
 import { SurveyCreatorComponent, SurveyCreator } from "survey-creator-react";
@@ -80,7 +81,6 @@ function DashboardScreen() {
     const [creator, setCreator] = useState<SurveyCreator>();
     const [initializationComplete, setInitializationComplete] = useState(false);
 
-    const db = getFirestore(app);
     const eventID: string = params.eventID!;
 
     useEffect(() => {

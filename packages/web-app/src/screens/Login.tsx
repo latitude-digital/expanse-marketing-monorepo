@@ -10,15 +10,22 @@ import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { resetCloudFrontAccess, ensureCloudFrontAccess } from '../services/cloudFrontAuth';
 
 // Auth service
-firebase.initializeApp({
-  apiKey: "AIzaSyAGX-fDz0xFhlEjuWSEK-2GB6W1R61TIuo",
-  authDomain: "latitude-lead-system.firebaseapp.com",
-  projectId: "latitude-lead-system",
-  storageBucket: "latitude-lead-system.appspot.com",
-  messagingSenderId: "846031493147",
-  appId: "1:846031493147:web:097f695ea7e214a80b80be",
-  measurementId: "G-2NHQNB0M5R"
-});
+// Use different project ID when using emulator
+const isEmulatorMode = import.meta.env.VITE_FIREBASE_MODE === 'emulator' || 
+                       (import.meta.env.MODE === 'development' && import.meta.env.VITE_USE_FIRESTORE_EMULATOR === 'true');
+
+// Only initialize if not already initialized
+if (!firebase.apps.length) {
+  firebase.initializeApp({
+    apiKey: "AIzaSyAGX-fDz0xFhlEjuWSEK-2GB6W1R61TIuo",
+    authDomain: "latitude-lead-system.firebaseapp.com",
+    projectId: isEmulatorMode ? "expanse-marketing" : "latitude-lead-system",
+    storageBucket: "latitude-lead-system.appspot.com",
+    messagingSenderId: "846031493147",
+    appId: "1:846031493147:web:097f695ea7e214a80b80be",
+    measurementId: "G-2NHQNB0M5R"
+  });
+}
 
 const authForFirebaseUI = firebase.auth()
 

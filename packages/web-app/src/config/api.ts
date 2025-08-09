@@ -69,20 +69,34 @@ const useFunctionsEmulator = (): boolean => {
   return inDev && import.meta.env.VITE_USE_FUNCTIONS_EMULATOR !== 'false';
 };
 
+// Determine Firebase namespace from environment
+const getFirebaseNamespace = (): string => {
+  // Check VITE_FIREBASE_NAMESPACE environment variable
+  const namespace = import.meta.env.VITE_FIREBASE_NAMESPACE;
+  if (namespace === 'staging') return 'staging';
+  if (namespace === 'prod') return 'prod';
+  // Default to prod
+  return 'prod';
+};
+
+const FIREBASE_NAMESPACE = getFirebaseNamespace();
+
 // Firebase Functions base URLs
 const FIREBASE_FUNCTIONS_BASE: string = useFunctionsEmulator() 
-  ? 'http://127.0.0.1:5001/latitude-lead-system/us-central1'
-  : 'https://us-central1-latitude-lead-system.cloudfunctions.net';
+  ? 'http://127.0.0.1:5001/expanse-marketing/us-central1'
+  : 'https://us-central1-expanse-marketing.cloudfunctions.net';
 
 // Cloud Run base URLs (getBroncoRank is a separate service)
 const CLOUD_RUN_BASE: string = useFunctionsEmulator()
-  ? 'http://127.0.0.1:5001/latitude-lead-system/us-central1' // Use Functions emulator for local dev
+  ? 'http://127.0.0.1:5001/expanse-marketing/us-central1' // Use Functions emulator for local dev
   : 'https://getbroncorank-erqibiidsa-uc.a.run.app';
 
 if (useFunctionsEmulator()) {
   console.log('🔧 Using Firebase emulators for Functions');
+  console.log(`📦 Using namespace: ${FIREBASE_NAMESPACE}`);
 } else {
   console.log('🌐 Using production Firebase Functions');
+  console.log(`📦 Using namespace: ${FIREBASE_NAMESPACE}`);
 }
 
 // API endpoints interface
@@ -120,17 +134,17 @@ export const ENDPOINTS: ApiEndpoints = {
   VEHICLES_INSERT: '/survey/insert/vehicles',
   EVENTS_CHECK: '/events/check/v2',
   EVENTS_QR: '/events/qr',
-  // Firebase functions are full URLs
-  VALIDATE_EMAIL: `${FIREBASE_FUNCTIONS_BASE}/validateEmail`,
-  GET_SURVEY: `${FIREBASE_FUNCTIONS_BASE}/getSurvey`,
-  MAKE_BOKEO_BOOKING: `${FIREBASE_FUNCTIONS_BASE}/makeBookeoBooking`,
-  SAVE_SURVEY: `${FIREBASE_FUNCTIONS_BASE}/saveSurvey`,
-  CHECK_IN_OUT_SURVEY: `${FIREBASE_FUNCTIONS_BASE}/checkInOutSurvey`,
-  GET_BRONCO_RANK: `${FIREBASE_FUNCTIONS_BASE}/getBroncoRank`,
-  CREATE_NEW_USER: `${FIREBASE_FUNCTIONS_BASE}/createNewUser`,
-  GET_BOOKEO_PRODUCTS: `${FIREBASE_FUNCTIONS_BASE}/getBookeoProducts`,
-  GET_BOOKEO_SLOTS_BY_PRODUCT: `${FIREBASE_FUNCTIONS_BASE}/getBookeoSlotsByProduct`,
-  HOLD_BOOKEO_BOOKING: `${FIREBASE_FUNCTIONS_BASE}/holdBookeoBooking`,
+  // Firebase functions are full URLs with namespace
+  VALIDATE_EMAIL: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-validateEmail`,
+  GET_SURVEY: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-getSurvey`,
+  MAKE_BOKEO_BOOKING: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-makeBookeoBooking`,
+  SAVE_SURVEY: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-saveSurvey`,
+  CHECK_IN_OUT_SURVEY: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-checkInOutSurvey`,
+  GET_BRONCO_RANK: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-getBroncoRank`,
+  CREATE_NEW_USER: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-createNewUser`,
+  GET_BOOKEO_PRODUCTS: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-getBookeoProducts`,
+  GET_BOOKEO_SLOTS_BY_PRODUCT: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-getBookeoSlotsByProduct`,
+  HOLD_BOOKEO_BOOKING: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-holdBookeoBooking`,
   // Cloud Run endpoints
   GET_BRONCO_RANK_BASE: CLOUD_RUN_BASE
 };
