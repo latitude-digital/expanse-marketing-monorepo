@@ -83,12 +83,12 @@ const FIREBASE_NAMESPACE = getFirebaseNamespace();
 
 // Firebase Functions base URLs
 const FIREBASE_FUNCTIONS_BASE: string = useFunctionsEmulator() 
-  ? 'http://127.0.0.1:5001/expanse-marketing/us-central1'
-  : 'https://us-central1-expanse-marketing.cloudfunctions.net';
+  ? 'http://127.0.0.1:5001/latitude-lead-system/us-central1'
+  : 'https://us-central1-latitude-lead-system.cloudfunctions.net';
 
 // Cloud Run base URLs (getBroncoRank is a separate service)
 const CLOUD_RUN_BASE: string = useFunctionsEmulator()
-  ? 'http://127.0.0.1:5001/expanse-marketing/us-central1' // Use Functions emulator for local dev
+  ? 'http://127.0.0.1:5001/latitude-lead-system/us-central1' // Use Functions emulator for local dev
   : 'https://getbroncorank-erqibiidsa-uc.a.run.app';
 
 if (useFunctionsEmulator()) {
