@@ -131,9 +131,8 @@ echo -e "${YELLOW}🚀 Deploying Firebase Functions to production${NC}"
 # Deploy only prod functions
 firebase deploy --only functions:prod --project latitude-lead-system
 
-# Deploy Firestore rules and indexes (applies to all databases)
-# Note: Firebase CLI doesn't support database-specific deployment syntax yet
-firebase deploy --only firestore:rules,firestore:indexes --project latitude-lead-system --force
+# Deploy Firestore rules and indexes to PRODUCTION database only using production config
+firebase deploy --only firestore:rules,firestore:indexes --project latitude-lead-system --config firebase.production.json
 echo -e "${GREEN}✅ Firebase Functions deployed to production${NC}"
 
 cd ../..

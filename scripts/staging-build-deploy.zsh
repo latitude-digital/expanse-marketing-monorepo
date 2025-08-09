@@ -133,9 +133,8 @@ echo -e "${YELLOW}🚀 Deploying Firebase Functions to staging${NC}"
 # Deploy only staging functions
 firebase deploy --only functions:staging --project latitude-lead-system
 
-# Deploy Firestore rules and indexes (applies to all databases)
-# Note: Firebase CLI doesn't support database-specific deployment syntax yet
-firebase deploy --only firestore:rules,firestore:indexes --project latitude-lead-system --force
+# Deploy Firestore rules and indexes to STAGING database only using staging config
+firebase deploy --only firestore:rules,firestore:indexes --project latitude-lead-system --config firebase.staging.json
 echo -e "${GREEN}✅ Firebase Functions deployed to staging${NC}"
 
 cd ../..
