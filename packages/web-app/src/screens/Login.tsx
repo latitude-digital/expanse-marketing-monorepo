@@ -1,120 +1,139 @@
-// FirebaseUI uses the old version of firebase, so we need to import the compat version of the auth module.
-import "firebase/compat/auth";
-import firebase from "firebase/compat/app";
-import * as firebaseui from 'firebaseui'
-import 'firebaseui/dist/firebaseui.css'
-
-// React stuff
-import { useEffect, useState } from 'react';
+import { useEffect, useState, FormEvent } from 'react';
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { resetCloudFrontAccess, ensureCloudFrontAccess } from '../services/cloudFrontAuth';
-
-// Auth service
-// Use different project ID when using emulator
-const isEmulatorMode = import.meta.env.VITE_FIREBASE_MODE === 'emulator' || 
-                       (import.meta.env.MODE === 'development' && import.meta.env.VITE_USE_FIRESTORE_EMULATOR === 'true');
-
-// Only initialize if not already initialized
-if (!firebase.apps.length) {
-  firebase.initializeApp({
-    apiKey: "AIzaSyAGX-fDz0xFhlEjuWSEK-2GB6W1R61TIuo",
-    authDomain: "latitude-lead-system.firebaseapp.com",
-    projectId: isEmulatorMode ? "expanse-marketing" : "latitude-lead-system",
-    storageBucket: "latitude-lead-system.appspot.com",
-    messagingSenderId: "846031493147",
-    appId: "1:846031493147:web:097f695ea7e214a80b80be",
-    measurementId: "G-2NHQNB0M5R"
-  });
-}
-
-const authForFirebaseUI = firebase.auth()
+import { useAuth } from '../contexts/AuthContext';
 
 function SigninScreen() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  
-  if (searchParams.has('logout')) {
-    setSearchParams({});
-    firebase.auth().signOut().then(() => {
-      resetCloudFrontAccess(); // Clear CloudFront cookies
-      let newLocation = [...location.pathname.split('/')];
-      console.log('newLocation 1', newLocation);
-      newLocation.pop()
-      console.log('newLocation 2', newLocation);
-      newLocation.pop()
-      console.log('newLocation 3', newLocation);
-      navigate(newLocation.join('/'));
-    });
-  }
+  const { currentUser, signIn, signOut, loading: authLoading } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   
   useEffect(() => {
-    const ui = firebaseui.auth.AuthUI.getInstance() || new firebaseui.auth.AuthUI(authForFirebaseUI);
-    let signInSuccessUrl = './';
-    
-    // see if the user is logged in
-    const user = firebase.auth().currentUser;
-    if (user) {
-      // User is signed in.
-      console.log('User is signed in');
-      console.log(user);
-      // Redirect to the home page
-      navigate(signInSuccessUrl);
-    }
-
-    ui.start('#firebaseui-auth-container', {
-      callbacks: {
-        signInSuccessWithAuthResult: function (authResult, redirectUrl) {
-          // Action if the user is authenticated successfully
-          console.log('authResult', authResult);
-          console.log('redirectUrl', redirectUrl);
-          // Reset and ensure fresh CloudFront cookies after login
+    const handleLogout = async () => {
+      if (searchParams.has('logout')) {
+        setSearchParams({});
+        try {
+          await signOut();
           resetCloudFrontAccess();
-          ensureCloudFrontAccess().then(() => {
-            console.log('CloudFront cookies refreshed after login');
-          }).catch(err => {
-            console.error('Failed to set CloudFront cookies after login:', err);
-          });
-          return true;
-        },
-        uiShown: function () {
-          // This is what should happen when the form is full loaded. In this example, I hide the loader element.
-          document.getElementById('loader')!.style.display = 'none';
+          let newLocation = [...location.pathname.split('/')];
+          newLocation.pop();
+          newLocation.pop();
+          navigate(newLocation.join('/'));
+        } catch (error) {
+          console.error('Logout error:', error);
         }
-      },
-      signInSuccessUrl, // This is where should redirect if the sign in is successful.
-      signInOptions: [ // This array contains all the ways an user can authenticate in your application. For this example, is only by email.
-        {
-          provider: firebase.auth.PhoneAuthProvider.PROVIDER_ID,
-          defaultCountry: 'US',
-          requireDisplayName: false,
-          disableSignUp: {
-            status: true
-          }
-        },
-        {
-          provider: firebase.auth.EmailAuthProvider.PROVIDER_ID,
-          signInMethod: firebase.auth.EmailAuthProvider.EMAIL_PASSWORD_SIGN_IN_METHOD,
-          forceSameDevice: false,
-          requireDisplayName: false,
-          disableSignUp: {
-            status: true
-          }
-        }
-      ],
-      // tosUrl: 'https://www.example.com/terms-conditions', // URL to you terms and conditions.
-      // privacyPolicyUrl: function () { // URL to your privacy policy
-      //   window.location.assign('https://www.example.com/privacy-policy');
-      // }
-    });
-  }, []);
+      }
+    };
+    handleLogout();
+  }, [searchParams, setSearchParams, location.pathname, navigate, signOut]);
+  
+  useEffect(() => {
+    if (!authLoading && currentUser) {
+      console.log('User is already signed in:', currentUser.email);
+      navigate('./');
+    }
+  }, [currentUser, authLoading, navigate]);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      await signIn(email, password);
+      
+      resetCloudFrontAccess();
+      await ensureCloudFrontAccess();
+      console.log('CloudFront cookies refreshed after login');
+      
+      navigate('./');
+    } catch (error: any) {
+      setError(error.message || 'An error occurred during sign in');
+      console.error('Sign in error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-gray-600">Checking authentication...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <h1 className="text-center my-3 title">Login</h1>
-      <div id="firebaseui-auth-container"></div>
-      <div id="loader" className="text-center">Loading</div>
-    </>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Sign in to your account
+          </h2>
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="rounded-md bg-red-50 p-4">
+              <div className="text-sm text-red-800">{error}</div>
+            </div>
+          )}
+          <div className="rounded-md shadow-sm -space-y-px">
+            <div>
+              <label htmlFor="email-address" className="sr-only">
+                Email address
+              </label>
+              <input
+                id="email-address"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Email address"
+                disabled={loading}
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="sr-only">
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Password"
+                disabled={loading}
+              />
+            </div>
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Signing in...' : 'Sign in'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
+
 export default SigninScreen;

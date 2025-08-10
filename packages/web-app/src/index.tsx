@@ -10,6 +10,9 @@ import {
   Route,
 } from "react-router-dom";
 
+// Auth provider
+import { AuthProvider } from './contexts/AuthContext';
+
 // screens
 import App from './App';
 import Home from './screens/Home';
@@ -45,6 +48,7 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
+  <AuthProvider>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />}>
@@ -84,6 +88,7 @@ root.render(
         </Route>
       </Routes>
     </BrowserRouter>
+  </AuthProvider>
 );
 
 // If you want to start measuring performance in your app, pass a function

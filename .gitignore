@@ -101,3 +101,9 @@ playwright/.cache/
 
 # Reference libraries (for development reference only)
 /survey-library
+# Claude Code IDE generated directories
+.claude/
+.clode/
+.claude-snapshots/
+.claude-checkpoints/
+.worktrees/

@@ -31,7 +31,6 @@
     "ag-grid-react": "^34.0.0",
     "file-saver": "^2.0.5",
     "firebase": "^10.10.0",
-    "firebaseui": "^6.1.0",
     "formik": "^2.2.9",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
