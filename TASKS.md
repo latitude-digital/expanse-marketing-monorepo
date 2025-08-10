@@ -1,7 +1,7 @@
 # Project Tasks
 
 *This file is synced with Clode Studio and Claude's native TodoWrite system.*  
-*Last updated: 2025-08-10T17:52:48.802Z*
+*Last updated: 2025-08-10T18:15:00.000Z*
 
 ## Backlog (57)
 
@@ -450,31 +450,18 @@
   - Description: Optimize auth screens for mobile and tablet devices (field users need mobile access)
   - Resources: Task: AUTH-005
 
-## In Progress (3)
+## In Progress (0)
 
-- [ ] **Create AuthContext provider** ⏳
-  - ID: AUTH-003
-  - Assignee: claude
-  - Type: feature
-  - Priority: high
-  - Description: Implement centralized auth state management wrapping Firebase Auth's onAuthStateChanged() and currentUser
-  - Resources: Task: AUTH-002, File: packages/web-app/src/contexts/AuthContext.tsx
-- [ ] **Migrate to modern Firebase SDK** ⏳
-  - ID: AUTH-002
-  - Assignee: claude
-  - Type: refactor
-  - Priority: high
-  - Description: Replace Firebase compat imports with modern v10 SDK - keep all Firebase Auth methods, just update import syntax
-  - Resources: Task: AUTH-001, File: packages/web-app/src/screens/Login.tsx
-- [ ] **Create auth service abstraction layer** ⏳
-  - ID: AUTH-000
-  - Assignee: claude
-  - Type: feature
-  - Priority: high
-  - Description: Create service layer abstraction over Firebase Auth to decouple UI from Firebase SDK - enables future auth provider changes
-  - Resources: File: packages/web-app/src/services/authService.ts
+## Completed (5)
 
-## Completed (2)
+- [x] ~~Create auth service abstraction layer~~ ✅
+  - ~~ID: AUTH-000~~
+  - ~~Assignee: claude~~
+  - ~~Type: feature~~
+  - ~~Priority: high~~
+  - ~~Description: Create service layer abstraction over Firebase Auth to decouple UI from Firebase SDK - enables future auth provider changes~~
+  - ~~Resources: File: packages/web-app/src/services/authService.ts~~
+  - ~~Completed: 2025-08-10~~
 
 - [x] ~~Remove FirebaseUI dependency~~
   - ~~ID: AUTH-001~~
@@ -483,6 +470,25 @@
   - ~~Priority: high~~
   - ~~Description: Remove firebaseui package and clean up package.json (NOTE: Phone auth being removed)~~
   - ~~Resources: File: packages/web-app/package.json~~
+
+- [x] ~~Migrate to modern Firebase SDK~~ ✅
+  - ~~ID: AUTH-002~~
+  - ~~Assignee: claude~~
+  - ~~Type: refactor~~
+  - ~~Priority: high~~
+  - ~~Description: Replace Firebase compat imports with modern v10 SDK - keep all Firebase Auth methods, just update import syntax~~
+  - ~~Resources: Task: AUTH-001, File: packages/web-app/src/screens/Login.tsx~~
+  - ~~Completed: 2025-08-10~~
+
+- [x] ~~Create AuthContext provider~~ ✅
+  - ~~ID: AUTH-003~~
+  - ~~Assignee: claude~~
+  - ~~Type: feature~~
+  - ~~Priority: high~~
+  - ~~Description: Implement centralized auth state management wrapping Firebase Auth's onAuthStateChanged() and currentUser~~
+  - ~~Resources: Task: AUTH-002, File: packages/web-app/src/contexts/AuthContext.tsx~~
+  - ~~Completed: 2025-08-10~~
+
 - [x] ~~Create LoginForm component with Tailwind Plus~~
   - ~~ID: AUTH-005~~
   - ~~Assignee: claude~~
