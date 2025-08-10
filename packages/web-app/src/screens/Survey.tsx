@@ -382,24 +382,31 @@ const SurveyComponent: React.FC = () => {
             survey.showNavigationButtons = false;
           }
 
-          // Set default theme appearance to "Without Panels" for Ford/Lincoln brands
-          if (eventBrand === 'Ford' || eventBrand === 'Lincoln') {
-            console.log('[Theme Debug] Setting theme appearance to "Without Panels" for', eventBrand, 'brand');
-            const updatedTheme = {
-              themeName: "default",
-              colorPalette: "light",
-              isPanelless: true,
-              backgroundImage: "",
-              backgroundImageFit: "cover",
-              backgroundImageAttachment: "scroll",
-              backgroundOpacity: 1,
-              cssVariables: {
-                "--sjs-general-backcolor-dim": "#ffffff",
-                ...eventTheme.cssVariables,
-              },
-              ...eventTheme,
-            };
-            survey.applyTheme(updatedTheme);
+          // Apply theme for all brands
+          if (eventTheme && eventTheme.cssVariables) {
+            if (eventBrand === 'Ford' || eventBrand === 'Lincoln') {
+              // Set default theme appearance to "Without Panels" for Ford/Lincoln brands
+              console.log('[Theme Debug] Setting theme appearance to "Without Panels" for', eventBrand, 'brand');
+              const updatedTheme = {
+                themeName: "default",
+                colorPalette: "light",
+                isPanelless: true,
+                backgroundImage: "",
+                backgroundImageFit: "cover",
+                backgroundImageAttachment: "scroll",
+                backgroundOpacity: 1,
+                cssVariables: {
+                  "--sjs-general-backcolor-dim": "#ffffff",
+                  ...eventTheme.cssVariables,
+                },
+                ...eventTheme,
+              };
+              survey.applyTheme(updatedTheme);
+            } else {
+              // Apply theme for Other brands without Ford/Lincoln specific overrides
+              console.log('[Theme Debug] Applying custom theme for', eventBrand, 'brand');
+              survey.applyTheme(eventTheme);
+            }
           }
 
           prepareForSurvey(survey, eventBrand);
