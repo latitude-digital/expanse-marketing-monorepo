@@ -13,6 +13,7 @@ import {
 // Auth provider
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import SessionProvider from './components/auth/SessionProvider';
 
 // screens
 import App from './App';
@@ -22,6 +23,8 @@ import CheckIn from './screens/CheckIn';
 import CheckOut from './screens/CheckOut';
 import Login from './screens/Login';
 import Logout from './screens/Logout';
+import ForgotPassword from './screens/ForgotPassword';
+import ResetPassword from './screens/ResetPassword';
 import Survey from './screens/Survey';
 import Thanks from './screens/Thanks';
 import Stats from './screens/Stats';
@@ -61,9 +64,10 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <AuthProvider>
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<App />}>
+    <SessionProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<App />}>
           <Route path="demo" element={<FDSDemo />} />
           <Route path="fds-survey-demo" element={
             <React.Suspense fallback={<div>Loading FDS Demo...</div>}>
@@ -75,6 +79,8 @@ root.render(
           <Route path="welcome" element={<Login />} />
           <Route path="auth" element={<Login />} />
           <Route path="logout" element={<Logout />} />
+          <Route path="forgot-password" element={<ForgotPassword />} />
+          <Route path="reset-password" element={<ResetPassword />} />
           <Route path="ford/:eventID" element={<Experiential />} />
           <Route path="s/:eventID/" element={<Survey />} />
           <Route path="s/:eventID/in/login" element={<Login />} />
@@ -102,6 +108,7 @@ root.render(
         </Route>
       </Routes>
     </BrowserRouter>
+    </SessionProvider>
   </AuthProvider>
 );
 

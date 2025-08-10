@@ -31,11 +31,33 @@ const TEST_USERS: TestUser[] = [
 ];
 
 export async function createTestUsers(): Promise<void> {
-  console.log('🚀 Creating test users...\n');
+  console.log('🚀 Test user information...\n');
+  
+  // Check if we're in the right environment
+  const isEmulatorMode = import.meta.env.VITE_FIREBASE_MODE === 'emulator' || 
+                         import.meta.env.VITE_USE_AUTH_EMULATOR === 'true';
+  
+  if (!isEmulatorMode) {
+    console.warn('⚠️  Automatic test user creation requires Firebase emulators');
+    console.warn('   However, you can still use existing test credentials below');
+    console.warn('   To enable auto-creation: Set VITE_FIREBASE_MODE=emulator in your .env file\n');
+    
+    // Just show existing test credentials
+    console.log('✨ Available test credentials:\n');
+    console.log('Test Credentials:');
+    console.log('================');
+    TEST_USERS.forEach(user => {
+      console.log(`\n${user.role.toUpperCase()}:`);
+      console.log(`  Email: ${user.email}`);
+      console.log(`  Password: ${user.password}`);
+    });
+    console.log('\n💡 You can try logging in with these existing accounts');
+    return;
+  }
 
   for (const userData of TEST_USERS) {
     try {
-      // Create user with email and password
+      // Create user with email and password using Firebase Auth directly
       const userCredential = await createUserWithEmailAndPassword(
         authService.getAuthInstance(),
         userData.email,
@@ -57,8 +79,12 @@ export async function createTestUsers(): Promise<void> {
     } catch (error: any) {
       if (error.code === 'auth/email-already-in-use') {
         console.log(`ℹ️  User ${userData.email} already exists`);
+      } else if (error.code === 'auth/admin-restricted-operation') {
+        console.error(`❌ Admin error: This operation requires Firebase emulator mode`);
+        console.error(`   Current config: VITE_FIREBASE_MODE=${import.meta.env.VITE_FIREBASE_MODE}`);
+        break;
       } else {
-        console.error(`❌ Error creating ${userData.email}:`, error.message);
+        console.error(`❌ Error creating ${userData.email}:`, error.message, `(${error.code})`);
       }
     }
   }

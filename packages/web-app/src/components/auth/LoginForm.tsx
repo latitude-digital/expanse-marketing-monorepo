@@ -12,6 +12,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import { Button, TextField } from 'react-aria-components';
+import { Link } from 'react-router-dom';
 import authService from '../../services/authService';
 import { loginValidationSchema, type LoginValidationValues } from '../../schemas/authSchemas';
 
@@ -24,7 +25,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onError }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   
   // Refs for focus management
   const formRef = useRef<HTMLFormElement>(null);
@@ -92,7 +92,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onError }) => {
     const minResponseTime = 500; // Minimum response time in milliseconds
 
     try {
-      await authService.signIn(values.email, values.password);
+      await authService.signIn(values.email, values.password, values.rememberMe);
       
       // Ensure minimum response time before success
       const elapsedTime = Date.now() - startTime;
@@ -130,7 +130,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onError }) => {
 
   const initialValues: LoginValidationValues = {
     email: '',
-    password: ''
+    password: '',
+    rememberMe: false
   };
 
   return (
@@ -152,13 +153,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onError }) => {
         {({ errors, touched, isValid, dirty }) => (
           <Form 
             ref={formRef}
-            className="bg-white shadow-lg rounded-lg 
-              px-4 sm:px-6 lg:px-8 
-              pt-6 sm:pt-8 lg:pt-10 
-              pb-6 sm:pb-8 lg:pb-10 
-              mb-4"
+            className="space-y-6"
             role="main"
             aria-label="Sign in form"
+            data-testid="login-form"
           >
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-4 sm:mb-6 lg:mb-8 text-center leading-tight">
               Sign In
@@ -342,11 +340,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onError }) => {
                 mb-6 sm:mb-8 space-y-4 sm:space-y-0">
                 <div className="flex items-start">
                   <div className="flex items-center h-5 sm:h-6">
-                    <input 
+                    <Field
                       id="remember-me"
-                      type="checkbox" 
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
+                      name="rememberMe"
+                      type="checkbox"
                       className="w-5 h-5 sm:w-4 sm:h-4 text-blue-600 bg-white border-2 border-gray-600 rounded 
                         focus:ring-4 focus:ring-blue-500 focus:ring-offset-0 
                         hover:border-gray-700 transition-all duration-200
@@ -366,23 +363,17 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onError }) => {
                   </div>
                 </div>
                 
-                <button
-                  type="button"
+                <Link
+                  to="/forgot-password"
                   className="text-sm sm:text-base text-blue-700 hover:text-blue-900 underline
                     focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-offset-2 
                     rounded px-2 py-2 sm:px-1 sm:py-1 transition-colors duration-200
-                    disabled:text-gray-400 disabled:cursor-not-allowed
                     min-h-[44px] sm:min-h-auto flex items-center justify-center sm:justify-start
                     touch-manipulation"
-                  disabled={isLoading}
-                  onClick={() => {
-                    // Handle forgot password - would typically open modal or navigate
-                    alert('Forgot password functionality would be implemented here');
-                  }}
                   aria-label="Reset your password if you've forgotten it"
                 >
                   Forgot Password?
-                </button>
+                </Link>
               </div>
 
               {/* Submit button with enhanced accessibility and mobile optimization */}

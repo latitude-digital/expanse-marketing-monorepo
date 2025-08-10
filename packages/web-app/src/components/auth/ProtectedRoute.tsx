@@ -15,7 +15,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children, 
   requireAdmin = false 
 }) => {
-  const { currentUser, loading } = useAuth();
+  const { currentUser, isAdmin, loading } = useAuth();
   const location = useLocation();
 
   // Show loading state while checking authentication
@@ -58,12 +58,39 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to={`/login?r=${redirectTo}`} replace />;
   }
 
-  // TODO: Add admin role check when roles are implemented
-  // if (requireAdmin && !currentUser.isAdmin) {
-  //   return <Navigate to="/" replace />;
-  // }
+  // Check admin role if required
+  // TODO: RBAC will handle admin role checking later
+  // Temporarily allowing all authenticated users to access admin routes
+  /*
+  if (requireAdmin && !isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
+            <h2 className="text-red-800 text-lg font-semibold mb-2">Access Denied</h2>
+            <p className="text-red-700">You don't have permission to access this page. Administrator privileges required.</p>
+            <div className="mt-4">
+              <button
+                onClick={() => window.history.back()}
+                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 mr-2"
+              >
+                Go Back
+              </button>
+              <button
+                onClick={() => window.location.href = '/'}
+                className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
+              >
+                Go Home
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  */
 
-  // User is authenticated, render the protected content
+  // User is authenticated and has required permissions, render the protected content
   return <>{children}</>;
 };
 

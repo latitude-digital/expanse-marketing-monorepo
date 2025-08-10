@@ -1,80 +1,10 @@
 # Project Tasks
 
 *This file is synced with Clode Studio and Claude's native TodoWrite system.*  
-*Last updated: 2025-08-10T19:45:00.000Z*
+*Last updated: 2025-08-10T20:15:00.000Z*
 
-## Backlog (57)
+## Backlog (47)
 
-- [ ] **Implement AuthGuard component**
-  - ID: AUTH-004
-  - Assignee: claude
-  - Type: feature
-  - Priority: medium
-  - Description: Create route protection component for authenticated routes
-  - Resources: Task: AUTH-003, File: packages/web-app/src/components/AuthGuard.tsx
-- [ ] **Add loading states to auth forms**
-  - ID: AUTH-008
-  - Assignee: claude
-  - Type: feature
-  - Priority: medium
-  - Description: Implement Tailwind Plus loading spinners and disable form during submission
-  - Resources: Task: AUTH-005
-- [ ] **Create ForgotPasswordForm with Tailwind Plus**
-  - ID: AUTH-010
-  - Assignee: claude
-  - Type: feature
-  - Priority: medium
-  - Description: Build forgot password form using Tailwind Plus input components with email validation
-  - Resources: Task: AUTH-005, File: packages/web-app/src/components/auth/ForgotPasswordForm.tsx
-- [ ] **Implement password reset email**
-  - ID: AUTH-011
-  - Assignee: claude
-  - Type: feature
-  - Priority: medium
-  - Description: Add Firebase sendPasswordResetEmail functionality (follow security best practices - don't reveal if email exists)
-  - Resources: Task: AUTH-010
-- [ ] **Create PasswordResetForm with Tailwind Plus**
-  - ID: AUTH-012
-  - Assignee: claude
-  - Type: feature
-  - Priority: medium
-  - Description: Build password reset form using Tailwind Plus components with token validation and password strength indicator
-  - Resources: Task: AUTH-011, File: packages/web-app/src/components/auth/PasswordResetForm.tsx
-- [ ] **Add reset flow messaging**
-  - ID: AUTH-013
-  - Assignee: claude
-  - Type: feature
-  - Priority: medium
-  - Description: Implement Tailwind Plus alert/notification components for password reset success/error messages
-  - Resources: Task: AUTH-012
-- [ ] **Style auth screens with Tailwind Plus**
-  - ID: AUTH-014
-  - Assignee: claude
-  - Type: feature
-  - Priority: low
-  - Description: Apply Tailwind Plus design system for clean, professional auth screens suitable for all enterprise clients
-  - Resources: Task: AUTH-005, File: packages/web-app/src/screens/Login.tsx
-- [ ] **Implement session timeout**
-  - ID: AUTH-018
-  - Assignee: claude
-  - Type: feature
-  - Priority: low
-  - Description: Add auto-logout after inactivity period (use Firebase default initially)
-  - Resources: Task: AUTH-003
-- [ ] **Add remember me functionality**
-  - ID: AUTH-019
-  - Assignee: claude
-  - Type: feature
-  - Priority: low
-  - Description: Implement secure token storage for persistent login (nice-to-have)
-  - Resources: Task: AUTH-003
-- [ ] **Create auth E2E tests**
-  - ID: AUTH-020
-  - Assignee: claude
-  - Type: feature
-  - Priority: medium
-  - Description: Write Playwright tests for login and password reset flows
-  - Resources: Task: AUTH-013, File: packages/web-app/tests/e2e/auth.spec.ts
 - [ ] **Migrate native-app-spike to main branch**
   - ID: NATIVE-001
   - Assignee: claude
@@ -409,17 +339,52 @@
 
 ## In Progress (0)
 
-## Completed (11)
 
-- [x] ~~Create auth service abstraction layer~~ ✅
+
+## Completed (21)
+
+- [x] ~~Create comprehensive auth E2E tests ✅~~
+  - ~~ID: AUTH-020~~
+  - ~~Assignee: claude~~
+  - ~~Type: feature~~
+  - ~~Priority: medium~~
+  - ~~Description: Created comprehensive Playwright E2E tests covering login flows, password reset, protected routes, session management, remember me functionality, redirect handling, logout flows, and edge cases. Tests use proper test users from createTestUsers.ts (testuser@expanse.demo, testadmin@expanse.demo) with helper functions for maintainable test code. Includes robust error handling, accessibility considerations, and cross-browser compatibility.~~
+  - ~~Resources: Task: AUTH-013, File: packages/web-app/tests/e2e/auth.spec.ts~~
+- [x] ~~Add remember me functionality ✅~~
+  - ~~ID: AUTH-019~~
+  - ~~Assignee: claude~~
+  - ~~Type: feature~~
+  - ~~Priority: low~~
+  - ~~Description: Implemented secure remember me functionality with Firebase Auth persistence - uses browserLocalPersistence for persistent login across browser sessions when checked, browserSessionPersistence for session-only login when unchecked, integrates with existing security measures and session timeout, clears remember me preference on explicit logout~~
+  - ~~Resources: File: packages/web-app/src/services/authService.ts, packages/web-app/src/components/auth/LoginForm.tsx, packages/web-app/src/schemas/authSchemas.ts~~
+- [x] ~~Implement session timeout ✅~~
+  - ~~ID: AUTH-018~~
+  - ~~Assignee: claude~~
+  - ~~Type: feature~~
+  - ~~Priority: low~~
+  - ~~Description: Implemented comprehensive session timeout functionality with configurable timeouts (5min dev/30min prod), warning modal, cross-tab synchronization, activity tracking, and automatic logout after inactivity~~
+  - ~~Resources: File: packages/web-app/src/hooks/useSessionManager.ts, packages/web-app/src/components/auth/SessionProvider.tsx, packages/web-app/src/components/auth/SessionWarningModal.tsx, packages/web-app/src/config/sessionConfig.ts~~
+- [x] ~~Style auth screens with professional modern design ✅~~
+  - ~~ID: AUTH-014~~
+  - ~~Assignee: claude~~
+  - ~~Type: feature~~
+  - ~~Priority: low~~
+  - ~~Description: Applied professional modern design with Tailwind CSS for clean, enterprise-ready auth screens with consistent branding, gradient backgrounds, glassmorphism cards, and proper responsive layouts suitable for Ford, Lincoln, and enterprise clients~~
+  - ~~Resources: Task: AUTH-005, File: packages/web-app/src/screens/Login.tsx, packages/web-app/src/screens/ForgotPassword.tsx, packages/web-app/src/screens/ResetPassword.tsx, packages/web-app/src/screens/Logout.tsx~~
+- [x] ~~Implement AuthGuard component ✅~~
+  - ~~ID: AUTH-004~~
+  - ~~Assignee: claude~~
+  - ~~Type: feature~~
+  - ~~Priority: medium~~
+  - ~~Description: Create route protection component for authenticated routes - implemented as ProtectedRoute component with auth checking, loading states, and redirect to login with return URL~~
+  - ~~Resources: Task: AUTH-003, File: packages/web-app/src/components/auth/ProtectedRoute.tsx~~
+- [x] ~~Create auth service abstraction layer ✅~~
   - ~~ID: AUTH-000~~
   - ~~Assignee: claude~~
   - ~~Type: feature~~
   - ~~Priority: high~~
   - ~~Description: Create service layer abstraction over Firebase Auth to decouple UI from Firebase SDK - enables future auth provider changes~~
   - ~~Resources: File: packages/web-app/src/services/authService.ts~~
-  - ~~Completed: 2025-08-10~~
-
 - [x] ~~Remove FirebaseUI dependency~~
   - ~~ID: AUTH-001~~
   - ~~Assignee: claude~~
@@ -427,25 +392,20 @@
   - ~~Priority: high~~
   - ~~Description: Remove firebaseui package and clean up package.json (NOTE: Phone auth being removed)~~
   - ~~Resources: File: packages/web-app/package.json~~
-
-- [x] ~~Migrate to modern Firebase SDK~~ ✅
+- [x] ~~Migrate to modern Firebase SDK ✅~~
   - ~~ID: AUTH-002~~
   - ~~Assignee: claude~~
   - ~~Type: refactor~~
   - ~~Priority: high~~
   - ~~Description: Replace Firebase compat imports with modern v10 SDK - keep all Firebase Auth methods, just update import syntax~~
   - ~~Resources: Task: AUTH-001, File: packages/web-app/src/screens/Login.tsx~~
-  - ~~Completed: 2025-08-10~~
-
-- [x] ~~Create AuthContext provider~~ ✅
+- [x] ~~Create AuthContext provider ✅~~
   - ~~ID: AUTH-003~~
   - ~~Assignee: claude~~
   - ~~Type: feature~~
   - ~~Priority: high~~
   - ~~Description: Implement centralized auth state management wrapping Firebase Auth's onAuthStateChanged() and currentUser~~
   - ~~Resources: Task: AUTH-002, File: packages/web-app/src/contexts/AuthContext.tsx~~
-  - ~~Completed: 2025-08-10~~
-
 - [x] ~~Create LoginForm component with Tailwind Plus~~
   - ~~ID: AUTH-005~~
   - ~~Assignee: claude~~
@@ -453,60 +413,83 @@
   - ~~Priority: high~~
   - ~~Description: Build custom login form UI that calls Firebase Auth signInWithEmailAndPassword() - separation of presentation from auth logic~~
   - ~~Resources: Task: AUTH-002, File: packages/web-app/src/components/auth/LoginForm.tsx~~
-
-- [x] ~~Add email/password validation~~ ✅
+- [x] ~~Add email/password validation ✅~~
   - ~~ID: AUTH-006~~
   - ~~Assignee: claude~~
   - ~~Type: feature~~
   - ~~Priority: high~~
   - ~~Description: Implement yup schema validation for login credentials with strong password requirements~~
   - ~~Resources: Task: AUTH-005, File: packages/web-app/src/schemas/authSchemas.ts~~
-  - ~~Completed: 2025-08-10~~
-
-- [x] ~~Implement secure login error handling~~ ✅
+- [x] ~~Implement secure login error handling ✅~~
   - ~~ID: AUTH-007~~
   - ~~Assignee: claude~~
   - ~~Type: feature~~
   - ~~Priority: high~~
   - ~~Description: Add error messages following security best practices - avoid revealing whether email exists, use generic "Invalid credentials" messages, prevent user enumeration attacks~~
   - ~~Resources: Task: AUTH-005~~
-  - ~~Completed: 2025-08-10~~
-
-- [x] ~~Preserve CloudFront cookie integration~~ ✅
+- [x] ~~Preserve CloudFront cookie integration ✅~~
   - ~~ID: AUTH-009~~
   - ~~Assignee: claude~~
   - ~~Type: feature~~
   - ~~Priority: high~~
   - ~~Description: Ensure CloudFront access cookies work with new auth flow~~
   - ~~Resources: Task: AUTH-005, File: packages/web-app/src/services/cloudFrontAuth.ts~~
-  - ~~Completed: 2025-08-10~~
-
-- [x] ~~Implement WCAG AA compliance~~ ✅
+- [x] ~~Implement WCAG AA compliance ✅~~
   - ~~ID: AUTH-015~~
   - ~~Assignee: both~~
   - ~~Type: feature~~
   - ~~Priority: high~~
   - ~~Description: Add proper labels, ARIA attributes, and contrast ratios (legal requirement for enterprise)~~
   - ~~Resources: Task: AUTH-005~~
-  - ~~Completed: 2025-08-10~~
-
-- [x] ~~Add keyboard navigation support~~ ✅
+- [x] ~~Add keyboard navigation support ✅~~
   - ~~ID: AUTH-016~~
   - ~~Assignee: claude~~
   - ~~Type: feature~~
   - ~~Priority: high~~
   - ~~Description: Implement focus management and keyboard shortcuts for accessibility~~
   - ~~Resources: Task: AUTH-015~~
-  - ~~Completed: 2025-08-10~~
-
-- [x] ~~Create responsive auth layouts~~ ✅
+- [x] ~~Create responsive auth layouts ✅~~
   - ~~ID: AUTH-017~~
   - ~~Assignee: claude~~
   - ~~Type: feature~~
   - ~~Priority: high~~
   - ~~Description: Optimize auth screens for mobile and tablet devices (field users need mobile access)~~
   - ~~Resources: Task: AUTH-005~~
-  - ~~Completed: 2025-08-10~~
+- [x] ~~Add loading states to auth forms ✅~~
+  - ~~ID: AUTH-008~~
+  - ~~Assignee: claude~~
+  - ~~Type: feature~~
+  - ~~Priority: medium~~
+  - ~~Description: Implement Tailwind Plus loading spinners and disable form during submission~~
+  - ~~Resources: Task: AUTH-005~~
+- [x] ~~Create ForgotPasswordForm with Tailwind Plus ✅~~
+  - ~~ID: AUTH-010~~
+  - ~~Assignee: claude~~
+  - ~~Type: feature~~
+  - ~~Priority: medium~~
+  - ~~Description: Build forgot password form using Tailwind Plus input components with email validation~~
+  - ~~Resources: Task: AUTH-005, File: packages/web-app/src/components/auth/ForgotPasswordForm.tsx~~
+- [x] ~~Implement password reset email ✅~~
+  - ~~ID: AUTH-011~~
+  - ~~Assignee: claude~~
+  - ~~Type: feature~~
+  - ~~Priority: medium~~
+  - ~~Description: Add Firebase sendPasswordResetEmail functionality (follow security best practices - don't reveal if email exists)~~
+  - ~~Resources: Task: AUTH-010~~
+- [x] ~~Create PasswordResetForm with Tailwind Plus ✅~~
+  - ~~ID: AUTH-012~~
+  - ~~Assignee: claude~~
+  - ~~Type: feature~~
+  - ~~Priority: medium~~
+  - ~~Description: Build password reset form using Tailwind Plus components with token validation and password strength indicator~~
+  - ~~Resources: Task: AUTH-011, File: packages/web-app/src/components/auth/PasswordResetForm.tsx~~
+- [x] ~~Add reset flow messaging ✅~~
+  - ~~ID: AUTH-013~~
+  - ~~Assignee: claude~~
+  - ~~Type: feature~~
+  - ~~Priority: medium~~
+  - ~~Description: Implement Tailwind Plus alert/notification components for password reset success/error messages~~
+  - ~~Resources: Task: AUTH-012~~
 
 ---
 *To update tasks, use the Kanban board in Clode Studio, ask Claude to modify this file, or use Claude's native TodoWrite system.*

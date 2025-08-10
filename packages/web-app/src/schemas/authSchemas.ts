@@ -36,6 +36,11 @@ export const loginValidationSchema = yup.object({
     .string()
     .required('Password is required')
     .min(1, 'Password is required'), // Basic requirement for login
+    
+  rememberMe: yup
+    .boolean()
+    .optional()
+    .default(false), // AUTH-019: Optional remember me field for persistent login
 });
 
 /**

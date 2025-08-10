@@ -5,6 +5,9 @@ import {
   onAuthStateChanged,
   sendPasswordResetEmail,
   confirmPasswordReset,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
   User,
   UserCredential,
   Auth,
@@ -44,8 +47,14 @@ class AuthService {
     return AuthService.instance;
   }
 
-  async signIn(email: string, password: string): Promise<UserCredential> {
+  async signIn(email: string, password: string, rememberMe: boolean = false): Promise<UserCredential> {
     try {
+      // AUTH-019: Set persistence before signing in
+      // Local persistence keeps user logged in across browser sessions (remember me)
+      // Session persistence only keeps user logged in until browser/tab closes
+      const persistence = rememberMe ? browserLocalPersistence : browserSessionPersistence;
+      await setPersistence(this.auth, persistence);
+      
       const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
       
       // AUTH-009: Ensure CloudFront cookies are set up after successful login
@@ -67,6 +76,11 @@ class AuthService {
     try {
       // AUTH-009: Reset CloudFront cookies before signing out
       resetCloudFrontAccess();
+      
+      // AUTH-019: Set session persistence on sign out to clear remember me setting
+      // This ensures the next login defaults to session-only unless explicitly remembered
+      await setPersistence(this.auth, browserSessionPersistence);
+      
       await signOut(this.auth);
     } catch (error: any) {
       throw this.transformAuthError(error);
@@ -75,6 +89,7 @@ class AuthService {
 
   async sendPasswordReset(email: string): Promise<void> {
     try {
+      // AUTH-008: Loading states are handled by the calling component
       await sendPasswordResetEmail(this.auth, email);
     } catch (error: any) {
       throw this.transformAuthError(error);
@@ -83,6 +98,7 @@ class AuthService {
 
   async confirmPasswordReset(code: string, newPassword: string): Promise<void> {
     try {
+      // AUTH-008: Loading states are handled by the calling component
       await confirmPasswordReset(this.auth, code, newPassword);
     } catch (error: any) {
       throw this.transformAuthError(error);
