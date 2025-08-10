@@ -74,23 +74,20 @@ function AdminScreen() {
     const [quickFilterText, setQuickFilterText] = useState<string>('');
     const [activeFilter, setActiveFilter] = useState<'current' | 'past' | 'future'>('current');
 
+    // Authentication is now handled by ProtectedRoute wrapper
     useEffect(() => {
-        console.error(userError);
+        if (userError) {
+            console.error('Authentication error:', userError);
+        }
     }, [userError]);
 
     useEffect(() => {
-        if (userLoading) return;
-
-        if (!user) {
-            navigate('./login');
-        }
-
         // Load all events - we'll filter client-side
         const eventsCollection = collection(db, "events").withConverter(EEventConverter);
         const eventQuery = query(eventsCollection, orderBy("startDate", "asc"));
         
         setEventsQuery(eventQuery);
-    }, [userLoading]);
+    }, []);
 
     // Define external filter function
     const isExternalFilterPresent = () => {

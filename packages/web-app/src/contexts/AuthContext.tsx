@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User } from 'firebase/auth';
 import authService from '../services/authService';
+import { ensureCloudFrontAccess, resetCloudFrontAccess } from '../services/cloudFrontAuth';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -9,6 +10,8 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   sendPasswordReset: (email: string) => Promise<void>;
   confirmPasswordReset: (code: string, newPassword: string) => Promise<void>;
+  ensureCloudFrontAccess: () => Promise<void>;
+  resetCloudFrontAccess: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -41,9 +44,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signIn = async (email: string, password: string) => {
     const userCredential = await authService.signIn(email, password);
     setCurrentUser(userCredential.user);
+    
+    // AUTH-009: CloudFront cookies are already handled in authService.signIn,
+    // but we provide additional context-level access if needed
   };
 
   const signOut = async () => {
+    // AUTH-009: CloudFront cookies are already reset in authService.signOut
     await authService.signOut();
     setCurrentUser(null);
   };
@@ -63,6 +70,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signOut,
     sendPasswordReset,
     confirmPasswordReset,
+    ensureCloudFrontAccess,
+    resetCloudFrontAccess,
   };
 
   return (

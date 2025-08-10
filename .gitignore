@@ -107,3 +107,7 @@ playwright/.cache/
 .claude-snapshots/
 .claude-checkpoints/
 .worktrees/
+
+# Test credentials (never commit real credentials)
+**/test-credentials.json
+test-credentials.json

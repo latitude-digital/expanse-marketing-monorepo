@@ -12,6 +12,7 @@ import {
 
 // Auth provider
 import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 // screens
 import App from './App';
@@ -20,6 +21,7 @@ import Experiential from './screens/Experiential';
 import CheckIn from './screens/CheckIn';
 import CheckOut from './screens/CheckOut';
 import Login from './screens/Login';
+import Logout from './screens/Logout';
 import Survey from './screens/Survey';
 import Thanks from './screens/Thanks';
 import Stats from './screens/Stats';
@@ -35,14 +37,24 @@ import Admin from './screens/admin/index';
 import EditEvent from './screens/admin/EditEvent';
 import EditSurvey from './screens/admin/EditSurvey';
 
-// Add a type declaration for window._env_
-declare global {
-  interface Window {
-    _env_?: any;
-  }
-}
-
 console.log('window._env_ at runtime:', window._env_);
+
+// AUTH-009: Enable CloudFront testing utilities in development
+if (process.env.NODE_ENV === 'development') {
+  import('./utils/cloudFrontTestUtils').then(({ enableCloudFrontConsoleHelpers, logCloudFrontStatus }) => {
+    enableCloudFrontConsoleHelpers();
+    console.log('🔒 CloudFront test utilities enabled in development mode');
+    console.log('   Use CloudFrontTest.log() to check CloudFront status');
+    console.log('   Use CloudFrontTest.test() to run full integration test');
+    
+    // Auto-log status after a brief delay to let auth initialize
+    setTimeout(() => {
+      logCloudFrontStatus();
+    }, 2000);
+  }).catch(err => {
+    console.warn('Failed to load CloudFront test utilities:', err);
+  });
+}
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -59,28 +71,30 @@ root.render(
             </React.Suspense>
           } />
           <Route index element={<Home />} />
+          <Route path="login" element={<Login />} />
           <Route path="welcome" element={<Login />} />
           <Route path="auth" element={<Login />} />
+          <Route path="logout" element={<Logout />} />
           <Route path="ford/:eventID" element={<Experiential />} />
           <Route path="s/:eventID/" element={<Survey />} />
           <Route path="s/:eventID/in/login" element={<Login />} />
-          <Route path="s/:eventID/in" element={<CheckIn />} />
+          <Route path="s/:eventID/in" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
           <Route path="s/:eventID/out/login" element={<Login />} />
-          <Route path="s/:eventID/out" element={<CheckOut />} />
+          <Route path="s/:eventID/out" element={<ProtectedRoute><CheckOut /></ProtectedRoute>} />
           <Route path="s/:eventID/p/:preSurveyID" element={<Survey />} />
-          <Route path="s/:eventID/stats" element={<Stats />} />
+          <Route path="s/:eventID/stats" element={<ProtectedRoute><Stats /></ProtectedRoute>} />
           <Route path="s/:eventID/stats/login" element={<Login />} />
-          <Route path="s/:eventID/dashboard" element={<Dashboard />} />
+          <Route path="s/:eventID/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="s/:eventID/dashboard/login" element={<Login />} />
-          <Route path="s/:eventID/charts" element={<Charts />} />
+          <Route path="s/:eventID/charts" element={<ProtectedRoute><Charts /></ProtectedRoute>} />
           <Route path="s/:eventID/charts/login" element={<Login />} />
           <Route path="thanks" element={<Thanks />} />
 
           <Route path="bronco/" element={<BroncoQuiz />} />
 
-          <Route path="admin" element={<Admin />} />
-          <Route path="admin/event/:eventID" element={<EditEvent />} />
-          <Route path="admin/event/:eventID/survey" element={<EditSurvey />} />
+          <Route path="admin" element={<ProtectedRoute requireAdmin={true}><Admin /></ProtectedRoute>} />
+          <Route path="admin/event/:eventID" element={<ProtectedRoute requireAdmin={true}><EditEvent /></ProtectedRoute>} />
+          <Route path="admin/event/:eventID/survey" element={<ProtectedRoute requireAdmin={true}><EditSurvey /></ProtectedRoute>} />
           
           <Route path="admin/login" element={<Login />} />
           <Route path="admin/event/:eventID/login" element={<Login />} />
@@ -95,3 +109,16 @@ root.render(
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
+
+// Development-only test utilities
+if (process.env.NODE_ENV === 'development') {
+  // CloudFront test utilities
+  import('./utils/cloudFrontTestUtils').then(module => {
+    console.log('CloudFront test helpers enabled. Use CloudFrontTest.log() to check status.');
+  });
+  
+  // Test user creation utility
+  import('./utils/createTestUsers').then(module => {
+    console.log('Test user creation enabled. Use createTestUsers() to create test accounts.');
+  });
+}

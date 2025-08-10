@@ -54,3 +54,26 @@ type ExpanseEvent = {
   showHeader?: boolean;
   showFooter?: boolean;
 };
+
+// AUTH-009: CloudFront integration types
+type CloudFrontCookies = {
+  'CloudFront-Key-Pair-Id'?: string;
+  'CloudFront-Policy'?: string;
+  'CloudFront-Signature'?: string;
+};
+
+type CloudFrontTestHelpers = {
+  test: () => Promise<any>;
+  status: () => any;
+  refresh: () => Promise<any>;
+  log: () => void;
+  cookies: () => CloudFrontCookies;
+};
+
+// Extend Window interface for runtime environment and testing utilities
+declare global {
+  interface Window {
+    _env_?: any;
+    CloudFrontTest?: CloudFrontTestHelpers;
+  }
+}

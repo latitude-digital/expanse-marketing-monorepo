@@ -13,6 +13,7 @@ import {
 } from 'firebase/auth';
 import app, { shouldUseEmulator } from './firebase';
 import { connectAuthEmulator } from 'firebase/auth';
+import { ensureCloudFrontAccess, resetCloudFrontAccess } from './cloudFrontAuth';
 
 class AuthService {
   private auth: Auth;
@@ -46,6 +47,16 @@ class AuthService {
   async signIn(email: string, password: string): Promise<UserCredential> {
     try {
       const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
+      
+      // AUTH-009: Ensure CloudFront cookies are set up after successful login
+      try {
+        await ensureCloudFrontAccess();
+        console.log('CloudFront access ensured after sign-in');
+      } catch (cloudFrontError) {
+        console.error('Failed to ensure CloudFront access after sign-in:', cloudFrontError);
+        // Don't fail the login if CloudFront cookies fail - log and continue
+      }
+      
       return userCredential;
     } catch (error: any) {
       throw this.transformAuthError(error);
@@ -54,6 +65,8 @@ class AuthService {
 
   async signOut(): Promise<void> {
     try {
+      // AUTH-009: Reset CloudFront cookies before signing out
+      resetCloudFrontAccess();
       await signOut(this.auth);
     } catch (error: any) {
       throw this.transformAuthError(error);

@@ -24,7 +24,7 @@
     "firebase-functions": "^6.4.0"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.17",
+    "@types/cors": "^2.8.19",
     "@types/jest": "^29.5.5",
     "firebase-functions-test": "^3.4.1",
     "jest": "^29.7.0",
