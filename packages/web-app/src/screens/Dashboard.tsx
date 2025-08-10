@@ -606,7 +606,9 @@ function DashboardScreen() {
         setThisEvent(incomingEvent);
       }
 
-      const surveyJSON = JSON.parse(incomingEvent?.questions || '{}');
+      // Use new map field if available, otherwise parse JSON string
+      const surveyJSON = incomingEvent?.surveyJSModel || 
+                        (incomingEvent?.questions ? JSON.parse(incomingEvent.questions) : {});
       console.log('=== Original Survey JSON ===');
       console.log('Pages:', surveyJSON.pages?.length);
       console.log('Original survey structure:', JSON.stringify(surveyJSON, null, 2));

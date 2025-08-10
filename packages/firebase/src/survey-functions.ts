@@ -69,9 +69,12 @@ export const getSurveyImpl = (app: admin.app.App) => onRequest(
           startDate: eventData.startDate?.toDate?.()?.toISOString() || eventData.startDate,
           endDate: eventData.endDate?.toDate?.()?.toISOString() || eventData.endDate,
           preRegDate: eventData.preRegDate?.toDate?.()?.toISOString() || eventData.preRegDate,
-          // Ensure questions and theme are strings (they should already be JSON strings)
+          // Support both new map fields and legacy JSON string fields
           questions: typeof eventData.questions === 'string' ? eventData.questions : JSON.stringify(eventData.questions || {}),
-          theme: typeof eventData.theme === 'string' ? eventData.theme : JSON.stringify(eventData.theme || {})
+          theme: typeof eventData.theme === 'string' ? eventData.theme : JSON.stringify(eventData.theme || {}),
+          // Include new map fields if they exist
+          surveyJSModel: eventData.surveyJSModel || undefined,
+          surveyJSTheme: eventData.surveyJSTheme || undefined
         };
         
         // Prepare response

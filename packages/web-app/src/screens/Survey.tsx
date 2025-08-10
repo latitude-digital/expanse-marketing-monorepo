@@ -76,8 +76,10 @@ interface SurveyEvent {
   survey_count_limit?: number;
   limit_reached_message?: string;
   surveyType?: string;
-  questions: string;
-  theme?: string;
+  questions: string;  // Legacy field
+  surveyJSModel?: any;  // New map field
+  theme?: string;  // Legacy field
+  surveyJSTheme?: any;  // New map field
   showHeader?: boolean;
   showLanguageChooser?: boolean;
 }
@@ -252,8 +254,11 @@ const SurveyComponent: React.FC = () => {
             }
           }
 
-          const surveyJSON = JSON.parse(res.event.questions);
-          const eventTheme = JSON.parse(res.event.theme || `{"cssVariables": {}}`);
+          // Use new map fields if available, otherwise parse JSON strings
+          const surveyJSON = res.event.surveyJSModel || 
+                            (res.event.questions ? JSON.parse(res.event.questions) : {});
+          const eventTheme = res.event.surveyJSTheme || 
+                            (res.event.theme ? JSON.parse(res.event.theme) : {"cssVariables": {}});
 
           // Auto-fix missing headerView when theme has header configuration
           if (eventTheme.header && !surveyJSON.headerView) {

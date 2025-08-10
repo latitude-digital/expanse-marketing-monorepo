@@ -41,13 +41,15 @@ type ExpanseEvent = {
   startDate: Date;
   endDate: Date;
   name: string;
-  questions: ISurvey;
+  questions: ISurvey;  // Legacy JSON string field
+  surveyJSModel?: ISurvey;  // New map field
   reminderEmail?: EmailDefinition;
   thankYouEmail?: EmailDefinition;
   autoCheckOut?: AutoCheckOutDefinition;
   checkOutEmail?: EmailDefinition;
   thanks?: string;
-  theme: IExtendedTheme | ITheme;
+  theme: IExtendedTheme | ITheme;  // Legacy JSON string field
+  surveyJSTheme?: IExtendedTheme | ITheme;  // New map field
   survey_count_limit?: number;
   limit_reached_message?: string;
   showLanguageChooser?: boolean;
