@@ -493,9 +493,9 @@ export const prepareCreatorOnQuestionAdded = (
     options.question._ffs = "vehicle_driven_most_make_id";
 
     options.question.locTitle.setJson({
-      en: "What vehicle do you drive most often?",
-      es: "¿Qué vehículo conduces con mayor frecuencia?",
-      fr: "Quel véhicule conduisez-vous le plus souvent?"
+      en: "What is your current vehicle make?",
+      es: "¿Cuál es la marca de su vehículo actual?",
+      fr: "Quelle est la marque de votre véhicule actuel?"
     });
   }
 

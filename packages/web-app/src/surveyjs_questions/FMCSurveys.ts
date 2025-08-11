@@ -285,9 +285,9 @@ const fmcInit = () => {
     questionJSON: {
       type: "dropdown",
       title: {
-        en: "What brand of vehicle do you drive most often?",
-        es: "¿Qué marca de vehículo conduces con más frecuencia?",
-        fr: "Quelle marque de véhicule conduisez-vous le plus souvent?",
+        en: "What is your current vehicle make?",
+        es: "¿Cuál es la marca de su vehículo actual?",
+        fr: "Quelle est la marque de votre véhicule actuel?",
       },
       choicesByUrl: {
         url: "https://cdn.latitudewebservices.com/data/makes.json",
