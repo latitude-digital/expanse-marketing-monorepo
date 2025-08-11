@@ -217,3 +217,47 @@ code {
   padding-bottom: 0;
 }
 
+/* Fix SurveyJS container scrolling - survey should expand to full height */
+.sd-root-modern,
+.sd-root-modern.sd-root-modern--full-container {
+  overflow: visible !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+}
+
+.sv-scroll__scroller,
+.sv-scroll__scroller.sv-drag-target-skipped {
+  overflow: visible !important;
+  overflow-y: visible !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+}
+
+/* Also target the scroll container wrapper */
+.sv-scroll-container {
+  overflow: visible !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
+/* Ensure the survey container expands naturally */
+.sv_main.sv_default_css {
+  height: auto !important;
+  min-height: auto !important;
+}
+
+/* Remove any height constraints on survey body */
+.sv_body {
+  height: auto !important;
+  min-height: auto !important;
+}
+
+/* Target Ford brand specific containers if they have different behavior */
+.ford .sd-root-modern,
+.lincoln .sd-root-modern {
+  height: auto !important;
+  overflow: visible !important;
+}
+
