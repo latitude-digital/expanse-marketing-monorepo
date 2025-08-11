@@ -24,6 +24,9 @@ export const FDSQuestionWrapper: React.FC<FDSQuestionWrapperProps> = ({
   question
 }) => {
   
+  // Check if title and description should be hidden
+  const isTitleHidden = question?.titleLocation === "hidden";
+  
   // Check description location setting - similar to RadioButtonButton renderer
   const showDescriptionAbove = !question?.descriptionLocation || question.descriptionLocation !== "underInput";
 
@@ -38,32 +41,34 @@ export const FDSQuestionWrapper: React.FC<FDSQuestionWrapperProps> = ({
 
   return (
     <div className="fds-question-wrapper">
-      {/* Question Label - Always use Typography component for consistent Ford UI styling */}
-      <div className="fds-question-label" style={{ marginBottom: '8px' }}>
-        {(() => {
-          const processedLabel = processMarkdown(labelWithOptional);
-          const hasHtml = processedLabel.includes('<');
-          
-          if (hasHtml) {
-            // For HTML content, use Typography component wrapper to ensure font inheritance
-            return (
-              <Typography variant="body2" weight="regular" color="moderate">
-                <span dangerouslySetInnerHTML={{ __html: processedLabel }} />
-              </Typography>
-            );
-          } else {
-            // For plain text, use Typography component
-            return (
-              <Typography variant="body2" weight="regular" color="moderate">
-                {processedLabel}
-              </Typography>
-            );
-          }
-        })()}
-      </div>
+      {/* Question Label - Only show if titleLocation is not "hidden" */}
+      {!isTitleHidden && (
+        <div className="fds-question-label" style={{ marginBottom: '8px' }}>
+          {(() => {
+            const processedLabel = processMarkdown(labelWithOptional);
+            const hasHtml = processedLabel.includes('<');
+            
+            if (hasHtml) {
+              // For HTML content, use Typography component wrapper to ensure font inheritance
+              return (
+                <Typography variant="body2" weight="regular" color="moderate">
+                  <span dangerouslySetInnerHTML={{ __html: processedLabel }} />
+                </Typography>
+              );
+            } else {
+              // For plain text, use Typography component
+              return (
+                <Typography variant="body2" weight="regular" color="moderate">
+                  {processedLabel}
+                </Typography>
+              );
+            }
+          })()}
+        </div>
+      )}
 
-      {/* Question Description (optional) - positioned above form control when descriptionLocation is not "underInput" */}
-      {description && showDescriptionAbove && (
+      {/* Question Description (optional) - Only show if titleLocation is not "hidden" and positioned above form control when descriptionLocation is not "underInput" */}
+      {!isTitleHidden && description && showDescriptionAbove && (
         <div className="fds-question-description" style={{ marginBottom: '12px' }}>
           {(() => {
             const processedDescription = processMarkdown(description);
@@ -93,8 +98,8 @@ export const FDSQuestionWrapper: React.FC<FDSQuestionWrapperProps> = ({
         {children}
       </div>
 
-      {/* Question Description (optional) - positioned below form control when descriptionLocation is "underInput" */}
-      {description && !showDescriptionAbove && (
+      {/* Question Description (optional) - Only show if titleLocation is not "hidden" and positioned below form control when descriptionLocation is "underInput" */}
+      {!isTitleHidden && description && !showDescriptionAbove && (
         <div className="fds-question-description" style={{ marginTop: '12px' }}>
           {(() => {
             const processedDescription = processMarkdown(description);

@@ -43,6 +43,9 @@ const FDSDropdownComponent: React.FC<{ question: QuestionDropdownModel }> = ({ q
         : options;
         
 
+    // Check if title and description should be hidden
+    const isTitleHidden = question.titleLocation === "hidden";
+    
     // Handle labels that might contain JSX elements
     const labelContent = renderLabel(question.fullTitle);
     const label = typeof labelContent === 'string' ? labelContent : question.fullTitle;
@@ -52,8 +55,8 @@ const FDSDropdownComponent: React.FC<{ question: QuestionDropdownModel }> = ({ q
 
     return (
         <SelectDropdown
-            label={label}
-            description={description}
+            label={isTitleHidden ? undefined : label}
+            description={isTitleHidden ? undefined : description}
             placeholder={question.placeholder || (isSearchable ? "Search / Select..." : "Please select...")}
             options={filteredOptions}
             selectedKey={question.value || null}

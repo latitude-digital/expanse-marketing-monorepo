@@ -82,10 +82,13 @@ export class FDSTextRenderer extends SurveyQuestionElementBase {
         // For composite questions, check parent's isRequired too
         const isRequired = question.isRequired || (parentQuestion && parentQuestion.isRequired);
         
+        // Check if title and description should be hidden
+        const isTitleHidden = question.titleLocation === "hidden";
+        
         return (
             <StyledTextField
-                label={renderLabel(question.fullTitle)}
-                description={renderDescription(question.description)}
+                label={isTitleHidden ? undefined : renderLabel(question.fullTitle)}
+                description={isTitleHidden ? undefined : renderDescription(question.description)}
                 isRequired={isRequired}
                 requiredMessage={!isRequired ? optionalText : undefined}
                 placeholder={usesMasking 

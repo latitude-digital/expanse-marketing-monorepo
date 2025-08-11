@@ -140,6 +140,20 @@ export const initCreator = (creator: SurveyCreatorModel) => {
   md.tooltip = "Markdown";
   md.setPropertyValue("iconName", "icon-markdown");
 
+  // Add checkbox variant for boolean questions
+  const booleanItem = creator.toolbox.getItemByName("boolean");
+  if (booleanItem) {
+    booleanItem.addSubitem({
+      name: "checkboxBoolean",
+      title: "Checkbox",
+      json: {
+        type: "boolean",
+        renderAs: "checkbox",
+        titleLocation: "hidden"
+      }
+    });
+  }
+
   // sort the toolbox categories so that the custom categories starting with __ are at the top
   creator.toolbox.categories = creator.toolbox.categories.sort(
     (a: any, b: any) => {
