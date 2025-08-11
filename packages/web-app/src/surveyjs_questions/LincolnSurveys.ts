@@ -419,6 +419,189 @@ const lincolnInit = () => {
   }
 
   /**
+   * Lincoln Purchase Consideration Question
+   * 
+   * @description 5-point scale for likelihood of considering Lincoln for next vehicle purchase
+   * @_ffs "how_likely_purchasing" - Maps to how_likely_purchasing field in Lincoln API
+   * @see /src/helpers/surveyTemplatesLincoln.ts - Where _ffs value and titles are configured
+   * @scale 1-5 (Definitely Would NOT Consider to Definitely Would Consider)
+   */
+  // Register lincolnpurchaseconsideration if it doesn't exist
+  if (!ComponentCollection.Instance.getCustomQuestionByName("lincolnpurchaseconsideration")) {
+    ComponentCollection.Instance.add({
+      name: "lincolnpurchaseconsideration",
+      title: "Lincoln Purchase Consideration",
+      iconName: "icon-car-garage",
+      showInToolbox: true,
+      inheritBaseProps: true,
+      onInit: () => {
+        setPropertyReadOnly("lincolnpurchaseconsideration", "name");
+        setPropertyReadOnly("lincolnpurchaseconsideration", "_ffs");
+      },
+      onLoaded(question: Question) {
+        // Sync validators from parent to child for custom questions
+        const child = question.contentQuestion;
+        if (child && question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+          child.isRequired = true;
+        }
+      },
+      questionJSON: {
+        type: "radiogroup",
+        title: {
+          en: "For your next vehicle, how likely would you be to consider a Lincoln?",
+          es: "Para su próximo vehículo, ¿qué tan probable es que considere un Lincoln?",
+          fr: "Pour votre prochain véhicule, quelle est la probabilité que vous considériez un Lincoln?",
+        },
+        description: {
+          en: "Please click on the response that indicates your preference.",
+          es: "Por favor, haga clic en la respuesta que indica su preferencia.",
+          fr: "Veuillez cliquer sur la réponse qui indique votre préférence.",
+        },
+        descriptionLocation: "underInput",
+        renderAs: "radiobuttongroup",
+        buttonSize: "medium",
+        name: "purchase_consideration",
+        isRequired: true,
+        choices: [
+          {
+            value: "E",
+            text: {
+              en: "Definitely Would NOT Consider",
+              es: "Definitivamente NO consideraría",
+              fr: "Je ne considérerais certainement PAS",
+            },
+          },
+          {
+            value: "D",
+            text: {
+              en: "Probably Would NOT Consider",
+              es: "Probablemente NO consideraría",
+              fr: "Je ne considérerais probablement PAS",
+            },
+          },
+          {
+            value: "C",
+            text: {
+              en: "Maybe Would / Maybe Would NOT Consider",
+              es: "Tal vez consideraría / Tal vez no consideraría",
+              fr: "Peut-être que je considérerais / Peut-être que je ne considérerais pas",
+            },
+          },
+          {
+            value: "B",
+            text: {
+              en: "Probably Would Consider",
+              es: "Probablemente consideraría",
+              fr: "Je considérerais probablement",
+            },
+          },
+          {
+            value: "A",
+            text: {
+              en: "Definitely Would Consider",
+              es: "Definitivamente consideraría",
+              fr: "Je considérerais certainement",
+            },
+          },
+        ],
+      },
+    } as ICustomQuestionTypeConfiguration);
+  }
+
+  /**
+   * Lincoln Purchase Consideration Post-Event Question
+   * 
+   * @description 5-point scale for likelihood of considering purchasing Lincoln after test drive
+   * @_ffs "how_likely_purchasing_post" - Maps to how_likely_purchasing_post field in Lincoln API
+   * @see /src/helpers/surveyTemplatesLincoln.ts - Where _ffs value and titles are configured
+   * @scale A-E (A=Definitely Would Consider to E=Definitely Would NOT Consider)
+   * @when Post-event (after test drive experience)
+   */
+  // Register lincolnpurchaseconsiderationpost if it doesn't exist
+  if (!ComponentCollection.Instance.getCustomQuestionByName("lincolnpurchaseconsiderationpost")) {
+    ComponentCollection.Instance.add({
+      name: "lincolnpurchaseconsiderationpost",
+      title: "Lincoln Purchase Consideration Post",
+      iconName: "icon-car-garage",
+      showInToolbox: true,
+      inheritBaseProps: true,
+      onInit: () => {
+        setPropertyReadOnly("lincolnpurchaseconsiderationpost", "name");
+        setPropertyReadOnly("lincolnpurchaseconsiderationpost", "_ffs");
+      },
+      onLoaded(question: Question) {
+        // Sync validators from parent to child for custom questions
+        const child = question.contentQuestion;
+        if (child && question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+          child.isRequired = true;
+        }
+      },
+      questionJSON: {
+        type: "radiogroup",
+        title: {
+          en: "Based on your test-drive experience, how likely would you be to consider purchasing a vehicle from Lincoln?",
+          es: "Basándose en su experiencia de prueba de manejo, ¿qué tan probable es que considere comprar un vehículo de Lincoln?",
+          fr: "Sur la base de votre expérience d'essai routier, quelle est la probabilité que vous considériez l'achat d'un véhicule Lincoln?",
+        },
+        description: {
+          en: "Please click on the response that indicates your preference.",
+          es: "Por favor, haga clic en la respuesta que indica su preferencia.",
+          fr: "Veuillez cliquer sur la réponse qui indique votre préférence.",
+        },
+        descriptionLocation: "underInput",
+        renderAs: "radiobuttongroup",
+        buttonSize: "medium",
+        name: "purchase_consideration_post",
+        isRequired: true,
+        choices: [
+          {
+            value: "E",
+            text: {
+              en: "Definitely Would NOT Consider",
+              es: "Definitivamente NO consideraría",
+              fr: "Je ne considérerais certainement PAS",
+            },
+          },
+          {
+            value: "D",
+            text: {
+              en: "Probably Would NOT Consider",
+              es: "Probablemente NO consideraría",
+              fr: "Je ne considérerais probablement PAS",
+            },
+          },
+          {
+            value: "C",
+            text: {
+              en: "Maybe Would / Maybe Would NOT Consider",
+              es: "Tal vez consideraría / Tal vez no consideraría",
+              fr: "Peut-être que je considérerais / Peut-être que je ne considérerais pas",
+            },
+          },
+          {
+            value: "B",
+            text: {
+              en: "Probably Would Consider",
+              es: "Probablemente consideraría",
+              fr: "Je considérerais probablement",
+            },
+          },
+          {
+            value: "A",
+            text: {
+              en: "Definitely Would Consider",
+              es: "Definitivamente consideraría",
+              fr: "Je considérerais certainement",
+            },
+          },
+        ],
+      },
+    } as ICustomQuestionTypeConfiguration);
+  }
+
+  /**
    * Lincoln Recommend (Post-Event) Question
    * 
    * @description 5-point recommendation scale for Lincoln brand after event
