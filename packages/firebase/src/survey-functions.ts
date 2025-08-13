@@ -86,13 +86,26 @@ export const getSurveyImpl = (app: admin.app.App) => onRequest(
         // If preSurveyID is provided, fetch pre-survey data
         if (preSurveyID) {
           try {
-            const preSurveyRef = db.collection('events').doc(eventID).collection('surveys').doc(preSurveyID);
+            // For post-events, pre-surveys are stored in the pre-event's collection, not the post-event's
+            const preEventID = eventData._preEventID || eventID;
+            const preSurveyRef = db.collection('events').doc(preEventID).collection('surveys').doc(preSurveyID);
             const preSurveyDoc = await preSurveyRef.get();
             
             if (preSurveyDoc.exists) {
+              const preSurveyData = preSurveyDoc.data();
+              
+              // Check if pre-survey is already used (post-survey already completed)
+              if (preSurveyData._used) {
+                res.status(400).json({
+                  success: false,
+                  error: 'This pre-survey has already been used for a post-survey. Only one post-survey per pre-survey is allowed.'
+                });
+                return;
+              }
+              
               response.preSurvey = {
                 id: preSurveyDoc.id,
-                ...preSurveyDoc.data()
+                ...preSurveyData
               };
               logger.info(`Found pre-survey: ${preSurveyID}`);
             } else {
@@ -162,6 +175,21 @@ export const saveSurveyImpl = (app: admin.app.App) => onRequest(
         const docRef = await surveysRef.add(surveyData);
         
         logger.info(`Survey saved with ID: ${docRef.id}`);
+        
+        // If this is a post-survey (has _preSurveyID), mark the pre-survey as used
+        if (surveyData._preSurveyID) {
+          try {
+            const preEventID = eventData._preEventID || eventID;
+            const preSurveyRef = db.collection('events').doc(preEventID).collection('surveys').doc(surveyData._preSurveyID);
+            await preSurveyRef.update({
+              _used: FieldValue.serverTimestamp()
+            });
+            logger.info(`Pre-survey ${surveyData._preSurveyID} marked as used`);
+          } catch (usedError) {
+            logger.error('Error marking pre-survey as used:', usedError);
+            // Continue - post-survey was saved successfully even if _used update failed
+          }
+        }
         
         // Update event results/statistics if needed
         try {
