@@ -148,6 +148,15 @@ const fordInit = () => {
       iconName: "icon-cars",
       showInToolbox: true,
       inheritBaseProps: true,
+      onInit: () => {
+        Serializer.addProperty("fordvehiclesdriven", {
+          name: "onlyInclude",
+          displayName: "Only Include these vehicle_ids",
+          type: "text",
+          category: "general",
+          isSerializable: true,
+        });
+      },
       questionJSON: {
         type: "checkbox",
         name: "vehiclesDriven",
@@ -167,6 +176,7 @@ const fordInit = () => {
         },
       },
       onLoaded(question: Question) {
+        this.updateOnlyInclude(question);
         // Use shared utility to handle choicesByUrl for custom question types
         handleChoicesByUrl(question, 'FordSurveys');
         
@@ -175,6 +185,17 @@ const fordInit = () => {
         if (child && question.validators?.length > 0) {
           child.validators = [...(child.validators || []), ...question.validators];
           child.isRequired = true;
+        }
+      },
+      onPropertyChanged(question: Question, propertyName: string, newValue: any) {
+        if (propertyName === "onlyInclude") {
+          this.updateOnlyInclude(question);
+        }
+      },
+      updateOnlyInclude(question: Question) {
+        const checkbox = question.contentQuestion;
+        if (!!checkbox) {
+          checkbox.onlyInclude = question.onlyInclude;
         }
       },
     } as ICustomQuestionTypeConfigurationVOI);
