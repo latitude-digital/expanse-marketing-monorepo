@@ -1,4 +1,4 @@
-import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onCall, onRequest, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/v2";
 import * as admin from "firebase-admin";
 import { defineString } from "firebase-functions/params";
@@ -38,7 +38,51 @@ export const getFirestore = (app: admin.app.App) => {
   }
 };
 
-// CloudFront Cookie Management Function Implementation
+// Bronco Rank Function Implementation
+export const getBroncoRankImpl = (app: admin.app.App) => 
+  onRequest(
+    {
+      cors: true,
+      concurrency: 50,
+    },
+    async (req, res) => {
+      try {
+        const db = getFirestore(app);
+        const query = await db
+            .collection("events/BroncoQuizDraft/surveys")
+            .orderBy("start_time", "desc")
+            .limit(100)
+            .get();
+
+        const currentCount: Record<string, number> = {};
+
+        for (const doc of query.docs) {
+          const survey = doc.data();
+          currentCount[survey._correct_answers] = (currentCount[survey._correct_answers] || 0) + 1;
+        }
+
+        res.send({
+          success: true,
+          currentCount,
+        });
+      } catch (error) {
+        logger.error("Error getting Bronco rank", error);
+        Sentry.captureException(error, {
+          tags: {
+            function: "getBroncoRank",
+            environment: process.env.LATITUDE_ENV || "production",
+          },
+        });
+        res.status(500).send({
+          success: false,
+          message: "Error getting Bronco rank",
+          error,
+        });
+      }
+    }
+  );
+
+// CloudFront Cookie Management Function Implementation  
 export const setCloudFrontCookiesImpl = (app: admin.app.App) => 
   onCall(async (request) => {
     // Verify user is authenticated
@@ -50,21 +94,14 @@ export const setCloudFrontCookiesImpl = (app: admin.app.App) =>
     }
 
     try {
-      // This is a placeholder implementation
-      // In production, this would generate actual CloudFront signed cookies
-      // using AWS SDK and proper CloudFront key pair
-      
       logger.info("Setting CloudFront cookies for user", { 
         uid: request.auth.uid,
         environment: environment.value(),
         database: dbName.value()
       });
       
-      // For now, return mock cookies structure
-      // In production, you would:
-      // 1. Use AWS SDK to generate CloudFront signed cookies
-      // 2. Set proper expiry times
-      // 3. Use actual CloudFront key pair and policy
+      // NOTE: This is now handled by the real implementation in setCloudFrontCookies.ts
+      // This function should delegate to that implementation or be replaced
       
       const expires = Date.now() + (24 * 60 * 60 * 1000); // 24 hours
       
@@ -91,178 +128,109 @@ export const setCloudFrontCookiesImpl = (app: admin.app.App) =>
     }
   });
 
-// Survey Limit Check Function Implementation
+// Survey Limit Check Function Implementation (from original index.ts)
 export const checkSurveyLimitImpl = (app: admin.app.App) =>
-  onCall(async (request) => {
-    // Verify user is authenticated
-    if (!request.auth) {
-      throw new HttpsError(
-        "unauthenticated",
-        "The function must be called while authenticated."
-      );
-    }
+  onCall(
+    {
+      cors: true,
+    },
+    async (request) => {
+      const {eventId, bypass} = request.data;
 
-    try {
-      const { surveyId, deviceId } = request.data;
-      
-      if (!surveyId) {
-        throw new HttpsError(
-          "invalid-argument",
-          "Survey ID is required"
-        );
+      if (!eventId) {
+        throw new Error("Event ID is required");
       }
 
-      logger.info("Checking survey limit", { 
-        uid: request.auth.uid, 
-        surveyId, 
-        deviceId,
-        environment: environment.value(),
-        database: dbName.value()
-      });
-
-      // Get the correct database instance
+      // Get event document
       const db = getFirestore(app);
-      const responsesRef = db.collection("surveyResponses");
-      
-      let query = responsesRef.where("surveyId", "==", surveyId);
-      
-      if (deviceId) {
-        query = query.where("deviceId", "==", deviceId);
-      } else {
-        query = query.where("userId", "==", request.auth.uid);
+      const eventDoc = await db
+          .collection("events")
+          .doc(eventId)
+          .get();
+
+      if (!eventDoc.exists) {
+        throw new Error("Event not found");
       }
 
-      const snapshot = await query.get();
-      const responseCount = snapshot.size;
-      
-      // Get survey configuration to check limits
-      const surveyDoc = await db.collection("surveys").doc(surveyId).get();
-      const surveyData = surveyDoc.data();
-      
-      const maxResponses = surveyData?.maxResponses || 1; // Default to 1 response per user
-      const canSubmit = responseCount < maxResponses;
-      
-      return {
-        canSubmit,
-        responseCount,
-        maxResponses,
-        remaining: Math.max(0, maxResponses - responseCount)
-      };
-    } catch (error) {
-      logger.error("Error checking survey limit", error);
-      Sentry.captureException(error, {
-        tags: {
-          function: "checkSurveyLimit",
-          environment: process.env.LATITUDE_ENV || "production",
-        },
-      });
-      throw new HttpsError(
-        "internal",
-        "Unable to check survey limit"
-      );
-    }
-  });
+      const event = eventDoc.data();
 
-// Survey Limit Validation Function Implementation
+      // Fast path: no limit set
+      if (!event?.survey_count_limit) {
+        return {limitReached: false};
+      }
+
+      // Check bypass parameter
+      if (bypass === "1" || bypass === true) {
+        return {limitReached: false};
+      }
+
+      // Get survey count
+      const surveysSnapshot = await db
+          .collection(`events/${eventId}/surveys`)
+          .count()
+          .get();
+
+      const currentCount = surveysSnapshot.data().count;
+
+      if (currentCount >= event.survey_count_limit) {
+        return {
+          limitReached: true,
+          message: event.limit_reached_message || "Survey limit reached",
+        };
+      }
+
+      return {limitReached: false};
+    }
+  );
+
+// Survey Limit Validation Function Implementation (from original index.ts)
 export const validateSurveyLimitImpl = (app: admin.app.App) =>
-  onCall(async (request) => {
-    // Verify user is authenticated
-    if (!request.auth) {
-      throw new HttpsError(
-        "unauthenticated",
-        "The function must be called while authenticated."
-      );
-    }
+  onCall(
+    {
+      cors: true,
+    },
+    async (request) => {
+      const {eventId, bypass} = request.data;
 
-    try {
-      const { surveyId, deviceId, responseData } = request.data;
-      
-      if (!surveyId || !responseData) {
-        throw new HttpsError(
-          "invalid-argument",
-          "Survey ID and response data are required"
-        );
+      if (!eventId) {
+        throw new Error("Event ID is required");
       }
 
-      logger.info("Validating survey limit before submission", { 
-        uid: request.auth.uid, 
-        surveyId, 
-        deviceId,
-        environment: environment.value(),
-        database: dbName.value()
-      });
-
-      // Get the correct database instance
+      // Get event document
       const db = getFirestore(app);
-      const responsesRef = db.collection("surveyResponses");
-      
-      let query = responsesRef.where("surveyId", "==", surveyId);
-      
-      if (deviceId) {
-        query = query.where("deviceId", "==", deviceId);
-      } else {
-        query = query.where("userId", "==", request.auth.uid);
+      const eventDoc = await db
+          .collection("events")
+          .doc(eventId)
+          .get();
+
+      if (!eventDoc.exists) {
+        throw new Error("Event not found");
       }
 
-      const snapshot = await query.get();
-      const responseCount = snapshot.size;
-      
-      // Get survey configuration to check limits
-      const surveyDoc = await db.collection("surveys").doc(surveyId).get();
-      const surveyData = surveyDoc.data();
-      
-      const maxResponses = surveyData?.maxResponses || 1; // Default to 1 response per user
-      const canSubmit = responseCount < maxResponses;
-      
-      if (!canSubmit) {
-        throw new HttpsError(
-          "permission-denied",
-          "Survey response limit exceeded"
-        );
+      const event = eventDoc.data();
+
+      // Fast path: no limit set
+      if (!event?.survey_count_limit) {
+        return {canSave: true};
       }
 
-      // If validation passes, store the response
-      const responseDoc = {
-        surveyId,
-        userId: request.auth.uid,
-        deviceId: deviceId || null,
-        responseData,
-        submittedAt: admin.firestore.FieldValue.serverTimestamp(),
-        userEmail: request.auth.token?.email || null
-      };
-
-      const docRef = await db.collection("surveyResponses").add(responseDoc);
-      
-      logger.info("Survey response stored", { 
-        uid: request.auth.uid, 
-        surveyId, 
-        responseId: docRef.id,
-        environment: environment.value(),
-        database: dbName.value()
-      });
-
-      return {
-        success: true,
-        responseId: docRef.id,
-        message: "Survey response submitted successfully"
-      };
-    } catch (error) {
-      logger.error("Error validating and storing survey response", error);
-      
-      if (error instanceof HttpsError) {
-        throw error;
+      // Check bypass parameter
+      if (bypass === "1" || bypass === true) {
+        return {canSave: true};
       }
-      
-      Sentry.captureException(error, {
-        tags: {
-          function: "validateSurveyLimit",
-          environment: process.env.LATITUDE_ENV || "production",
-        },
-      });
-      
-      throw new HttpsError(
-        "internal",
-        "Unable to validate and store survey response"
-      );
+
+      // Get survey count
+      const surveysSnapshot = await db
+          .collection(`events/${eventId}/surveys`)
+          .count()
+          .get();
+
+      const currentCount = surveysSnapshot.data().count;
+
+      if (currentCount >= event.survey_count_limit) {
+        throw new Error(event.limit_reached_message || "Survey limit reached");
+      }
+
+      return {canSave: true};
     }
-  });
+  );

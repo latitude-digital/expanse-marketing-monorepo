@@ -1,8 +1,10 @@
 import { onRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/v2";
 import * as admin from "firebase-admin";
-import { FieldValue } from "firebase-admin/firestore";
+import {getFunctions} from "firebase-admin/functions";
 import cors from "cors";
+import moment from "moment-timezone";
+import {getFunctionUrl} from "./utils";
 
 // Configure CORS
 const corsHandler = cors({ origin: true });
@@ -129,297 +131,286 @@ export const getSurveyImpl = (app: admin.app.App) => onRequest(
   }
 );
 
+
+
+
+
 /**
- * Save Survey Function
- * Saves survey responses to Firestore
+ * Save Survey Function - COMPLETE RESTORATION
+ * This includes all the missing logic from the original implementation
  */
 export const saveSurveyImpl = (app: admin.app.App) => onRequest(
-  { cors: true },
+  {
+    cors: true,
+    concurrency: 50,
+  },
   async (req, res) => {
-    corsHandler(req, res, async () => {
-      try {
-        if (req.method !== 'POST') {
-          res.status(405).json({ success: false, error: 'Method not allowed' });
-          return;
-        }
+    const {eventID, survey} = req.body;
 
-        const { eventID, survey } = req.body;
-        
-        if (!eventID || !survey) {
-          res.status(400).json({ success: false, error: 'Event ID and survey data are required' });
-          return;
-        }
+    try {
+      const db = getFirestoreDb(app);
+      const doc = await db
+          .collection("events")
+          .doc(eventID)
+          .get();
+      const thisEvent = doc.data();
 
-        logger.info(`Saving survey for event: ${eventID}`);
-        
-        const db = getFirestoreDb(app);
-        
-        // Check if event exists
-        const eventRef = db.collection('events').doc(eventID);
-        const eventDoc = await eventRef.get();
-        
-        if (!eventDoc.exists) {
-          res.status(404).json({ success: false, error: 'Event not found' });
-          return;
-        }
-        
-        // Add server timestamp
-        const surveyData = {
-          ...survey,
-          submittedAt: FieldValue.serverTimestamp(),
-          eventID
-        };
-        
-        // Save survey response
-        const surveysRef = db.collection('events').doc(eventID).collection('surveys');
-        const docRef = await surveysRef.add(surveyData);
-        
-        logger.info(`Survey saved with ID: ${docRef.id}`);
-        
-        // If this is a post-survey (has _preSurveyID), mark the pre-survey as used
-        if (surveyData._preSurveyID) {
-          try {
-            const preEventID = eventData._preEventID || eventID;
-            const preSurveyRef = db.collection('events').doc(preEventID).collection('surveys').doc(surveyData._preSurveyID);
-            await preSurveyRef.update({
-              _used: FieldValue.serverTimestamp()
-            });
-            logger.info(`Pre-survey ${surveyData._preSurveyID} marked as used`);
-          } catch (usedError) {
-            logger.error('Error marking pre-survey as used:', usedError);
-            // Continue - post-survey was saved successfully even if _used update failed
-          }
-        }
-        
-        // Update event results/statistics if needed
+      if (!thisEvent) {
+        res.status(404).send({
+          success: false,
+          message: "Event not found",
+        });
+        return;
+      }
+
+      // if event/preReg hasn't started
+      if (
+        moment
+            .tz(
+                thisEvent.preRegDate?.toDate() || thisEvent.startDate.toDate(),
+                thisEvent.timeZone || "America/New_York"
+            )
+            .startOf("day")
+            .toDate() > new Date()
+      ) {
+        res.status(403).send({
+          success: false,
+          message: "Event has not started yet",
+        });
+        return;
+      }
+
+      // if event ended
+      if (
+        moment
+            .tz(
+                thisEvent.endDate.toDate(),
+                thisEvent.timeZone || "America/Los_Angeles"
+            )
+            .endOf("day")
+            .toDate() < new Date()
+      ) {
+        res.status(403).send({
+          success: false,
+          message: "Event has ended",
+        });
+        return;
+      }
+
+      // Check if this is a postTD event and has a linked pre-survey
+      if (thisEvent.surveyType === "postTD" && survey._preSurveyID && thisEvent._preEventID) {
+        // For postTD events, we need to get the pre-survey's device_survey_guid
         try {
-          // Get current results
-          const eventData = eventDoc.data();
-          const currentResults = eventData?.results || { __totalCount: 0, __questions: [] };
-          
-          // Increment total count
-          currentResults.__totalCount = (currentResults.__totalCount || 0) + 1;
-          
-          // Update question statistics
-          Object.keys(survey).forEach(questionKey => {
-            if (questionKey.startsWith('_') || questionKey === 'submittedAt' || questionKey === 'eventID') {
-              return; // Skip metadata fields
-            }
-            
-            // Add question to tracked questions if not already there
-            if (!currentResults.__questions.includes(questionKey)) {
-              currentResults.__questions.push(questionKey);
-            }
-            
-            // Initialize question results if needed
-            if (!currentResults[questionKey]) {
-              currentResults[questionKey] = {};
-            }
-            
-            // Increment answer count
-            const answer = String(survey[questionKey]);
-            currentResults[questionKey][answer] = (currentResults[questionKey][answer] || 0) + 1;
-          });
-          
-          // Update event with new results
-          await eventRef.update({ results: currentResults });
-          logger.info('Event statistics updated');
-        } catch (statsError) {
-          logger.error('Error updating event statistics:', statsError);
-          // Continue - survey was saved successfully even if stats update failed
-        }
-        
-        res.status(200).json({ 
-          success: true, 
-          surveyId: docRef.id,
-          message: 'Survey saved successfully'
-        });
-      } catch (error) {
-        logger.error('Error in saveSurvey:', error);
-        res.status(500).json({ 
-          success: false, 
-          error: error instanceof Error ? error.message : 'Internal server error' 
-        });
-      }
-    });
-  }
-);
+          // Get the pre-survey data
+          const preSurveyDoc = await db
+              .doc(`events/${thisEvent._preEventID}/surveys/${survey._preSurveyID}`)
+              .get();
 
-/**
- * Validate Email Function
- * Validates email address format and optionally checks for duplicates
- */
-export const validateEmailImpl = (app: admin.app.App) => onRequest(
-  { cors: true },
-  async (req, res) => {
-    corsHandler(req, res, async () => {
-      try {
-        const { email, eventID } = req.body;
-        
-        if (!email) {
-          res.status(400).json({ success: false, error: 'Email is required' });
-          return;
-        }
+          if (preSurveyDoc.exists) {
+            const preSurveyData = preSurveyDoc.data();
 
-        // Basic email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-          res.status(200).json({ 
-            success: false, 
-            valid: false,
-            message: 'Invalid email format' 
-          });
-          return;
-        }
+            // Set the pre_drive_survey_guid to the pre-survey's device_survey_guid
+            survey.pre_drive_survey_guid = preSurveyData.device_survey_guid || survey._preSurveyID;
 
-        // If eventID provided, check for duplicates
-        if (eventID) {
-          const db = getFirestoreDb(app);
-          const surveysRef = db.collection('events').doc(eventID).collection('surveys');
-          const existingEmail = await surveysRef.where('email', '==', email).limit(1).get();
-          
-          if (!existingEmail.empty) {
-            res.status(200).json({ 
-              success: true, 
-              valid: false,
-              message: 'Email already registered for this event' 
-            });
-            return;
+            // Copy user information from pre-survey if they exist (only if not already provided)
+            if (preSurveyData.first_name && !survey.first_name) survey.first_name = preSurveyData.first_name;
+            if (preSurveyData.last_name && !survey.last_name) survey.last_name = preSurveyData.last_name;
+            if (preSurveyData.email && !survey.email) survey.email = preSurveyData.email;
+            if (preSurveyData.phone && !survey.phone) survey.phone = preSurveyData.phone;
           }
+        } catch (err) {
+          console.error("Error fetching pre-survey for postTD:", err);
+          // Continue saving even if we couldn't get the pre-survey
         }
-
-        res.status(200).json({ 
-          success: true, 
-          valid: true,
-          message: 'Email is valid' 
-        });
-      } catch (error) {
-        logger.error('Error in validateEmail:', error);
-        res.status(500).json({ 
-          success: false, 
-          error: error instanceof Error ? error.message : 'Internal server error' 
-        });
       }
-    });
+
+      // Save the survey
+      const savedSurvey = await doc.ref
+          .collection("surveys")
+          .add(survey);
+
+      res.send({
+        success: true,
+        message: "Survey Saved",
+        surveyID: savedSurvey.id,
+      });
+      return;
+    } catch (err) {
+      console.error("Error in saveSurvey:", err);
+      res.status(500).send({
+        success: false,
+        message: "Error saving survey",
+        error: err,
+      });
+      return;
+    }
   }
 );
 
 /**
- * Check In/Out Survey Function
- * Handles event check-in and check-out processes
+ * Check In/Out Survey Function - COMPLETE RESTORATION
+ * This includes all the missing auto-checkout and email logic
  */
 export const checkInOutSurveyImpl = (app: admin.app.App) => onRequest(
-  { cors: true },
+  {
+    cors: true,
+    concurrency: 50,
+  },
   async (req, res) => {
-    corsHandler(req, res, async () => {
-      try {
-        const { eventID, surveyID, action, data } = req.body;
-        
-        if (!eventID || !action) {
-          res.status(400).json({ success: false, error: 'Event ID and action are required' });
-          return;
-        }
+    const {eventID, surveyID, data} = req.body;
 
-        logger.info(`Check ${action} for event: ${eventID}, survey: ${surveyID}`);
-        
-        const db = getFirestoreDb(app);
-        
-        if (action === 'checkIn') {
-          // Handle check-in
-          const checkInData = {
-            ...data,
-            checkInTime: FieldValue.serverTimestamp(),
-            status: 'checked-in'
-          };
-          
-          if (surveyID) {
-            // Update existing survey
-            await db.collection('events').doc(eventID).collection('surveys').doc(surveyID).update(checkInData);
+    // Validate required parameters
+    if (!eventID || !surveyID) {
+      res.status(400).send({
+        success: false,
+        message: "Missing required parameters: eventID and surveyID",
+      });
+      return;
+    }
+
+    // Build update object from data
+    const updateData: any = {};
+    
+    // convert strings to timestamps for check-in/out fields
+    if (data?._checkedIn) {
+      updateData._checkedIn = new Date(data._checkedIn);
+    }
+    
+    if (data?._checkedOut) {
+      updateData._checkedOut = new Date(data._checkedOut);
+    }
+
+    try {
+      const db = getFirestoreDb(app);
+      
+      // Update the survey with the provided data
+      await db
+          .doc(`events/${eventID}/surveys/${surveyID}`)
+          .update(updateData);
+
+      // Get the event data to check for configurations
+      const eventDoc = await db
+          .doc(`events/${eventID}`)
+          .get();
+
+      const eventData = eventDoc.data();
+
+      // If checking in and auto-check-out is configured, schedule the task
+      if (updateData._checkedIn && eventData && eventData.autoCheckOut) {
+        const {minutesAfter, postEventId} = eventData.autoCheckOut;
+
+        if (minutesAfter && postEventId) {
+          const autoCheckOutQueue = getFunctions().taskQueue("autoCheckOut");
+          const autoCheckOutUri = await getFunctionUrl("autoCheckOut");
+
+          // Schedule the auto-check-out task
+          const scheduleTime = new Date(updateData._checkedIn.getTime() + minutesAfter * 60 * 1000);
+
+          await autoCheckOutQueue.enqueue(
+              {
+                preEventID: eventID,
+                surveyID: surveyID,
+                postEventID: postEventId,
+                checkOutEmailTemplate: eventData.checkOutEmail?.template || null,
+              },
+              {
+                scheduleTime,
+                uri: autoCheckOutUri,
+              }
+          );
+
+          console.log(`Scheduled auto-checkout for survey ${surveyID} at ${scheduleTime}`);
+        }
+      }
+
+      // If manually checking out, send email if configured
+      if (updateData._checkedOut && eventData) {
+        console.log("Manual checkout detected for survey:", surveyID);
+        console.log("Event data checkOutEmail:", eventData.checkOutEmail);
+        console.log("Event data autoCheckOut:", eventData.autoCheckOut);
+
+        const checkOutEmailTemplate = eventData.checkOutEmail?.template;
+        const postEventId = eventData.autoCheckOut?.postEventId;
+
+        if (checkOutEmailTemplate && postEventId) {
+          console.log("Email template and postEventId found, proceeding with email");
+          // Get the full survey data
+          const surveyDoc = await db
+              .doc(`events/${eventID}/surveys/${surveyID}`)
+              .get();
+
+          const surveyData = surveyDoc.data();
+
+          if (surveyData) {
+            const postEventDoc = await db
+                .doc(`events/${postEventId}`)
+                .get();
+
+            const postEventData = postEventDoc.data();
+
+            if (postEventData) {
+              const email = surveyData.email || surveyData._email;
+
+              if (email) {
+                const emailQueue = getFunctions().taskQueue("scheduledEmail");
+                const emailUri = await getFunctionUrl("scheduledEmail");
+
+                const surveyUrl = `https://survey.expansemarketing.com/s/${postEventId}?pid=${surveyID}`;
+
+                await emailQueue.enqueue(
+                    {
+                      template: checkOutEmailTemplate,
+                      email,
+                      substitutionData: {
+                        event: {
+                          id: postEventId,
+                          ...postEventData,
+                          questions: JSON.parse(postEventData.questions || "{}"),
+                          theme: JSON.parse(postEventData.theme || "{}"),
+                        },
+                        survey: {
+                          id: surveyID,
+                          ...surveyData,
+                        },
+                        survey_url: surveyUrl,
+                      },
+                    },
+                    {
+                      uri: emailUri,
+                    }
+                );
+
+                console.log("Manual check-out email queued for", email);
+              } else {
+                console.log("No email address found for survey");
+              }
+            } else {
+              console.log("No post event data found");
+            }
           } else {
-            // Create new check-in record
-            const docRef = await db.collection('events').doc(eventID).collection('surveys').add(checkInData);
-            res.status(200).json({ success: true, surveyID: docRef.id });
-            return;
+            console.log("No survey data found");
           }
-        } else if (action === 'checkOut') {
-          // Handle check-out
-          if (!surveyID) {
-            res.status(400).json({ success: false, error: 'Survey ID required for check-out' });
-            return;
-          }
-          
-          const checkOutData = {
-            ...data,
-            checkOutTime: FieldValue.serverTimestamp(),
-            status: 'checked-out'
-          };
-          
-          await db.collection('events').doc(eventID).collection('surveys').doc(surveyID).update(checkOutData);
         } else {
-          res.status(400).json({ success: false, error: 'Invalid action' });
-          return;
+          console.log("Missing email template or postEventId:", {
+            checkOutEmailTemplate,
+            postEventId,
+          });
         }
-
-        res.status(200).json({ success: true, message: `${action} successful` });
-      } catch (error) {
-        logger.error('Error in checkInOutSurvey:', error);
-        res.status(500).json({ 
-          success: false, 
-          error: error instanceof Error ? error.message : 'Internal server error' 
-        });
       }
-    });
-  }
-);
 
-/**
- * Create New User Function
- * Creates a new user account
- */
-export const createNewUserImpl = (app: admin.app.App) => onRequest(
-  { cors: true },
-  async (req, res) => {
-    corsHandler(req, res, async () => {
-      try {
-        const { email, password, displayName, phoneNumber } = req.body;
-        
-        if (!email || !password) {
-          res.status(400).json({ success: false, error: 'Email and password are required' });
-          return;
-        }
-
-        // Create user in Firebase Auth
-        const userRecord = await admin.auth().createUser({
-          email,
-          password,
-          displayName,
-          phoneNumber,
-          emailVerified: false
-        });
-
-        logger.info(`User created: ${userRecord.uid}`);
-
-        // Store additional user data in Firestore if needed
-        const db = getFirestoreDb(app);
-        await db.collection('users').doc(userRecord.uid).set({
-          email,
-          displayName,
-          phoneNumber,
-          createdAt: FieldValue.serverTimestamp()
-        });
-
-        res.status(200).json({ 
-          success: true, 
-          uid: userRecord.uid,
-          message: 'User created successfully' 
-        });
-      } catch (error) {
-        logger.error('Error in createNewUser:', error);
-        res.status(500).json({ 
-          success: false, 
-          error: error instanceof Error ? error.message : 'Internal server error' 
-        });
-      }
-    });
+      res.send({
+        success: true,
+        message: "Survey Checked In/Out",
+      });
+      return;
+    } catch (err) {
+      console.error("Error in checkInOutSurvey:", err);
+      res.status(500).send({
+        success: false,
+        message: "Error checking in/out",
+        error: err,
+      });
+      return;
+    }
   }
 );

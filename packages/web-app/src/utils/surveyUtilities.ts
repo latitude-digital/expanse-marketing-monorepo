@@ -237,7 +237,7 @@ export const validateEmailForSurveyJS = function(this: any): void {
       }
 
       // typos are rejected with correction
-      if (results.did_you_mean) {
+      if (results?.did_you_mean) {
         valid = true;
         this.question.setPropertyValue('didYouMean', results.did_you_mean);
 

@@ -1,6 +1,5 @@
 import { Outlet } from 'react-router-dom';
 import * as Sentry from "@sentry/react";
-import SessionTestControls from './components/dev/SessionTestControls';
 
 import './App.scss';
 
@@ -33,7 +32,6 @@ function App() {
       <div className="layout-base">
         <Outlet />
       </div>
-      <SessionTestControls />
     </div>
   );
 }
