@@ -1,3 +1,14 @@
+/**
+ * Ford-specific SurveyJS custom question type definitions
+ * 
+ * ⚠️ IMPORTANT FOR DEVELOPERS:
+ * This file defines Ford-specific question types. Unlike Lincoln questions,
+ * Ford questions don't have a separate template configuration file.
+ * Most _ffs values and properties are set directly here.
+ * 
+ * For Lincoln questions, see LincolnSurveys.ts + /src/helpers/surveyTemplatesLincoln.ts
+ */
+
 import {
   ComponentCollection,
   ICustomQuestionTypeConfiguration,
@@ -9,7 +20,45 @@ import {
 } from "./interfaces";
 import { handleChoicesByUrl } from "./choicesByUrlHelper";
 
+// Global flag to prevent multiple initialization
+let fordQuestionsInitialized = false;
+
+/**
+ * Helper to safely set a property as readonly only if it's defined on the specific type
+ * This prevents accidentally modifying base type properties which affects ALL questions
+ */
+const setPropertyReadOnly = (typeName: string, propertyName: string) => {
+  const prop = Serializer.findProperty(typeName, propertyName);
+  // Only set readonly if the property is defined on this specific type
+  // or if it's a custom property like _ffs that we added
+  if (prop && (prop.classInfo?.name === typeName || propertyName === "_ffs")) {
+    prop.readOnly = true;
+  }
+};
+
 const fordInit = () => {
+  // Prevent multiple initialization
+  if (fordQuestionsInitialized) {
+    console.log('Ford questions already initialized, skipping...');
+    return;
+  }
+
+  console.log('Initializing Ford questions for the first time...');
+  // Register individual questions to avoid module caching issues
+  
+  /**
+   * Ford Vehicle of Interest (VOI) Question
+   * 
+   * @description Multi-select checkbox for Ford vehicles the customer is interested in
+   * @_ffs "voi" - Maps to voi field in Ford API
+   * @api_endpoint VEHICLES_INSERT - Sends selected vehicle_ids to Ford endpoint
+   * @max_selections 3 vehicles
+   * @data_source https://cdn.latitudewebservices.com/vehicles/ford.json
+   */
+  // Register fordvoi if it doesn't exist
+  if (!ComponentCollection.Instance.getCustomQuestionByName("fordvoi")) {
+    console.log('Registering Ford VOI question type...');
+
   Serializer.addProperty("question", {
     name: "_ffs",
     displayName: "FFS question",
@@ -59,6 +108,13 @@ const fordInit = () => {
       this.updateOnlyInclude(question);
       // Use shared utility to handle choicesByUrl for custom question types
       handleChoicesByUrl(question, 'FordSurveys');
+      
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
     },
     onPropertyChanged(question: Question, propertyName: string, newValue: any) {
       if (propertyName === "onlyInclude") {
@@ -72,8 +128,91 @@ const fordInit = () => {
       }
     },
   } as ICustomQuestionTypeConfigurationVOI);
+  }
 
-  ComponentCollection.Instance.add({
+  /**
+   * Ford Vehicles Driven Question
+   * 
+   * @description Multi-select checkbox for Ford vehicles actually test driven at event
+   * @_ffs "vehiclesDriven" - Maps to vehiclesDriven field
+   * @note Ford hasn't implemented the driven endpoint yet (unlike Lincoln)
+   * @data_source https://cdn.latitudewebservices.com/vehicles/ford.json
+   * @future Will eventually send to Ford vehicles driven endpoint when implemented
+   */
+  // Register fordvehiclesdriven if it doesn't exist - NEW QUESTION TYPE
+  if (!ComponentCollection.Instance.getCustomQuestionByName("fordvehiclesdriven")) {
+    console.log('Registering new fordvehiclesdriven question type...');
+    ComponentCollection.Instance.add({
+      name: "fordvehiclesdriven",
+      title: "Ford Vehicles Driven",
+      iconName: "icon-cars",
+      showInToolbox: true,
+      inheritBaseProps: true,
+      onInit: () => {
+        Serializer.addProperty("fordvehiclesdriven", {
+          name: "onlyInclude",
+          displayName: "Only Include these vehicle_ids",
+          type: "text",
+          category: "general",
+          isSerializable: true,
+        });
+      },
+      questionJSON: {
+        type: "checkbox",
+        name: "vehiclesDriven",
+        _ffs: "vehiclesDriven",
+        title: {
+          en: "Please select the Ford vehicles that you experienced today.",
+        },
+        description: {
+          en: "Please select the vehicles in the order you experienced them.",
+        },
+        renderAs: "vehiclesdriven",
+        choicesByUrl: {
+          url: "https://cdn.latitudewebservices.com/vehicles/ford.json",
+          valueName: "id",
+          titleName: "name",
+          image: "image",
+        },
+      },
+      onLoaded(question: Question) {
+        this.updateOnlyInclude(question);
+        // Use shared utility to handle choicesByUrl for custom question types
+        handleChoicesByUrl(question, 'FordSurveys');
+        
+        // Sync validators from parent to child for custom questions
+        const child = question.contentQuestion;
+        if (child && question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+          child.isRequired = true;
+        }
+      },
+      onPropertyChanged(question: Question, propertyName: string, newValue: any) {
+        if (propertyName === "onlyInclude") {
+          this.updateOnlyInclude(question);
+        }
+      },
+      updateOnlyInclude(question: Question) {
+        const checkbox = question.contentQuestion;
+        if (!!checkbox) {
+          checkbox.onlyInclude = question.onlyInclude;
+        }
+      },
+    } as ICustomQuestionTypeConfigurationVOI);
+  }
+
+  /**
+   * Ford Email Opt-In Question
+   * 
+   * @description Radio button group for Ford email marketing consent
+   * @_ffs "email_opt_in" - Maps to email_opt_in field in Ford API (1=Yes, 0=No)
+   * @privacy_policy Includes Ford Motor Company privacy policy link
+   * @required true
+   */
+  // Register other Ford questions if they don't exist
+  if (!ComponentCollection.Instance.getCustomQuestionByName("fordoptin")) {
+    console.log('Registering Ford optin question type...');
+    ComponentCollection.Instance.add({
     name: "fordoptin",
     title: "Ford Opt-In",
     iconName: "icon-thumbs-up",
@@ -82,9 +221,9 @@ const fordInit = () => {
     questionJSON: {
       type: "radiogroup",
       title: {
-        en: "Please email me communications, including product and service information, surveys and special offers from Ford and its retailers.",
-        es: "Por favor, envíenme comunicaciones, incluyendo información sobre productos y servicios, encuestas y ofertas especiales de Ford y sus minoristas.",
-        fr: "Veuillez m'envoyer des communications, y compris des informations sur les produits et services, des enquêtes et des offres spéciales de Ford et de ses détaillants.",
+        en: "Please email me communications including product information, offers, and incentives from Ford Motor Company and the local dealer.",
+        es: "Quiero recibir comunicaciones, incluidas información sobre productos y servicios, encuestas, y ofertas especiales de Ford Motor Company y sus concesionarios.",
+        fr: "Je souhaite recevoir des communications, y des informations sur les produits et services, des enquêtes, et des offres spéciales de Ford Motor Company et de son concessionnaire.",
       },
       description: {
         en: "Ford Motor Company respects your privacy and treats your personal information with care. [Click here to read Ford Motor Company's privacy policy.](https://ford.com/help/privacy/)",
@@ -105,8 +244,25 @@ const fordInit = () => {
         },
       ],
     },
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
+    },
   } as ICustomQuestionTypeConfiguration);
+  }
 
+  /**
+   * Ford Recommend (Pre-Event) Question
+   * 
+   * @description 5-point recommendation scale for Ford brand
+   * @_ffs "how_likely_recommend" - Maps to how_likely_recommend field in Ford API
+   * @scale 1-5 (Definitely Will NOT to Definitely Will Recommend)
+   * @when Pre-event (before vehicle experience)
+   */
   ComponentCollection.Instance.add({
     name: "fordrecommend",
     title: "How Likely Recommend Ford",
@@ -114,8 +270,16 @@ const fordInit = () => {
     showInToolbox: true,
     inheritBaseProps: true,
     onInit: () => {
-      Serializer.getProperty("fordrecommend", "name").readOnly = true;
-      Serializer.getProperty("fordrecommend", "_ffs").readOnly = true;
+      setPropertyReadOnly("fordrecommend", "name");
+      setPropertyReadOnly("fordrecommend", "_ffs");
+    },
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
     },
     questionJSON: {
       type: "radiogroup",
@@ -124,7 +288,6 @@ const fordInit = () => {
         es: "¿Qué tan probable es que recomiende Ford a un amigo o colega?",
         fr: "Quelle est la probabilité que vous recommandiez Ford à un ami ou collègue?",
       },
-      description: "Just putting in a description *here*.",
       renderAs: "radiobuttongroup",
       isRequired: true,
       choices: [
@@ -175,12 +338,28 @@ const fordInit = () => {
 
 
 
+  /**
+   * Ford Purchase Consideration (Pre-Event) Question
+   * 
+   * @description 5-point scale for Ford vehicle purchase consideration
+   * @_ffs "how_likely_purchasing" - Maps to how_likely_purchasing field in Ford API
+   * @scale 1-5 (Definitely Will NOT to Definitely Will Consider)
+   * @when Pre-event (before vehicle experience)
+   */
   ComponentCollection.Instance.add({
     name: "howlikelypurchasingford",
     title: "How Likely to Purchase Ford",
     iconName: "icon-chart-bar",
     showInToolbox: true,
     inheritBaseProps: true,
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
+    },
     questionJSON: {
       type: "radiogroup",
       title: {
@@ -238,6 +417,14 @@ const fordInit = () => {
 
 
 
+  /**
+   * Ford Recommend (Post-Event) Question
+   * 
+   * @description 5-point recommendation scale for Ford brand after event
+   * @_ffs "how_likely_recommend_post" - Maps to how_likely_recommend_post field in Ford API
+   * @scale 1-5 (Definitely Will NOT to Definitely Will Recommend)
+   * @when Post-event (after vehicle experience)
+   */
   ComponentCollection.Instance.add({
     name: "fordrecommendpost",
     title: "How Likely Recommend Ford (post event)",
@@ -245,8 +432,16 @@ const fordInit = () => {
     showInToolbox: true,
     inheritBaseProps: true,
     onInit: () => {
-      Serializer.getProperty("fordrecommendpost", "name").readOnly = true;
-      Serializer.getProperty("fordrecommendpost", "_ffs").readOnly = true;
+      setPropertyReadOnly("fordrecommendpost", "name");
+      setPropertyReadOnly("fordrecommendpost", "_ffs");
+    },
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
     },
     questionJSON: {
       type: "radiogroup",
@@ -302,12 +497,28 @@ const fordInit = () => {
     },
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * Ford Purchase Consideration (Post-Event) Question
+   * 
+   * @description 5-point scale for Ford vehicle purchase consideration after event
+   * @_ffs "how_likely_purchasing_post" - Maps to how_likely_purchasing_post field in Ford API
+   * @scale 1-5 (Definitely Will NOT to Definitely Will Consider)
+   * @when Post-event (after vehicle experience)
+   */
   ComponentCollection.Instance.add({
     name: "howlikelypurchasingfordpost",
     title: "How Likely to Purchase Ford (post event)",
     iconName: "icon-chart-bar",
     showInToolbox: true,
     inheritBaseProps: true,
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
+    },
     questionJSON: {
       type: "radiogroup",
       title: {
@@ -361,6 +572,44 @@ const fordInit = () => {
       ],
     },
   } as ICustomQuestionTypeConfiguration);
+
+  /**
+   * Sweepstakes Opt-In Question
+   * 
+   * @description Radio button group for sweepstakes entry consent
+   * @_ffs Not typically mapped - handled as custom logic
+   * @legal Includes official rules link and age/residency restrictions
+   * @example 2025 Mets Bronco sweepstakes for NY/NJ/CT residents
+   * @age_restriction 18+ years old
+   */
+  ComponentCollection.Instance.add({
+    name: "sweepstakesOptIn",
+    title: "Sweepstakes Opt-In",
+    iconName: "icon-checkbox",
+    showInToolbox: true,
+    inheritBaseProps: true,
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        child.isRequired = true;
+      }
+    },
+    questionJSON: {
+      type: "radiogroup",
+      renderAs: "radiobuttongroup",
+      name: "sweepstakesOptIn",
+      title: "Are you at least 18 years old and would you like to register win a 2025 Mets wrapped Bronco?",
+      description: "NO PURCHASE NECESSARY TO ENTER OR WIN. TRAVEL NOT INCLUDED. Open to legal residents of New York: the five (5) Boroughs of New York City and residents of Nassau, Suffolk, Ulster, Orange, Rockland, Sullivan, Dutchess, Putnam, Westchester counties); New Jersey: residents of Sussex, Warren, Morris, Hunterdon, Somerset, Passaic, Bergen, Hudson, Essex, Union, Middlesex, Monmouth, Ocean counties; and Connecticut: residents of New Haven, Fairfield, Litchfield counties who are 18+ at time of entry. Enter by 11:59 PM ET on August 31, 2025. Odds of winning depend on number of eligible entries received. Void where prohibited. Restrictions apply: see Official Rules at [https://blueoval.events/2025_NY_Mets_Official_Rules](https://blueoval.events/2025_NY_Mets_Official_Rules) Sponsor: Tri-State and Upstate FDAF, INC.",
+      descriptionLocation: "underInput",
+      choices: ["Yes", "No"]
+    },
+  } as ICustomQuestionTypeConfiguration);
+
+  // Mark Ford questions as initialized
+  fordQuestionsInitialized = true;
+  console.log('Ford questions initialization completed');
 };
 
 export default {

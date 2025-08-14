@@ -1,21 +1,56 @@
+/**
+ * FMC (Ford Motor Company) Demographics & Market Research Questions
+ * 
+ * ⚠️ IMPORTANT FOR DEVELOPERS:
+ * This file defines demographic and market research questions used across Ford/Lincoln surveys.
+ * These questions collect customer insights about age, gender, purchase intent, and current vehicles.
+ * 
+ * Unlike brand-specific questions, these don't typically have template configuration files.
+ * Most _ffs values are set directly in the questionJSON definitions below.
+ */
+
 import {
   ComponentCollection,
   ICustomQuestionTypeConfiguration,
   Question,
   Serializer,
 } from "survey-core";
-import {
-  ICustomQuestionTypeConfigurationWaiver,
-} from "./interfaces";
 import { handleChoicesByUrl } from "./choicesByUrlHelper";
 
 const fmcInit = () => {
+  // Prevent double registration
+  if (ComponentCollection.Instance.getCustomQuestionByName("gender")) {
+    console.log('FMCSurveys already initialized, skipping...');
+    return;
+  }
+
+  /**
+   * Gender Question
+   * 
+   * @description Radio button group for gender identification
+   * @_ffs "gender" - Maps to gender field in APIs
+   * @choices Male, Female, Prefer Not To Say
+   * @demographics Used for market research and customer profiling
+   */
   ComponentCollection.Instance.add({
     name: "gender",
     title: "Gender",
     iconName: "icon-genderless",
     showInToolbox: true,
     inheritBaseProps: true,
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child) {
+        // Always sync isRequired from parent to child
+        child.isRequired = question.isRequired;
+        
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
+      }
+    },
     questionJSON: {
       type: "radiogroup",
       title: {
@@ -43,12 +78,34 @@ const fmcInit = () => {
     },
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * Age Bracket Question
+   * 
+   * @description Radio button group for age ranges
+   * @_ffs "age_bracket" - Maps to age_bracket field in APIs
+   * @ranges 18-24, 25-29, 30-34, 35-39, 40-44, 45-49, 50-59, Over 60
+   * @note Ford API merges 18-20 and 21-24 into single 18-24 bracket
+   * @demographics Critical for market segmentation and targeting
+   */
   ComponentCollection.Instance.add({
     name: "agebracket",
     title: "Age Bracket",
     iconName: "icon-calendar-star",
     showInToolbox: true,
     inheritBaseProps: true,
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child) {
+        // Always sync isRequired from parent to child
+        child.isRequired = question.isRequired;
+        
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
+      }
+    },
     questionJSON: {
       type: "radiogroup",
       title: {
@@ -64,35 +121,64 @@ const fmcInit = () => {
           text: { en: "18 to 24", es: "18 a 24", fr: "18 à 24" },
         },
         {
-          value: "25 - 34",
-          text: { en: "25 to 34", es: "25 a 34", fr: "25 à 34" },
+          value: "25 - 29",
+          text: { en: "25 to 29", es: "25 a 29", fr: "25 à 29" },
         },
         {
-          value: "35 - 44",
-          text: { en: "35 to 44", es: "35 a 44", fr: "35 à 44" },
+          value: "30 - 34",
+          text: { en: "30 to 34", es: "30 a 34", fr: "30 à 34" },
         },
         {
-          value: "45 - 54",
-          text: { en: "45 to 54", es: "45 a 54", fr: "45 à 54" },
+          value: "35 - 39",
+          text: { en: "35 to 39", es: "35 a 39", fr: "35 à 39" },
         },
         {
-          value: "55 - 64",
-          text: { en: "55 to 64", es: "55 a 64", fr: "55 à 64" },
+          value: "40 - 44",
+          text: { en: "40 to 44", es: "40 a 44", fr: "40 à 44" },
         },
         {
-          value: "65+",
-          text: { en: "65 or older", es: "65 o más", fr: "65 ou plus" },
+          value: "45 - 49",
+          text: { en: "45 to 49", es: "45 a 49", fr: "45 à 49" },
+        },
+        {
+          value: "50 - 59",
+          text: { en: "50 to 59", es: "50 a 59", fr: "50 à 59" },
+        },
+        {
+          value: "Over 60",
+          text: { en: "Over 60", es: "Más de 60", fr: "Plus de 60" },
         },
       ],
     },
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * Vehicle Acquisition Method Question
+   * 
+   * @description Radio button group for preferred vehicle acquisition method
+   * @_ffs "how_likely_acquire" - Maps to how_likely_acquire field in APIs
+   * @choices Purchase, Lease
+   * @market_research Helps dealers understand customer financing preferences
+   */
   ComponentCollection.Instance.add({
     name: "howlikelyacquire",
     title: "How Likely to Acquire",
     iconName: "icon-money-check-dollar-pen",
     showInToolbox: true,
     inheritBaseProps: true,
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child) {
+        // Always sync isRequired from parent to child
+        child.isRequired = question.isRequired;
+        
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
+      }
+    },
     questionJSON: {
       type: "radiogroup",
       title: {
@@ -115,18 +201,39 @@ const fmcInit = () => {
     },
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * In-Market Timing Question
+   * 
+   * @description Radio button group for vehicle purchase timeline
+   * @_ffs "in_market_timing" - Maps to in_market_timing field in APIs
+   * @timeline 0-30 days, 1-3 months, 4-6 months, 7+ months, No definite plans
+   * @lead_scoring Critical for sales follow-up prioritization
+   */
   ComponentCollection.Instance.add({
     name: "inmarkettiming",
     title: "In Market Timing",
     iconName: "icon-calendar-clock",
     showInToolbox: true,
     inheritBaseProps: true,
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child) {
+        // Always sync isRequired from parent to child
+        child.isRequired = question.isRequired;
+        
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
+      }
+    },
     questionJSON: {
       type: "radiogroup",
       title: {
-        en: "When are you planning to purchase your next vehicle?",
-        es: "¿Cuándo planeas comprar tu próximo vehículo?",
-        fr: "Quand prévoyez-vous acheter votre prochain véhicule?",
+        en: "When do you plan to acquire your next vehicle?",
+        es: "¿Cuándo planeas adquirir tu próximo vehículo?",
+        fr: "Quand prévoyez-vous d'acquérir votre prochain véhicule?",
       },
       renderAs: "radiobuttongroup",
       buttonSize: "large",
@@ -159,200 +266,16 @@ const fmcInit = () => {
     },
   } as ICustomQuestionTypeConfiguration);
 
-  ComponentCollection.Instance.add({
-    name: "adultwaiver",
-    title: "Adult Waiver",
-    iconName: "icon-pen-field",
-    showInToolbox: true,
-    inheritBaseProps: true,
-    onInit: () => {
-      Serializer.getProperty("adultwaiver", "name").readOnly = true;
-      Serializer.getProperty("adultwaiver", "_ffs").readOnly = true;
-      Serializer.addProperty("adultwaiver", {
-        name: "waiverMarkdown",
-        displayName: "Waiver Markdown",
-        type: "text",
-        category: "general",
-        isSerializable: true,
-      });
-    },
-    elementsJSON: [
-      {
-        type: "markdown",
-        name: "waiverText",
-        scrollView: true,
-      },
-      {
-        type: "text",
-        name: "signature",
-        title: {
-          en: "Signature",
-          es: "Firma",
-          fr: "Signature",
-        },
-        isRequired: true,
-        placeholder: {
-          en: "Type to Sign",
-          es: "Escribe para firmar",
-          fr: "Écrivez pour signer",
-        },
-      },
-      {
-        type: "checkbox",
-        name: "waiver_agree",
-        titleLocation: "hidden",
-        isRequired: true,
-        choices: [
-          {
-            value: 1,
-            text: {
-              en: "By typing your name you indicate that you have read and agree to the waiver provided here.",
-              es: "Al escribir tu nombre, indicas que has leído y aceptas el acuerdo proporcionado aquí.",
-              fr: "En écrivant votre nom, vous indiquez que vous avez lu et accepté l'accord fourni ici.",
-            },
-          },
-        ],
-      },
-    ],
-    onUpdateQuestionCssClasses(question, element, cssClasses) {
-      if (question.name === "signature") {
-        cssClasses.root += " signatureInput";
-      }
-    },
-    onLoaded(question: Question) {
-      this.updateMarkdown(question);
-    },
-    onPropertyChanged(question: Question, propertyName: string, newValue: any) {
-      if (propertyName === "waiverMarkdown") {
-        this.updateMarkdown(question);
-      }
-    },
-    updateMarkdown(question: Question) {
-      const markdownBox = question.getQuestionByName("waiverText");
-      if (!!markdownBox) {
-        markdownBox.markdown = question.waiverMarkdown;
-      }
-    },
-  } as ICustomQuestionTypeConfigurationWaiver);
 
-  ComponentCollection.Instance.add({
-    name: "minorwaiver",
-    title: "Minor Waiver",
-    iconName: "icon-pen-field",
-    showInToolbox: true,
-    inheritBaseProps: true,
-    onInit: () => {
-      Serializer.getProperty("minorwaiver", "name").readOnly = true;
-      Serializer.getProperty("minorwaiver", "_ffs").readOnly = true;
-      Serializer.addProperty("minorwaiver", {
-        name: "waiverMarkdown",
-        displayName: "Waiver Markdown",
-        type: "text",
-        category: "general",
-        isSerializable: true,
-      });
-    },
-    elementsJSON: [
-      {
-        type: "radiogroup",
-        renderAs: "radiobuttongroup",
-        name: "minorsYesNo",
-        title: {
-          en: "I have minors accompanying me",
-          es: "Tengo menores acompañándome",
-          fr: "J'ai des mineurs avec moi",
-        },
-        isRequired: true,
-        choices: [
-          {
-            value: "1",
-            text: {
-              en: "Yes",
-              es: "Si",
-              fr: "Oui",
-            },
-          },
-          {
-            value: "0",
-            text: {
-              en: "No",
-              es: "No",
-              fr: "Non",
-            },
-          },
-        ],
-      },
-      {
-        type: "markdown",
-        name: "minorWaiverText",
-        scrollView: true,
-        visibleIf: "{composite.minorsYesNo} = '1'",
-      },
-      {
-        type: "text",
-        name: "minorName1",
-        visibleIf: "{composite.minorsYesNo} = '1'",
-        title: {
-          en: "Full Name of Minor 1",
-          es: "Nombre completo del menor 1",
-          fr: "Nom complet du mineur 1",
-        },
-        isRequired: true,
-      },
-      {
-        type: "text",
-        name: "minorName2",
-        visibleIf: "{composite.minorsYesNo} = '1'",
-        title: {
-          en: "Full Name of Minor 2",
-          es: "Nombre completo del menor 2",
-          fr: "Nom complet du mineur 2",
-        },
-      },
-      {
-        type: "text",
-        name: "minorName3",
-        visibleIf: "{composite.minorsYesNo} = '1'",
-        title: {
-          en: "Full Name of Minor 3",
-          es: "Nombre completo del menor 3",
-          fr: "Nom complet du mineur 3",
-        },
-      },
-      {
-        type: "text",
-        name: "minorSignature",
-        visibleIf: "{composite.minorsYesNo} = '1'",
-        title: {
-          en: "Parent/Guardian Signature",
-          es: "Firma del padre/tutor",
-          fr: "Signature du parent/tuteur",
-        },
-        isRequired: true,
-        placeholder: "Type to Sign",
-      },
-    ],
-    onUpdateQuestionCssClasses(question, element, cssClasses) {
-      if (question.name === "minorSignature") {
-        cssClasses.root += " signatureInput";
-      }
-    },
-    onLoaded(question: Question) {
-      this.updateMarkdown(question);
-    },
-    onPropertyChanged(question: Question, propertyName: string, newValue: any) {
-      if (propertyName === "waiverMarkdown") {
-        this.updateMarkdown(question);
-      }
-    },
-    updateMarkdown(question: Question) {
-      const markdownBox = question.getQuestionByName("minorWaiverText");
-      if (!!markdownBox) {
-        markdownBox.markdown = question.waiverMarkdown;
-      }
-    },
-  } as ICustomQuestionTypeConfigurationWaiver);
-
+  /**
+   * Current Vehicle Make Question
+   * 
+   * @description Dropdown for brand of vehicle customer currently drives most
+   * @_ffs "vehicle_driven_most_make_id" - Maps to vehicle_driven_most_make_id field
+   * @data_source https://cdn.latitudewebservices.com/data/makes.json
+   * @competitive_analysis Used to track conquest vs retention opportunities
+   * @note This is about daily driver, not event test drives (see lincolnvehiclesdriven)
+   */
   ComponentCollection.Instance.add({
     name: "vehicledrivenmostmake",
     title: "Vehicle Make Most Driven",
@@ -362,9 +285,9 @@ const fmcInit = () => {
     questionJSON: {
       type: "dropdown",
       title: {
-        en: "What brand of vehicle do you drive most often?",
-        es: "¿Qué marca de vehículo conduces con más frecuencia?",
-        fr: "Quelle marque de véhicule conduisez-vous le plus souvent?",
+        en: "What is your current vehicle make?",
+        es: "¿Cuál es la marca de su vehículo actual?",
+        fr: "Quelle est la marque de votre véhicule actuel?",
       },
       choicesByUrl: {
         url: "https://cdn.latitudewebservices.com/data/makes.json",
@@ -380,6 +303,18 @@ const fmcInit = () => {
     onLoaded(question: Question) {
       // Use shared utility to handle choicesByUrl for custom question types
       handleChoicesByUrl(question, 'FMCSurveys');
+      
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child) {
+        // Always sync isRequired from parent to child
+        child.isRequired = question.isRequired;
+        
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
+      }
     }
   } as ICustomQuestionTypeConfiguration);
 };

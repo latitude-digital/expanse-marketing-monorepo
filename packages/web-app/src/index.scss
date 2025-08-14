@@ -7,6 +7,7 @@
 @import '/src/styles/lincoln/lincoln.css';
 @import '/src/styles/ford/ford-font-families.css';
 @import '/src/styles/lincoln/lincoln-font-families.css';
+@import '/src/styles/ford-text-colors.css';
 
 /* Unbranded Theme - Generic styling without brand-specific variables */
 .unbranded {
@@ -31,6 +32,21 @@
 /* Essential bridge classes - Ford UI presets handle most styling automatically */
 .ford-component-input-color {
   color: var(--semantic-color-text-onlight-moderate-default);
+}
+
+/* Global Ford UI dropdown/combobox height fixes */
+/* Fix minimum height for dropdown options list to show at least 4 items */
+[role="listbox"],
+.fds-select-listbox,
+[data-testid*="dropdown"] [role="listbox"],
+[data-testid*="select"] [role="listbox"],
+[data-testid*="combobox"] [role="listbox"],
+/* Target Ford UI SelectDropdown component specifically */
+.react-aria-Popover [role="listbox"],
+.react-aria-ListBox {
+  min-height: 160px !important; /* ~4em equivalent, shows ~4-5 options minimum */
+  max-height: 240px !important; /* Keep reasonable max height */
+  overflow-y: auto !important; /* Ensure scrolling works */
 }
 
 /* Fix incomplete Ford UI typography classes - Ford UI presets only generate partial classes */

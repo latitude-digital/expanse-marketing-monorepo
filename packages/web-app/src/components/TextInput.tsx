@@ -84,16 +84,27 @@ const TextInput = (fieldRenderProps:TextInputProps) => {
     const inputRef = useRef<any>();
     useEffect(() => {
       if (question.addressAutocomplete) {
+        const defaultConfig = {
+          types: ['address'],
+          fields: ['address_components', 'formatted_address'],
+          componentRestrictions: {
+            country: ['us'],
+          },
+        };
+
+        const mergedConfig = {
+          ...defaultConfig,
+          ...question.addressAutocompleteConfig,
+          // Ensure componentRestrictions is properly merged
+          componentRestrictions: {
+            ...defaultConfig.componentRestrictions,
+            ...question.addressAutocompleteConfig?.componentRestrictions,
+          },
+        };
+
         autoCompleteRef.current = new window.google.maps.places.Autocomplete(
           inputRef.current.element,
-          {
-            types: ['address'],
-            componentRestrictions: {
-              country: ['us'],
-            },
-            fields: ['address_components', 'formatted_address'],
-            ...question.addressAutocompleteConfig
-          },
+          mergedConfig,
         );
         autoCompleteRef.current.addListener("place_changed", async function () {
           const place = await autoCompleteRef.current!.getPlace();

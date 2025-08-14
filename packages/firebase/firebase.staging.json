@@ -1,7 +1,7 @@
 {
   "functions": [
     {
-      "source": "packages/firebase",
+      "source": ".",
       "codebase": "default",
       "ignore": [
         "node_modules",
@@ -15,31 +15,31 @@
       ]
     }
   ],
-  "hosting": {
-    "public": "packages/web-app/dist",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
+  "firestore": {
+    "database": "staging",
+    "rules": "firestore.staging.rules",
+    "indexes": "firestore.staging.indexes.json"
   },
   "emulators": {
+    "auth": {
+      "port": 9099
+    },
     "functions": {
       "port": 5001
     },
-    "hosting": {
-      "port": 5000
+    "firestore": {
+      "port": 8080
     },
     "ui": {
       "enabled": true,
-      "port": 4000
+      "port": 4002
     },
-    "singleProjectMode": true
+    "singleProjectMode": true,
+    "hub": {
+      "port": 4401
+    },
+    "logging": {
+      "port": 4501
+    }
   }
 }

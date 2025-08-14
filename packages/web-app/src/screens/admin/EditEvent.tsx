@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 
 import { useNavigate, useParams } from "react-router-dom";
-import { getFirestore, doc, getDoc, Timestamp, FirestoreDataConverter, DocumentData, QueryDocumentSnapshot, SnapshotOptions, setDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, Timestamp, FirestoreDataConverter, DocumentData, QueryDocumentSnapshot, SnapshotOptions, setDoc, updateDoc } from "firebase/firestore";
 import { useAuthState } from 'react-firebase-hooks/auth';
 
 import auth from '../../services/auth';
 import app from '../../services/firebase';
+import db from '../../services/db';
 
 import { slk, SurveyModel } from "survey-core";
 
@@ -20,7 +21,7 @@ import Showdown from 'showdown';
 import { initSurvey } from '../../helpers/surveyTemplatesAll';
 
 slk(
-    "NDBhNThlYzYtN2EwMy00ZTgxLWIyNGQtOGFkZWJkM2NlNjI3OzE9MjAyNS0wNy0xOSwyPTIwMjUtMDctMTksND0yMDI1LTA3LTE5"
+    "NDBhNThlYzYtN2EwMy00ZTgxLWIyNGQtOGFkZWJkM2NlNjI3OzE9MjAyNi0wNy0xOSwyPTIwMjYtMDctMTksND0yMDI2LTA3LTE5"
 );
 
 // Initialize basic SurveyJS for admin forms (no FDS components)
@@ -28,15 +29,22 @@ initSurvey();
 
 const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
     toFirestore(event: ExpanseEvent): DocumentData {
+        const surveyModel = event.surveyJSModel || event.questions || {};
+        const themeModel = event.surveyJSTheme || event.theme || {};
+        
         return {
             ...event,
             brand: event.brand || null,
-            questions: JSON.stringify(event.questions || {}),
-            theme: JSON.stringify(event.theme || {}),
+            // Write to both old and new fields for backward compatibility
+            questions: typeof surveyModel === 'string' ? surveyModel : JSON.stringify(surveyModel),
+            surveyJSModel: typeof surveyModel === 'string' ? JSON.parse(surveyModel) : surveyModel,
+            theme: typeof themeModel === 'string' ? themeModel : JSON.stringify(themeModel),
+            surveyJSTheme: typeof themeModel === 'string' ? JSON.parse(themeModel) : themeModel,
             preRegDate: event.preRegDate ? Timestamp.fromDate(moment(event.preRegDate).startOf('day').toDate()) : null,
             startDate: Timestamp.fromDate(moment(event.startDate).startOf('day').toDate()),
             endDate: Timestamp.fromDate(moment(event.endDate).endOf('day').toDate()),
             fordEventID: event.fordEventID || null,
+            lincolnEventID: event.lincolnEventID || null,
             surveyType: event.surveyType || null,
             _preEventID: event._preEventID || null,
             thanks: event.thanks || null,
@@ -47,6 +55,9 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
             checkOutEmail: event.checkOutEmail || null,
             survey_count_limit: event.survey_count_limit || null,
             limit_reached_message: event.limit_reached_message || null,
+            showLanguageChooser: event.showLanguageChooser !== undefined ? event.showLanguageChooser : false,
+            showHeader: event.showHeader !== undefined ? event.showHeader : true,
+            showFooter: event.showFooter !== undefined ? event.showFooter : true,
         };
     },
     fromFirestore(
@@ -69,13 +80,20 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
             checkOutEmail: data.checkOutEmail,
             checkInDisplay: data.checkInDisplay,
             disabled: data.disabled,
-            questions: JSON.parse(data.questions),
-            theme: JSON.parse(data.theme),
+            // Use new map fields if available, otherwise fall back to parsing JSON strings
+            questions: data.surveyJSModel || (data.questions ? JSON.parse(data.questions) : {}),
+            surveyJSModel: data.surveyJSModel || (data.questions ? JSON.parse(data.questions) : {}),
+            theme: data.surveyJSTheme || (data.theme ? JSON.parse(data.theme) : {}),
+            surveyJSTheme: data.surveyJSTheme || (data.theme ? JSON.parse(data.theme) : {}),
             thanks: data.thanks,
             fordEventID: data.fordEventID || undefined,
+            lincolnEventID: data.lincolnEventID || undefined,
             surveyType: data.surveyType || null,
             survey_count_limit: data.survey_count_limit || undefined,
             limit_reached_message: data.limit_reached_message || undefined,
+            showLanguageChooser: data.showLanguageChooser !== undefined ? data.showLanguageChooser : false,
+            showHeader: data.showHeader !== undefined ? data.showHeader : true,
+            showFooter: data.showFooter !== undefined ? data.showFooter : true,
         };
     },
 };
@@ -88,7 +106,6 @@ function DashboardScreen() {
     const [thisEvent, setThisEvent] = useState<ExpanseEvent>();
     const [thisSurvey, setThisSurvey] = useState<SurveyModel>();
 
-    const db = getFirestore(app);
     const eventID: string = params.eventID!;
 
     useEffect(() => {
@@ -111,6 +128,9 @@ function DashboardScreen() {
                 theme: {},
                 startDate: moment().add(7, 'days').toDate(),
                 endDate: moment().add(7, 'days').toDate(),
+                showLanguageChooser: true,
+                showHeader: true,
+                showFooter: true,
             });
         } else {
             // get the event
@@ -166,6 +186,21 @@ function DashboardScreen() {
                             "inputId": "admin-edit-event-form-id-input"
                         },
                         {
+                            "type": "dropdown",
+                            "name": "brand",
+                            "title": "Event Brand",
+                            "choices": [
+                                { "value": "Other", "text": "Other (Default)" },
+                                { "value": "Ford", "text": "Ford" },
+                                { "value": "Lincoln", "text": "Lincoln" }
+                            ],
+                            "defaultValue": "Other",
+                            "description": "Select the brand for this event. Ford/Lincoln will load brand-specific components and styling. Note: Brand cannot be changed after survey responses are collected.",
+                            "descriptionLocation": "underInput",
+                            "inputId": "admin-edit-event-form-brand-select",
+                            "startWithNewLine": false
+                        },
+                        {
                             "type": "text",
                             "name": "name",
                             "title": "Event Name",
@@ -196,25 +231,12 @@ function DashboardScreen() {
                             "startWithNewLine": false,
                             "inputId": "admin-edit-event-form-end-date-input"
                         },
-                        {
-                            "type": "dropdown",
-                            "name": "brand",
-                            "title": "Event Brand",
-                            "choices": [
-                                { "value": "Other", "text": "Other (Default)" },
-                                { "value": "Ford", "text": "Ford" },
-                                { "value": "Lincoln", "text": "Lincoln" }
-                            ],
-                            "defaultValue": "Other",
-                            "description": "Select the brand for this event. Ford/Lincoln will load brand-specific components and styling. Note: Brand cannot be changed after survey responses are collected.",
-                            "descriptionLocation": "underInput",
-                            "inputId": "admin-edit-event-form-brand-select"
-                        },
                         // Ford Event Panel
                         {
                             "type": "panel",
                             "name": "fordEventPanel",
                             "title": "Ford Event Configuration",
+                            "visibleIf": "{brand} = 'Ford'",
                             "elements": [
                                 {
                                     "type": "text",
@@ -228,13 +250,74 @@ function DashboardScreen() {
                                     "type": "radiogroup",
                                     "name": "surveyType",
                                     "title": "Survey Type",
-                                    "visibleIf": "{fordEventID} != ''",
                                     "defaultValue": "basic",
                                     "choices": [
                                         { "value": "basic", "text": "Basic" },
                                         { "value": "preTD", "text": "PreTD" },
                                         { "value": "postTD", "text": "PostTD" }
                                     ]
+                                },
+                                {
+                                    "type": "boolean",
+                                    "name": "showHeader",
+                                    "title": "Show Header",
+                                    "description": "Display Ford branded header at the top of the survey",
+                                    "descriptionLocation": "underInput",
+                                    "defaultValue": true
+                                },
+                                {
+                                    "type": "boolean",
+                                    "name": "showFooter",
+                                    "title": "Show Footer",
+                                    "description": "Display Ford branded footer at the bottom of the survey",
+                                    "descriptionLocation": "underInput",
+                                    "defaultValue": true,
+                                    "startWithNewLine": false
+                                }
+                            ]
+                        },
+                        // Lincoln Event Panel
+                        {
+                            "type": "panel",
+                            "name": "lincolnEventPanel",
+                            "title": "Lincoln Event Configuration",
+                            "visibleIf": "{brand} = 'Lincoln'",
+                            "elements": [
+                                {
+                                    "type": "text",
+                                    "name": "lincolnEventID",
+                                    "title": "Lincoln Event ID",
+                                    "description": "The Lincoln Event ID is used for internal tracking",
+                                    "descriptionLocation": "underInput",
+                                    "inputId": "admin-edit-event-form-lincoln-event-id-input"
+                                },
+                                {
+                                    "type": "radiogroup",
+                                    "name": "surveyType",
+                                    "title": "Survey Type",
+                                    "defaultValue": "basic",
+                                    "choices": [
+                                        { "value": "basic", "text": "Basic" },
+                                        { "value": "preTD", "text": "PreTD" },
+                                        { "value": "postTD", "text": "PostTD" }
+                                    ]
+                                },
+                                {
+                                    "type": "boolean",
+                                    "name": "showHeader",
+                                    "title": "Show Header",
+                                    "description": "Display Lincoln branded header at the top of the survey",
+                                    "descriptionLocation": "underInput",
+                                    "defaultValue": true
+                                },
+                                {
+                                    "type": "boolean",
+                                    "name": "showFooter",
+                                    "title": "Show Footer",
+                                    "description": "Display Lincoln branded footer at the bottom of the survey",
+                                    "descriptionLocation": "underInput",
+                                    "defaultValue": true,
+                                    "startWithNewLine": false
                                 }
                             ]
                         },
@@ -464,6 +547,14 @@ function DashboardScreen() {
                         },
                         {
                             "type": "boolean",
+                            "name": "showLanguageChooser",
+                            "title": "Show Language Chooser",
+                            "description": "Display language selector in the survey when multiple languages are available",
+                            "descriptionLocation": "underInput",
+                            "defaultValue": true
+                        },
+                        {
+                            "type": "boolean",
                             "name": "editSurvey",
                             "defaultValue": false,
                             "visible": false,
@@ -668,8 +759,9 @@ function DashboardScreen() {
             eventData._preEventID = sender.data._preEventID || null;
             eventData.thanks = sender.data.thanks || null;
             eventData.fordEventID = sender.data.fordEventID || null;
-            // Clear surveyType if fordEventID is empty
-            eventData.surveyType = (sender.data.fordEventID && sender.data.surveyType) ? sender.data.surveyType : null;
+            eventData.lincolnEventID = sender.data.lincolnEventID || null;
+            // Clear surveyType if both fordEventID and lincolnEventID are empty
+            eventData.surveyType = ((sender.data.fordEventID || sender.data.lincolnEventID) && sender.data.surveyType) ? sender.data.surveyType : null;
 
             // Handle email configurations based on enablePreRegistration toggle
             if (sender.data.enablePreRegistration) {

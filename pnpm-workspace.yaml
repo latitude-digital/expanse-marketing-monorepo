@@ -1,3 +1,24 @@
 packages:
-  - "packages/*"
-  - "packages/ford-ui/packages/@ui/*"
+  - packages/*
+  - packages/ford-ui/packages/@ui/*
+
+onlyBuiltDependencies:
+  - '@firebase/util'
+  - '@parcel/watcher'
+  - '@progress/kendo-licensing'
+  - core-js
+  - protobufjs
+  - survey-analytics
+
+ignoredBuiltDependencies:
+  - '@prisma/client'
+  - '@prisma/engines'
+  - '@sentry/cli'
+  - '@swc/core'
+  - aws-sdk
+  - core-js-pure
+  - esbuild
+  - nx
+  - prisma
+  - sharp
+  - sonar-scanner

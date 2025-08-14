@@ -28,6 +28,7 @@ registerIcons([
 export const initSurveyFord = () => {
   // surveyLocalization.supportedLocales = ["en", "es", "fr"];
 
+  // Initialize Ford-specific questions
   FordSurveys.fordInit();
 
   DefaultFonts.unshift("FordF1");
@@ -38,21 +39,23 @@ export const initCreatorFord = (creator: SurveyCreatorModel) => {
 
   const enLocale = editorLocalization.getLocale("en");
   enLocale.toolboxCategories["__fordCategory"] = "Ford Questions";
+  enLocale.toolboxCategories["__0fmc"] = "FMC Questions";
 
   creator.toolbox.changeCategories([
     { name: "fordvoi", category: "__fordCategory" },
+    { name: "fordvehiclesdriven", category: "__fordCategory" },
     { name: "fordoptin", category: "__fordCategory" },
     { name: "fordrecommend", category: "__fordCategory" },
     { name: "fordrecommendpost", category: "__fordCategory" },
-    { name: "gender", category: "__fordCategory" },
-    { name: "agebracket", category: "__fordCategory" },
-    { name: "howlikelyacquire", category: "__fordCategory" },
     { name: "howlikelypurchasingford", category: "__fordCategory" },
     { name: "howlikelypurchasingfordpost", category: "__fordCategory" },
-    { name: "inmarkettiming", category: "__fordCategory" },
-    { name: "adultwaiver", category: "__fordCategory" },
-    { name: "minorwaiver", category: "__fordCategory" },
-    { name: "vehicledrivenmostmake", category: "__fordCategory" },
+    { name: "sweepstakesOptIn", category: "__fordCategory" },
+    // FMC questions
+    { name: "gender", category: "__0fmc" },
+    { name: "agebracket", category: "__0fmc" },
+    { name: "howlikelyacquire", category: "__0fmc" },
+    { name: "inmarkettiming", category: "__0fmc" },
+    { name: "vehicledrivenmostmake", category: "__0fmc" },
   ]);
 
   // Apply Ford-specific category sorting - Ford Questions first
@@ -61,8 +64,10 @@ export const initCreatorFord = (creator: SurveyCreatorModel) => {
       if (name === "__fordCategory") return 1;
       if (name === "__lincolnCategory") return 2; 
       if (name === "__0pii") return 3;
-      if (name.startsWith("__")) return 4;
-      return 5;
+      if (name === "__0fmc") return 4;
+      if (name === "__1wav") return 5;
+      if (name.startsWith("__")) return 6;
+      return 7;
     };
 
     return getPriority(a.name) - getPriority(b.name);
@@ -146,40 +151,6 @@ export const prepareCreatorOnQuestionAddedFord = (
     });
   }
 
-  if (options.question.getType() === "gender") {
-    console.log("gender question added");
-    options.question.name = "gender";
-    options.question._ffs = "gender";
-    options.question.locTitle.setJson({
-      en: "Gende?",
-      es: "Sexo",
-      fr: "Genre"
-    });
-  }
-
-  if (options.question.getType() === "agebracket") {
-    console.log("age_bracket question added");
-    options.question.name = "ageBracket";
-    options.question._ffs = "age_bracket";
-    options.question.locTitle.setJson({
-      en: "May I ask your age?",
-      es: "¿Puedo preguntar su edad?",
-      fr: "Puis-je vous demander votre âge?"
-    });
-  }
-
-  if (options.question.getType() === "howlikelyacquire") {
-    console.log("how_likely_acquire question added");
-    options.question.name = "howLikelyAcquire";
-    options.question._ffs = "how_likely_acquire";
-    options.question.isRequired = true;
-
-    options.question.locTitle.setJson({
-      en: "How do you plan to acquire your next vehicle?",
-      es: "¿Cómo piensas adquirir tu próximo vehículo?",
-      fr: "Comment prévoyez-vous d'acquérir votre prochain véhicule?"
-    });
-  }
 
   if (options.question.getType() === "howlikelypurchasingford") {
     console.log("how_likely_purchasing question added");
@@ -207,45 +178,4 @@ export const prepareCreatorOnQuestionAddedFord = (
     });
   }
 
-  if (options.question.getType() === "inmarkettiming") {
-    console.log("in_market_timing question added");
-    options.question.name = "inMarketTiming";
-    options.question._ffs = "in_market_timing";
-    options.question.isRequired = true;
-
-    options.question.locTitle.setJson({
-      en: "When do you plan to acquire your next vehicle?",
-      es: "¿Cuándo piensas adquirir tu próximo vehículo?",
-      fr: "Quand prévoyez-vous d'acheter votre prochain véhicule?"
-    });
-  }
-
-  if (options.question.getType() === "adultwaiver") {
-    options.question.name = "adultWaiver";
-    options.question._ffs = "signature";
-
-    options.question.locTitle.setJson({
-      en: "Please read and sign the waiver below",
-      es: "Por favor, lea y firme el siguiente documento de exoneración de responsabilidad",
-      fr: "Veuillez lire et signer le document ci-dessous"
-    });
-  }
-
-  if (options.question.getType() === "minorwaiver") {
-    options.question.name = "minorWaiver";
-    options.question._ffs = "minor_signature";
-    options.question.titleLocation = "hidden";
-  }
-
-  if (options.question.getType() === "vehicledrivenmostmake") {
-    options.question.name = "vehicleDrivenMostMake";
-    options.question._ffs = "vehicle_driven_most_make_id";
-
-    // TODO: validate the spanish/french translations
-    options.question.locTitle.setJson({
-      en: "What vehicle do you drive most often?",
-      es: "¿Qué vehículo conduces con mayor frecuencia?",
-      fr: "Quel véhicule conduisez-vous le plus souvent?"
-    });
-  }
 };

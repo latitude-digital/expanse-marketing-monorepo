@@ -2,11 +2,37 @@ import React from "react";
 import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
 import { QuestionTextModel } from "survey-core";
 import { StyledTextField } from "@ui/ford-ui-components/src/v2/inputField/Input";
-import { renderLabel, renderDescription, getOptionalText, useQuestionValidation } from "./FDSShared/utils";
+import { renderLabel, renderDescription, getOptionalText } from "./FDSShared/utils";
+
+interface ParsedAddress {
+  formatted_address?: string;
+  address1?: string;
+  address2?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  country?: string;
+}
 
 export class FDSTextRenderer extends SurveyQuestionElementBase {
     constructor(props: any) {
         super(props);
+        
+        // Force re-render when errors change (for composite questions)
+        const question = this.question;
+        if (question) {
+            question.registerFunctionOnPropertyValueChanged("errors", () => {
+                this.forceUpdate();
+            });
+            
+            // Also listen to parent errors if this is a child of a composite
+            const parentQuestion = question.parent;
+            if (parentQuestion) {
+                parentQuestion.registerFunctionOnPropertyValueChanged("errors", () => {
+                    this.forceUpdate();
+                });
+            }
+        }
     }
 
     protected get question(): QuestionTextModel {
@@ -19,24 +45,80 @@ export class FDSTextRenderer extends SurveyQuestionElementBase {
 
     protected renderElement(): JSX.Element {
         const question = this.question;
-        const { isInvalid, errorMessage } = useQuestionValidation(question);
         const inputType = this.getInputType();
         const optionalText = getOptionalText(question);
         
+        // Get validation state from question or parent (for composite questions)
+        // For composite questions, the error is on the parent question
+        const parentQuestion = question.parent;
+        
+        const questionErrors = question.errors && question.errors.length > 0 ? question.errors : 
+                              (parentQuestion && parentQuestion.errors && parentQuestion.errors.length > 0 ? parentQuestion.errors : []);
+        const isInvalid = questionErrors.length > 0;
+        // Get error text - it might be in .text or need to call .getText()
+        const errorMessage = isInvalid ? 
+            (questionErrors[0]?.getText ? questionErrors[0].getText() : questionErrors[0]?.text) : 
+            undefined;
+        
+        // Determine if this question uses pattern masking
+        const usesMasking = question.maskType === "pattern" && question.maskSettings?.pattern;
+        
+        // Get display value (masked if applicable)
+        const getDisplayValue = (): string => {
+            const rawValue = question.value || "";
+            if (usesMasking) {
+                const saveMasked = question.maskSettings?.saveMaskedValue === true;
+                
+                if (saveMasked) {
+                    // Value is already masked, return as-is
+                    return rawValue;
+                } else {
+                    // Value is unmasked, apply mask for display
+                    return this.applyInputMask(rawValue, question.maskSettings.pattern);
+                }
+            }
+            return rawValue;
+        };
+        // For composite questions, check parent's isRequired too
+        const isRequired = question.isRequired || (parentQuestion && parentQuestion.isRequired);
+        
+        // Check if title and description should be hidden
+        const isTitleHidden = question.titleLocation === "hidden";
+        
         return (
             <StyledTextField
-                label={renderLabel(question.fullTitle)}
-                description={renderDescription(question.description)}
-                isRequired={question.isRequired}
-                requiredMessage={optionalText}
-                placeholder={question.placeholder || ""}
-                value={question.value || ""}
+                label={isTitleHidden ? undefined : renderLabel(question.fullTitle)}
+                description={isTitleHidden ? undefined : renderDescription(question.description)}
+                isRequired={isRequired}
+                requiredMessage={!isRequired ? optionalText : undefined}
+                placeholder={usesMasking 
+                    ? this.getMaskPlaceholder(question.maskSettings.pattern) 
+                    : (question.placeholder || "")}
+                value={getDisplayValue()}
                 isInvalid={isInvalid}
                 errorMessage={errorMessage}
                 type={inputType}
                 isDisabled={question.isReadOnly}
+                autoComplete={question.autocomplete}
                 onChange={(value: string) => {
-                    question.value = value;
+                    if (usesMasking) {
+                        // Check if we should save the masked value
+                        const saveMasked = question.maskSettings?.saveMaskedValue === true;
+                        
+                        if (saveMasked) {
+                            // Store the masked value directly
+                            question.value = this.applyInputMask(value, question.maskSettings.pattern);
+                        } else {
+                            // Store only the unmasked (digits-only) value in the question
+                            const unmaskedValue = this.removeMaskFormatting(this.applyInputMask(value, question.maskSettings.pattern));
+                            question.value = unmaskedValue;
+                        }
+                        
+                        // Force re-render to show masked display
+                        this.forceUpdate();
+                    } else {
+                        question.value = value;
+                    }
                 }}
                 onBlur={() => {
                     // Trigger validation on blur
@@ -72,6 +154,39 @@ export class FDSTextRenderer extends SurveyQuestionElementBase {
                 return "text";
         }
     }
+
+    private applyInputMask(value: string, pattern: string): string {
+        // Remove any existing formatting
+        const cleanValue = value.replace(/\D/g, '');
+        
+        let maskedValue = '';
+        let valueIndex = 0;
+        
+        for (let i = 0; i < pattern.length && valueIndex < cleanValue.length; i++) {
+            const patternChar = pattern[i];
+            
+            if (patternChar === '9') {
+                // Insert digit
+                maskedValue += cleanValue[valueIndex];
+                valueIndex++;
+            } else {
+                // Insert literal character (like -, (, ), etc.)
+                maskedValue += patternChar;
+            }
+        }
+        
+        return maskedValue;
+    }
+
+    private getMaskPlaceholder(pattern: string): string {
+        // Convert pattern to placeholder by replacing 9s with underscores
+        return pattern.replace(/9/g, '_');
+    }
+
+    private removeMaskFormatting(maskedValue: string): string {
+        // Remove all non-digit characters for storage
+        return maskedValue.replace(/\D/g, '');
+    }
 }
 
 // Override the default text question renderer with our Ford UI version
@@ -82,10 +197,5 @@ ReactQuestionFactory.Instance.registerQuestion(
     }
 );
 
-// Also register for email text input type
-ReactQuestionFactory.Instance.registerQuestion(
-    "emailtextinput",
-    (props) => {
-        return React.createElement(FDSTextRenderer, props);
-    }
-);
+// NOTE: Do NOT register "emailtextinput" here - it has its own brand-aware factory
+// in EmailTextInput/index.tsx that chooses between Ford UI and default SurveyJS rendering

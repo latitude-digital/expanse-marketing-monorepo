@@ -25,8 +25,10 @@ async function loadFDSRenderers(): Promise<void> {
     const { FDSRadioRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSRadio');
     const { FDSCheckboxRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSCheckbox');
     const { FDSDropdownRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSDropdown');
+    const { FDSTagboxRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSTagbox');
     const { FDSTextAreaRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSTextArea');
     const { FDSToggleRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSToggle');
+    const { FDSRatingRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSRating');
     
     // Import custom survey question renderer
     await import('../surveysjs_renderers/FDSRenderers/CustomSurveyQuestion');
@@ -55,17 +57,16 @@ export async function initializeFDSForBrand(brand: string): Promise<void> {
       // Load FDS renderers with useAsDefault: true
       await loadFDSRenderers();
 
-      // Initialize shared FMC questions first (contains common Ford/Lincoln questions)
-      FMCSurveys.fmcInit();
-      console.log('FMC shared questions initialized');
 
       // Initialize brand-specific questions
       if (brand === 'Ford') {
+        FMCSurveys.fmcInit();
         FordSurveys.fordInit();
-        console.log('Ford-specific questions initialized');
+        console.log('FMC and Ford-specific questions initialized');
       } else if (brand === 'Lincoln') {
+        FMCSurveys.fmcInit();
         LincolnSurveys.lincolnInit();
-        console.log('Lincoln-specific questions initialized');
+        console.log('FMC and Lincoln-specific questions initialized');
       }
 
       console.log(`FDS initialization complete for ${brand}`);

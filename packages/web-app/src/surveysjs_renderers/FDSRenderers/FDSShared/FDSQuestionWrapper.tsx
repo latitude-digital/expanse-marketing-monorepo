@@ -1,6 +1,6 @@
 import React from 'react';
 import { Typography } from "@ui/ford-ui-components/src/v2/typography/Typography";
-import { renderLabel, renderDescription, processMarkdown } from './utils';
+import { renderLabel, renderDescription, processMarkdown, getOptionalText } from './utils';
 import { FDSErrorDisplay } from './FDSErrorDisplay';
 import { FDSRequiredIndicator } from './FDSRequiredIndicator';
 
@@ -23,52 +23,63 @@ export const FDSQuestionWrapper: React.FC<FDSQuestionWrapperProps> = ({
   children,
   question
 }) => {
+  
+  // Check if title and description should be hidden
+  const isTitleHidden = question?.titleLocation === "hidden";
+  
+  // Check description location setting - similar to RadioButtonButton renderer
+  const showDescriptionAbove = !question?.descriptionLocation || question.descriptionLocation !== "underInput";
+
+  // Enhanced required detection: Check both isRequired prop and validators for expression validators with "notempty"
+  const isActuallyRequired = isRequired || (question?.validators && question.validators.some((validator: any) => 
+    validator.type === 'expression' && validator.expression?.includes('notempty')
+  ));
+
+  // Get the optional text and append it to the label if not required (similar to how StyledTextField works)
+  const optionalText = !isActuallyRequired && question ? getOptionalText(question) : '';
+  const labelWithOptional = label + optionalText;
+
   return (
     <div className="fds-question-wrapper">
-      {/* Question Label - Match built-in Ford UI component styling */}
-      <div className="fds-question-label" style={{ marginBottom: '8px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-        {(() => {
-          const processedLabel = processMarkdown(label);
-          const hasHtml = processedLabel.includes('<');
-          
-          if (hasHtml) {
-            // For HTML content, use a span with Typography classes
-            return (
-              <span 
-                className="text-ford-body2-regular"
-                style={{ color: 'var(--semantic-color-text-onlight-moderate-default)' }}
-                dangerouslySetInnerHTML={{ __html: processedLabel }}
-              />
-            );
-          } else {
-            // For plain text, use Typography component
-            return (
-              <Typography variant="body2" weight="regular" color="moderate">
-                {processedLabel}
-              </Typography>
-            );
-          }
-        })()}
-        {!isRequired && (
-          <FDSRequiredIndicator question={question} />
-        )}
-      </div>
+      {/* Question Label - Only show if titleLocation is not "hidden" */}
+      {!isTitleHidden && (
+        <div className="fds-question-label" style={{ marginBottom: '8px' }}>
+          {(() => {
+            const processedLabel = processMarkdown(labelWithOptional);
+            const hasHtml = processedLabel.includes('<');
+            
+            if (hasHtml) {
+              // For HTML content, use Typography component wrapper to ensure font inheritance
+              return (
+                <Typography variant="body2" weight="regular" color="moderate">
+                  <span dangerouslySetInnerHTML={{ __html: processedLabel }} />
+                </Typography>
+              );
+            } else {
+              // For plain text, use Typography component
+              return (
+                <Typography variant="body2" weight="regular" color="moderate">
+                  {processedLabel}
+                </Typography>
+              );
+            }
+          })()}
+        </div>
+      )}
 
-      {/* Question Description (optional) */}
-      {description && (
+      {/* Question Description (optional) - Only show if titleLocation is not "hidden" and positioned above form control when descriptionLocation is not "underInput" */}
+      {!isTitleHidden && description && showDescriptionAbove && (
         <div className="fds-question-description" style={{ marginBottom: '12px' }}>
           {(() => {
             const processedDescription = processMarkdown(description);
             const hasHtml = processedDescription.includes('<');
             
             if (hasHtml) {
-              // For HTML content, use a span with Typography classes to match built-in Ford UI descriptions
+              // For HTML content, use Typography component wrapper to ensure font inheritance
               return (
-                <span 
-                  className="text-ford-body2-regular"
-                  style={{ color: 'var(--semantic-color-text-onlight-subtle)' }}
-                  dangerouslySetInnerHTML={{ __html: processedDescription }}
-                />
+                <Typography variant="body2" color="subtle">
+                  <span dangerouslySetInnerHTML={{ __html: processedDescription }} />
+                </Typography>
               );
             } else {
               // For plain text, use Typography component to match built-in Ford UI descriptions
@@ -86,6 +97,32 @@ export const FDSQuestionWrapper: React.FC<FDSQuestionWrapperProps> = ({
       <div className="fds-question-control">
         {children}
       </div>
+
+      {/* Question Description (optional) - Only show if titleLocation is not "hidden" and positioned below form control when descriptionLocation is "underInput" */}
+      {!isTitleHidden && description && !showDescriptionAbove && (
+        <div className="fds-question-description" style={{ marginTop: '12px' }}>
+          {(() => {
+            const processedDescription = processMarkdown(description);
+            const hasHtml = processedDescription.includes('<');
+            
+            if (hasHtml) {
+              // For HTML content, use Typography component wrapper to ensure font inheritance
+              return (
+                <Typography variant="body2" color="subtle">
+                  <span dangerouslySetInnerHTML={{ __html: processedDescription }} />
+                </Typography>
+              );
+            } else {
+              // For plain text, use Typography component to match built-in Ford UI descriptions
+              return (
+                <Typography variant="body2" color="subtle">
+                  {processedDescription}
+                </Typography>
+              );
+            }
+          })()}
+        </div>
+      )}
 
       {/* Error Message */}
       {isInvalid && errorMessage && (

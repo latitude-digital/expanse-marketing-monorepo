@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 
 import { useNavigate, useParams } from "react-router-dom";
-import { getFirestore, doc, getDoc, collection, query, getDocs, where, orderBy, Query, Timestamp, FirestoreDataConverter, DocumentData, QueryDocumentSnapshot, SnapshotOptions } from "firebase/firestore";
+import { doc, getDoc, collection, query, getDocs, where, orderBy, Query, Timestamp, FirestoreDataConverter, DocumentData, QueryDocumentSnapshot, SnapshotOptions } from "firebase/firestore";
 import { useAuthState } from 'react-firebase-hooks/auth';
 
 import auth from '../../services/auth';
 import app from '../../services/firebase';
+import db from '../../services/db';
 
 import { Model, Question, slk, SurveyModel, ITheme } from "survey-core";
 import { SurveyCreator } from "survey-creator-react";
@@ -25,7 +26,7 @@ import './admin.css';
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 slk(
-    "NDBhNThlYzYtN2EwMy00ZTgxLWIyNGQtOGFkZWJkM2NlNjI3OzE9MjAyNS0wNy0xOSwyPTIwMjUtMDctMTksND0yMDI1LTA3LTE5"
+    "NDBhNThlYzYtN2EwMy00ZTgxLWIyNGQtOGFkZWJkM2NlNjI3OzE9MjAyNi0wNy0xOSwyPTIwMjYtMDctMTksND0yMDI2LTA3LTE5"
 );
 
 const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
@@ -73,25 +74,20 @@ function AdminScreen() {
     const [quickFilterText, setQuickFilterText] = useState<string>('');
     const [activeFilter, setActiveFilter] = useState<'current' | 'past' | 'future'>('current');
 
+    // Authentication is now handled by ProtectedRoute wrapper
     useEffect(() => {
-        console.error(userError);
+        if (userError) {
+            console.error('Authentication error:', userError);
+        }
     }, [userError]);
 
-    const db = getFirestore(app);
-
     useEffect(() => {
-        if (userLoading) return;
-
-        if (!user) {
-            navigate('./login');
-        }
-
         // Load all events - we'll filter client-side
         const eventsCollection = collection(db, "events").withConverter(EEventConverter);
         const eventQuery = query(eventsCollection, orderBy("startDate", "asc"));
         
         setEventsQuery(eventQuery);
-    }, [userLoading]);
+    }, []);
 
     // Define external filter function
     const isExternalFilterPresent = () => {

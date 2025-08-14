@@ -1,6 +1,5 @@
-import { httpsCallable } from 'firebase/functions';
 import app from './firebase';
-import functions from './functions';
+import { setCloudFrontCookies as setCloudFrontCookiesFn } from './namespacedFunctions';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { fixCookieBase64Padding } from '../utils/base64Utils';
 
@@ -9,11 +8,20 @@ let cookiePromise: Promise<void> | null = null;
 let cookieExpiry: number | null = null;
 
 export const ensureCloudFrontAccess = async (): Promise<void> => {
+  // AUTH-009: Enhanced CloudFront access with better auth integration
+  
   // Skip CloudFront cookies in development
   // Cookies won't work cross-origin from localhost to uploads.expansemarketing.com
   if (process.env.NODE_ENV === 'development' && window.location.hostname === 'localhost') {
     console.log('Skipping CloudFront cookie setup in local development');
     cookiesSet = true;
+    return Promise.resolve();
+  }
+  
+  // Check if user is authenticated before attempting to get CloudFront cookies
+  const currentUser = auth.currentUser;
+  if (!currentUser) {
+    console.log('User not authenticated - skipping CloudFront cookie setup');
     return Promise.resolve();
   }
 
@@ -34,10 +42,16 @@ export const ensureCloudFrontAccess = async (): Promise<void> => {
   // Create new promise for cookie setting
   cookiePromise = (async () => {
     try {
-      const setCloudFrontCookies = httpsCallable(functions, 'setCloudFrontCookies');
+      // AUTH-009: Enhanced error handling for CloudFront cookie retrieval
+      console.log('Fetching CloudFront cookies for authenticated user:', currentUser?.email);
       
-      const result = await setCloudFrontCookies();
+      // Use namespaced function to get CloudFront cookies
+      const result = await setCloudFrontCookiesFn();
       const { cookies, expires } = result.data as any;
+      
+      if (!cookies || !expires) {
+        throw new Error('Invalid CloudFront cookie response - missing cookies or expires');
+      }
 
       console.log('CloudFront cookies received:', Object.keys(cookies));
       console.log('Cookie values:', cookies);
@@ -83,10 +97,21 @@ export const ensureCloudFrontAccess = async (): Promise<void> => {
       });
 
       cookiesSet = true;
-      console.log('CloudFront access enabled - all cookies set');
+      console.log('CloudFront access enabled - all cookies set for user:', currentUser?.email);
     } catch (error) {
       console.error('Failed to set CloudFront cookies:', error);
+      console.error('CloudFront cookie error details:', {
+        userEmail: currentUser?.email,
+        userUid: currentUser?.uid,
+        timestamp: new Date().toISOString()
+      });
+      
+      // Reset state on error to allow retry
+      cookiesSet = false;
+      cookieExpiry = null;
+      
       // Don't throw - allow component to continue functioning
+      // but log the error for monitoring
     } finally {
       cookiePromise = null;
     }
@@ -158,16 +183,23 @@ export const forceRefreshCloudFrontAccess = async (): Promise<void> => {
   return ensureCloudFrontAccess();
 };
 
-// Initialize auth state listener for automatic cookie refresh
+// AUTH-009: Enhanced auth state listener for better CloudFront integration
 const auth = getAuth(app);
 let refreshInterval: NodeJS.Timeout | null = null;
+let isInitialized = false;
 
-onAuthStateChanged(auth, (user) => {
+// Track auth state changes and manage CloudFront cookies accordingly
+onAuthStateChanged(auth, async (user) => {
+  console.log('CloudFront auth state changed:', user ? 'signed in' : 'signed out');
+  
   if (user) {
-    // User is signed in, check if we need to refresh cookies
-    ensureCloudFrontAccess().catch(err => {
-      console.error('Failed to refresh CloudFront cookies on auth state change:', err);
-    });
+    // User is signed in - ensure CloudFront access
+    try {
+      await ensureCloudFrontAccess();
+      console.log('CloudFront access ensured after auth state change');
+    } catch (err) {
+      console.error('Failed to ensure CloudFront access on auth state change:', err);
+    }
     
     // Clear any existing interval
     if (refreshInterval) {
@@ -175,17 +207,31 @@ onAuthStateChanged(auth, (user) => {
     }
     
     // Set up periodic refresh check every 5 minutes
-    refreshInterval = setInterval(() => {
-      ensureCloudFrontAccess().catch(err => {
+    // Only start if not already running to prevent duplicate intervals
+    refreshInterval = setInterval(async () => {
+      try {
+        await ensureCloudFrontAccess();
+        console.log('CloudFront cookies refreshed via interval');
+      } catch (err) {
         console.error('Failed to refresh CloudFront cookies on interval:', err);
-      });
+      }
     }, 5 * 60 * 1000); // 5 minutes
+    
+    console.log('CloudFront periodic refresh interval started');
   } else {
-    // User signed out, reset cookies and clear interval
+    // User signed out - clean up CloudFront cookies and intervals
+    console.log('User signed out - cleaning up CloudFront cookies');
     resetCloudFrontAccess();
+    
     if (refreshInterval) {
       clearInterval(refreshInterval);
       refreshInterval = null;
+      console.log('CloudFront periodic refresh interval cleared');
     }
   }
+  
+  isInitialized = true;
 });
+
+// Export initialization status for testing/debugging
+export const isCloudFrontInitialized = () => isInitialized;

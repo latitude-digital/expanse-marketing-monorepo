@@ -6,28 +6,56 @@
   "scripts": {
     "test": "pnpm -r test",
     "build": "pnpm -r build",
-    "dev": "pnpm -r dev",
-    "dev:all": "concurrently \"pnpm --filter @expanse/web-app dev\" \"pnpm --filter @expanse/firebase serve\"",
+    "dev": "pnpm --filter @expanse/web-app dev",
+    "dev:with-firebase": "concurrently \"pnpm --filter @expanse/web-app dev\" \"pnpm --filter @expanse/firebase serve\"",
     "firebase:build": "pnpm --filter @expanse/firebase build",
     "firebase:serve": "pnpm --filter @expanse/firebase serve",
     "firebase:deploy": "firebase deploy",
     "firebase:deploy:functions": "firebase deploy --only functions",
     "firebase:deploy:hosting": "firebase deploy --only hosting",
     "firebase:emulators": "firebase emulators:start",
-    "deploy:production": "pnpm build && firebase deploy",
+    "deploy:production": "./scripts/production-build-deploy.zsh",
+    "deploy:staging": "./scripts/staging-build-deploy.zsh",
     "ford-ui:update": "git submodule update --init --recursive && cd packages/ford-ui && git pull origin develop && nx build @ui/ford-ui-components && cd ../.. && ./packages/web-app/scripts/sync-ford-ui.sh",
-    "postinstall": "mkdir -p packages/web-app/src/styles/ford packages/web-app/src/styles/lincoln && cp packages/ford-ui/packages/@ui/ford-ui-components/src/styles/ford/* packages/web-app/src/styles/ford/ && cp packages/ford-ui/packages/@ui/ford-ui-components/src/styles/lincoln/* packages/web-app/src/styles/lincoln/ && sed -i '' 's/:root {/.ford_light {/' packages/web-app/src/styles/ford/_variables.css && sed -i '' 's/:root {/.lincoln_light {/' packages/web-app/src/styles/lincoln/_variables.css"
+    "postinstall": "echo 'CSS sync handled by sync-ford-ui.sh script'",
+    "test:e2e": "bash ./scripts/test-e2e.sh",
+    "test:e2e:auto": "node ./scripts/test-e2e-playwright.js",
+    "test:e2e:manual": "bash ./scripts/test-e2e.sh"
   },
-  "keywords": ["monorepo", "expanse", "marketing", "survey", "saas"],
+  "keywords": [
+    "monorepo",
+    "expanse",
+    "marketing",
+    "survey",
+    "saas"
+  ],
   "author": "Latitude Digital",
   "license": "ISC",
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "playwright": "^1.54.2"
   },
   "dependencies": {
-    "react-aria": "^3.35.0"
+    "@next/env": "^15.4.5",
+    "@react-aria/button": "^3.10.2",
+    "@react-aria/focus": "^3.19.0",
+    "@react-aria/interactions": "^3.22.5",
+    "@react-aria/textfield": "^3.15.2",
+    "@react-aria/utils": "^3.26.0",
+    "dotenv": "^16.4.7",
+    "react-aria": "^3.35.0",
+    "react-aria-components": "^1.7.0"
   },
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "resolutions": {
+    "axios": "1.7.4",
+    "path-to-regexp": "0.1.10",
+    "yaml": "2.2.2",
+    "@react-types/shared": "^3.26.0",
+    "@types/react": "18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "styled-components": "^5.1.26"
+  }
 }

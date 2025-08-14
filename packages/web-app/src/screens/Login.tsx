@@ -1,113 +1,173 @@
-// FirebaseUI uses the old version of firebase, so we need to import the compat version of the auth module.
-import "firebase/compat/auth";
-import firebase from "firebase/compat/app";
-import * as firebaseui from 'firebaseui'
-import 'firebaseui/dist/firebaseui.css'
-
-// React stuff
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
-import { resetCloudFrontAccess, ensureCloudFrontAccess } from '../services/cloudFrontAuth';
-
-// Auth service
-firebase.initializeApp({
-  apiKey: "AIzaSyAGX-fDz0xFhlEjuWSEK-2GB6W1R61TIuo",
-  authDomain: "latitude-lead-system.firebaseapp.com",
-  projectId: "latitude-lead-system",
-  storageBucket: "latitude-lead-system.appspot.com",
-  messagingSenderId: "846031493147",
-  appId: "1:846031493147:web:097f695ea7e214a80b80be",
-  measurementId: "G-2NHQNB0M5R"
-});
-
-const authForFirebaseUI = firebase.auth()
+import { useAuth } from '../contexts/AuthContext';
+import LoginForm from '../components/auth/LoginForm';
 
 function SigninScreen() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  
-  if (searchParams.has('logout')) {
-    setSearchParams({});
-    firebase.auth().signOut().then(() => {
-      resetCloudFrontAccess(); // Clear CloudFront cookies
-      let newLocation = [...location.pathname.split('/')];
-      console.log('newLocation 1', newLocation);
-      newLocation.pop()
-      console.log('newLocation 2', newLocation);
-      newLocation.pop()
-      console.log('newLocation 3', newLocation);
-      navigate(newLocation.join('/'));
-    });
-  }
+  const { currentUser, signOut, loading: authLoading, resetCloudFrontAccess } = useAuth();
   
   useEffect(() => {
-    const ui = firebaseui.auth.AuthUI.getInstance() || new firebaseui.auth.AuthUI(authForFirebaseUI);
-    let signInSuccessUrl = './';
-    
-    // see if the user is logged in
-    const user = firebase.auth().currentUser;
-    if (user) {
-      // User is signed in.
-      console.log('User is signed in');
-      console.log(user);
-      // Redirect to the home page
-      navigate(signInSuccessUrl);
-    }
-
-    ui.start('#firebaseui-auth-container', {
-      callbacks: {
-        signInSuccessWithAuthResult: function (authResult, redirectUrl) {
-          // Action if the user is authenticated successfully
-          console.log('authResult', authResult);
-          console.log('redirectUrl', redirectUrl);
-          // Reset and ensure fresh CloudFront cookies after login
+    const handleLogout = async () => {
+      if (searchParams.has('logout')) {
+        setSearchParams({});
+        try {
+          await signOut();
           resetCloudFrontAccess();
-          ensureCloudFrontAccess().then(() => {
-            console.log('CloudFront cookies refreshed after login');
-          }).catch(err => {
-            console.error('Failed to set CloudFront cookies after login:', err);
-          });
-          return true;
-        },
-        uiShown: function () {
-          // This is what should happen when the form is full loaded. In this example, I hide the loader element.
-          document.getElementById('loader')!.style.display = 'none';
+          let newLocation = [...location.pathname.split('/')];
+          newLocation.pop();
+          newLocation.pop();
+          navigate(newLocation.join('/'));
+        } catch (error) {
+          console.error('Logout error:', error);
         }
-      },
-      signInSuccessUrl, // This is where should redirect if the sign in is successful.
-      signInOptions: [ // This array contains all the ways an user can authenticate in your application. For this example, is only by email.
-        {
-          provider: firebase.auth.PhoneAuthProvider.PROVIDER_ID,
-          defaultCountry: 'US',
-          requireDisplayName: false,
-          disableSignUp: {
-            status: true
-          }
-        },
-        {
-          provider: firebase.auth.EmailAuthProvider.PROVIDER_ID,
-          signInMethod: firebase.auth.EmailAuthProvider.EMAIL_PASSWORD_SIGN_IN_METHOD,
-          forceSameDevice: false,
-          requireDisplayName: false,
-          disableSignUp: {
-            status: true
-          }
+      }
+    };
+    handleLogout();
+  }, [searchParams, setSearchParams, location.pathname, navigate, signOut]);
+  
+  useEffect(() => {
+    if (!authLoading && currentUser) {
+      console.log('User is already signed in:', currentUser.email);
+      
+      // Check for redirect parameter
+      const redirectParam = searchParams.get('r');
+      let redirectPath = '/';
+      
+      if (redirectParam) {
+        try {
+          redirectPath = decodeURIComponent(redirectParam);
+        } catch (e) {
+          console.error('Invalid redirect parameter:', e);
         }
-      ],
-      // tosUrl: 'https://www.example.com/terms-conditions', // URL to you terms and conditions.
-      // privacyPolicyUrl: function () { // URL to your privacy policy
-      //   window.location.assign('https://www.example.com/privacy-policy');
-      // }
-    });
-  }, []);
+      } else if (location.pathname === '/auth' || location.pathname === '/welcome' || location.pathname === '/login') {
+        redirectPath = '/';
+      } else if (location.pathname.endsWith('/login')) {
+        // Legacy support
+        redirectPath = location.pathname.substring(0, location.pathname.lastIndexOf('/login')) || '/';
+      }
+      
+      navigate(redirectPath, { replace: true });
+    }
+  }, [currentUser, authLoading, navigate, location.pathname, searchParams]);
+
+  const handleLoginSuccess = async () => {
+    // AUTH-009: CloudFront cookies are now automatically handled in authService.signIn
+    // No need for manual cookie management here
+    console.log('Login successful, checking for redirect parameter');
+    
+    // Check for redirect parameter in URL
+    const redirectParam = searchParams.get('r');
+    let redirectPath = '/';
+    
+    if (redirectParam) {
+      // Decode and use the redirect parameter
+      try {
+        redirectPath = decodeURIComponent(redirectParam);
+        console.log(`Redirecting to saved path: ${redirectPath}`);
+      } catch (e) {
+        console.error('Invalid redirect parameter:', e);
+        redirectPath = '/';
+      }
+    } else if (location.pathname === '/auth' || location.pathname === '/welcome' || location.pathname === '/login') {
+      // Default redirects for standard login routes
+      redirectPath = '/';
+    } else if (location.pathname.endsWith('/login')) {
+      // Legacy support: Remove '/login' from the path to go to parent
+      redirectPath = location.pathname.substring(0, location.pathname.lastIndexOf('/login')) || '/';
+    }
+    
+    console.log(`Redirecting from ${location.pathname} to ${redirectPath}`);
+    navigate(redirectPath, { replace: true });
+  };
+
+  const handleLoginError = (error: string) => {
+    console.error('Login error handled by LoginForm:', error);
+  };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-gray-600">Checking authentication...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <h1 className="text-center my-3 title">Login</h1>
-      <div id="firebaseui-auth-container"></div>
-      <div id="loader" className="text-center">Loading</div>
-    </>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-40"
+           style={{
+             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e2e8f0' fill-opacity='0.3'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+           }}></div>
+      
+      {/* Main Content */}
+      <div className="relative min-h-screen flex flex-col justify-between py-8 sm:py-12">
+        {/* Header with Branding */}
+        <header className="text-center px-4 sm:px-6 lg:px-8">
+          <div className="max-w-md mx-auto">
+            {/* Logo Placeholder */}
+            <div className="mb-8">
+              <div className="w-16 h-16 mx-auto bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl shadow-lg flex items-center justify-center">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <h1 className="mt-4 text-2xl sm:text-3xl font-bold text-gray-900">
+                Expanse Marketing
+              </h1>
+              <p className="mt-1 text-sm text-gray-600">
+                Survey Platform
+              </p>
+            </div>
+          </div>
+        </header>
+
+        {/* Login Form Container */}
+        <main className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+          <div className="w-full max-w-md">
+            {/* Card Background with enhanced styling */}
+            <div className="bg-white/80 backdrop-blur-lg shadow-xl rounded-2xl border border-white/20 p-8 relative overflow-hidden">
+              {/* Subtle card accent */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-indigo-600"></div>
+              
+              <LoginForm 
+                onSuccess={handleLoginSuccess}
+                onError={handleLoginError}
+              />
+            </div>
+            
+            {/* Additional Info */}
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-600">
+                Secure enterprise authentication for Ford, Lincoln, and partner brands
+              </p>
+            </div>
+          </div>
+        </main>
+
+        {/* Professional Footer */}
+        <footer className="px-4 sm:px-6 lg:px-8">
+          <div className="max-w-md mx-auto text-center">
+            <div className="border-t border-gray-200 pt-6">
+              <p className="text-xs text-gray-500">
+                © 2025 Latitude Digital. All rights reserved.
+              </p>
+              <div className="mt-2 space-x-4 text-xs">
+                <a href="#" className="text-gray-500 hover:text-blue-600 transition-colors">Privacy Policy</a>
+                <a href="#" className="text-gray-500 hover:text-blue-600 transition-colors">Terms of Service</a>
+                <a href="#" className="text-gray-500 hover:text-blue-600 transition-colors">Support</a>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
   );
 }
+
 export default SigninScreen;

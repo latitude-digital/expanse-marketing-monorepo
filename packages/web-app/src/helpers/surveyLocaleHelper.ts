@@ -23,7 +23,9 @@ const TEMPLATE_QUESTION_NAMES = [
   'vehicleDrivenMostMake',
   // Lincoln template questions
   'lincolnVOI',
-  'lincolnEmailOptIn'
+  'lincolnEmailOptIn',
+  'howLikelyRecommend',
+  'howLikelyRecommend (post event)'
 ];
 
 // Template question types that always have default translations
@@ -50,7 +52,11 @@ const TEMPLATE_QUESTION_TYPES = [
   'vehicledrivenmostmake',
   // Lincoln template types
   'lincolnvoi',
-  'lincolnoptin'
+  'lincolnoptin',
+  'lincolnrecommend',
+  'lincolnrecommendpost',
+  'lincolnoverallopinion',
+  'lincolnoverallopinionpost'
 ];
 
 /**

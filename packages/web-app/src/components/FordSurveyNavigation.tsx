@@ -14,6 +14,7 @@ export const FordSurveyNavigation: React.FC<FordSurveyNavigationProps> = ({
   const [isFirstPage, setIsFirstPage] = useState(true);
   const [isLastPage, setIsLastPage] = useState(false);
   const [canComplete, setCanComplete] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
 
   // Update navigation state when survey changes
   useEffect(() => {
@@ -21,6 +22,7 @@ export const FordSurveyNavigation: React.FC<FordSurveyNavigationProps> = ({
       setIsFirstPage(survey.isFirstPage);
       setIsLastPage(survey.isLastPage);
       setCanComplete(survey.isLastPage && survey.currentPage.hasErrors === false);
+      setIsCompleted(survey.isCompleted || survey.state === 'completed');
     };
 
     // Initial state
@@ -39,15 +41,21 @@ export const FordSurveyNavigation: React.FC<FordSurveyNavigationProps> = ({
       updateNavigationState();
     };
 
+    const onComplete = () => {
+      updateNavigationState();
+    };
+
     survey.onCurrentPageChanged.add(onCurrentPageChanged);
     survey.onValueChanged.add(onValueChanged);
     survey.onValidateQuestion.add(onValidateQuestion);
+    survey.onComplete.add(onComplete);
 
     // Cleanup event listeners
     return () => {
       survey.onCurrentPageChanged.remove(onCurrentPageChanged);
       survey.onValueChanged.remove(onValueChanged);
       survey.onValidateQuestion.remove(onValidateQuestion);
+      survey.onComplete.remove(onComplete);
     };
   }, [survey]);
 
@@ -63,8 +71,12 @@ export const FordSurveyNavigation: React.FC<FordSurveyNavigationProps> = ({
     survey.tryComplete();
   };
 
-  // Don't render navigation if survey is completed
-  if (survey.state === 'completed') {
+  // Don't render navigation buttons in these scenarios:
+  // 1. Survey is completed (state = "completed") 
+  // 2. Survey is in any non-running state (loading, empty, etc.)
+  // 3. Survey has isCompleted property set to true
+  // 4. React state isCompleted is true (from our event listener)
+  if (survey.state === 'completed' || survey.state !== 'running' || survey.isCompleted || isCompleted) {
     return null;
   }
 
@@ -75,7 +87,8 @@ export const FordSurveyNavigation: React.FC<FordSurveyNavigationProps> = ({
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        margin: '0 24px',
+        margin: '24px 24px 0 24px',
+        paddingTop: '16px',
         borderTop: '1px solid var(--semantic-color-stroke-onlight-subtle-default)'
       }}
     >

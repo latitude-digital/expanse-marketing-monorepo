@@ -69,6 +69,18 @@ const useFunctionsEmulator = (): boolean => {
   return inDev && import.meta.env.VITE_USE_FUNCTIONS_EMULATOR !== 'false';
 };
 
+// Determine Firebase namespace from environment
+const getFirebaseNamespace = (): string => {
+  // Check VITE_FIREBASE_NAMESPACE environment variable
+  const namespace = import.meta.env.VITE_FIREBASE_NAMESPACE;
+  if (namespace === 'staging') return 'staging';
+  if (namespace === 'prod') return 'prod';
+  // Default to prod
+  return 'prod';
+};
+
+const FIREBASE_NAMESPACE = getFirebaseNamespace();
+
 // Firebase Functions base URLs
 const FIREBASE_FUNCTIONS_BASE: string = useFunctionsEmulator() 
   ? 'http://127.0.0.1:5001/latitude-lead-system/us-central1'
@@ -81,8 +93,10 @@ const CLOUD_RUN_BASE: string = useFunctionsEmulator()
 
 if (useFunctionsEmulator()) {
   console.log('🔧 Using Firebase emulators for Functions');
+  console.log(`📦 Using namespace: ${FIREBASE_NAMESPACE}`);
 } else {
   console.log('🌐 Using production Firebase Functions');
+  console.log(`📦 Using namespace: ${FIREBASE_NAMESPACE}`);
 }
 
 // API endpoints interface
@@ -90,6 +104,9 @@ interface ApiEndpoints {
   SURVEY_UPLOAD: string;
   SURVEY_UPLOAD_V10: string;
   SURVEY_UPLOAD_V11: string;
+  LINCOLN_SURVEY_UPLOAD: string;
+  LINCOLN_VEHICLES_INTERESTED: string;
+  LINCOLN_VEHICLES_DRIVEN: string;
   VEHICLES_INSERT: string;
   EVENTS_CHECK: string;
   EVENTS_QR: string;
@@ -111,20 +128,23 @@ export const ENDPOINTS: ApiEndpoints = {
   SURVEY_UPLOAD: '/survey/upload/v9',
   SURVEY_UPLOAD_V10: '/survey/upload/v10',
   SURVEY_UPLOAD_V11: '/survey/upload/v11',
+  LINCOLN_SURVEY_UPLOAD: 'https://api.latitudeshowtracker.com/events/v1/survey/insert/v13',
+  LINCOLN_VEHICLES_INTERESTED: 'https://api.latitudeshowtracker.com/events/v1/survey/insert/vehicles/interested',
+  LINCOLN_VEHICLES_DRIVEN: 'https://api.latitudeshowtracker.com/events/v1/survey/insert/vehicles/driven',
   VEHICLES_INSERT: '/survey/insert/vehicles',
   EVENTS_CHECK: '/events/check/v2',
   EVENTS_QR: '/events/qr',
-  // Firebase functions are full URLs
-  VALIDATE_EMAIL: `${FIREBASE_FUNCTIONS_BASE}/validateEmail`,
-  GET_SURVEY: `${FIREBASE_FUNCTIONS_BASE}/getSurvey`,
-  MAKE_BOKEO_BOOKING: `${FIREBASE_FUNCTIONS_BASE}/makeBookeoBooking`,
-  SAVE_SURVEY: `${FIREBASE_FUNCTIONS_BASE}/saveSurvey`,
-  CHECK_IN_OUT_SURVEY: `${FIREBASE_FUNCTIONS_BASE}/checkInOutSurvey`,
-  GET_BRONCO_RANK: `${FIREBASE_FUNCTIONS_BASE}/getBroncoRank`,
-  CREATE_NEW_USER: `${FIREBASE_FUNCTIONS_BASE}/createNewUser`,
-  GET_BOOKEO_PRODUCTS: `${FIREBASE_FUNCTIONS_BASE}/getBookeoProducts`,
-  GET_BOOKEO_SLOTS_BY_PRODUCT: `${FIREBASE_FUNCTIONS_BASE}/getBookeoSlotsByProduct`,
-  HOLD_BOOKEO_BOOKING: `${FIREBASE_FUNCTIONS_BASE}/holdBookeoBooking`,
+  // Firebase functions are full URLs with namespace
+  VALIDATE_EMAIL: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-validateEmail`,
+  GET_SURVEY: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-getSurvey`,
+  MAKE_BOKEO_BOOKING: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-makeBookeoBooking`,
+  SAVE_SURVEY: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-saveSurvey`,
+  CHECK_IN_OUT_SURVEY: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-checkInOutSurvey`,
+  GET_BRONCO_RANK: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-getBroncoRank`,
+  CREATE_NEW_USER: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-createNewUser`,
+  GET_BOOKEO_PRODUCTS: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-getBookeoProducts`,
+  GET_BOOKEO_SLOTS_BY_PRODUCT: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-getBookeoSlotsByProduct`,
+  HOLD_BOOKEO_BOOKING: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-holdBookeoBooking`,
   // Cloud Run endpoints
   GET_BRONCO_RANK_BASE: CLOUD_RUN_BASE
 };

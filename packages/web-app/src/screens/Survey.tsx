@@ -9,16 +9,19 @@ import { v4 as uuidv4 } from 'uuid';
 
 import auth from '../services/auth';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { httpsCallable } from 'firebase/functions';
 import app from '../services/firebase';
-import functions from '../services/functions';
+import { checkSurveyLimit as checkSurveyLimitFn, validateSurveyLimit as validateSurveyLimitFn } from '../services/namespacedFunctions';
 
 import { getApiUrl, ENDPOINTS } from "../config/api";
 
-// Import custom SurveyJS renderers
-import { CheckboxVOIQuestion } from "../surveysjs_renderers/CheckboxVOI";
-import { RadioGroupRowQuestion } from "../surveysjs_renderers/RadioButtonButton";
+// Import FDS custom SurveyJS renderers
+import { CheckboxVOIQuestion } from "../surveysjs_renderers/FDSRenderers/CheckboxVOI";
+import { CheckboxVehiclesDrivenQuestion } from "../surveysjs_renderers/FDSRenderers/CheckboxVehiclesDriven";
+import { RadioGroupRowQuestion } from "../surveysjs_renderers/FDSRenderers/RadioButtonButton";
 import { SurveyBookeoQuestion } from "../surveysjs_renderers/Bookeo";
+
+// Force execution of renderer registration by referencing the class
+console.log('Survey.tsx: CheckboxVehiclesDrivenQuestion loaded:', CheckboxVehiclesDrivenQuestion);
 // EmailTextInput removed - FDSTextRenderer handles all text inputs including email with proper required field support
 import "../surveysjs_renderers/FilePreview";
 
@@ -30,9 +33,10 @@ import "survey-core/survey-core.min.css";
 
 import "./Surveys.css";
 import { prepareForSurvey, prepareSurveyOnQuestionAdded } from "../helpers/surveyTemplatesAll";
-import FordFooter from "../components/FordFooter";
+import GlobalFooter from "../components/GlobalFooter";
 import { createDefaultFordSurvey } from '../helpers/fordSurvey';
 import { mapSurveyToFordSurvey } from '../helpers/mapSurveyToFord';
+import { mapSurveyToLincolnSurvey } from '../helpers/mapSurveyToLincoln';
 import { getCustomContentLocales, getDefaultLocale } from '../helpers/surveyLocaleHelper';
 import { LanguageSelector, FordLanguageSelector } from '../components/LanguageSelector';
 
@@ -53,8 +57,9 @@ import {
 import { shouldLoadFDS, getBrandTheme, normalizeBrand } from '../utils/brandUtils';
 import { initializeFDSForBrand } from '../helpers/fdsInitializer';
 
-// Import custom Ford navigation
+// Import custom Ford navigation and GlobalHeader
 import { FordSurveyNavigation } from '../components/FordSurveyNavigation';
+import GlobalHeader from '../components/GlobalHeader';
 
 // TypeScript interfaces
 interface RouteParams {
@@ -65,13 +70,18 @@ interface SurveyEvent {
   name: string;
   brand?: string;
   fordEventID?: string;
+  lincolnEventID?: string;
   disabled?: string;
   _preEventID?: string;
   survey_count_limit?: number;
   limit_reached_message?: string;
   surveyType?: string;
-  questions: string;
-  theme?: string;
+  questions: string;  // Legacy field
+  surveyJSModel?: any;  // New map field
+  theme?: string;  // Legacy field
+  surveyJSTheme?: any;  // New map field
+  showHeader?: boolean;
+  showLanguageChooser?: boolean;
 }
 
 interface PreSurvey {
@@ -225,10 +235,10 @@ const SurveyComponent: React.FC = () => {
           // Check survey limit if configured
           if (res.event.survey_count_limit && res.event.survey_count_limit > 0) {
             const bypass = searchParams.get('bp');
-            const checkSurveyLimit = httpsCallable(functions, 'checkSurveyLimit');
+            // Use namespaced function for survey limit check
             
             try {
-              const result = await checkSurveyLimit({ 
+              const result = await checkSurveyLimitFn({ 
                 eventId: params.eventID,
                 bypass: bypass 
               }) as SurveyLimitResult;
@@ -244,13 +254,93 @@ const SurveyComponent: React.FC = () => {
             }
           }
 
-          const surveyJSON = JSON.parse(res.event.questions);
+          // Use new map fields if available, otherwise parse JSON strings
+          const surveyJSON = res.event.surveyJSModel || 
+                            (res.event.questions ? JSON.parse(res.event.questions) : {});
+          const eventTheme = res.event.surveyJSTheme || 
+                            (res.event.theme ? JSON.parse(res.event.theme) : {"cssVariables": {}});
+
+          // Auto-fix missing headerView when theme has header configuration
+          if (eventTheme.header && !surveyJSON.headerView) {
+            console.log('[Header Debug] Auto-fixing missing headerView for survey with theme header configuration');
+            surveyJSON.headerView = "advanced";
+            // Also ensure description is not null (SurveyJS may require this for header rendering)
+            if (!surveyJSON.description) {
+              surveyJSON.description = " ";
+              console.log('[Header Debug] Auto-fixing missing description for header');
+            }
+          }
 
           // Set default properties before creating model (can be overridden by survey definition)
           const defaultSurveyProperties = {
             "widthMode": "responsive",
             ...surveyJSON // Survey definition can override defaults
           };
+
+          // Preprocess isRequired to working validators BEFORE model creation
+          function preprocessRequiredValidation(surveyJSON) {
+            function processElements(elements) {
+              if (!elements) return;
+              
+              elements.forEach(element => {
+                // Handle questions with isRequired: true
+                if (element.type && element.isRequired === true) {
+                  // Initialize validators array if it doesn't exist
+                  if (!element.validators) {
+                    element.validators = [];
+                  }
+                  
+                  // Check if expression validator already exists
+                  const hasRequiredValidator = element.validators.some(v => 
+                    v.type === 'expression' && v.expression?.includes('notempty')
+                  );
+                  
+                  if (!hasRequiredValidator) {
+                    // Add expression validator for required field
+                    element.validators.push({
+                      type: "expression",
+                      expression: "{self} notempty", 
+                      text: element.requiredErrorText || "This field is required"
+                    });
+                  }
+                  
+                  
+                  console.log(`[Survey Preprocess] Added required validator to question: ${element.name}`);
+                }
+                
+                // Recursively process nested elements (panels, etc.)
+                if (element.elements && Array.isArray(element.elements)) {
+                  processElements(element.elements);
+                }
+                
+                // Handle matrix-type questions
+                if (element.columns) {
+                  processElements(element.columns);
+                }
+                if (element.rows) {
+                  processElements(element.rows);
+                }
+              });
+            }
+            
+            // Process all pages
+            if (surveyJSON.pages && Array.isArray(surveyJSON.pages)) {
+              surveyJSON.pages.forEach(page => {
+                if (page.elements && Array.isArray(page.elements)) {
+                  processElements(page.elements);
+                }
+                // Handle page-level panels
+                if (page.panels) {
+                  processElements(page.panels);
+                }
+              });
+            }
+            
+            return surveyJSON;
+          }
+
+          // Apply the preprocessing
+          preprocessRequiredValidation(defaultSurveyProperties);
 
           if (res.event.disabled && !user) {
             defaultSurveyProperties.showCompleteButton = false;
@@ -278,11 +368,9 @@ const SurveyComponent: React.FC = () => {
             // Continue with survey creation even if FDS fails
           }
 
-          const eventTheme = JSON.parse(res.event.theme || `{"cssVariables": {}}`);
-
           const survey = new Model(defaultSurveyProperties);
           
-          if (res.event.fordEventID) {
+          if (res.event.fordEventID || res.event.lincolnEventID) {
             survey.questionErrorLocation = "bottom";
           }
 
@@ -294,24 +382,31 @@ const SurveyComponent: React.FC = () => {
             survey.showNavigationButtons = false;
           }
 
-          // Set default theme appearance to "Without Panels" for Ford/Lincoln brands
-          if (eventBrand === 'Ford' || eventBrand === 'Lincoln') {
-            console.log('[Theme Debug] Setting theme appearance to "Without Panels" for', eventBrand, 'brand');
-            const updatedTheme = {
-              themeName: "default",
-              colorPalette: "light",
-              isPanelless: true,
-              backgroundImage: "",
-              backgroundImageFit: "cover",
-              backgroundImageAttachment: "scroll",
-              backgroundOpacity: 1,
-              cssVariables: {
-                "--sjs-general-backcolor-dim": "#ffffff",
-                ...eventTheme.cssVariables,
-              },
-              ...eventTheme,
-            };
-            survey.applyTheme(updatedTheme);
+          // Apply theme for all brands
+          if (eventTheme && eventTheme.cssVariables) {
+            if (eventBrand === 'Ford' || eventBrand === 'Lincoln') {
+              // Set default theme appearance to "Without Panels" for Ford/Lincoln brands
+              console.log('[Theme Debug] Setting theme appearance to "Without Panels" for', eventBrand, 'brand');
+              const updatedTheme = {
+                themeName: "default",
+                colorPalette: "light",
+                isPanelless: true,
+                backgroundImage: "",
+                backgroundImageFit: "cover",
+                backgroundImageAttachment: "scroll",
+                backgroundOpacity: 1,
+                cssVariables: {
+                  "--sjs-general-backcolor-dim": "#ffffff",
+                  ...eventTheme.cssVariables,
+                },
+                ...eventTheme,
+              };
+              survey.applyTheme(updatedTheme);
+            } else {
+              // Apply theme for Other brands without Ford/Lincoln specific overrides
+              console.log('[Theme Debug] Applying custom theme for', eventBrand, 'brand');
+              survey.applyTheme(eventTheme);
+            }
           }
 
           prepareForSurvey(survey, eventBrand);
@@ -565,7 +660,7 @@ const SurveyComponent: React.FC = () => {
             const defaultValues: SurveyData = {
               'start_time': new Date(),
               'survey_date': new Date(),
-              'event_id': res.event.fordEventID || params.eventID,
+              'event_id': res.event.fordEventID || res.event.lincolnEventID || params.eventID,
               'app_version': 'surveyjs_1.0',
               'abandoned': 0,
               '_utm': extractUTM(),
@@ -660,10 +755,10 @@ const SurveyComponent: React.FC = () => {
             // Check survey limit before allowing submission
             if (res.event.survey_count_limit && res.event.survey_count_limit > 0) {
               const bypass = searchParams.get('bp');
-              const validateSurveyLimit = httpsCallable(functions, 'validateSurveyLimit');
+              // Use namespaced function for survey validation
               
               try {
-                const result = await validateSurveyLimit({ 
+                const result = await validateSurveyLimitFn({ 
                   eventId: params.eventID,
                   bypass: bypass 
                 });
@@ -847,6 +942,116 @@ const SurveyComponent: React.FC = () => {
                 }
               }
 
+              // If this is a Lincoln event, also save to Lincoln API
+              if (res.event.lincolnEventID) {
+                console.log('[Lincoln Event] Starting Lincoln API submission process');
+                console.log('[Lincoln Event] Event ID:', res.event.lincolnEventID);
+                
+                const lincolnSurvey = mapSurveyToLincolnSurvey(survey, surveyData, res.event);
+                console.log('[Lincoln Event] lincolnSurvey from mapSurveyToLincolnSurvey:', JSON.stringify(lincolnSurvey, null, 2));
+                
+                // Merge lincolnSurvey with surveyData to ensure all expected fields are present
+                const mergedLincolnSurveyData = { ...lincolnSurvey, ...surveyData };
+                console.log('[Lincoln Event] mergedLincolnSurveyData before final adjustments:', JSON.stringify(mergedLincolnSurveyData, null, 2));
+                
+                // Ensure microsite_email_template is present (even if null)
+                if (!mergedLincolnSurveyData.microsite_email_template) {
+                  mergedLincolnSurveyData.microsite_email_template = null;
+                }
+                
+                // Log signature fields for debugging
+                console.log('[Lincoln Event] Signature fields before API call:', {
+                  signature: mergedLincolnSurveyData.signature,
+                  minor_signature: mergedLincolnSurveyData.minor_signature,
+                  signature_type: typeof mergedLincolnSurveyData.signature,
+                  minor_signature_type: typeof mergedLincolnSurveyData.minor_signature
+                });
+                
+                const lincolnPayload = [mergedLincolnSurveyData];
+
+                console.log('[Lincoln Event] Final payload being sent to Lincoln API:', lincolnPayload);
+
+                // Save to Lincoln API
+                const lincolnRes = await fetch(getApiUrl(ENDPOINTS.LINCOLN_SURVEY_UPLOAD), {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': '91827364',
+                  },
+                  body: JSON.stringify(lincolnPayload),
+                });
+
+                if (!lincolnRes.ok) {
+                  throw new Error(lincolnRes.statusText);
+                }
+
+                const lincolnData = await lincolnRes.json();
+                console.log('saved to lincoln api', lincolnData);
+
+                // If there are vehicles of interest, save those too
+                if ((lincolnSurvey as any).voi && (lincolnSurvey as any).voi.length) {
+                  const voiBody = (lincolnSurvey as any).voi.map((vehicle_id: string) => ({
+                    event_id: res.event.lincolnEventID,
+                    device_survey_guid: surveyData.device_survey_guid || '',
+                    survey_vehicle_guid: uuidv4(),
+                    survey_date: new Date().toISOString(),
+                    vehicle_id,
+                    app_version: 'expanse_2.0',
+                    abandoned: false,
+                    custom_data: {
+                      survey_type: res.event.surveyType || 'basic'
+                    }
+                  }));
+
+                  const lincolnVoiRes = await fetch(getApiUrl(ENDPOINTS.LINCOLN_VEHICLES_INTERESTED), {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': '91827364',
+                    },
+                    body: JSON.stringify(voiBody),
+                  });
+
+                  if (!lincolnVoiRes.ok) {
+                    throw new Error(lincolnVoiRes.statusText);
+                  }
+
+                  console.log('saved lincoln voi');
+                }
+
+                // If there are vehicles driven, save those too
+                if ((lincolnSurvey as any).vehiclesDriven && (lincolnSurvey as any).vehiclesDriven.length) {
+                  const drivenBody = (lincolnSurvey as any).vehiclesDriven.map((vehicle_id: string, index: number) => ({
+                    event_id: res.event.lincolnEventID,
+                    device_survey_guid: surveyData.device_survey_guid || '',
+                    survey_vehicle_guid: uuidv4(),
+                    survey_date: new Date().toISOString(),
+                    vehicle_id,
+                    order_driven: index + 1,
+                    app_version: 'expanse_2.0',
+                    abandoned: false,
+                    custom_data: {
+                      survey_type: res.event.surveyType || 'basic'
+                    }
+                  }));
+
+                  const lincolnDrivenRes = await fetch(getApiUrl(ENDPOINTS.LINCOLN_VEHICLES_DRIVEN), {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': '91827364',
+                    },
+                    body: JSON.stringify(drivenBody),
+                  });
+
+                  if (!lincolnDrivenRes.ok) {
+                    throw new Error(lincolnDrivenRes.statusText);
+                  }
+
+                  console.log('saved lincoln driven vehicles');
+                }
+              }
+
               options.showDataSavingSuccess();
               sender.completedHtml = originalMesage;
               if ((location.state as any)?.preSurveyID) {
@@ -872,7 +1077,7 @@ const SurveyComponent: React.FC = () => {
       Sentry.captureException(err);
       alert(err);
     });
-  }, [user, params.eventID, navigate, location, thisEvent?.surveyType, thisPreSurvey]);
+  }, [user, params.eventID, navigate, location]);
 
   return (
     limitReached ?
@@ -883,29 +1088,24 @@ const SurveyComponent: React.FC = () => {
     thisSurvey ?
       <div className="gdux-ford">
         {
-          thisEvent?.fordEventID && (
-            <div className="fds-logo-only-header" style={{ position: 'relative', justifyContent: 'space-between' }}>
-              <div style={{ flex: '1' }}></div>
-              <img src={logo} alt="Ford" className="fds-header-logo" />
-              <div style={{ 
-                flex: '1', 
-                display: 'flex', 
-                justifyContent: 'flex-end' 
-              }}>
-                {supportedLocales.length > 1 && (
-                  <FordLanguageSelector
-                    survey={thisSurvey}
-                    supportedLocales={supportedLocales}
-                    currentLocale={currentLocale}
-                    onChange={handleLanguageChange}
-                  />
-                )}
-              </div>
-            </div>
-          )
+          (() => {
+            const currentBrand = normalizeBrand(thisEvent?.brand);
+            const shouldShowHeader = (currentBrand === 'Ford' || currentBrand === 'Lincoln') 
+              && thisEvent?.showHeader !== false; // Default to true if not specified
+            
+            return shouldShowHeader && (
+              <GlobalHeader
+                brand={currentBrand}
+                showLanguageChooser={thisEvent?.showLanguageChooser === true && supportedLocales.length > 1}
+                supportedLocales={supportedLocales}
+                currentLocale={currentLocale}
+                onLanguageChange={handleLanguageChange}
+              />
+            );
+          })()
         }
-        {/* Show standard language selector only for non-Ford surveys */}
-        {supportedLocales.length > 1 && !thisEvent?.fordEventID && (
+        {/* Show standard language selector only for non-Ford/Lincoln surveys */}
+        {supportedLocales.length > 1 && normalizeBrand(thisEvent?.brand) === 'Other' && (thisEvent?.showLanguageChooser === true) && (
           <LanguageSelector 
             survey={thisSurvey}
             supportedLocales={supportedLocales}
@@ -932,10 +1132,23 @@ const SurveyComponent: React.FC = () => {
             );
           })()}
         </div>
+        {/* GlobalFooter - Show for Ford/Lincoln brands only */}
         {
-          thisEvent?.fordEventID && (
-            <FordFooter />
-          )
+          (() => {
+            const currentBrand = normalizeBrand(thisEvent?.brand);
+            const shouldShowFooter = (currentBrand === 'Ford' || currentBrand === 'Lincoln') 
+              && thisEvent?.showFooter !== false; // Default to true if not specified
+            
+            return shouldShowFooter && (
+              <GlobalFooter
+                brand={currentBrand}
+                supportedLanguages={supportedLocales}
+                currentLocale={currentLocale}
+                onLanguageChange={handleLanguageChange}
+                showLanguageSelector={thisEvent?.showLanguageChooser === true && supportedLocales.length > 1}
+              />
+            );
+          })()
         }
       </div>
       :

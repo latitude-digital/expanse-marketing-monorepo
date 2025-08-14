@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 
 import { useNavigate, useParams } from "react-router-dom";
-import { getFirestore, doc, getDoc, collection, query, getDocs } from "firebase/firestore";
+import { doc, getDoc, collection, query, getDocs } from "firebase/firestore";
 import auth from '../services/auth';
 
 import { useAuthState } from 'react-firebase-hooks/auth';
 import app from '../services/firebase';
+import db from '../services/db';
 
 import { slk, Model, Question } from "survey-core";
 import { VisualizationPanel } from 'survey-analytics';
@@ -19,7 +20,7 @@ import 'survey-analytics/survey.analytics.min.css';
 // import 'survey-analytics/survey.analytics.tabulator.min.css';
 
 slk(
-     "NDBhNThlYzYtN2EwMy00ZTgxLWIyNGQtOGFkZWJkM2NlNjI3OzE9MjAyNS0wNy0xOSwyPTIwMjUtMDctMTksND0yMDI1LTA3LTE5"
+     "NDBhNThlYzYtN2EwMy00ZTgxLWIyNGQtOGFkZWJkM2NlNjI3OzE9MjAyNi0wNy0xOSwyPTIwMjYtMDctMTksND0yMDI2LTA3LTE5"
 );
 
 
@@ -41,7 +42,6 @@ function ChartsScreen() {
     console.error(userError);
   }, [userError]);
 
-  const db = getFirestore(app);
   const eventID: string = params.eventID!;
 
   useEffect(() => {

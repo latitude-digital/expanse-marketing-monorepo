@@ -199,10 +199,11 @@ function CheckOutScreen() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          eventID: checkoutEventID, 
-          survey: {
-            id: user.id,
-            _checkedOut: new Date().toISOString(),
+          eventID: checkoutEventID,
+          surveyID: user.id,
+          action: 'checkOut',
+          data: {
+            _checkedOut: new Date().toISOString()
           }
         }),
       }).then(response => {
@@ -349,13 +350,7 @@ function CheckOutScreen() {
               setQRModalUser(null);
             }}>Close</Button>
             <Button themeColor="primary" onClick={() => {
-              navigate(`/s/${params.eventID}`,
-                {
-                  state: {
-                    preSurveyID: qrModalUser.id,
-                  }
-                }
-              );
+              navigate(`/s/${params.eventID}?pid=${qrModalUser.id}`);
             }}>Go to Survey</Button>
           </DialogActionsBar>
         </Dialog>

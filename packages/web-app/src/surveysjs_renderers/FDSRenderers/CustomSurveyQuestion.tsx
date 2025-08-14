@@ -51,11 +51,15 @@ export class CustomSurveyQuestion extends React.Component<CustomSurveyQuestionPr
 
     // Check if we're in Survey Creator/Designer mode - if so, don't interfere
     // Let SurveyJS handle its own rendering for the designer interface
+    // BUT allow Preview mode to use custom rendering (no SurveyJS default titles)
     const isDesignerMode = 
       (creator && (creator.isCreator || creator.isDesignMode || creator.readOnly === false)) ||
       (survey && (survey.isDesignMode || survey.mode === 'design')) ||
-      // Check if we're in the SurveyJS Creator environment
-      (typeof window !== 'undefined' && window.location.pathname.includes('/admin/'));
+      // Check if we're in the SurveyJS Creator environment, but exclude Preview mode
+      (typeof window !== 'undefined' && 
+       window.location.pathname.includes('/admin/') && 
+       !window.location.hash.includes('preview') &&
+       !document.querySelector('[role="tabpanel"][aria-labelledby*="Preview"]'));
 
     if (isDesignerMode) {
       // Return null to let SurveyJS use its default question renderer

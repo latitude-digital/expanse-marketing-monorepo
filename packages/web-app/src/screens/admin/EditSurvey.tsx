@@ -1,15 +1,17 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useNavigate, useParams } from "react-router-dom";
-import { getFirestore, doc, getDoc, Timestamp, FirestoreDataConverter, DocumentData, QueryDocumentSnapshot, SnapshotOptions, updateDoc } from "firebase/firestore";
+import { doc, getDoc, Timestamp, FirestoreDataConverter, DocumentData, QueryDocumentSnapshot, SnapshotOptions, updateDoc } from "firebase/firestore";
 import { useAuthState } from 'react-firebase-hooks/auth';
 
 import auth from '../../services/auth';
 import app from '../../services/firebase';
+import db from '../../services/db';
 
 import { QuestionRadiogroupModel, Serializer } from "survey-core";
 import { SurveyCreatorComponent, SurveyCreator } from "survey-creator-react";
 import { registerCreatorTheme, registerSurveyTheme } from "survey-creator-core";
+import { ReactQuestionFactory } from "survey-react-ui";
 import SurveyTheme from "survey-core/themes";
 import SurveyCreatorTheme from "survey-creator-core/themes";
 
@@ -27,6 +29,7 @@ import { initCreatorFord, prepareCreatorOnQuestionAddedFord } from '../../helper
 import { initCreatorLincoln, prepareCreatorOnQuestionAddedLincoln } from '../../helpers/surveyTemplatesLincoln';
 import { shouldLoadFDS, getBrandTheme, normalizeBrand } from '../../utils/brandUtils';
 import { initializeFDSForBrand } from '../../helpers/fdsInitializer';
+import { AllSurveys, FordSurveys, LincolnSurveys } from '../../surveyjs_questions';
 
 // Register SurveyJS themes for theme editor functionality
 registerSurveyTheme(SurveyTheme); // Add predefined Form Library UI themes
@@ -34,11 +37,17 @@ registerCreatorTheme(SurveyCreatorTheme); // Add predefined Survey Creator UI th
 
 const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
     toFirestore(event: ExpanseEvent): DocumentData {
+        const surveyModel = event.surveyJSModel || event.questions;
+        const themeModel = event.surveyJSTheme || event.theme;
+        
         return {
             ...event,
             brand: event.brand || null,
-            questions: JSON.stringify(event.questions),
-            theme: JSON.stringify(event.theme),
+            // Write to both old and new fields for backward compatibility
+            questions: typeof surveyModel === 'string' ? surveyModel : JSON.stringify(surveyModel),
+            surveyJSModel: typeof surveyModel === 'string' ? JSON.parse(surveyModel) : surveyModel,
+            theme: typeof themeModel === 'string' ? themeModel : JSON.stringify(themeModel),
+            surveyJSTheme: typeof themeModel === 'string' ? JSON.parse(themeModel) : themeModel,
             preRegDate: event.preRegDate ? Timestamp.fromDate(event.preRegDate) : undefined,
             startDate: Timestamp.fromDate(event.startDate),
             endDate: Timestamp.fromDate(event.endDate),
@@ -49,6 +58,11 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
         options: SnapshotOptions
     ): ExpanseEvent {
         const data = snapshot.data(options);
+        
+        // Use new map fields if available, otherwise fall back to parsing JSON strings
+        const surveyModel = data.surveyJSModel || (data.questions ? JSON.parse(data.questions) : {});
+        const themeModel = data.surveyJSTheme || (data.theme ? JSON.parse(data.theme) : {});
+        
         return {
             id: snapshot.id,
             name: data.name,
@@ -62,8 +76,10 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
             thankYouEmail: data.thankYouEmail,
             checkInDisplay: data.checkInDisplay,
             disabled: data.disabled,
-            questions: JSON.parse(data.questions),
-            theme: JSON.parse(data.theme),
+            questions: surveyModel,  // For backward compatibility
+            surveyJSModel: surveyModel,  // New field
+            theme: themeModel,  // For backward compatibility
+            surveyJSTheme: themeModel,  // New field
             thanks: data.thanks,
         };
     },
@@ -78,7 +94,6 @@ function DashboardScreen() {
     const [creator, setCreator] = useState<SurveyCreator>();
     const [initializationComplete, setInitializationComplete] = useState(false);
 
-    const db = getFirestore(app);
     const eventID: string = params.eventID!;
 
     useEffect(() => {
@@ -109,13 +124,21 @@ function DashboardScreen() {
                     await initializeFDSForBrand(eventBrand);
                     console.log(`FDS initialized for ${eventBrand} event`);
                 } else {
-                    initSurvey(); // Basic SurveyJS initialization for non-branded events
-                    console.log('Basic SurveyJS initialized for non-branded event');
+                    // For non-branded events, initialize basic SurveyJS with universal questions only
+                    initSurvey(); // Basic SurveyJS initialization
+                    AllSurveys.globalInit(); // Initialize universal questions (firstname, lastname, email, etc.)
+                    
+                    console.log('Basic SurveyJS and universal questions initialized for non-branded event');
                 }
             } catch (error) {
                 console.error('Failed to initialize survey system:', error);
-                // Fallback to basic initialization
+                // Fallback to basic initialization with universal questions
                 initSurvey();
+                try {
+                    AllSurveys.globalInit();
+                } catch (fallbackError) {
+                    console.error('Failed to initialize universal questions in fallback:', fallbackError);
+                }
             }
             
             setInitializationComplete(true);
@@ -128,6 +151,8 @@ function DashboardScreen() {
 
         const createSurveyCreator = async () => {
             const creatorOptions: ICreatorOptions = {
+                showHeaderInEmptySurvey: true,
+                
                 previewOrientation: "portrait",
                 // Enable file uploads for image handling
                 questionTypes: ["boolean", "checkbox", "comment", "dropdown", "tagbox", "expression", "html", "image", "imagepicker", "matrix", "matrixdropdown", "matrixdynamic", "multipletext", "panel", "paneldynamic", "radiogroup", "rating", "ranking", "text", "markdown", "file"],
@@ -141,9 +166,10 @@ function DashboardScreen() {
             const newCreator = new SurveyCreator(creatorOptions);
 
             // Initialize theme if it exists in the event data
-            if (thisEvent?.theme) {
+            const eventTheme = thisEvent?.surveyJSTheme || thisEvent?.theme;
+            if (eventTheme) {
                 try {
-                    newCreator.theme = thisEvent.theme;
+                    newCreator.theme = eventTheme;
                     console.log('Loaded existing theme from event data');
                 } catch (error) {
                     console.warn('Failed to load existing theme:', error);
@@ -155,7 +181,9 @@ function DashboardScreen() {
                 console.log("Saving theme...");
                 const eventRef = doc(db, "events", eventID).withConverter(EEventConverter);
                 updateDoc(eventRef, {
+                    // Write to both old and new fields
                     theme: JSON.stringify(newCreator.theme),
+                    surveyJSTheme: newCreator.theme,
                 }).then(() => {
                     console.log("Theme saved!");
                     callback(saveNo, true);
@@ -248,13 +276,28 @@ function DashboardScreen() {
                 }
             });
 
-            newCreator.JSON = thisEvent?.questions;
+            // Ensure survey has required properties for header rendering
+            const surveyJSON = thisEvent?.surveyJSModel || thisEvent?.questions || {};
+            
+            // Set default headerView and description if missing (prevents header display issues)
+            if (!surveyJSON.headerView) {
+                surveyJSON.headerView = "advanced";
+                console.log('[Admin] Setting default headerView: advanced');
+            }
+            if (!surveyJSON.description) {
+                surveyJSON.description = " ";
+                console.log('[Admin] Setting default description for header compatibility');
+            }
+            
+            newCreator.JSON = surveyJSON;
 
             newCreator.saveSurveyFunc = (saveNo: number, callback: (saveNo: number, success: boolean) => void) => {
                 console.log("saving questions...")
                 const eventRef = doc(db, "events", eventID).withConverter(EEventConverter);
                 updateDoc(eventRef, {
+                    // Write to both old and new fields
                     questions: JSON.stringify(newCreator.JSON),
+                    surveyJSModel: newCreator.JSON,
                 }).then(() => {
                     console.log("saved!")
                     callback(saveNo, true);

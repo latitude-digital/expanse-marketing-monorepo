@@ -9,13 +9,29 @@ import * as Sentry from "@sentry/react";
 // import { Button } from '../../../ford-ui/packages/@ui/ford-ui-components/src/components/button'; // Commented out for TypeScript migration testing
 import { mapSurveyToFordSurvey } from '../helpers/mapSurveyToFord';
 import { baseSurvey, incentiveThanks, activationThanks } from "./ExperienceSurvey";
-import { baseSurvey as derbyBaseSurvey } from './DerbySurvey';
+import { baseSurvey as derbyBaseSurvey, themeOverride as derbyThemeOverride } from './DerbySurvey';
 import { prepareForSurvey, prepareSurveyOnQuestionAdded } from "../helpers/surveyTemplatesAll";
 import { getApiUrl, ENDPOINTS } from '../config/api';
 import { validateEmailForSurveyJS, type EmailValidationResponse } from '../utils/surveyUtilities';
 
-import { CheckboxVOIQuestion } from "../surveysjs_renderers/CheckboxVOI";
-import { RadioGroupRowQuestion } from "../surveysjs_renderers/RadioButtonButton";
+// Import FDS custom SurveyJS renderers
+import { CheckboxVOIQuestion } from "../surveysjs_renderers/FDSRenderers/CheckboxVOI";
+import { CheckboxVehiclesDrivenQuestion } from "../surveysjs_renderers/FDSRenderers/CheckboxVehiclesDriven";
+import { RadioGroupRowQuestion } from "../surveysjs_renderers/FDSRenderers/RadioButtonButton";
+
+// Force execution of renderer registration by referencing the class
+console.log('Experiential.tsx: CheckboxVehiclesDrivenQuestion loaded:', CheckboxVehiclesDrivenQuestion);
+
+// Import Ford components
+import GlobalHeader from '../components/GlobalHeader';
+import GlobalFooter from '../components/GlobalFooter';
+import { FordSurveyNavigation } from '../components/FordSurveyNavigation';
+
+// Import FDS initializer
+import { initializeFDSForBrand } from '../helpers/fdsInitializer';
+
+// Import Ford UI Button
+import { StyledButton } from '@ui/ford-ui-components/src/v2/button/Button';
 
 import "survey-core/survey-core.min.css";
 import "./Surveys.css";
@@ -35,7 +51,7 @@ interface OptInData {
 
 interface CustomData {
   activation_event_code?: string;
-  derbyURL?: string;
+  tailgateURL?: string;
   [key: string]: any;
 }
 
@@ -176,7 +192,7 @@ const SurveyComponent: React.FC = () => {
             },
             body: JSON.stringify({ hashed_event_id: params.eventID }),
         }).then(response => {
-            response.json().then((res: EventResponse) => {
+            response.json().then(async (res: EventResponse) => {
                 const retEvent = res.data;
                 const retCustomData: CustomData = JSON.parse(retEvent.custom_data || '{}');
                 const retCustomQuestions = JSON.parse(retEvent.custom_questions || '{}');
@@ -190,12 +206,17 @@ const SurveyComponent: React.FC = () => {
 
                     // Conditionally use DerbySurvey baseSurvey if ffs_ford_campaign is 700397
                     let surveyJSON: any;
-                    if (res.data.ffs_ford_campaign === "700397") {
+                    
+                    if (retCustomData.tailgateURL) {
                         surveyJSON = derbyBaseSurvey;
                     } else {
                         surveyJSON = baseSurvey;
                     }
+
                     surveyJSON.title = res.data.event_name;
+                    
+                    // Set responsive width mode
+                    surveyJSON.widthMode = "responsive";
 
                     // if there are opt-ins, add them
                     if (res.data.opt_in_data?.length) {
@@ -353,8 +374,42 @@ const SurveyComponent: React.FC = () => {
                         surveyJSON.pages.push(waiverPage);
                     }
 
+                    // Initialize FDS for Ford brand - MUST happen before new Model()
+                    console.log('Initializing FDS for Ford brand');
+                    try {
+                        await initializeFDSForBrand('Ford');
+                    } catch (error) {
+                        console.error('Failed to initialize FDS:', error);
+                        // Continue with survey creation even if FDS fails
+                    }
+
                     const survey = new Model(surveyJSON);
-                    prepareForSurvey(survey);
+                    
+                    // Set Ford theme settings (panelless appearance)
+                    survey.questionErrorLocation = "bottom";
+                    survey.showNavigationButtons = false; // Hide built-in navigation for custom Ford navigation
+                    
+                    let themeOverride: SurveyCore.ITheme = {};
+                    if (retCustomData.tailgateURL) {
+                        console.log('[Experiential.tsx] Using Derby theme override for tailgate URL', derbyThemeOverride);
+                        themeOverride = derbyThemeOverride;
+
+                        survey.title = " ";
+                        survey.description = " ";
+                        survey.showTitle = true;
+                    }
+
+                    const fordTheme: SurveyCore.ITheme = {
+                        isPanelless: true,
+                        cssVariables: {
+                            "--sjs-general-backcolor-dim": "#ffffff",
+                        },
+                        ...themeOverride,
+                    };
+                    survey.applyTheme(fordTheme);
+                    console.log('[Experiential.tsx] fordTheme', fordTheme);
+                    
+                    prepareForSurvey(survey, 'Ford');
 
                     survey.onAfterRenderSurvey.add((sender: Model) => {
                         const deviceSurveyGuid = uuidv4();
@@ -598,45 +653,73 @@ const SurveyComponent: React.FC = () => {
     }
 
     return (
-        <>
-            {showActivationQRCode && customData.activation_event_code === 'derby' && (
-                <div style={{
-                    fontFamily: 'FordF1, arial, sans-serif',
-                    background: '#fff',
-                    borderRadius: 12,
-                    boxShadow: '0 2px 8px 0 rgba(60,72,88,.08)',
-                    marginBottom: 24,
-                    padding: 24,
-                    textAlign: 'center',
-                    maxWidth: 430,
-                    margin: '0 auto 24px auto'
-                }}>
-                    <h3 style={{ fontWeight: 700, fontSize: 32 }}>
-                        Enter for a chance to win the <span style={{ whiteSpace: 'nowrap' }}>Ford Stable Contest!</span>
-                    </h3>
-                    <div style={{ marginBottom: 20 }}>
-                        <p>Pick the winning order of the top 10 horses competing in the Kentucky Derby for your chance to win the Ford Stable: F-150® Truck, Bronco® SUV, and a Mustang® Coupe.</p>
-                        {/* <Button
-                            style={{ margin: '12px auto', display: 'block', fontWeight: 700 }}
-                            onClick={() => customData.derbyURL && deviceSurveyGuid ? window.open(`${customData.derbyURL}${deviceSurveyGuid}`, '_blank') : undefined}
-                            variant="primary"
-                            background="onLight"
-                        >
-                            LET'S PLAY
-                        </Button> */}
-                        <button
-                            style={{ margin: '12px auto', display: 'block', fontWeight: 700 }}
-                            onClick={() => customData.derbyURL && deviceSurveyGuid ? window.open(`${customData.derbyURL}${deviceSurveyGuid}`, '_blank') : undefined}
-                        >
-                            LET'S PLAY
-                        </button>
-                        <p>No duplicate entry required -- your information is saved.</p>
-                        <p style={{ fontSize: 12 }}>NO PURCH. NEC. 50 US/DC 21+ with valid driver's license. Begins 4/26/25; ends 5/3/25. Visit www.fordstable.com for rules.</p>
+        <div className="gdux-ford">
+            {/* Ford Header */}
+            <GlobalHeader
+                brand="Ford"
+                showLanguageChooser={false}
+                supportedLocales={[]}
+                currentLocale="en"
+                onLanguageChange={() => {}}
+            />
+            
+            {showActivationQRCode && customData.activation_event_code === 'lions' && (
+                <>
+                    <img
+                        src="https://cdn.latitudewebservices.com/expanse_marketing/2025/2025_DetroitLions_ThankYouHeader_1000x400.png"
+                        alt="Ford Lions Tailgate Sweepstakes"
+                        style={{ width: '100%', marginBottom: 16 }}
+                    />
+                    <div style={{
+                        fontFamily: 'FordF1, arial, sans-serif',
+                        background: '#fff',
+                        borderRadius: 12,
+                        boxShadow: '0 2px 8px 0 rgba(60,72,88,.08)',
+                        padding: 24,
+                        textAlign: 'center',
+                        maxWidth: 430,
+                        margin: '0 auto -24px auto'
+                    }}>
+                        <h3 style={{ fontWeight: 700, fontSize: 32 }}>
+                            Enter for a chance to win the Ford Tailgate Sweepstakes!
+                        </h3>
+                        <div style={{ marginBottom: 20 }}>
+                            <p>Enter today for your chance to drive home the grand prize: a custom, Lions-wrapped 2025 Ford vehicle.</p>
+                            <div style={{ display: 'flex', justifyContent: 'center', margin: '12px 0' }}>
+                                <StyledButton
+                                    variant="primary"
+                                    onClick={() => customData.tailgateURL && deviceSurveyGuid ? window.open(`${customData.tailgateURL}${deviceSurveyGuid}`, '_blank') : undefined}
+                                >
+                                    LET'S PLAY
+                                </StyledButton>
+                            </div>
+                            <p>No duplicate entry required -- your information is saved.</p>
+                            <p style={{ fontSize: 12 }}>NO PURCHASE NECESSARY. A purchase will not increase your chances of winning. Sweepstakes begins at 12:00 a.m. ET on 8/7/25 and ends at 11:59:59 p.m. ET on 1/31/26 and includes multiple entry periods. Open to legal residents of 50 U.S./D.C., 18 years of age who have a valid driver's license at the time of entry. <a href="https://fordtailgaterules.com/" target="_blank">Click here</a> for Official Rules, including how to enter, odds, prize details, and restrictions. Void where prohibited. Message and data rates may apply. Sponsor: Ford Motor Company, 16800 Executive Drive, Dearborn, MI 48126.</p>
+                        </div>
                     </div>
-                </div>
+                </>
             )}
-            <Survey model={thisSurvey} />
-        </>
+            
+            {/* Ford theme wrapper */}
+            <div id="fd-nxt" className="ford_light">
+                <Survey model={thisSurvey} />
+                
+                {/* Ford custom navigation */}
+                <FordSurveyNavigation 
+                    survey={thisSurvey} 
+                    brand="Ford" 
+                />
+            </div>
+            
+            {/* Ford Footer */}
+            <GlobalFooter
+                brand="Ford"
+                supportedLanguages={[]}
+                currentLocale="en"
+                onLanguageChange={() => {}}
+                showLanguageSelector={false}
+            />
+        </div>
     );
 };
 
