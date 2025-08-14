@@ -117,9 +117,13 @@ echo -e "${YELLOW}🔥 Building Firebase Functions${NC}"
 cd packages/firebase
 
 # Load production environment variables for Firebase
-if [[ -f .env.production ]]; then
+if [[ -f .env.prod ]]; then
     echo -e "${BLUE}Loading Firebase production environment variables${NC}"
-    export $(cat .env.production | grep -v '^#' | xargs)
+    export $(cat .env.prod | grep -v '^#' | xargs)
+else
+    echo -e "${YELLOW}Warning: .env.prod not found, setting default production values${NC}"
+    export LATITUDE_ENV=production
+    export DB_NAME="(default)"
 fi
 
 npm run build
