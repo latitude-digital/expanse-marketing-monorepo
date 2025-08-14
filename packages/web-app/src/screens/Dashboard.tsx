@@ -135,7 +135,7 @@ const convertQuestionsToColumns = (
   })));
   
   const baseColumns: ColDef[] = [
-    { field: 'id', headerName: 'ID', hide: true, suppressColumnsToolPanel: true },
+    { field: 'id', headerName: 'ID', hide: !showMetadata, suppressColumnsToolPanel: !showMetadata },
     { 
       field: 'survey_date', 
       headerName: 'Survey Date', 

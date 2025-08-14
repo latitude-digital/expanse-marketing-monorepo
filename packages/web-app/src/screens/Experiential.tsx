@@ -403,6 +403,11 @@ const SurveyComponent: React.FC = () => {
                         isPanelless: true,
                         cssVariables: {
                             "--sjs-general-backcolor-dim": "#ffffff",
+                            "--sjs-primary-backcolor": "#0562d2", // Ford blue
+                            "--sjs-primary-backcolor-light": "rgba(5, 98, 210, 0.1)",
+                            "--sjs-primary-backcolor-dark": "#044ea7",
+                            "--sjs-primary-forecolor": "#ffffff",
+                            "--sjs-primary-forecolor-light": "rgba(255, 255, 255, 0.25)",
                         },
                         ...themeOverride,
                     };
