@@ -153,7 +153,8 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
             const isInvalid = this.question.errors?.length > 0;
             
             // Use the actual isRequired property from the question
-            const isActuallyRequired = this.question.isRequired;
+            // Check both the parent question and the content question for isRequired
+            const isActuallyRequired = this.question.isRequired || this.question.contentQuestion?.isRequired;
 
             return (
                 <FDSQuestionWrapper

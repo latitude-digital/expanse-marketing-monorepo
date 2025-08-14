@@ -101,6 +101,18 @@ const lincolnInit = () => {
         // Use shared utility to handle choicesByUrl for custom question types
         handleChoicesByUrl(question, "LincolnSurveys");
         
+        // Sync isRequired and validators from parent to child for custom questions
+        const child = question.contentQuestion;
+        if (child) {
+          // Always sync isRequired from parent to child
+          if (question.isRequired) {
+            child.isRequired = true;
+          }
+          // Also sync validators if present
+          if (question.validators?.length > 0) {
+            child.validators = [...(child.validators || []), ...question.validators];
+          }
+        }
       },
       onPropertyChanged(question: Question, propertyName: string, newValue: any) {
         if (propertyName === "onlyInclude") {
@@ -174,6 +186,18 @@ const lincolnInit = () => {
         ],
       },
       onLoaded(question: Question) {
+        // Sync isRequired and validators from parent to child for custom questions
+        const child = question.contentQuestion;
+        if (child) {
+          // Always sync isRequired from parent to child
+          if (question.isRequired) {
+            child.isRequired = true;
+          }
+          // Also sync validators if present
+          if (question.validators?.length > 0) {
+            child.validators = [...(child.validators || []), ...question.validators];
+          }
+        }
       },
     } as ICustomQuestionTypeConfiguration);
   }
@@ -210,11 +234,17 @@ const lincolnInit = () => {
         maxRateDescription: "Excellent",
       },
       onLoaded(question: Question) {
-        // Sync validators from parent to child for custom questions
+        // Sync isRequired and validators from parent to child for custom questions
         const child = question.contentQuestion;
-        if (child && question.validators?.length > 0) {
-          child.validators = [...(child.validators || []), ...question.validators];
-          child.isRequired = true;
+        if (child) {
+          // Always sync isRequired from parent to child
+          if (question.isRequired) {
+            child.isRequired = true;
+          }
+          // Also sync validators if present
+          if (question.validators?.length > 0) {
+            child.validators = [...(child.validators || []), ...question.validators];
+          }
         }
       },
     } as ICustomQuestionTypeConfiguration);
@@ -252,11 +282,17 @@ const lincolnInit = () => {
         maxRateDescription: "Excellent",
       },
       onLoaded(question: Question) {
-        // Sync validators from parent to child for custom questions
+        // Sync isRequired and validators from parent to child for custom questions
         const child = question.contentQuestion;
-        if (child && question.validators?.length > 0) {
-          child.validators = [...(child.validators || []), ...question.validators];
-          child.isRequired = true;
+        if (child) {
+          // Always sync isRequired from parent to child
+          if (question.isRequired) {
+            child.isRequired = true;
+          }
+          // Also sync validators if present
+          if (question.validators?.length > 0) {
+            child.validators = [...(child.validators || []), ...question.validators];
+          }
         }
       },
     } as ICustomQuestionTypeConfiguration);
@@ -316,11 +352,17 @@ const lincolnInit = () => {
         // Use shared utility to handle choicesByUrl for custom question types
         handleChoicesByUrl(question, "LincolnSurveys");
         
-        // Sync validators from parent to child for custom questions
+        // Sync isRequired and validators from parent to child for custom questions
         const child = question.contentQuestion;
-        if (child && question.validators?.length > 0) {
-          child.validators = [...(child.validators || []), ...question.validators];
-          child.isRequired = true;
+        if (child) {
+          // Always sync isRequired from parent to child
+          if (question.isRequired) {
+            child.isRequired = true;
+          }
+          // Also sync validators if present
+          if (question.validators?.length > 0) {
+            child.validators = [...(child.validators || []), ...question.validators];
+          }
         }
       },
       onPropertyChanged(question: Question, propertyName: string, newValue: any) {
@@ -362,6 +404,18 @@ const lincolnInit = () => {
         setPropertyReadOnly("lincolnrecommend", "_ffs");
       },
       onLoaded(question: Question) {
+        // Sync isRequired and validators from parent to child for custom questions
+        const child = question.contentQuestion;
+        if (child) {
+          // Always sync isRequired from parent to child
+          if (question.isRequired) {
+            child.isRequired = true;
+          }
+          // Also sync validators if present
+          if (question.validators?.length > 0) {
+            child.validators = [...(child.validators || []), ...question.validators];
+          }
+        }
       },
       questionJSON: {
         type: "radiogroup",
@@ -439,11 +493,17 @@ const lincolnInit = () => {
         setPropertyReadOnly("lincolnpurchaseconsideration", "_ffs");
       },
       onLoaded(question: Question) {
-        // Sync validators from parent to child for custom questions
+        // Sync isRequired and validators from parent to child for custom questions
         const child = question.contentQuestion;
-        if (child && question.validators?.length > 0) {
-          child.validators = [...(child.validators || []), ...question.validators];
-          child.isRequired = true;
+        if (child) {
+          // Always sync isRequired from parent to child
+          if (question.isRequired) {
+            child.isRequired = true;
+          }
+          // Also sync validators if present
+          if (question.validators?.length > 0) {
+            child.validators = [...(child.validators || []), ...question.validators];
+          }
         }
       },
       questionJSON: {
@@ -531,11 +591,17 @@ const lincolnInit = () => {
         setPropertyReadOnly("lincolnpurchaseconsiderationpost", "_ffs");
       },
       onLoaded(question: Question) {
-        // Sync validators from parent to child for custom questions
+        // Sync isRequired and validators from parent to child for custom questions
         const child = question.contentQuestion;
-        if (child && question.validators?.length > 0) {
-          child.validators = [...(child.validators || []), ...question.validators];
-          child.isRequired = true;
+        if (child) {
+          // Always sync isRequired from parent to child
+          if (question.isRequired) {
+            child.isRequired = true;
+          }
+          // Also sync validators if present
+          if (question.validators?.length > 0) {
+            child.validators = [...(child.validators || []), ...question.validators];
+          }
         }
       },
       questionJSON: {
@@ -623,11 +689,17 @@ const lincolnInit = () => {
         setPropertyReadOnly("lincolnrecommendpost", "_ffs");
       },
       onLoaded(question: Question) {
-        // Fix isRequired inheritance from JSON - this is called AFTER question is created from JSON
-        const jsonDef = question.toJSON();
-        if (jsonDef.isRequired && !question.isRequired) {
-          question.isRequired = jsonDef.isRequired;
-          console.log(`[LincolnSurveys DEBUG] Fixed isRequired inheritance for lincolnrecommendpost ${question.name}: ${question.isRequired}`);
+        // Sync isRequired and validators from parent to child for custom questions
+        const child = question.contentQuestion;
+        if (child) {
+          // Always sync isRequired from parent to child
+          if (question.isRequired) {
+            child.isRequired = true;
+          }
+          // Also sync validators if present
+          if (question.validators?.length > 0) {
+            child.validators = [...(child.validators || []), ...question.validators];
+          }
         }
       },
       questionJSON: {

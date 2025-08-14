@@ -109,11 +109,17 @@ const fordInit = () => {
       // Use shared utility to handle choicesByUrl for custom question types
       handleChoicesByUrl(question, 'FordSurveys');
       
-      // Sync validators from parent to child for custom questions
+      // Sync isRequired and validators from parent to child for custom questions
       const child = question.contentQuestion;
-      if (child && question.validators?.length > 0) {
-        child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+      if (child) {
+        // Always sync isRequired from parent to child
+        if (question.isRequired) {
+          child.isRequired = true;
+        }
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
       }
     },
     onPropertyChanged(question: Question, propertyName: string, newValue: any) {
@@ -180,11 +186,17 @@ const fordInit = () => {
         // Use shared utility to handle choicesByUrl for custom question types
         handleChoicesByUrl(question, 'FordSurveys');
         
-        // Sync validators from parent to child for custom questions
+        // Sync isRequired and validators from parent to child for custom questions
         const child = question.contentQuestion;
-        if (child && question.validators?.length > 0) {
-          child.validators = [...(child.validators || []), ...question.validators];
-          child.isRequired = true;
+        if (child) {
+          // Always sync isRequired from parent to child
+          if (question.isRequired) {
+            child.isRequired = true;
+          }
+          // Also sync validators if present
+          if (question.validators?.length > 0) {
+            child.validators = [...(child.validators || []), ...question.validators];
+          }
         }
       },
       onPropertyChanged(question: Question, propertyName: string, newValue: any) {
@@ -245,11 +257,17 @@ const fordInit = () => {
       ],
     },
     onLoaded(question: Question) {
-      // Sync validators from parent to child for custom questions
+      // Sync isRequired and validators from parent to child for custom questions
       const child = question.contentQuestion;
-      if (child && question.validators?.length > 0) {
-        child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+      if (child) {
+        // Always sync isRequired from parent to child
+        if (question.isRequired) {
+          child.isRequired = true;
+        }
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
       }
     },
   } as ICustomQuestionTypeConfiguration);
@@ -274,11 +292,17 @@ const fordInit = () => {
       setPropertyReadOnly("fordrecommend", "_ffs");
     },
     onLoaded(question: Question) {
-      // Sync validators from parent to child for custom questions
+      // Sync isRequired and validators from parent to child for custom questions
       const child = question.contentQuestion;
-      if (child && question.validators?.length > 0) {
-        child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+      if (child) {
+        // Always sync isRequired from parent to child
+        if (question.isRequired) {
+          child.isRequired = true;
+        }
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
       }
     },
     questionJSON: {
@@ -353,11 +377,17 @@ const fordInit = () => {
     showInToolbox: true,
     inheritBaseProps: true,
     onLoaded(question: Question) {
-      // Sync validators from parent to child for custom questions
+      // Sync isRequired and validators from parent to child for custom questions
       const child = question.contentQuestion;
-      if (child && question.validators?.length > 0) {
-        child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+      if (child) {
+        // Always sync isRequired from parent to child
+        if (question.isRequired) {
+          child.isRequired = true;
+        }
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
       }
     },
     questionJSON: {
@@ -436,11 +466,17 @@ const fordInit = () => {
       setPropertyReadOnly("fordrecommendpost", "_ffs");
     },
     onLoaded(question: Question) {
-      // Sync validators from parent to child for custom questions
+      // Sync isRequired and validators from parent to child for custom questions
       const child = question.contentQuestion;
-      if (child && question.validators?.length > 0) {
-        child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+      if (child) {
+        // Always sync isRequired from parent to child
+        if (question.isRequired) {
+          child.isRequired = true;
+        }
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
       }
     },
     questionJSON: {
@@ -512,11 +548,17 @@ const fordInit = () => {
     showInToolbox: true,
     inheritBaseProps: true,
     onLoaded(question: Question) {
-      // Sync validators from parent to child for custom questions
+      // Sync isRequired and validators from parent to child for custom questions
       const child = question.contentQuestion;
-      if (child && question.validators?.length > 0) {
-        child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+      if (child) {
+        // Always sync isRequired from parent to child
+        if (question.isRequired) {
+          child.isRequired = true;
+        }
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
       }
     },
     questionJSON: {
@@ -589,11 +631,17 @@ const fordInit = () => {
     showInToolbox: true,
     inheritBaseProps: true,
     onLoaded(question: Question) {
-      // Sync validators from parent to child for custom questions
+      // Sync isRequired and validators from parent to child for custom questions
       const child = question.contentQuestion;
-      if (child && question.validators?.length > 0) {
-        child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+      if (child) {
+        // Always sync isRequired from parent to child
+        if (question.isRequired) {
+          child.isRequired = true;
+        }
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
       }
     },
     questionJSON: {

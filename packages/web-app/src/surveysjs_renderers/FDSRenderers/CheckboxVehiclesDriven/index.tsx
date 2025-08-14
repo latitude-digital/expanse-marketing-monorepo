@@ -52,7 +52,7 @@ export class CheckboxVehiclesDrivenQuestion extends SurveyQuestionCheckbox {
                     <FDSQuestionWrapper
                         label={this.question.fullTitle || this.question.title || "Please select the Lincoln vehicles that you experienced today."}
                         description={this.question.description}
-                        isRequired={this.question.isRequired}
+                        isRequired={this.question.isRequired || this.question.contentQuestion?.isRequired}
                         isInvalid={false}
                         errorMessage={undefined}
                         question={this.question}
@@ -114,7 +114,7 @@ export class CheckboxVehiclesDrivenQuestion extends SurveyQuestionCheckbox {
                 <FDSQuestionWrapper
                     label={this.question.fullTitle || this.question.title || "Please select the Lincoln vehicles that you experienced today."}
                     description={this.question.description}
-                    isRequired={this.question.isRequired}
+                    isRequired={this.question.isRequired || this.question.contentQuestion?.isRequired}
                     isInvalid={isInvalid}
                     errorMessage={errorMessage}
                     question={this.question}
