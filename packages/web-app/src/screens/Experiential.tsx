@@ -272,7 +272,11 @@ const SurveyComponent: React.FC = () => {
                                     "elements": [
                                         {
                                             "type": "html",
-                                            "html": `<p>Please read and sign the waiver below</p>\\n<br/>\\n<div style="border: 1px solid darkGray;font-size: 14px;height: 300px;padding: 10px;margin-bottom: 40px;overflow: scroll;@media(min-width: 768px) {height: 375px;}">\\n${waiverText}\\n</div>`
+                                            "html": `<p>Please read and sign the waiver below</p>
+<br/>
+<div style="border: 1px solid darkGray;font-size: 14px;height: 300px;padding: 10px;margin-bottom: 40px;overflow: scroll;@media(min-width: 768px) {height: 375px;}">
+${waiverText}
+</div>`
                                         },
                                         {
                                             "type": "text",
@@ -325,7 +329,11 @@ const SurveyComponent: React.FC = () => {
                                     {
                                         "type": "html",
                                         "visibleIf": "{minorsYesNo} = '1'",
-                                        "html": `<p>Please read and sign the waiver below</p>\\n<br/>\\n<div style="border: 1px solid darkGray;font-size: 14px;height: 200px;padding: 10px;margin-bottom: 40px;overflow: scroll;@media(min-width: 768px) {height: 375px;}">\\n${minorWaiverText}\\n</div>`
+                                        "html": `<p>Please read and sign the waiver below</p>
+<br/>
+<div style="border: 1px solid darkGray;font-size: 14px;height: 200px;padding: 10px;margin-bottom: 40px;overflow: scroll;@media(min-width: 768px) {height: 375px;}">
+${minorWaiverText}
+</div>`
                                     },
                                     {
                                         "type": "text",
