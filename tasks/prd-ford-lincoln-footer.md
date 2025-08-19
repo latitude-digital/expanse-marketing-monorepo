@@ -45,13 +45,13 @@ Based on current FordFooter links, map to Lincoln equivalents:
 **Ford Links (Current):**
 - © 2025 Ford Motor Company → https://www.ford.com
 - Privacy Notice → https://www.ford.com/help/privacy/
-- Your Privacy Choices → https://www.ford.com/help/privacy/your-privacy-choices/
+- Your Privacy Choices → https://www.ford.com/help/privacy/ccpa/
 - Interest Based Ads → https://www.ford.com/help/privacy/#interest
 
 **Lincoln Links (New):**
 - © 2025 Lincoln Motor Company → https://www.lincoln.com
 - Privacy Notice → https://www.lincoln.com/help/privacy/
-- Your Privacy Choices → https://www.lincoln.com/help/privacy/your-privacy-choices/
+- Your Privacy Choices → https://www.lincoln.com/help/privacy/ccpa/
 - Interest Based Ads → https://www.lincoln.com/help/privacy/#interest
 
 ### Language Selection Integration
@@ -156,7 +156,7 @@ const getFooterLinks = (brand: string) => {
     return [
       { text: '© 2025 Lincoln Motor Company', url: 'https://www.lincoln.com' },
       { text: 'Privacy Notice', url: 'https://www.lincoln.com/help/privacy/' },
-      { text: 'Your Privacy Choices', url: 'https://www.lincoln.com/help/privacy/your-privacy-choices/' },
+      { text: 'Your Privacy Choices', url: 'https://www.lincoln.com/help/privacy/ccpa/' },
       { text: 'Interest Based Ads', url: 'https://www.lincoln.com/help/privacy/#interest' },
     ];
   }

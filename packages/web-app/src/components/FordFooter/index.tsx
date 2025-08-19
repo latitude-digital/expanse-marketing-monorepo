@@ -19,7 +19,7 @@ const FordFooter: React.FC<FordFooterProps> = ({
     { text: '© 2025 Ford Motor Company', url: 'https://www.ford.com' },
     { text: 'Privacy Notice', url: 'https://www.ford.com/help/privacy/' },
     // { text: 'Cookie Settings', url: 'https://www.ford.com/help/privacy/#cookies' },
-    { text: 'Your Privacy Choices', url: 'https://www.ford.com/help/privacy/your-privacy-choices/' },
+    { text: 'Your Privacy Choices', url: 'https://www.ford.com/help/privacy/ccpa/' },
     { text: 'Interest Based Ads', url: 'https://www.ford.com/help/privacy/#interest' },
   ];
 
