@@ -1,6 +1,6 @@
 {
   "name": "@expanse/web-app",
-  "version": "1.0.1755277783",
+  "version": "1.0.1755619024",
   "private": true,
   "dependencies": {
     "@progress/kendo-licensing": "1.3.5",
