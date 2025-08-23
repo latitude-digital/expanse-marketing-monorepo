@@ -234,3 +234,86 @@ export const validateSurveyLimitImpl = (app: admin.app.App) =>
       return {canSave: true};
     }
   );
+
+// Lions Followups Function Implementation
+export const getLionsFollowupsImpl = (app: admin.app.App) =>
+  onRequest(
+    {
+      cors: true,
+      concurrency: 50,
+    },
+    async (req, res) => {
+      try {
+        // Get query parameters
+        const dataSince = req.query.dataSince as string;
+        const source = req.query.source as string;
+
+        // Validate required parameters
+        if (!dataSince) {
+          res.status(400).send({
+            success: false,
+            message: "dataSince parameter is required",
+          });
+          return;
+        }
+
+        if (!source || (source !== "gate" && source !== "plaza")) {
+          res.status(400).send({
+            success: false,
+            message: "source parameter is required and must be 'gate' or 'plaza'",
+          });
+          return;
+        }
+
+        // Determine collection path based on source
+        const collectionPath = source === "gate" 
+          ? "events/2025_Lions_Gate_G_Follow_Up/surveys"
+          : "events/2025_Lions_Pride_Plaza_Follow_Up/surveys";
+
+        // Parse the date string and create an ISO string for midnight of that date
+        // survey_date is stored as a string in ISO format, not as a Firestore Timestamp
+        const sinceDate = new Date(dataSince);
+        sinceDate.setHours(0, 0, 0, 0);
+        const sinceDateString = sinceDate.toISOString();
+
+        // Query the collection for surveys on or after the specified date
+        // Using string comparison since survey_date is stored as an ISO string
+        const db = getFirestore(app);
+        const surveysQuery = await db
+          .collection(collectionPath)
+          .where("survey_date", ">=", sinceDateString)
+          .get();
+
+        // Map the results to include only the required fields
+        const surveys = surveysQuery.docs.map((doc: admin.firestore.QueryDocumentSnapshot) => ({
+          id: doc.id,
+          survey_date: doc.data().survey_date,
+          start_time: doc.data().start_time,
+          end_time: doc.data().end_time,
+          device_survey_guid: doc.data().device_survey_guid,
+          device_id: doc.data().device_id,
+          capability: doc.data().capability,
+          passion: doc.data().passion,
+        }));
+
+        res.send({
+          success: true,
+          count: surveys.length,
+          surveys,
+        });
+      } catch (error) {
+        logger.error("Error getting Lions followups", error);
+        Sentry.captureException(error, {
+          tags: {
+            function: "getLionsFollowups",
+            environment: process.env.LATITUDE_ENV || "production",
+          },
+        });
+        res.status(500).send({
+          success: false,
+          message: "Error getting Lions followups",
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+  );

@@ -3,7 +3,8 @@ import { logger } from "firebase-functions/v2";
 import {
   getBroncoRankImpl,
   checkSurveyLimitImpl,
-  validateSurveyLimitImpl
+  validateSurveyLimitImpl,
+  getLionsFollowupsImpl
 } from "./functions";
 import {
   getSurveyImpl,
@@ -49,6 +50,7 @@ const getBroncoRank = getBroncoRankImpl(app);
 const setCloudFrontCookies = realCloudFrontImpl;
 const checkSurveyLimit = checkSurveyLimitImpl(app);
 const validateSurveyLimit = validateSurveyLimitImpl(app);
+const getLionsFollowups = getLionsFollowupsImpl(app);
 const getSurvey = getSurveyImpl(app);
 const saveSurvey = saveSurveyImpl(app);
 const validateEmail = sparkpostValidateEmailImpl(app);
@@ -79,6 +81,7 @@ export const staging = {
   setCloudFrontCookies,
   checkSurveyLimit,
   validateSurveyLimit,
+  getLionsFollowups,
   getSurvey,
   saveSurvey,
   validateEmail,
@@ -103,6 +106,7 @@ export const prod = {
   setCloudFrontCookies,
   checkSurveyLimit,
   validateSurveyLimit,
+  getLionsFollowups,
   getSurvey,
   saveSurvey,
   validateEmail,
