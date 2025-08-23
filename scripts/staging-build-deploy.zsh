@@ -149,13 +149,9 @@ if $DEPLOY_FUNCTIONS; then
     echo -e "${YELLOW}🔥 Building Firebase Functions${NC}"
     cd packages/firebase
 
-    # Load staging environment variables for Firebase
-    if [[ -f .env.staging ]]; then
-        echo -e "${BLUE}Loading Firebase staging environment variables${NC}"
-        export $(cat .env.staging | grep -v '^#' | xargs)
-        # Copy to .env for Firebase deployment to pick up
-        cp .env.staging .env
-    fi
+    # Switch to staging alias (this will make Firebase load .env.staging automatically)
+    echo -e "${BLUE}Switching to staging Firebase alias${NC}"
+    firebase use staging
 
     npm run build
     echo -e "${GREEN}✅ Firebase Functions built${NC}"
@@ -163,11 +159,11 @@ if $DEPLOY_FUNCTIONS; then
     # Step 10: Deploy Firebase Functions (staging namespace only)
     echo -e "${YELLOW}🚀 Deploying Firebase Functions to staging${NC}"
 
-    # Deploy only staging functions
-    firebase deploy --only functions:staging --project latitude-lead-system
+    # Deploy only staging functions (no need to specify --project since we're using the alias)
+    firebase deploy --only functions:staging
 
     # Deploy Firestore rules and indexes to STAGING database only using staging config
-    firebase deploy --only firestore:rules,firestore:indexes --project latitude-lead-system --config firebase.staging.json
+    firebase deploy --only firestore:rules,firestore:indexes --config firebase.staging.json
     echo -e "${GREEN}✅ Firebase Functions deployed to staging${NC}"
 
     cd ../..

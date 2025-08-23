@@ -112,6 +112,7 @@ if $DEPLOY_WEB; then
 
     # Step 6: Build the application
     echo -e "${YELLOW}🏗️  Building application${NC}"
+    # Vite will automatically load .env.prod in production mode
     pnpm run build:production
     echo -e "${GREEN}✅ Application built${NC}"
 
@@ -149,15 +150,9 @@ if $DEPLOY_FUNCTIONS; then
     echo -e "${YELLOW}🔥 Building Firebase Functions${NC}"
     cd packages/firebase
 
-    # Load production environment variables for Firebase
-    if [[ -f .env.prod ]]; then
-        echo -e "${BLUE}Loading Firebase production environment variables${NC}"
-        export $(cat .env.prod | grep -v '^#' | xargs)
-    else
-        echo -e "${YELLOW}Warning: .env.prod not found, setting default production values${NC}"
-        export LATITUDE_ENV=production
-        export DB_NAME="(default)"
-    fi
+    # Switch to prod alias (this will make Firebase load .env.prod automatically)
+    echo -e "${BLUE}Switching to prod Firebase alias${NC}"
+    firebase use prod
 
     npm run build
     echo -e "${GREEN}✅ Firebase Functions built${NC}"
@@ -165,11 +160,11 @@ if $DEPLOY_FUNCTIONS; then
     # Step 10: Deploy Firebase Functions (prod namespace only)
     echo -e "${YELLOW}🚀 Deploying Firebase Functions to production${NC}"
 
-    # Deploy only prod functions
-    firebase deploy --only functions:prod --project latitude-lead-system
+    # Deploy only prod functions (no need to specify --project since we're using the alias)
+    firebase deploy --only functions:prod
 
     # Deploy Firestore rules and indexes to PRODUCTION database only using production config
-    firebase deploy --only firestore:rules,firestore:indexes --project latitude-lead-system --config firebase.production.json
+    firebase deploy --only firestore:rules,firestore:indexes --config firebase.production.json
     echo -e "${GREEN}✅ Firebase Functions deployed to production${NC}"
 
     cd ../..
