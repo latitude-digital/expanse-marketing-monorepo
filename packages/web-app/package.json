@@ -1,6 +1,6 @@
 {
   "name": "@expanse/web-app",
-  "version": "1.0.21",
+  "version": "1.0.1755733248",
   "private": true,
   "dependencies": {
     "@progress/kendo-licensing": "1.3.5",
@@ -11,9 +11,18 @@
     "@progress/kendo-react-form": "^7.3.2",
     "@progress/kendo-react-indicators": "^7.3.2",
     "@progress/kendo-react-inputs": "^7.3.2",
+    "@progress/kendo-react-intl": "^7.3.2",
     "@progress/kendo-react-labels": "^7.3.2",
     "@progress/kendo-react-layout": "^7.3.2",
     "@progress/kendo-react-listview": "^7.3.2",
+    "@progress/kendo-react-popup": "^7.3.2",
+    "@progress/kendo-react-animation": "^7.3.2",
+    "@progress/kendo-react-progressbars": "^7.3.2",
+    "@progress/kendo-date-math": "^1.4.0",
+    "@progress/kendo-drawing": "^1.19.0",
+    "@progress/kendo-inputs-common": "^3.1.0",
+    "@progress/kendo-intl": "^3.1.1",
+    "@progress/kendo-popup-common": "^1.9.0",
     "@progress/kendo-svg-icons": "^2.3.0",
     "@progress/kendo-theme-default": "^11.2.0",
     "@sentry/cli": "^2.41.1",
@@ -22,7 +31,6 @@
     "ag-grid-react": "^34.0.0",
     "file-saver": "^2.0.5",
     "firebase": "^10.10.0",
-    "firebaseui": "^6.1.0",
     "formik": "^2.2.9",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
@@ -42,11 +50,11 @@
     "showdown": "^2.1.0",
     "sprintf-js": "^1.1.3",
     "styled-components": "^5.3.6",
-    "survey-analytics": "^2.2.6",
-    "survey-core": "^2.2.6",
-    "survey-creator-core": "^2.2.6",
-    "survey-creator-react": "^2.2.6",
-    "survey-react-ui": "^2.2.6",
+    "survey-analytics": "^2.3.1",
+    "survey-core": "^2.3.1",
+    "survey-creator-core": "^2.3.1",
+    "survey-creator-react": "^2.3.1",
+    "survey-react-ui": "^2.3.1",
     "ua-parser-js": "^1.0.32",
     "uuid": "^9.0.1",
     "web-vitals": "^2.1.4",
@@ -54,14 +62,14 @@
     "yup": "^0.32.11"
   },
   "scripts": {
-    "dev": "vite",
-    "start": "vite",
-    "start:production": "VITE_ENV=production vite",
-    "start:staging": "VITE_ENV=staging vite",
+    "dev": "vite --mode dev --port ${PORT:-8001}",
+    "start": "vite --mode dev --port ${PORT:-8001}",
+    "start:production": "vite --mode prod --port ${PORT:-8001}",
+    "start:staging": "vite --mode staging --port ${PORT:-8001}",
     "start:local": "VITE_ENV=local vite",
-    "build": "vite build && pnpm sentry:sourcemaps",
-    "build:production": "VITE_ENV=production vite build && pnpm sentry:sourcemaps",
-    "build:staging": "VITE_ENV=staging vite build && pnpm sentry:sourcemaps",
+    "build": "vite build --mode dev && pnpm sentry:sourcemaps",
+    "build:production": "vite build --mode prod && pnpm sentry:sourcemaps",
+    "build:staging": "vite build --mode staging && pnpm sentry:sourcemaps",
     "build:survey-spa": "webpack --config src/survey-spa/webpack.config.js --mode production",
     "build:survey-spa:dev": "webpack --config src/survey-spa/webpack.config.js --mode development",
     "preview": "vite preview",
@@ -131,7 +139,11 @@
     "eslint-plugin-react": "^7.31.0",
     "html-webpack-plugin": "^5.6.0",
     "jshint": "^2.13.6",
+<<<<<<< HEAD
     "mini-css-extract-plugin": "^2.9.0",
+=======
+    "playwright": "^1.54.2",
+>>>>>>> origin/staging
     "postcss": "^8.5.1",
     "postcss-import": "^16.1.0",
     "react-dev-utils": "^12.0.1",
@@ -142,7 +154,16 @@
     "ts-loader": "^9.5.1",
     "typescript": "*",
     "vite": "^5.1.4",
+<<<<<<< HEAD
     "webpack": "^5.91.0",
     "webpack-cli": "^5.1.4"
+=======
+    "vite-console-forward-plugin": "^2.0.1"
+  },
+  "resolutions": {
+    "styled-components": "^5.1.26",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.1"
+>>>>>>> origin/staging
   }
 }

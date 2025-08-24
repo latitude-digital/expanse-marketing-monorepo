@@ -37,6 +37,7 @@ const FDSRatingComponent: React.FC<{ question: QuestionRatingModel }> = ({ quest
   const { isInvalid, errorMessage } = useQuestionValidation(question);
   const optionalText = getOptionalText(question);
   
+  
   // Generate rating scale options
   const generateRatingOptions = () => {
     const options = [];

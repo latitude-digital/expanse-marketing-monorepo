@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 
 import { useNavigate, useParams } from "react-router-dom";
-import { getFirestore, doc, getDoc, Timestamp, FirestoreDataConverter, DocumentData, QueryDocumentSnapshot, SnapshotOptions, updateDoc } from "firebase/firestore";
+import { doc, getDoc, Timestamp, FirestoreDataConverter, DocumentData, QueryDocumentSnapshot, SnapshotOptions, updateDoc } from "firebase/firestore";
 import { useAuthState } from 'react-firebase-hooks/auth';
 
 import auth from '../../services/auth';
 import app from '../../services/firebase';
+import db from '../../services/db';
 
 import { QuestionRadiogroupModel, Serializer } from "survey-core";
 import { SurveyCreatorComponent, SurveyCreator } from "survey-creator-react";
@@ -36,11 +37,17 @@ registerCreatorTheme(SurveyCreatorTheme); // Add predefined Survey Creator UI th
 
 const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
     toFirestore(event: ExpanseEvent): DocumentData {
+        const surveyModel = event.surveyJSModel || event.questions;
+        const themeModel = event.surveyJSTheme || event.theme;
+        
         return {
             ...event,
             brand: event.brand || null,
-            questions: JSON.stringify(event.questions),
-            theme: JSON.stringify(event.theme),
+            // Write to both old and new fields for backward compatibility
+            questions: typeof surveyModel === 'string' ? surveyModel : JSON.stringify(surveyModel),
+            surveyJSModel: typeof surveyModel === 'string' ? JSON.parse(surveyModel) : surveyModel,
+            theme: typeof themeModel === 'string' ? themeModel : JSON.stringify(themeModel),
+            surveyJSTheme: typeof themeModel === 'string' ? JSON.parse(themeModel) : themeModel,
             preRegDate: event.preRegDate ? Timestamp.fromDate(event.preRegDate) : undefined,
             startDate: Timestamp.fromDate(event.startDate),
             endDate: Timestamp.fromDate(event.endDate),
@@ -51,6 +58,11 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
         options: SnapshotOptions
     ): ExpanseEvent {
         const data = snapshot.data(options);
+        
+        // Use new map fields if available, otherwise fall back to parsing JSON strings
+        const surveyModel = data.surveyJSModel || (data.questions ? JSON.parse(data.questions) : {});
+        const themeModel = data.surveyJSTheme || (data.theme ? JSON.parse(data.theme) : {});
+        
         return {
             id: snapshot.id,
             name: data.name,
@@ -64,8 +76,10 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
             thankYouEmail: data.thankYouEmail,
             checkInDisplay: data.checkInDisplay,
             disabled: data.disabled,
-            questions: JSON.parse(data.questions),
-            theme: JSON.parse(data.theme),
+            questions: surveyModel,  // For backward compatibility
+            surveyJSModel: surveyModel,  // New field
+            theme: themeModel,  // For backward compatibility
+            surveyJSTheme: themeModel,  // New field
             thanks: data.thanks,
         };
     },
@@ -80,7 +94,6 @@ function DashboardScreen() {
     const [creator, setCreator] = useState<SurveyCreator>();
     const [initializationComplete, setInitializationComplete] = useState(false);
 
-    const db = getFirestore(app);
     const eventID: string = params.eventID!;
 
     useEffect(() => {
@@ -153,9 +166,10 @@ function DashboardScreen() {
             const newCreator = new SurveyCreator(creatorOptions);
 
             // Initialize theme if it exists in the event data
-            if (thisEvent?.theme) {
+            const eventTheme = thisEvent?.surveyJSTheme || thisEvent?.theme;
+            if (eventTheme) {
                 try {
-                    newCreator.theme = thisEvent.theme;
+                    newCreator.theme = eventTheme;
                     console.log('Loaded existing theme from event data');
                 } catch (error) {
                     console.warn('Failed to load existing theme:', error);
@@ -167,7 +181,9 @@ function DashboardScreen() {
                 console.log("Saving theme...");
                 const eventRef = doc(db, "events", eventID).withConverter(EEventConverter);
                 updateDoc(eventRef, {
+                    // Write to both old and new fields
                     theme: JSON.stringify(newCreator.theme),
+                    surveyJSTheme: newCreator.theme,
                 }).then(() => {
                     console.log("Theme saved!");
                     callback(saveNo, true);
@@ -261,7 +277,7 @@ function DashboardScreen() {
             });
 
             // Ensure survey has required properties for header rendering
-            const surveyJSON = thisEvent?.questions || {};
+            const surveyJSON = thisEvent?.surveyJSModel || thisEvent?.questions || {};
             
             // Set default headerView and description if missing (prevents header display issues)
             if (!surveyJSON.headerView) {
@@ -279,7 +295,9 @@ function DashboardScreen() {
                 console.log("saving questions...")
                 const eventRef = doc(db, "events", eventID).withConverter(EEventConverter);
                 updateDoc(eventRef, {
+                    // Write to both old and new fields
                     questions: JSON.stringify(newCreator.JSON),
+                    surveyJSModel: newCreator.JSON,
                 }).then(() => {
                     console.log("saved!")
                     callback(saveNo, true);

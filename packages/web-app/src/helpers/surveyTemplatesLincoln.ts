@@ -43,9 +43,14 @@ export const initCreatorLincoln = (creator: SurveyCreatorModel) => {
 
   creator.toolbox.changeCategories([
     { name: "lincolnvoi", category: "__lincolnCategory" },
+    { name: "lincolnvehiclesdriven", category: "__lincolnCategory" },
     { name: "lincolnoptin", category: "__lincolnCategory" },
+    { name: "lincolnrecommend", category: "__lincolnCategory" },
+    { name: "lincolnrecommendpost", category: "__lincolnCategory" },
     { name: "lincolnoverallopinion", category: "__lincolnCategory" },
     { name: "lincolnoverallopinionpost", category: "__lincolnCategory" },
+    { name: "lincolnpurchaseconsideration", category: "__lincolnCategory" },
+    { name: "lincolnpurchaseconsiderationpost", category: "__lincolnCategory" },
     // FMC questions
     { name: "gender", category: "__0fmc" },
     { name: "agebracket", category: "__0fmc" },
@@ -107,9 +112,9 @@ export const prepareCreatorOnQuestionAddedLincoln = (
 
     options.question.locTitle.setJson({
       en:
-        "Please email me communications, including product and service information, surveys and special offers from Lincoln and its retailers.",
-      es: "Por favor, envíenme comunicaciones, incluyendo información sobre productos y servicios, encuestas y ofertas especiales de Lincoln y sus minoristas.",
-      fr: "Veuillez m'envoyer des communications, y compris des informations sur les produits et services, des enquêtes et des offres spéciales de Lincoln et de ses détaillants.",
+        "Please email me communications including product information, offers, and incentives from Lincoln and the local retailer.",
+      es: "Quiero recibir comunicaciones, incluidas información sobre productos y servicios, encuestas, y ofertas especiales de Lincoln y sus minoristas.",
+      fr: "Je souhaite recevoir des communications, y des informations sur les produits et services, des enquêtes, et des offres spéciales de Lincoln et de son détaillant.",
     });
 
     options.question.descriptionLocation = "underInput";
@@ -124,7 +129,7 @@ export const prepareCreatorOnQuestionAddedLincoln = (
   if (options.question.getType() === "lincolnoverallopinion") {
     console.log("lincolnoverallopinion question added");
     options.question.name = "lincolnOverallOpinion";
-    options.question._ffs = "custom.overallOpinion";
+    options.question._ffs = "impression";
     options.question.isRequired = true;
 
     options.question.locTitle.setJson({
@@ -143,10 +148,38 @@ export const prepareCreatorOnQuestionAddedLincoln = (
     });
   }
 
+  if (options.question.getType() === "lincolnrecommend") {
+    console.log("lincolnrecommend question added");
+    options.question.name = "howLikelyRecommend";
+    options.question._ffs = "how_likely_recommend";
+    options.question.isRequired = true;
+    options.question.buttonSize = "large";
+
+    options.question.locTitle.setJson({
+      en: "How likely are you to recommend Lincoln to a friend, relative or colleague?",
+      es: "¿Qué tan probable es que recomiende Lincoln a un amigo, familiar o colega?",
+      fr: "Quelle est la probabilité que vous recommandiez Lincoln à un ami, un parent ou un collègue?",
+    });
+  }
+
+  if (options.question.getType() === "lincolnrecommendpost") {
+    console.log("lincolnrecommendpost question added");
+    options.question.name = "howLikelyRecommend (post event)";
+    options.question._ffs = "how_likely_recommend_post";
+    options.question.isRequired = true;
+    options.question.buttonSize = "large";
+
+    options.question.locTitle.setJson({
+      en: "Based on your experience today, how likely are you to recommend Lincoln to a friend, relative or colleague?",
+      es: "Basándose en su experiencia de hoy, ¿qué tan probable es que recomiende Lincoln a un amigo, familiar o colega?",
+      fr: "Sur la base de votre expérience d'aujourd'hui, quelle est la probabilité que vous recommandiez Lincoln à un ami, un parent ou un collègue?",
+    });
+  }
+
   if (options.question.getType() === "lincolnoverallopinionpost") {
     console.log("lincolnoverallopinionpost question added");
     options.question.name = "lincolnOverallOpinionPost";
-    options.question._ffs = "custom.overallOpinionPost";
+    options.question._ffs = "impression_post";
     options.question.isRequired = true;
 
     options.question.locTitle.setJson({
@@ -160,6 +193,48 @@ export const prepareCreatorOnQuestionAddedLincoln = (
     options.question.locDescription.setJson({
       en:
         "Please click on the response that indicates your preference.",
+      es: "Por favor, haga clic en la respuesta que indica su preferencia.",
+      fr: "Veuillez cliquer sur la réponse qui indique votre préférence.",
+    });
+  }
+
+  if (options.question.getType() === "lincolnpurchaseconsideration") {
+    console.log("lincolnpurchaseconsideration question added");
+    options.question.name = "lincolnPurchaseConsideration";
+    options.question._ffs = "how_likely_purchasing";
+    options.question.isRequired = true;
+    options.question.buttonSize = "large";
+
+    options.question.locTitle.setJson({
+      en: "For your next vehicle, how likely would you be to consider a Lincoln?",
+      es: "Para su próximo vehículo, ¿qué tan probable es que considere un Lincoln?",
+      fr: "Pour votre prochain véhicule, quelle est la probabilité que vous considériez un Lincoln?",
+    });
+
+    options.question.descriptionLocation = "underInput";
+    options.question.locDescription.setJson({
+      en: "Please click on the response that indicates your preference.",
+      es: "Por favor, haga clic en la respuesta que indica su preferencia.",
+      fr: "Veuillez cliquer sur la réponse qui indique votre préférence.",
+    });
+  }
+
+  if (options.question.getType() === "lincolnpurchaseconsiderationpost") {
+    console.log("lincolnpurchaseconsiderationpost question added");
+    options.question.name = "lincolnPurchaseConsiderationPost";
+    options.question._ffs = "how_likely_purchasing_post";
+    options.question.isRequired = true;
+    options.question.buttonSize = "large";
+
+    options.question.locTitle.setJson({
+      en: "Based on your test-drive experience, how likely would you be to consider purchasing a vehicle from Lincoln?",
+      es: "Basándose en su experiencia de prueba de manejo, ¿qué tan probable es que considere comprar un vehículo de Lincoln?",
+      fr: "Sur la base de votre expérience d'essai routier, quelle est la probabilité que vous considériez l'achat d'un véhicule Lincoln?",
+    });
+
+    options.question.descriptionLocation = "underInput";
+    options.question.locDescription.setJson({
+      en: "Please click on the response that indicates your preference.",
       es: "Por favor, haga clic en la respuesta que indica su preferencia.",
       fr: "Veuillez cliquer sur la réponse qui indique votre préférence.",
     });

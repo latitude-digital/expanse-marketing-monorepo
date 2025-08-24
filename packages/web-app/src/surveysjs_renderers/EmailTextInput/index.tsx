@@ -4,6 +4,7 @@ import { ReactQuestionFactory, SurveyQuestionElementBase, SurveyQuestionText } f
 import { StyledTextField } from "@ui/ford-ui-components/src/v2/inputField/Input";
 import { vsprintf } from 'sprintf-js';
 import { normalizeBrand } from '../../utils/brandUtils';
+import { renderDescription } from '../FDSRenderers/FDSShared/utils';
 
 const CUSTOM_QUESTION_TYPE = "emailtextinput";
 
@@ -65,6 +66,12 @@ Serializer.addClass(
             category: "validation",
             visible: false,
         },
+        // Explicitly ensure description property is inherited and serialized
+        {
+            name: "description:text",
+            category: "general",
+            visible: true,
+        },
     ],
     function () {
         return new QuestionEmailTextModel("");
@@ -100,13 +107,14 @@ class EmailTextInputFordUI extends SurveyQuestionElementBase {
         const currentLocale = question.survey.locale || 'en';
         const optionalText = surveyLocalization.locales[currentLocale]?.["optionalText"] || " (Optional)";
         
+        
         return (
             <>
                 <StyledTextField
                     label={title}
-                    description={question.description}
+                    description={renderDescription(question.description)}
                     isRequired={isRequired}
-                    requiredMessage={optionalText}
+                    requiredMessage={!isRequired ? optionalText : undefined}
                     placeholder={question.placeholder || ""}
                     value={question.value || ""}
                     isInvalid={isInvalid}
@@ -188,21 +196,60 @@ class EmailTextInputDefault extends SurveyQuestionText {
 
 // Factory function that chooses the right renderer based on brand
 export const EmailTextInput = (props: any) => {
-    // Detect current brand from wrapper element
-    const wrapperElement = document.getElementById('fd-nxt');
-    let shouldUseFordUI = false;
+    // Use React state and effects for more reliable brand detection
+    const [shouldUseFordUI, setShouldUseFordUI] = React.useState(false);
     
-    if (wrapperElement) {
-        // Detect brand from CSS class on wrapper element
-        if (wrapperElement.classList.contains('ford_light') || 
-            wrapperElement.classList.contains('ford_dark') ||
-            wrapperElement.classList.contains('lincoln_light') || 
-            wrapperElement.classList.contains('lincoln_dark')) {
-            shouldUseFordUI = true;
+    React.useEffect(() => {
+        const detectBrand = () => {
+            const wrapperElement = document.getElementById('fd-nxt');
+            let useFordUI = false;
+            
+            if (wrapperElement) {
+                // Check for Ford/Lincoln theme classes
+                if (wrapperElement.classList.contains('ford_light') || 
+                    wrapperElement.classList.contains('ford_dark') ||
+                    wrapperElement.classList.contains('lincoln_light') || 
+                    wrapperElement.classList.contains('lincoln_dark')) {
+                    useFordUI = true;
+                }
+            }
+            
+            console.log(`[EmailTextInput Factory] Using Ford UI: ${useFordUI}`);
+            setShouldUseFordUI(useFordUI);
+        };
+        
+        // Initial detection
+        detectBrand();
+        
+        // Also detect after a short delay to handle timing issues
+        const timer = setTimeout(detectBrand, 100);
+        
+        // Set up a MutationObserver to watch for class changes on the wrapper
+        const wrapperElement = document.getElementById('fd-nxt');
+        let observer: MutationObserver | null = null;
+        
+        if (wrapperElement) {
+            observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                        detectBrand();
+                    }
+                });
+            });
+            
+            observer.observe(wrapperElement, {
+                attributes: true,
+                attributeFilter: ['class']
+            });
         }
-    }
-    
-    console.log(`[EmailTextInput Factory] Using Ford UI: ${shouldUseFordUI}`);
+        
+        return () => {
+            clearTimeout(timer);
+            if (observer) {
+                observer.disconnect();
+            }
+        };
+    }, []);
     
     if (shouldUseFordUI) {
         return React.createElement(EmailTextInputFordUI, props);

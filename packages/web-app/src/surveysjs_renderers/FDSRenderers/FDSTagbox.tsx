@@ -33,8 +33,9 @@ const FDSTagboxComponent: React.FC<{ question: QuestionTagboxModel }> = ({ quest
         };
     }, [isOpen]);
     
-    // Transform SurveyJS choices to options format
-    const options = question.choices.map((choice: any, index: number) => ({
+    // Transform SurveyJS visibleChoices to options format
+    // visibleChoices includes special items like None and Other
+    const options = question.visibleChoices.map((choice: any, index: number) => ({
         id: choice.value || index,
         label: choice.text || choice.value,
         value: choice.value
@@ -216,6 +217,12 @@ export class FDSTagboxRenderer extends SurveyQuestionElementBase {
     }
 
     protected renderElement(): JSX.Element {
+        // Check if we're in designer mode - use default SurveyJS rendering for editing capabilities
+        // The question object has isDesignMode property
+        if (this.question.isDesignMode) {
+            return super.renderElement();
+        }
+        
         return <FDSTagboxComponent question={this.question} />;
     }
 }

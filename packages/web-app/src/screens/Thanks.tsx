@@ -11,7 +11,9 @@ import LocaleString from '../classes/LocaleString';
 function ThanksScreen() {
   const location = useLocation();
   console.log('location.state', location.state);
-  const theme = JSON.parse(location.state.theme);
+  // Support both new map field and legacy JSON string
+  const theme = location.state.surveyJSTheme || 
+                (location.state.theme ? JSON.parse(location.state.theme) : {});
   const thanks = location.state.thanks;
 
   const newTheme:DefaultTheme = {

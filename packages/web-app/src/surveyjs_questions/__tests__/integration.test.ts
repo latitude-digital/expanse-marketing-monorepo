@@ -78,7 +78,9 @@ describe('Custom Question Integration', () => {
       
       const expectedQuestions = [
         'lincolnvoi',
-        'lincolnoptin'
+        'lincolnoptin',
+        'lincolnrecommend',
+        'lincolnrecommendpost'
       ];
       
       expectedQuestions.forEach(questionType => {

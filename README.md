@@ -74,24 +74,40 @@ pnpm install
 pnpm ford-ui:update
 
 # Start development environment (recommended)
-pnpm dev:all  # Starts web-app + Firebase emulator
+pnpm dev:all  # Starts Firebase emulators + web-app
 ```
+
+### Available Scripts Summary
+
+| Command | Description |
+|---------|-------------|
+| `pnpm dev:web` | Start web app in dev mode (local Firebase) |
+| `pnpm dev:all` | Start Firebase emulators + web app + auto-open browsers (recommended) |
+| `pnpm staging:web` | Start web app pointing to staging Firebase |
+| `pnpm production:web` | Start web app pointing to production Firebase |
+| `pnpm build` | Build all packages |
+| `pnpm test` | Run all tests |
+| `pnpm deploy:staging` | Deploy to staging environment |
+| `pnpm deploy:production` | Deploy to production environment |
 
 ### Development Commands
 
 ```bash
 # Web Application Development
-pnpm --filter @expanse/web-app dev          # Start Vite dev server (port 8001)
-pnpm --filter @expanse/web-app build        # Build for production
+pnpm --filter @expanse/web-app dev          # Start Vite dev server (port 8001, uses .env.dev)
+pnpm --filter @expanse/web-app build        # Build for development
+pnpm --filter @expanse/web-app build:staging # Build for staging
+pnpm --filter @expanse/web-app build:production # Build for production
 pnpm --filter @expanse/web-app preview      # Preview production build
 
-# Firebase Functions Development  
-pnpm --filter @expanse/firebase build       # Compile TypeScript functions
-pnpm --filter @expanse/firebase serve       # Start Firebase emulator
-pnpm firebase:emulators                     # Start all Firebase emulators
+# Firebase Emulators
+pnpm firebase:emulators                     # Start emulators (Functions, Firestore) - Auth uses live Firebase
 
 # Full-stack Development
-pnpm dev                                     # Start all packages
+pnpm dev:web                                 # Start web app dev server only (local dev)
+pnpm dev:all                                 # Start emulators + web app + auto-open Admin & Emulator UI
+pnpm staging:web                             # Start web app pointing to staging environment
+pnpm production:web                          # Start web app pointing to production environment
 pnpm build                                   # Build all packages
 pnpm test                                    # Run all tests
 
@@ -105,9 +121,12 @@ cd packages/ford-ui && nx run storybook:storybook       # Storybook (port 4400)
 - **Web App**: http://localhost:8001 (Vite dev server)
 - **Admin Dashboard**: http://localhost:8001/admin (requires authentication)
 - **Survey Testing**: http://localhost:8001/survey (with brand switching)
-- **Firebase Emulator UI**: http://localhost:4000
+- **Firebase Emulator UI**: http://localhost:4002
 - **Functions Emulator**: http://localhost:5001
+- **Firestore Emulator**: http://localhost:8080
 - **Storybook**: http://localhost:4400
+
+**Note**: Auth uses live Firebase Auth (not emulated)
 
 ## Ford Design System Integration
 
@@ -349,10 +368,11 @@ export function BrandAwareButton({ children, ...props }) {
 # Build all packages with proper theme integration
 pnpm build
 
-# Individual package builds
-pnpm --filter @expanse/web-app build        # Web app production build
-pnpm --filter @expanse/firebase build       # Compile Firebase functions
-pnpm ford-ui:update                          # Ford UI components + CSS sync
+# Build commands
+pnpm build                                   # Build all packages
+pnpm --filter @expanse/web-app build        # Build web app for development
+pnpm --filter @expanse/web-app build:staging # Build web app for staging
+pnpm --filter @expanse/web-app build:production # Build web app for production
 
 # Build with Ford UI update
 pnpm ford-ui:update && pnpm build
@@ -363,37 +383,95 @@ pnpm ford-ui:update && pnpm build
 ### Firebase Deployment
 
 ```bash
-# Deploy everything (functions + hosting)
-pnpm deploy:production
+# Deploy to production
+pnpm deploy:production       # Runs production-build-deploy.zsh
 
-# Deploy specific services
-pnpm firebase:deploy:functions               # Functions only
-pnpm firebase:deploy:hosting                 # Hosting only
-pnpm firebase:deploy                         # Both functions and hosting
+# Deploy to staging  
+pnpm deploy:staging          # Runs staging-build-deploy.zsh
 
-# Build and deploy with Ford UI update
-pnpm ford-ui:update && pnpm firebase:build && pnpm firebase:deploy
+# The deployment scripts handle:
+# - Switching to the correct Firebase alias (prod/staging)
+# - Loading the appropriate .env files automatically
+# - Building and deploying both web app and functions
 ```
 
 ### Environment Configuration
 
-Create environment files in `packages/web-app/`:
+The project uses consistent environment file naming across packages:
 
-```bash
-# .env.local (local development)
-VITE_ENV=local
-VITE_FIREBASE_PROJECT_ID=expanse-marketing-dev
+#### Firebase Configuration
+Firebase configuration files are located in `packages/firebase/`:
+- `.firebaserc` - Contains Firebase project aliases
+- `firebase.json` - Firebase services configuration (Functions, Firestore, Emulators)
 
-# .env.staging (staging environment) 
-VITE_ENV=staging
-VITE_FIREBASE_PROJECT_ID=expanse-marketing-staging
-
-# .env.production (production environment)
-VITE_ENV=production 
-VITE_FIREBASE_PROJECT_ID=expanse-marketing
+**Firebase Aliases** (`packages/firebase/.firebaserc`):
+```json
+{
+  "projects": {
+    "dev": "latitude-lead-system",
+    "staging": "latitude-lead-system", 
+    "prod": "latitude-lead-system"
+  }
+}
 ```
 
-## Troubleshooting Ford UI Integration
+#### Environment Files
+
+**Firebase Functions** (`packages/firebase/`):
+```bash
+# .env.dev (development)
+LATITUDE_ENV=development
+DB_NAME=dev
+
+# .env.staging (staging)
+LATITUDE_ENV=staging
+DB_NAME=staging
+
+# .env.prod (production)
+LATITUDE_ENV=production
+DB_NAME=(default)
+```
+
+**Web App** (`packages/web-app/`):
+```bash
+# .env.dev (development)
+VITE_ENV=dev
+VITE_FIREBASE_PROJECT_ID=latitude-lead-system
+
+# .env.staging (staging)
+VITE_ENV=staging
+VITE_FIREBASE_PROJECT_ID=latitude-lead-system
+
+# .env.prod (production)
+VITE_ENV=production
+VITE_FIREBASE_PROJECT_ID=latitude-lead-system
+```
+
+The environment files are automatically loaded based on the active Firebase alias or Vite mode:
+- Firebase: Uses `firebase use <alias>` which loads `.env.<alias>` 
+- Vite: Uses `--mode <mode>` which loads `.env.<mode>`
+
+## Troubleshooting
+
+### Firebase Configuration Issues
+
+**Problem**: `firebase use must be run from a Firebase project directory`
+**Solution**: Firebase commands must be run from `packages/firebase/` where `firebase.json` and `.firebaserc` are located. All package.json scripts handle this automatically.
+
+**Problem**: Emulators not starting correctly
+**Solution**: Ensure you're in the correct directory and have the right alias:
+```bash
+cd packages/firebase
+firebase use dev  # Should output: Now using alias dev (latitude-lead-system)
+firebase emulators:start
+```
+
+**Note**: The project uses live Firebase Auth instead of the auth emulator. This means:
+- You need internet connection for authentication
+- Auth credentials are real (use test accounts for development)
+- Other services (Functions, Firestore) are emulated locally
+
+### Ford UI Integration Issues
 
 ### CSS Import Resolution Issues
 

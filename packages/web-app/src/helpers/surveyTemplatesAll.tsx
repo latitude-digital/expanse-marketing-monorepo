@@ -10,8 +10,8 @@ import {
   SurveyInstanceCreatedEvent,
 } from "survey-creator-core";
 
-import { CheckboxVOIQuestion } from "../surveysjs_renderers/CheckboxVOI";
-import { RadioGroupRowQuestion } from "../surveysjs_renderers/RadioButtonButton";
+import { CheckboxVOIQuestion } from "../surveysjs_renderers/FDSRenderers/CheckboxVOI";
+import { RadioGroupRowQuestion } from "../surveysjs_renderers/FDSRenderers/RadioButtonButton";
 import { SurveyBookeoQuestion } from "../surveysjs_renderers/Bookeo";
 import { SurveyQuestionMarkdown } from "../surveysjs_renderers/Markdown";
 import { EmailTextInput } from "../surveysjs_renderers/EmailTextInput";
@@ -139,6 +139,20 @@ export const initCreator = (creator: SurveyCreatorModel) => {
   const md = creator.toolbox.getItemByName("markdown");
   md.tooltip = "Markdown";
   md.setPropertyValue("iconName", "icon-markdown");
+
+  // Add checkbox variant for boolean questions
+  const booleanItem = creator.toolbox.getItemByName("boolean");
+  if (booleanItem) {
+    booleanItem.addSubitem({
+      name: "checkboxBoolean",
+      title: "Checkbox",
+      json: {
+        type: "boolean",
+        renderAs: "checkbox",
+        titleLocation: "hidden"
+      }
+    });
+  }
 
   // sort the toolbox categories so that the custom categories starting with __ are at the top
   creator.toolbox.categories = creator.toolbox.categories.sort(
@@ -493,9 +507,9 @@ export const prepareCreatorOnQuestionAdded = (
     options.question._ffs = "vehicle_driven_most_make_id";
 
     options.question.locTitle.setJson({
-      en: "What vehicle do you drive most often?",
-      es: "¿Qué vehículo conduces con mayor frecuencia?",
-      fr: "Quel véhicule conduisez-vous le plus souvent?"
+      en: "What is your current vehicle make?",
+      es: "¿Cuál es la marca de su vehículo actual?",
+      fr: "Quelle est la marque de votre véhicule actuel?"
     });
   }
 

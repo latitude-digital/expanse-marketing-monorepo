@@ -9,22 +9,19 @@ import { v4 as uuidv4 } from 'uuid';
 
 import auth from '../services/auth';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { httpsCallable } from 'firebase/functions';
 import app from '../services/firebase';
-import functions from '../services/functions';
+import { checkSurveyLimit as checkSurveyLimitFn, validateSurveyLimit as validateSurveyLimitFn } from '../services/namespacedFunctions';
 
 import { getApiUrl, ENDPOINTS } from "../config/api";
 
-// Import custom SurveyJS renderers
-import { CheckboxVOIQuestion } from "../surveysjs_renderers/CheckboxVOI";
-import { CheckboxVehiclesDrivenQuestion } from "../surveysjs_renderers/CheckboxVehiclesDriven";
-import { CheckboxFordVehiclesDrivenQuestion } from "../surveysjs_renderers/CheckboxFordVehiclesDriven";
-import { RadioGroupRowQuestion } from "../surveysjs_renderers/RadioButtonButton";
+// Import FDS custom SurveyJS renderers
+import { CheckboxVOIQuestion } from "../surveysjs_renderers/FDSRenderers/CheckboxVOI";
+import { CheckboxVehiclesDrivenQuestion } from "../surveysjs_renderers/FDSRenderers/CheckboxVehiclesDriven";
+import { RadioGroupRowQuestion } from "../surveysjs_renderers/FDSRenderers/RadioButtonButton";
 import { SurveyBookeoQuestion } from "../surveysjs_renderers/Bookeo";
 
 // Force execution of renderer registration by referencing the class
 console.log('Survey.tsx: CheckboxVehiclesDrivenQuestion loaded:', CheckboxVehiclesDrivenQuestion);
-console.log('Survey.tsx: CheckboxFordVehiclesDrivenQuestion loaded:', CheckboxFordVehiclesDrivenQuestion);
 // EmailTextInput removed - FDSTextRenderer handles all text inputs including email with proper required field support
 import "../surveysjs_renderers/FilePreview";
 
@@ -79,8 +76,10 @@ interface SurveyEvent {
   survey_count_limit?: number;
   limit_reached_message?: string;
   surveyType?: string;
-  questions: string;
-  theme?: string;
+  questions: string;  // Legacy field
+  surveyJSModel?: any;  // New map field
+  theme?: string;  // Legacy field
+  surveyJSTheme?: any;  // New map field
   showHeader?: boolean;
   showLanguageChooser?: boolean;
 }
@@ -236,10 +235,10 @@ const SurveyComponent: React.FC = () => {
           // Check survey limit if configured
           if (res.event.survey_count_limit && res.event.survey_count_limit > 0) {
             const bypass = searchParams.get('bp');
-            const checkSurveyLimit = httpsCallable(functions, 'checkSurveyLimit');
+            // Use namespaced function for survey limit check
             
             try {
-              const result = await checkSurveyLimit({ 
+              const result = await checkSurveyLimitFn({ 
                 eventId: params.eventID,
                 bypass: bypass 
               }) as SurveyLimitResult;
@@ -255,8 +254,11 @@ const SurveyComponent: React.FC = () => {
             }
           }
 
-          const surveyJSON = JSON.parse(res.event.questions);
-          const eventTheme = JSON.parse(res.event.theme || `{"cssVariables": {}}`);
+          // Use new map fields if available, otherwise parse JSON strings
+          const surveyJSON = res.event.surveyJSModel || 
+                            (res.event.questions ? JSON.parse(res.event.questions) : {});
+          const eventTheme = res.event.surveyJSTheme || 
+                            (res.event.theme ? JSON.parse(res.event.theme) : {"cssVariables": {}});
 
           // Auto-fix missing headerView when theme has header configuration
           if (eventTheme.header && !surveyJSON.headerView) {
@@ -274,6 +276,71 @@ const SurveyComponent: React.FC = () => {
             "widthMode": "responsive",
             ...surveyJSON // Survey definition can override defaults
           };
+
+          // Preprocess isRequired to working validators BEFORE model creation
+          function preprocessRequiredValidation(surveyJSON) {
+            function processElements(elements) {
+              if (!elements) return;
+              
+              elements.forEach(element => {
+                // Handle questions with isRequired: true
+                if (element.type && element.isRequired === true) {
+                  // Initialize validators array if it doesn't exist
+                  if (!element.validators) {
+                    element.validators = [];
+                  }
+                  
+                  // Check if expression validator already exists
+                  const hasRequiredValidator = element.validators.some(v => 
+                    v.type === 'expression' && v.expression?.includes('notempty')
+                  );
+                  
+                  if (!hasRequiredValidator) {
+                    // Add expression validator for required field
+                    element.validators.push({
+                      type: "expression",
+                      expression: "{self} notempty", 
+                      text: element.requiredErrorText || "This field is required"
+                    });
+                  }
+                  
+                  
+                  console.log(`[Survey Preprocess] Added required validator to question: ${element.name}`);
+                }
+                
+                // Recursively process nested elements (panels, etc.)
+                if (element.elements && Array.isArray(element.elements)) {
+                  processElements(element.elements);
+                }
+                
+                // Handle matrix-type questions
+                if (element.columns) {
+                  processElements(element.columns);
+                }
+                if (element.rows) {
+                  processElements(element.rows);
+                }
+              });
+            }
+            
+            // Process all pages
+            if (surveyJSON.pages && Array.isArray(surveyJSON.pages)) {
+              surveyJSON.pages.forEach(page => {
+                if (page.elements && Array.isArray(page.elements)) {
+                  processElements(page.elements);
+                }
+                // Handle page-level panels
+                if (page.panels) {
+                  processElements(page.panels);
+                }
+              });
+            }
+            
+            return surveyJSON;
+          }
+
+          // Apply the preprocessing
+          preprocessRequiredValidation(defaultSurveyProperties);
 
           if (res.event.disabled && !user) {
             defaultSurveyProperties.showCompleteButton = false;
@@ -315,24 +382,31 @@ const SurveyComponent: React.FC = () => {
             survey.showNavigationButtons = false;
           }
 
-          // Set default theme appearance to "Without Panels" for Ford/Lincoln brands
-          if (eventBrand === 'Ford' || eventBrand === 'Lincoln') {
-            console.log('[Theme Debug] Setting theme appearance to "Without Panels" for', eventBrand, 'brand');
-            const updatedTheme = {
-              themeName: "default",
-              colorPalette: "light",
-              isPanelless: true,
-              backgroundImage: "",
-              backgroundImageFit: "cover",
-              backgroundImageAttachment: "scroll",
-              backgroundOpacity: 1,
-              cssVariables: {
-                "--sjs-general-backcolor-dim": "#ffffff",
-                ...eventTheme.cssVariables,
-              },
-              ...eventTheme,
-            };
-            survey.applyTheme(updatedTheme);
+          // Apply theme for all brands
+          if (eventTheme && eventTheme.cssVariables) {
+            if (eventBrand === 'Ford' || eventBrand === 'Lincoln') {
+              // Set default theme appearance to "Without Panels" for Ford/Lincoln brands
+              console.log('[Theme Debug] Setting theme appearance to "Without Panels" for', eventBrand, 'brand');
+              const updatedTheme = {
+                themeName: "default",
+                colorPalette: "light",
+                isPanelless: true,
+                backgroundImage: "",
+                backgroundImageFit: "cover",
+                backgroundImageAttachment: "scroll",
+                backgroundOpacity: 1,
+                cssVariables: {
+                  "--sjs-general-backcolor-dim": "#ffffff",
+                  ...eventTheme.cssVariables,
+                },
+                ...eventTheme,
+              };
+              survey.applyTheme(updatedTheme);
+            } else {
+              // Apply theme for Other brands without Ford/Lincoln specific overrides
+              console.log('[Theme Debug] Applying custom theme for', eventBrand, 'brand');
+              survey.applyTheme(eventTheme);
+            }
           }
 
           prepareForSurvey(survey, eventBrand);
@@ -681,10 +755,10 @@ const SurveyComponent: React.FC = () => {
             // Check survey limit before allowing submission
             if (res.event.survey_count_limit && res.event.survey_count_limit > 0) {
               const bypass = searchParams.get('bp');
-              const validateSurveyLimit = httpsCallable(functions, 'validateSurveyLimit');
+              // Use namespaced function for survey validation
               
               try {
-                const result = await validateSurveyLimit({ 
+                const result = await validateSurveyLimitFn({ 
                   eventId: params.eventID,
                   bypass: bypass 
                 });
@@ -902,7 +976,7 @@ const SurveyComponent: React.FC = () => {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
-                    'GTB-ACCESS-KEY': '91827364',
+                    'Authorization': '91827364',
                   },
                   body: JSON.stringify(lincolnPayload),
                 });
@@ -919,6 +993,7 @@ const SurveyComponent: React.FC = () => {
                   const voiBody = (lincolnSurvey as any).voi.map((vehicle_id: string) => ({
                     event_id: res.event.lincolnEventID,
                     device_survey_guid: surveyData.device_survey_guid || '',
+                    survey_vehicle_guid: uuidv4(),
                     survey_date: new Date().toISOString(),
                     vehicle_id,
                     app_version: 'expanse_2.0',
@@ -932,7 +1007,7 @@ const SurveyComponent: React.FC = () => {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
-                      'GTB-ACCESS-KEY': '91827364',
+                      'Authorization': '91827364',
                     },
                     body: JSON.stringify(voiBody),
                   });
@@ -944,27 +1019,27 @@ const SurveyComponent: React.FC = () => {
                   console.log('saved lincoln voi');
                 }
 
-                // If there's a driven vehicle, save that too
-                if (mergedLincolnSurveyData.vehicle_driven_most_make_id || mergedLincolnSurveyData.vehicle_driven_most_model_id) {
-                  const drivenBody = [{
+                // If there are vehicles driven, save those too
+                if ((lincolnSurvey as any).vehiclesDriven && (lincolnSurvey as any).vehiclesDriven.length) {
+                  const drivenBody = (lincolnSurvey as any).vehiclesDriven.map((vehicle_id: string, index: number) => ({
                     event_id: res.event.lincolnEventID,
                     device_survey_guid: surveyData.device_survey_guid || '',
+                    survey_vehicle_guid: uuidv4(),
                     survey_date: new Date().toISOString(),
-                    make_id: mergedLincolnSurveyData.vehicle_driven_most_make_id,
-                    model_id: mergedLincolnSurveyData.vehicle_driven_most_model_id,
-                    year: mergedLincolnSurveyData.vehicle_driven_most_year,
+                    vehicle_id,
+                    order_driven: index + 1,
                     app_version: 'expanse_2.0',
                     abandoned: false,
                     custom_data: {
                       survey_type: res.event.surveyType || 'basic'
                     }
-                  }];
+                  }));
 
                   const lincolnDrivenRes = await fetch(getApiUrl(ENDPOINTS.LINCOLN_VEHICLES_DRIVEN), {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
-                      'GTB-ACCESS-KEY': '91827364',
+                      'Authorization': '91827364',
                     },
                     body: JSON.stringify(drivenBody),
                   });
@@ -973,7 +1048,7 @@ const SurveyComponent: React.FC = () => {
                     throw new Error(lincolnDrivenRes.statusText);
                   }
 
-                  console.log('saved lincoln driven vehicle');
+                  console.log('saved lincoln driven vehicles');
                 }
               }
 
@@ -1002,7 +1077,7 @@ const SurveyComponent: React.FC = () => {
       Sentry.captureException(err);
       alert(err);
     });
-  }, [user, params.eventID, navigate, location, thisEvent?.surveyType, thisPreSurvey]);
+  }, [user, params.eventID, navigate, location]);
 
   return (
     limitReached ?

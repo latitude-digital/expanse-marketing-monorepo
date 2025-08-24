@@ -68,16 +68,16 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
     if (brand === 'Lincoln') {
       return [
         { text: '© 2025 Lincoln Motor Company', url: 'https://www.lincoln.com' },
-        { text: 'Privacy Notice', url: 'https://www.lincoln.com/help/privacy/' },
-        { text: 'Your Privacy Choices', url: 'https://www.lincoln.com/help/privacy/your-privacy-choices/' },
-        { text: 'Interest Based Ads', url: 'https://www.lincoln.com/help/privacy/#interest' },
+        { text: 'Privacy Notice', url: 'https://www.lincoln.com/help/privacy-terms/' },
+        { text: 'Your Privacy Choices', url: 'https://www.lincoln.com/help/privacy/ccpa/' },
+        { text: 'Interest Based Ads', url: 'https://www.lincoln.com/help/privacy-terms/#privacy' },
       ];
     }
     // Default to Ford links
     return [
       { text: '© 2025 Ford Motor Company', url: 'https://www.ford.com' },
       { text: 'Privacy Notice', url: 'https://www.ford.com/help/privacy/' },
-      { text: 'Your Privacy Choices', url: 'https://www.ford.com/help/privacy/your-privacy-choices/' },
+      { text: 'Your Privacy Choices', url: 'https://www.ford.com/help/privacy/ccpa/' },
       { text: 'Interest Based Ads', url: 'https://www.ford.com/help/privacy/#interest' },
     ];
   };

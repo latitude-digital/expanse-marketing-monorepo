@@ -41,16 +41,41 @@ type ExpanseEvent = {
   startDate: Date;
   endDate: Date;
   name: string;
-  questions: ISurvey;
+  questions: ISurvey;  // Legacy JSON string field
+  surveyJSModel?: ISurvey;  // New map field
   reminderEmail?: EmailDefinition;
   thankYouEmail?: EmailDefinition;
   autoCheckOut?: AutoCheckOutDefinition;
   checkOutEmail?: EmailDefinition;
   thanks?: string;
-  theme: IExtendedTheme | ITheme;
+  theme: IExtendedTheme | ITheme;  // Legacy JSON string field
+  surveyJSTheme?: IExtendedTheme | ITheme;  // New map field
   survey_count_limit?: number;
   limit_reached_message?: string;
   showLanguageChooser?: boolean;
   showHeader?: boolean;
   showFooter?: boolean;
 };
+
+// AUTH-009: CloudFront integration types
+type CloudFrontCookies = {
+  'CloudFront-Key-Pair-Id'?: string;
+  'CloudFront-Policy'?: string;
+  'CloudFront-Signature'?: string;
+};
+
+type CloudFrontTestHelpers = {
+  test: () => Promise<any>;
+  status: () => any;
+  refresh: () => Promise<any>;
+  log: () => void;
+  cookies: () => CloudFrontCookies;
+};
+
+// Extend Window interface for runtime environment and testing utilities
+declare global {
+  interface Window {
+    _env_?: any;
+    CloudFrontTest?: CloudFrontTestHelpers;
+  }
+}

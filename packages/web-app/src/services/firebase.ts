@@ -1,6 +1,10 @@
 import { initializeApp } from "firebase/app";
 import type { FirebaseOptions } from "firebase/app";
 
+// Use different project ID when using emulator
+const isEmulatorMode = import.meta.env.VITE_FIREBASE_MODE === 'emulator' || 
+                       (import.meta.env.MODE === 'development' && import.meta.env.VITE_USE_FIRESTORE_EMULATOR === 'true');
+
 const firebaseConfig: FirebaseOptions = {
     apiKey: "AIzaSyAGX-fDz0xFhlEjuWSEK-2GB6W1R61TIuo",
     authDomain: "latitude-lead-system.firebaseapp.com",
@@ -21,6 +25,7 @@ console.log('VITE_FIREBASE_MODE:', import.meta.env.VITE_FIREBASE_MODE);
 console.log('VITE_USE_FUNCTIONS_EMULATOR:', import.meta.env.VITE_USE_FUNCTIONS_EMULATOR);
 console.log('VITE_USE_AUTH_EMULATOR:', import.meta.env.VITE_USE_AUTH_EMULATOR);
 console.log('VITE_USE_FIRESTORE_EMULATOR:', import.meta.env.VITE_USE_FIRESTORE_EMULATOR);
+console.log('Project ID:', firebaseConfig.projectId);
 console.log('========================================');
 
 // Check if we should connect to emulators

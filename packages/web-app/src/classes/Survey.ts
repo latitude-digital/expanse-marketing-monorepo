@@ -22,10 +22,19 @@ export default class Survey {
 
     constructor(surveyObject:any) {
         this.name = new LocaleString(surveyObject.name);
-        this.questions = JSON.parse(surveyObject.questions).map((pages: any[]) => pages.map((question: any) => new SurveyQuestion(question)));
+        // Support both new map field and legacy JSON string
+        const questionsData = surveyObject.surveyJSModel || 
+                            (surveyObject.questions ? JSON.parse(surveyObject.questions) : {});
+        this.questions = questionsData.pages ? 
+                        questionsData.pages.map((page: any) => 
+                            page.elements ? page.elements.map((question: any) => new SurveyQuestion(question)) : []
+                        ) : [];
         this.startDate = moment(surveyObject.startDate).toDate();
         this.endDate = moment(surveyObject.endDate).toDate();
-        this.theme = new SurveyTheme(JSON.parse(surveyObject.theme));
+        // Support both new map field and legacy JSON string
+        const themeData = surveyObject.surveyJSTheme || 
+                         (surveyObject.theme ? JSON.parse(surveyObject.theme) : {});
+        this.theme = new SurveyTheme(themeData);
         this.results = surveyObject.results;
 
         this.thanks = new LocaleString(surveyObject.thanks || 'Thank you for participating.');

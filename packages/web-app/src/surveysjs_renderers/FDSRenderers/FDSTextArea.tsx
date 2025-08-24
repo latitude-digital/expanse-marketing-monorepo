@@ -21,11 +21,14 @@ export class FDSTextAreaRenderer extends SurveyQuestionElementBase {
         const question = this.question;
         const { isInvalid, errorMessage } = useQuestionValidation(question);
         const optionalText = getOptionalText(question);
+        
+        // Check if title and description should be hidden
+        const isTitleHidden = question.titleLocation === "hidden";
 
         return (
             <TextArea
-                label={renderLabel(question.fullTitle)}
-                description={renderDescription(question.description)}
+                label={isTitleHidden ? undefined : renderLabel(question.fullTitle)}
+                description={isTitleHidden ? undefined : renderDescription(question.description)}
                 placeholder={question.placeholder || ""}
                 value={question.value || ""}
                 rows={question.rows || 4}

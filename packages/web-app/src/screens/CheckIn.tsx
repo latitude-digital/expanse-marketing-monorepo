@@ -518,10 +518,11 @@ function CheckInScreen() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
-                  eventID: params.eventID, 
-                  survey: {
-                    id: selectedUser.id,
-                    _checkedIn: new Date().toISOString(),
+                  eventID: params.eventID,
+                  surveyID: selectedUser.id,
+                  action: 'checkIn',
+                  data: {
+                    _checkedIn: new Date().toISOString()
                   }
                 }),
               }).then(response => {

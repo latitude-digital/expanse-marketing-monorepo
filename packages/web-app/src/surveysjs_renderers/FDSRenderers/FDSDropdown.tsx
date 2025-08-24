@@ -26,8 +26,9 @@ const FDSDropdownComponent: React.FC<{ question: QuestionDropdownModel }> = ({ q
         }
     }, [isSearchable, question.choices.length]);
     
-    // Transform SurveyJS choices to SelectDropdown options format
-    const options = question.choices.map((choice: any, index: number) => ({
+    // Transform SurveyJS visibleChoices to SelectDropdown options format
+    // visibleChoices includes special items like None and Other
+    const options = question.visibleChoices.map((choice: any, index: number) => ({
         id: choice.value || index,
         label: choice.text || choice.value,
         value: choice.value
@@ -42,6 +43,9 @@ const FDSDropdownComponent: React.FC<{ question: QuestionDropdownModel }> = ({ q
         : options;
         
 
+    // Check if title and description should be hidden
+    const isTitleHidden = question.titleLocation === "hidden";
+    
     // Handle labels that might contain JSX elements
     const labelContent = renderLabel(question.fullTitle);
     const label = typeof labelContent === 'string' ? labelContent : question.fullTitle;
@@ -51,8 +55,8 @@ const FDSDropdownComponent: React.FC<{ question: QuestionDropdownModel }> = ({ q
 
     return (
         <SelectDropdown
-            label={label}
-            description={description}
+            label={isTitleHidden ? undefined : label}
+            description={isTitleHidden ? undefined : description}
             placeholder={question.placeholder || (isSearchable ? "Search / Select..." : "Please select...")}
             options={filteredOptions}
             selectedKey={question.value || null}
@@ -62,7 +66,7 @@ const FDSDropdownComponent: React.FC<{ question: QuestionDropdownModel }> = ({ q
             isInvalid={isInvalid}
             errorMessage={errorMessage}
             isRequired={question.isRequired}
-            requiredMessage={optionalText}
+            requiredMessage={!question.isRequired ? optionalText : undefined}
             isDisabled={question.isReadOnly}
             listBoxProps={isSearchable ? { 
                 style: { maxHeight: '240px' }, // Override max-h-60 which seems to be 60px instead of 240px
@@ -99,14 +103,22 @@ export class FDSDropdownRenderer extends SurveyQuestionElementBase {
     }
 
     protected renderElement(): JSX.Element {
+        // Check if we're in designer mode - use default SurveyJS rendering for editing capabilities
+        // The question object has isDesignMode property
+        if (this.question.isDesignMode) {
+            return super.renderElement();
+        }
+        
         return <FDSDropdownComponent question={this.question} />;
     }
 }
 
-// Register the dropdown renderer
+// Register the dropdown renderer with useAsDefault: true to replace default SurveyJS dropdown
 ReactQuestionFactory.Instance.registerQuestion(
     "dropdown",
     (props) => {
         return React.createElement(FDSDropdownRenderer, props);
-    }
+    },
+    "customtype", // Using "customtype" for the third parameter to enable useAsDefault  
+    true // useAsDefault: true - replaces default SurveyJS dropdown renderer
 );

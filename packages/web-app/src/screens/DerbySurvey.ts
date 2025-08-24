@@ -1,3 +1,5 @@
+import { ITheme } from "survey-core";
+
 // SurveyJS Survey Configuration Types
 interface SurveyChoice {
   value: string;
@@ -59,6 +61,27 @@ interface SurveySurveyConfiguration {
   textUpdateMode: string;
   pages: SurveyPage[];
 }
+
+export const themeOverride: ITheme = {
+  "header": {
+      "height": 400,
+      "mobileHeight": 200,
+      "inheritWidthFrom": "survey",
+      "textAreaWidth": 0,
+      "backgroundImage": "https://assets.expansemarketing.com/events/2025_Lions_VS_Dolphins_Pride_Plaza/1754691208844-3424_Ford_Lions_header_Latitude_V01.png",
+      "backgroundImageFit": "contain",
+      "backgroundImageOpacity": 100,
+      "overlapEnabled": false,
+      "logoPositionX": "left",
+      "logoPositionY": "top",
+      "titlePositionX": "left",
+      "titlePositionY": "bottom",
+      "descriptionPositionX": "left",
+      "descriptionPositionY": "bottom"
+  },
+  "headerView": "advanced"
+}
+
 
 export const baseSurvey: SurveySurveyConfiguration = {
   title: '2025 Kentucky Derby',
@@ -220,11 +243,10 @@ export const baseSurvey: SurveySurveyConfiguration = {
               _ffs: 'emailOptIn'
             },
             {
-              type: 'expression',
+              type: 'html',
               name: 'question_header',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
-              title:
-                'Please indicate how well each idea describes Ford on a scale of 1-5 (1 - Strongly Disagree, 5 - Strongly Agree).'
+              html: '<p style="font-weight: 600; margin: 20px 0 10px 0;">Please indicate how well each idea describes Ford on a scale of 1-5 (1 - Strongly Disagree, 5 - Strongly Agree).</p>'
             },
             {
               type: 'rating',
@@ -348,7 +370,6 @@ export const incentiveThanks: string = `
         <img alt="Ford" style="height: 40px; position: absolute; left: 50%; top: 50%; z-index: 2; transform: translate(-50%, -50%);" src="https://cdn.latitudewebservices.com/expanse_marketing/2024/ford/ford_logo.png" />
       </div>
     </div>
-    <div></div>
   </div>
 `;
 
@@ -362,7 +383,6 @@ export const activationThanks: string = `
         <img alt="Ford" style="height: 40px; position: absolute; left: 50%; top: 50%; z-index: 2; transform: translate(-50%, -50%);" src="https://cdn.latitudewebservices.com/expanse_marketing/2024/ford/ford_logo.png" />
       </div>
     </div>
-    <div></div>
   </div>
 `;
 

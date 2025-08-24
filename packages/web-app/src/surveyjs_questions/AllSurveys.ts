@@ -1,3 +1,16 @@
+/**
+ * Universal SurveyJS custom question type definitions
+ * 
+ * ⚠️ IMPORTANT FOR DEVELOPERS:
+ * This file defines question types used across all brands (Ford, Lincoln, Unbranded).
+ * These are basic personal information, address, and waiver questions.
+ * 
+ * For brand-specific questions, see:
+ * - LincolnSurveys.ts (Lincoln-specific questions)
+ * - FordSurveys.ts (Ford-specific questions) 
+ * - FMCSurveys.ts (FMC demographic questions)
+ */
+
 import {
   ComponentCollection,
   ICustomQuestionTypeConfiguration,
@@ -7,6 +20,19 @@ import {
 import {
   ICustomQuestionTypeConfigurationWaiver,
 } from "./interfaces";
+
+/**
+ * Helper to safely set a property as readonly only if it's defined on the specific type
+ * This prevents accidentally modifying base type properties which affects ALL questions
+ */
+const setPropertyReadOnly = (typeName: string, propertyName: string) => {
+  const prop = Serializer.findProperty(typeName, propertyName);
+  // Only set readonly if the property is defined on this specific type
+  // or if it's a custom property like _ffs that we added
+  if (prop && (prop.classInfo?.name === typeName || propertyName === "_ffs")) {
+    prop.readOnly = true;
+  }
+};
 
 const globalInit = () => {
   // Prevent double registration
@@ -107,15 +133,33 @@ const globalInit = () => {
     isSerializable: true,
   });
 
+  /**
+   * First Name Question
+   * 
+   * @description Text input for user's first name with validation
+   * @_ffs "first_name" - Maps to first_name field in APIs
+   * @validation Min 2 chars, starts with letter, letters/spaces/hyphens only
+   * @autocomplete "given-name"
+   * @required true
+   */
   ComponentCollection.Instance.add({
     name: "firstname",
     title: "First Name",
     iconName: "icon-person-circle-question",
     showInToolbox: true,
-    inheritBaseProps: true,
+    inheritBaseProps: ["isRequired", "description", "visible", "enable"],
     onInit: () => {
-      Serializer.getProperty("firstname", "name").readOnly = true;
-      Serializer.getProperty("firstname", "_ffs").readOnly = true;
+      setPropertyReadOnly("firstname", "name");
+      setPropertyReadOnly("firstname", "_ffs");
+    },
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        // Sync isRequired from parent to child
+        child.isRequired = question.isRequired;
+      }
     },
     questionJSON: {
       type: "text",
@@ -151,15 +195,33 @@ const globalInit = () => {
     },
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * Last Name Question
+   * 
+   * @description Text input for user's last name with validation
+   * @_ffs "last_name" - Maps to last_name field in APIs
+   * @validation Min 2 chars, starts with letter, letters/spaces/hyphens only
+   * @autocomplete "family-name"
+   * @required true
+   */
   ComponentCollection.Instance.add({
     name: "lastname",
     title: "Last Name",
     iconName: "icon-person-circle-question",
     showInToolbox: true,
-    inheritBaseProps: true,
+    inheritBaseProps: ["isRequired", "description", "visible", "enable"],
     onInit: () => {
-      Serializer.getProperty("lastname", "name").readOnly = true;
-      Serializer.getProperty("lastname", "_ffs").readOnly = true;
+      setPropertyReadOnly("lastname", "name");
+      setPropertyReadOnly("lastname", "_ffs");
+    },
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        // Sync isRequired from parent to child
+        child.isRequired = question.isRequired;
+      }
     },
     questionJSON: {
       type: "text",
@@ -196,14 +258,23 @@ const globalInit = () => {
     },
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * Google Autocomplete Address (US) Question
+   * 
+   * @description Multi-field address input with Google Places autocomplete (US only)
+   * @_ffs "address_group" - Maps to address1, address2, city, state, zip_code, country fields
+   * @autocomplete Google Places API integration
+   * @validation US zip codes, state abbreviations
+   * @fields address1*, address2, city*, state*, zip*, country (hidden)
+   */
   ComponentCollection.Instance.add({
     name: "autocompleteaddress",
     title: "Autocomplete Address (US)",
     iconName: "icon-house-circle-check",
     showInToolbox: true,
     onInit: () => {
-      Serializer.getProperty("autocompleteaddress", "name").readOnly = true;
-      Serializer.getProperty("autocompleteaddress", "_ffs").readOnly = true;
+      setPropertyReadOnly("autocompleteaddress", "name");
+      setPropertyReadOnly("autocompleteaddress", "_ffs");
     },
     elementsJSON: [
       {
@@ -362,14 +433,23 @@ const globalInit = () => {
     ],
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * Google Autocomplete Address Zip Only (US) Question
+   * 
+   * @description Simplified address input - requires only zip, other fields optional
+   * @_ffs "address_group" - Maps to address_group field mapping
+   * @autocomplete Google Places API integration
+   * @validation Only zip code required, other fields optional
+   * @use_case Quick address collection when full address not needed
+   */
   ComponentCollection.Instance.add({
     name: "autocompleteaddress2",
     title: "Autocomplete Address Zip Only (US)",
     iconName: "icon-house-circle-check",
     showInToolbox: true,
     onInit: () => {
-      Serializer.getProperty("autocompleteaddress2", "name").readOnly = true;
-      Serializer.getProperty("autocompleteaddress2", "_ffs").readOnly = true;
+      setPropertyReadOnly("autocompleteaddress2", "name");
+      setPropertyReadOnly("autocompleteaddress2", "_ffs");
     },
     elementsJSON: [
       {
@@ -528,14 +608,23 @@ const globalInit = () => {
     ],
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * Google Autocomplete Address (Canada) Question
+   * 
+   * @description Multi-field address input with Google Places autocomplete (Canada only)
+   * @_ffs "address_group" - Maps to address_group field mapping
+   * @autocomplete Google Places API integration, restricted to Canada
+   * @validation Canadian postal codes, province abbreviations
+   * @country_restriction ["ca"] - Canada only
+   */
   ComponentCollection.Instance.add({
     name: "autocompleteaddresscan",
     title: "Autocomplete Address (CAN)",
     iconName: "icon-house-circle-check",
     showInToolbox: true,
     onInit: () => {
-      Serializer.getProperty("autocompleteaddresscan", "name").readOnly = true;
-      Serializer.getProperty("autocompleteaddresscan", "_ffs").readOnly = true;
+      setPropertyReadOnly("autocompleteaddresscan", "name");
+      setPropertyReadOnly("autocompleteaddresscan", "_ffs");
     },
     elementsJSON: [
       {
@@ -696,14 +785,23 @@ const globalInit = () => {
     ],
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * Google Autocomplete Address (All Countries) Question
+   * 
+   * @description Multi-field address input with Google Places autocomplete (worldwide)
+   * @_ffs "address_group" - Maps to address_group field mapping
+   * @autocomplete Google Places API integration, no country restrictions
+   * @validation Flexible validation for international addresses
+   * @country_restriction None - supports all countries
+   */
   ComponentCollection.Instance.add({
     name: "autocompleteaddressall",
     title: "Autocomplete Address (ALL)",
     iconName: "icon-house-circle-check",
     showInToolbox: true,
     onInit: () => {
-      Serializer.getProperty("autocompleteaddressall", "name").readOnly = true;
-      Serializer.getProperty("autocompleteaddressall", "_ffs").readOnly = true;
+      setPropertyReadOnly("autocompleteaddressall", "name");
+      setPropertyReadOnly("autocompleteaddressall", "_ffs");
     },
     elementsJSON: [
       {
@@ -862,17 +960,35 @@ const globalInit = () => {
     ],
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * Email Address Question
+   * 
+   * @description Email input with validation and server-side verification
+   * @_ffs "email" - Maps to email field in APIs
+   * @validation Email format + server validation via validateEmail function
+   * @autocomplete "email"
+   * @required true
+   */
   ComponentCollection.Instance.add({
     name: "email",
     title: "Email Address",
     iconName: "icon-at",
     showInToolbox: true,
-    inheritBaseProps: true,
+    inheritBaseProps: ["isRequired", "description", "visible", "enable"],
     onInit: () => {
-      Serializer.getProperty("email", "name").readOnly = true;
-      Serializer.getProperty("email", "_ffs").readOnly = true;
-      // Ensure isRequired property is inherited from survey definition
-      Serializer.addProperty("emailtextinput", "isRequired");
+      setPropertyReadOnly("email", "name");
+      setPropertyReadOnly("email", "_ffs");
+      // REMOVED: Don't add isRequired to base types - it breaks the property grid
+      // Serializer.addProperty("emailtextinput", "isRequired");
+    },
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        // Sync isRequired from parent to child
+        child.isRequired = question.isRequired;
+      }
     },
     questionJSON: {
       type: "emailtextinput",
@@ -903,17 +1019,35 @@ const globalInit = () => {
     },
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * Phone Number Question
+   * 
+   * @description Phone input with US formatting mask
+   * @_ffs "phone" - Maps to phone field in APIs
+   * @mask "999-999-9999" - US phone format
+   * @autocomplete "tel"
+   * @note Includes SMS consent disclaimer
+   */
   ComponentCollection.Instance.add({
     name: "phone",
     title: "Phone Number",
     iconName: "icon-phone",
     showInToolbox: true,
-    inheritBaseProps: true,
+    inheritBaseProps: ["isRequired", "description", "visible", "enable"],
     onInit: () => {
-      Serializer.getProperty("phone", "name").readOnly = true;
-      Serializer.getProperty("phone", "_ffs").readOnly = true;
-      // Ensure isRequired property is inherited from survey definition for text type questions
-      Serializer.addProperty("text", "isRequired");
+      setPropertyReadOnly("phone", "name");
+      setPropertyReadOnly("phone", "_ffs");
+      // REMOVED: Don't add isRequired to text type - it breaks the property grid for ALL text questions
+      // Serializer.addProperty("text", "isRequired");
+    },
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        // Sync isRequired from parent to child
+        child.isRequired = question.isRequired;
+      }
     },
     questionJSON: {
       type: "text",
@@ -923,21 +1057,45 @@ const globalInit = () => {
         es: "Teléfono",
         fr: "Téléphone",
       },
+      description: {
+        en: "Standard message and data rates may apply.",
+        es: "Pueden aplicar las tarifas normales para mensajes de texto y datos.",
+        fr: "Les tarifs standard pour les messages et les données peuvent s'appliquer.",
+      },
+      descriptionLocation: "underInput",
       inputType: "tel",
       autocomplete: "tel",
       maskType: "pattern",
       maskSettings: {
+          "saveMaskedValue": true,
           "pattern": "999-999-9999"
       }
     },
   } as ICustomQuestionTypeConfiguration);
 
+  /**
+   * General Email Opt-In Question
+   * 
+   * @description Boolean checkbox for Ford email marketing consent
+   * @_ffs Not typically set - handled by brand-specific opt-ins
+   * @privacy_policy Includes Ford privacy policy link
+   * @note For brand-specific opt-ins, use fordoptin or lincolnoptin instead
+   */
   ComponentCollection.Instance.add({
     name: "optin",
     title: "Check Opt-In",
     iconName: "icon-checkbox",
     showInToolbox: true,
     inheritBaseProps: true,
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        // Sync isRequired from parent to child
+        child.isRequired = question.isRequired;
+      }
+    },
     questionJSON: {
       type: "boolean",
       renderAs: "checkbox",
@@ -976,6 +1134,15 @@ const globalInit = () => {
     isSerializable: true,
   });
 
+  /**
+   * Adult Waiver Question
+   * 
+   * @description Multi-field waiver with markdown text, signature, and agreement checkbox
+   * @_ffs "signature" - Maps to signature field in APIs (extracted from signature object)
+   * @fields waiverText (markdown), signature* (text), waiver_agree* (checkbox)
+   * @signature_extraction Handles signature object -> string conversion
+   * @legal Requires typed signature and checkbox agreement
+   */
   ComponentCollection.Instance.add({
     name: "adultwaiver",
     title: "Adult Waiver",
@@ -983,8 +1150,8 @@ const globalInit = () => {
     showInToolbox: true,
     inheritBaseProps: true,
     onInit: () => {
-      Serializer.getProperty("adultwaiver", "name").readOnly = true;
-      Serializer.getProperty("adultwaiver", "_ffs").readOnly = true;
+      setPropertyReadOnly("adultwaiver", "name");
+      setPropertyReadOnly("adultwaiver", "_ffs");
       Serializer.addProperty("adultwaiver", {
         name: "waiverMarkdown",
         displayName: "Waiver Markdown",
@@ -1052,6 +1219,15 @@ const globalInit = () => {
     },
   } as ICustomQuestionTypeConfigurationWaiver);
 
+  /**
+   * Minor Waiver Question
+   * 
+   * @description Conditional waiver for events with minors - shows fields only if minors present
+   * @_ffs "minor_signature" - Maps to minor_signature field (only if minorsYesNo='1')
+   * @conditional All minor fields visible only if "Yes" to having minors
+   * @fields minorsYesNo*, minorWaiverText, minorName1*, minorName2, minorName3, minorSignature*
+   * @signature_handling Parent/guardian signature required only if minors are present
+   */
   ComponentCollection.Instance.add({
     name: "minorwaiver",
     title: "Minor Waiver",
@@ -1059,8 +1235,8 @@ const globalInit = () => {
     showInToolbox: true,
     inheritBaseProps: true,
     onInit: () => {
-      Serializer.getProperty("minorwaiver", "name").readOnly = true;
-      Serializer.getProperty("minorwaiver", "_ffs").readOnly = true;
+      setPropertyReadOnly("minorwaiver", "name");
+      setPropertyReadOnly("minorwaiver", "_ffs");
       Serializer.addProperty("minorwaiver", {
         name: "waiverMarkdown",
         displayName: "Waiver Markdown",

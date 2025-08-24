@@ -17,6 +17,22 @@ interface ParsedAddress {
 export class FDSTextRenderer extends SurveyQuestionElementBase {
     constructor(props: any) {
         super(props);
+        
+        // Force re-render when errors change (for composite questions)
+        const question = this.question;
+        if (question) {
+            question.registerFunctionOnPropertyValueChanged("errors", () => {
+                this.forceUpdate();
+            });
+            
+            // Also listen to parent errors if this is a child of a composite
+            const parentQuestion = question.parent;
+            if (parentQuestion) {
+                parentQuestion.registerFunctionOnPropertyValueChanged("errors", () => {
+                    this.forceUpdate();
+                });
+            }
+        }
     }
 
     protected get question(): QuestionTextModel {
@@ -32,9 +48,17 @@ export class FDSTextRenderer extends SurveyQuestionElementBase {
         const inputType = this.getInputType();
         const optionalText = getOptionalText(question);
         
-        // Get validation state from question
-        const isInvalid = question.errors && question.errors.length > 0;
-        const errorMessage = isInvalid ? question.errors[0]?.text : undefined;
+        // Get validation state from question or parent (for composite questions)
+        // For composite questions, the error is on the parent question
+        const parentQuestion = question.parent;
+        
+        const questionErrors = question.errors && question.errors.length > 0 ? question.errors : 
+                              (parentQuestion && parentQuestion.errors && parentQuestion.errors.length > 0 ? parentQuestion.errors : []);
+        const isInvalid = questionErrors.length > 0;
+        // Get error text - it might be in .text or need to call .getText()
+        const errorMessage = isInvalid ? 
+            (questionErrors[0]?.getText ? questionErrors[0].getText() : questionErrors[0]?.text) : 
+            undefined;
         
         // Determine if this question uses pattern masking
         const usesMasking = question.maskType === "pattern" && question.maskSettings?.pattern;
@@ -43,17 +67,30 @@ export class FDSTextRenderer extends SurveyQuestionElementBase {
         const getDisplayValue = (): string => {
             const rawValue = question.value || "";
             if (usesMasking) {
-                return this.applyInputMask(rawValue, question.maskSettings.pattern);
+                const saveMasked = question.maskSettings?.saveMaskedValue === true;
+                
+                if (saveMasked) {
+                    // Value is already masked, return as-is
+                    return rawValue;
+                } else {
+                    // Value is unmasked, apply mask for display
+                    return this.applyInputMask(rawValue, question.maskSettings.pattern);
+                }
             }
             return rawValue;
         };
+        // For composite questions, check parent's isRequired too
+        const isRequired = question.isRequired || (parentQuestion && parentQuestion.isRequired);
+        
+        // Check if title and description should be hidden
+        const isTitleHidden = question.titleLocation === "hidden";
         
         return (
             <StyledTextField
-                label={renderLabel(question.fullTitle)}
-                description={renderDescription(question.description)}
-                isRequired={question.isRequired}
-                requiredMessage={optionalText}
+                label={isTitleHidden ? undefined : renderLabel(question.fullTitle)}
+                description={isTitleHidden ? undefined : renderDescription(question.description)}
+                isRequired={isRequired}
+                requiredMessage={!isRequired ? optionalText : undefined}
                 placeholder={usesMasking 
                     ? this.getMaskPlaceholder(question.maskSettings.pattern) 
                     : (question.placeholder || "")}
@@ -65,9 +102,17 @@ export class FDSTextRenderer extends SurveyQuestionElementBase {
                 autoComplete={question.autocomplete}
                 onChange={(value: string) => {
                     if (usesMasking) {
-                        // Store only the unmasked (digits-only) value in the question
-                        const unmaskedValue = this.removeMaskFormatting(value);
-                        question.value = unmaskedValue;
+                        // Check if we should save the masked value
+                        const saveMasked = question.maskSettings?.saveMaskedValue === true;
+                        
+                        if (saveMasked) {
+                            // Store the masked value directly
+                            question.value = this.applyInputMask(value, question.maskSettings.pattern);
+                        } else {
+                            // Store only the unmasked (digits-only) value in the question
+                            const unmaskedValue = this.removeMaskFormatting(this.applyInputMask(value, question.maskSettings.pattern));
+                            question.value = unmaskedValue;
+                        }
                         
                         // Force re-render to show masked display
                         this.forceUpdate();

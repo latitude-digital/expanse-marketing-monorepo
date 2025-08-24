@@ -7,27 +7,42 @@
     "test": "pnpm -r test",
     "build": "pnpm -r build",
     "dev": "pnpm -r dev",
-    "dev:all": "concurrently \"pnpm --filter @expanse/web-app dev\" \"pnpm --filter @expanse/firebase serve\"",
+    "dev:web": "pnpm --filter @expanse/web-app dev",
+    "dev:all": "concurrently \"pnpm firebase:emulators\" \"pnpm --filter @expanse/web-app dev\" \"pnpm dev:open-browsers\"",
+    "dev:open-browsers": "sleep 8 && open http://localhost:4002 && open http://localhost:8001/admin",
     "shared:build": "pnpm --filter @expanse/shared build",
     "shared:dev": "pnpm --filter @expanse/shared dev",
     "native:start": "pnpm --filter @expanse/native-app start",
     "native:ios": "pnpm --filter @expanse/native-app ios",
     "native:android": "pnpm --filter @expanse/native-app android",
+    "staging:web": "pnpm --filter @expanse/web-app start:staging",
+    "production:web": "pnpm --filter @expanse/web-app start:production",
     "firebase:build": "pnpm --filter @expanse/firebase build",
     "firebase:serve": "pnpm --filter @expanse/firebase serve",
     "firebase:deploy": "firebase deploy",
     "firebase:deploy:functions": "firebase deploy --only functions",
     "firebase:deploy:hosting": "firebase deploy --only hosting",
-    "firebase:emulators": "firebase emulators:start",
-    "deploy:production": "pnpm build && firebase deploy",
+    "firebase:emulators": "cd packages/firebase && firebase use dev && firebase emulators:start",
+    "deploy:production": "./scripts/production-build-deploy.zsh",
+    "deploy:staging": "./scripts/staging-build-deploy.zsh",
     "ford-ui:update": "git submodule update --init --recursive && cd packages/ford-ui && git pull origin develop && nx build @ui/ford-ui-components && cd ../.. && ./packages/web-app/scripts/sync-ford-ui.sh",
-    "postinstall": "echo 'CSS sync handled by sync-ford-ui.sh script'"
+    "postinstall": "echo 'CSS sync handled by sync-ford-ui.sh script'",
+    "test:e2e": "bash ./scripts/test-e2e.sh",
+    "test:e2e:auto": "node ./scripts/test-e2e-playwright.js",
+    "test:e2e:manual": "bash ./scripts/test-e2e.sh"
   },
-  "keywords": ["monorepo", "expanse", "marketing", "survey", "saas"],
+  "keywords": [
+    "monorepo",
+    "expanse",
+    "marketing",
+    "survey",
+    "saas"
+  ],
   "author": "Latitude Digital",
   "license": "ISC",
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "playwright": "^1.54.2"
   },
   "dependencies": {
     "@next/env": "^15.4.5",

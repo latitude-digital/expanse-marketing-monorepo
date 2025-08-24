@@ -81,9 +81,21 @@ export function mapSurveyToFordSurvey(survey: any, surveyData: any, event?: any)
 
   // Compose the FordSurvey object
   const fordSurvey: FordSurvey = createDefaultFordSurvey();
+  
+  // Helper function to filter out undefined values
+  const filterUndefined = (obj: any) => {
+    const filtered: any = {};
+    for (const key in obj) {
+      if (obj[key] !== undefined) {
+        filtered[key] = obj[key];
+      }
+    }
+    return filtered;
+  };
+  
   Object.assign(fordSurvey, {
-    ...ffsData,
-    ...surveyData,
+    ...filterUndefined(ffsData),
+    ...filterUndefined(surveyData),
     custom_data: (Object.keys(customData).length > 0 || surveyData.customData)
       ? JSON.stringify({ ...customData, ...(surveyData.customData || {}) })
       : null,

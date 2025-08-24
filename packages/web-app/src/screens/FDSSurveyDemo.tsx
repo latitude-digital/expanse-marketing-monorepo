@@ -19,6 +19,13 @@ const demoSurveyJSON = {
           "title": "**Ford Vehicles of Interest**",
           "description": "Select up to 3 Ford vehicles you're interested in learning more about",
           "maxSelectedChoices": 3
+        },
+        {
+          "type": "fordvehiclesdriven",
+          "name": "fordVehiclesDriven",
+          "title": "**Ford Vehicles Driven (Test Drive Demo)**",
+          "description": "This tests the TD filter - only BRONCO, ESCAPE, and F-150 should show",
+          "onlyInclude": "202,172,175"
         }
       ]
     },
@@ -162,7 +169,8 @@ const FDSSurveyDemoScreen: React.FC = () => {
           import("../surveysjs_renderers/FDSRenderers/FDSDropdown"),
           import("../surveysjs_renderers/FDSRenderers/FDSTextArea"),
           import("../surveysjs_renderers/FDSRenderers/FDSToggle"),
-          import("../surveysjs_renderers/CheckboxVOI/index"),
+          import("../surveysjs_renderers/FDSRenderers/CheckboxVOI/index"),
+          import("../surveysjs_renderers/FDSRenderers/CheckboxVehiclesDriven/index"),
           import("../surveyjs_questions/FordSurveys"),
         ]);
         

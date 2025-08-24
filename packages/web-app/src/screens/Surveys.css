@@ -10,3 +10,45 @@
 .sd-completedpage:before {
     display: none;
 }
+
+/* Ford survey full width on mobile - remove default SurveyJS padding */
+@media (max-width: 767px) {
+    /* Remove padding from container on mobile */
+    .gdux-ford .sd-container-modern {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    
+    /* Remove padding from body on mobile */
+    .gdux-ford .sd-body,
+    .gdux-ford .sd-body--responsive {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    
+    /* Add small padding to the actual content panels */
+    .gdux-ford .sd-panel__content {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+/* Desktop: Keep default padding and add max-width */
+@media (min-width: 768px) {
+    .gdux-ford .sd-container-modern {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+}
+
+/* Remove panel borders for Ford surveys */
+.gdux-ford .sd-panel {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+.gdux-ford .sd-element--with-frame {
+    border: none !important;
+    box-shadow: none !important;
+}

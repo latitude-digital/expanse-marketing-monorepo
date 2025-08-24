@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 
 import { useNavigate, useParams } from "react-router-dom";
-import { getFirestore, doc, getDoc, Timestamp, FirestoreDataConverter, DocumentData, QueryDocumentSnapshot, SnapshotOptions, setDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, Timestamp, FirestoreDataConverter, DocumentData, QueryDocumentSnapshot, SnapshotOptions, setDoc, updateDoc } from "firebase/firestore";
 import { useAuthState } from 'react-firebase-hooks/auth';
 
 import auth from '../../services/auth';
 import app from '../../services/firebase';
+import db from '../../services/db';
 
 import { slk, SurveyModel } from "survey-core";
 
@@ -28,11 +29,17 @@ initSurvey();
 
 const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
     toFirestore(event: ExpanseEvent): DocumentData {
+        const surveyModel = event.surveyJSModel || event.questions || {};
+        const themeModel = event.surveyJSTheme || event.theme || {};
+        
         return {
             ...event,
             brand: event.brand || null,
-            questions: JSON.stringify(event.questions || {}),
-            theme: JSON.stringify(event.theme || {}),
+            // Write to both old and new fields for backward compatibility
+            questions: typeof surveyModel === 'string' ? surveyModel : JSON.stringify(surveyModel),
+            surveyJSModel: typeof surveyModel === 'string' ? JSON.parse(surveyModel) : surveyModel,
+            theme: typeof themeModel === 'string' ? themeModel : JSON.stringify(themeModel),
+            surveyJSTheme: typeof themeModel === 'string' ? JSON.parse(themeModel) : themeModel,
             preRegDate: event.preRegDate ? Timestamp.fromDate(moment(event.preRegDate).startOf('day').toDate()) : null,
             startDate: Timestamp.fromDate(moment(event.startDate).startOf('day').toDate()),
             endDate: Timestamp.fromDate(moment(event.endDate).endOf('day').toDate()),
@@ -73,8 +80,11 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
             checkOutEmail: data.checkOutEmail,
             checkInDisplay: data.checkInDisplay,
             disabled: data.disabled,
-            questions: JSON.parse(data.questions),
-            theme: JSON.parse(data.theme),
+            // Use new map fields if available, otherwise fall back to parsing JSON strings
+            questions: data.surveyJSModel || (data.questions ? JSON.parse(data.questions) : {}),
+            surveyJSModel: data.surveyJSModel || (data.questions ? JSON.parse(data.questions) : {}),
+            theme: data.surveyJSTheme || (data.theme ? JSON.parse(data.theme) : {}),
+            surveyJSTheme: data.surveyJSTheme || (data.theme ? JSON.parse(data.theme) : {}),
             thanks: data.thanks,
             fordEventID: data.fordEventID || undefined,
             lincolnEventID: data.lincolnEventID || undefined,
@@ -96,7 +106,6 @@ function DashboardScreen() {
     const [thisEvent, setThisEvent] = useState<ExpanseEvent>();
     const [thisSurvey, setThisSurvey] = useState<SurveyModel>();
 
-    const db = getFirestore(app);
     const eventID: string = params.eventID!;
 
     useEffect(() => {

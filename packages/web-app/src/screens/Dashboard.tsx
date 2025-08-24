@@ -1,11 +1,12 @@
 import { useEffect, useState, useRef } from 'react';
 
 import { useNavigate, useParams } from "react-router-dom";
-import { getFirestore, doc, getDoc, collection, query, getDocs } from "firebase/firestore";
+import { doc, getDoc, collection, query, getDocs } from "firebase/firestore";
 import auth from '../services/auth';
 
 import { useAuthState } from 'react-firebase-hooks/auth';
 import app from '../services/firebase';
+import db from '../services/db';
 import { ensureCloudFrontAccess } from '../services/cloudFrontAuth';
 
 import { Model, Question, slk } from "survey-core";
@@ -16,6 +17,7 @@ import { ColDef, GridApi, GridReadyEvent, ModuleRegistry, AllCommunityModule } f
 import AllSurveys from '../surveyjs_questions/AllSurveys';
 import FordSurveys from '../surveyjs_questions/FordSurveys';
 import LincolnSurveys from '../surveyjs_questions/LincolnSurveys';
+import FMCSurveys from '../surveyjs_questions/FMCSurveys';
 // Import AG Grid CSS
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-material.css';
@@ -37,6 +39,7 @@ slk(
 AllSurveys.globalInit();
 FordSurveys.fordInit();
 LincolnSurveys.lincolnInit();
+FMCSurveys.fmcInit();
 
 // Helper function to intelligently format array values
 const formatArrayValue = (value: any): string => {
@@ -58,8 +61,69 @@ const formatArrayValue = (value: any): string => {
   }
 };
 
+// Helper function to build a map of choice values to display text for all questions
+const buildChoicesMap = (survey: Model): Map<string, Map<any, string>> => {
+  const choicesMap = new Map<string, Map<any, string>>();
+  
+  // Get all questions from the survey
+  const allQuestions = survey.getAllQuestions();
+  
+  allQuestions.forEach(question => {
+    const questionChoices = new Map<any, string>();
+    
+    // Check if question has choices
+    if ('choices' in question && Array.isArray((question as any).choices)) {
+      const choices = (question as any).choices;
+      choices.forEach((choice: any) => {
+        if (typeof choice === 'string') {
+          // Simple string choice
+          questionChoices.set(choice, choice);
+        } else if (choice && typeof choice === 'object') {
+          // Object with value and text
+          const value = choice.value !== undefined ? choice.value : choice;
+          const text = choice.text || choice.value || String(value);
+          questionChoices.set(value, text);
+          // Also map string version of the value for safety
+          questionChoices.set(String(value), text);
+        }
+      });
+    }
+    
+    // Also check for choicesByUrl (for dynamic choices like vehicles)
+    if ('choicesByUrl' in question && (question as any).choicesByUrl) {
+      // For choicesByUrl, we'll need to handle this differently
+      // The choices might be loaded dynamically
+      const visibleChoices = (question as any).visibleChoices;
+      if (visibleChoices && Array.isArray(visibleChoices)) {
+        visibleChoices.forEach((choice: any) => {
+          if (typeof choice === 'string') {
+            questionChoices.set(choice, choice);
+          } else if (choice && typeof choice === 'object') {
+            const value = choice.value !== undefined ? choice.value : choice.id;
+            const text = choice.text || choice.name || String(value);
+            questionChoices.set(value, text);
+            // Also map string version of the value
+            questionChoices.set(String(value), text);
+          }
+        });
+      }
+    }
+    
+    if (questionChoices.size > 0) {
+      choicesMap.set(question.name, questionChoices);
+    }
+  });
+  
+  return choicesMap;
+};
+
 // Convert SurveyJS questions to AG Grid column definitions
-const convertQuestionsToColumns = (questions: Question[], showMetadata: boolean = false, surveyModel?: Model): ColDef[] => {
+const convertQuestionsToColumns = (
+  questions: Question[], 
+  showMetadata: boolean = false, 
+  surveyModel?: Model,
+  choicesMap?: Map<string, Map<any, string>>
+): ColDef[] => {
   console.log('=== convertQuestionsToColumns called ===');
   console.log('Input questions length:', questions.length);
   console.log('Questions details:', questions.map(q => ({ 
@@ -71,7 +135,7 @@ const convertQuestionsToColumns = (questions: Question[], showMetadata: boolean 
   })));
   
   const baseColumns: ColDef[] = [
-    { field: 'id', headerName: 'ID', hide: true, suppressColumnsToolPanel: true },
+    { field: 'id', headerName: 'ID', hide: !showMetadata, suppressColumnsToolPanel: !showMetadata },
     { 
       field: 'survey_date', 
       headerName: 'Survey Date', 
@@ -480,6 +544,26 @@ const convertQuestionsToColumns = (questions: Question[], showMetadata: boolean 
             return zipStr;
           }
           
+          // Try to get the display value using choices map first
+          if (choicesMap && params.colDef.field) {
+            const questionChoices = choicesMap.get(params.colDef.field);
+            if (questionChoices) {
+              // Handle arrays - map each value to its display text
+              if (Array.isArray(params.value)) {
+                const displayValues = params.value.map(val => {
+                  const displayText = questionChoices.get(val) || questionChoices.get(String(val));
+                  return displayText || val;
+                });
+                return displayValues.join(', ');
+              }
+              // Handle single values
+              const displayText = questionChoices.get(params.value) || questionChoices.get(String(params.value));
+              if (displayText) {
+                return displayText;
+              }
+            }
+          }
+          
           // Try to get the display value from the survey model
           if (surveyModel && params.colDef.field) {
             const question = surveyModel.getQuestionByName(params.colDef.field);
@@ -547,6 +631,7 @@ function DashboardScreen() {
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
   const [quickFilterText, setQuickFilterText] = useState<string>('');
   const [showMetadataFields, setShowMetadataFields] = useState<boolean>(false);
+  const [choicesMap, setChoicesMap] = useState<Map<string, Map<any, string>>>(new Map());
 
   useEffect(() => {
     console.error(userError);
@@ -555,7 +640,6 @@ function DashboardScreen() {
   // Debug logging
   console.log('Dashboard render - columnDefs:', columnDefs.length, 'answers:', allAnswers?.length, 'questions:', allQuestions?.length);
 
-  const db = getFirestore(app);
   const eventID: string = params.eventID!;
 
   useEffect(() => {
@@ -606,7 +690,9 @@ function DashboardScreen() {
         setThisEvent(incomingEvent);
       }
 
-      const surveyJSON = JSON.parse(incomingEvent?.questions || '{}');
+      // Use new map field if available, otherwise parse JSON string
+      const surveyJSON = incomingEvent?.surveyJSModel || 
+                        (incomingEvent?.questions ? JSON.parse(incomingEvent.questions) : {});
       console.log('=== Original Survey JSON ===');
       console.log('Pages:', surveyJSON.pages?.length);
       console.log('Original survey structure:', JSON.stringify(surveyJSON, null, 2));
@@ -674,6 +760,15 @@ function DashboardScreen() {
 
       setThisSurvey(survey);
       
+      // Build the choices map for displaying pretty labels
+      const newChoicesMap = buildChoicesMap(survey);
+      setChoicesMap(newChoicesMap);
+      console.log('=== Choices map built ===', newChoicesMap);
+      
+      // Define non-question types that should be excluded from the dashboard
+      // These are display-only elements from the "Misc" category in SurveyJS
+      const nonQuestionTypes = ['html', 'markdown', 'image', 'expression'];
+      
       // Function to recursively get all questions from panels
       const getAllQuestionsFromPanel = (panel: any): any[] => {
         let questions: any[] = [];
@@ -683,8 +778,8 @@ function DashboardScreen() {
             if (element.type === 'panel') {
               // Recursively get questions from nested panels
               questions = questions.concat(getAllQuestionsFromPanel(element));
-            } else {
-              // This is a question, add it
+            } else if (!element.type || !nonQuestionTypes.includes(element.type)) {
+              // This is a question (not a display-only element), add it
               questions.push(element);
             }
           }
@@ -702,8 +797,8 @@ function DashboardScreen() {
               if (element.type === 'panel') {
                 // Get questions from panel
                 allQuestions = allQuestions.concat(getAllQuestionsFromPanel(element));
-              } else if (!element.type || element.type !== 'html') {
-                // This is a question (not an HTML element), add it
+              } else if (!element.type || !nonQuestionTypes.includes(element.type)) {
+                // This is a question (not a display-only element), add it
                 allQuestions.push(element);
               }
             }
@@ -717,6 +812,10 @@ function DashboardScreen() {
       const filteredQuestions = allQuestions.filter(q => {
         // Always exclude these metadata fields as they're handled separately
         if (metadataFieldsToAlwaysExclude.includes(q.name)) {
+          return false;
+        }
+        // Double-check that non-question types are excluded
+        if (q.type && nonQuestionTypes.includes(q.type)) {
           return false;
         }
         // If showMetadataFields is false, exclude fields starting with underscore
@@ -795,7 +894,7 @@ function DashboardScreen() {
     if (!thisSurvey || !allAnswers) return;
 
     // Convert questions to AG Grid column definitions
-    let baseColumns = convertQuestionsToColumns(allQuestions || [], showMetadataFields, thisSurvey);
+    let baseColumns = convertQuestionsToColumns(allQuestions || [], showMetadataFields, thisSurvey, choicesMap);
     
     // If we have very few questions but have answer data, dynamically add columns
     // from the actual data fields (excluding system fields)
@@ -945,7 +1044,7 @@ function DashboardScreen() {
       setColumnDefs(baseColumns);
     }
 
-  }, [thisSurvey, allAnswers, allQuestions, showMetadataFields]);
+  }, [thisSurvey, allAnswers, allQuestions, showMetadataFields, choicesMap]);
 
   // Track if we've auto-sized columns on first data load
   const [hasAutoSized, setHasAutoSized] = useState(false);
