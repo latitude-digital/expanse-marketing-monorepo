@@ -4,7 +4,7 @@ import { Survey } from "survey-react-ui";
 import * as SurveyCore from "survey-core";  
 import { v4 as uuidv4 } from 'uuid';
 import { useParams } from 'react-router-dom';
-import { Loader } from "@progress/kendo-react-indicators";
+import { SurveySkeleton } from '../components/LoadingStates';
 import * as Sentry from "@sentry/react";
 // import { Button } from '../../../ford-ui/packages/@ui/ford-ui-components/src/components/button'; // Commented out for TypeScript migration testing
 import { mapSurveyToFordSurvey } from '../helpers/mapSurveyToFord';
@@ -34,7 +34,6 @@ import { initializeFDSForBrand } from '../helpers/fdsInitializer';
 import { StyledButton } from '@ui/ford-ui-components/src/v2/button/Button';
 
 import "survey-core/survey-core.min.css";
-import "./Surveys.css";
 
 // TypeScript interfaces
 interface RouteParams {
@@ -263,7 +262,7 @@ const SurveyComponent: React.FC = () => {
                     if (res.data.waiver) {
                         const waiverText = JSON.parse(res.data.waiver).english.body.replace(/(?:\r\n|\r|\n)/g, '<br/><br/>');
 
-                        let waiverPage = {
+                        let waiverPage:any = {
                             "name": "pageWaiver",
                             "elements": [
                                 {
@@ -431,7 +430,7 @@ ${minorWaiverText}
                         sender.setValue('start_time', new Date());
                         sender.setValue('survey_date', new Date());
                         sender.setValue('event_id', res.data?.event_id);
-                        sender.setValue('app_version', 'surveyjs_1.0');
+                        sender.setValue('app_version', 'surveyjs_2.0');
                         sender.setValue('abandoned', 0);
                         sender.setValue("custom_data", {});
                         console.log('survey started', sender.getValue('device_survey_guid'));
@@ -658,7 +657,7 @@ ${minorWaiverText}
     }
 
     if (!thisSurvey) {
-        return <Loader type="converging-spinner" size="large" />;
+        return <SurveySkeleton />;
     }
 
     if (thisEvent?.event_ended) {

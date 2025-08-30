@@ -28,7 +28,6 @@ export default defineConfig(async ({ command, mode }) => {
           manualChunks: {
             vendor: ['react', 'react-dom', 'react-router-dom'],
             survey: ['survey-core', 'survey-react-ui', 'survey-analytics'],
-            kendo: ['@progress/kendo-react-buttons', '@progress/kendo-react-common', '@progress/kendo-react-inputs', '@progress/kendo-react-indicators'],
             firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/functions'],
             utils: ['lodash', 'moment', 'uuid']
           }
@@ -89,7 +88,8 @@ export default defineConfig(async ({ command, mode }) => {
         'lodash',
         'moment',
         'survey-core',
-        'survey-react-ui'
+        'survey-react-ui',
+        '@expanse/shared'
       ],
       exclude: [
         'firebase'

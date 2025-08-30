@@ -29,16 +29,11 @@ import Survey from './screens/Survey';
 import Thanks from './screens/Thanks';
 import Stats from './screens/Stats';
 import Dashboard from './screens/Dashboard';
-import Charts from './screens/Charts';
-
-import FDSDemo from './screens/FDS_Demo';
-const FDSSurveyDemo = React.lazy(() => import('./screens/FDSSurveyDemo'));
-
-import BroncoQuiz from './screens/BroncoQuiz';
 
 import Admin from './screens/admin/index';
 import EditEvent from './screens/admin/EditEvent';
 import EditSurvey from './screens/admin/EditSurvey';
+import ReUpload from './screens/admin/ReUpload';
 
 console.log('window._env_ at runtime:', window._env_);
 
@@ -68,12 +63,6 @@ root.render(
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<App />}>
-          <Route path="demo" element={<FDSDemo />} />
-          <Route path="fds-survey-demo" element={
-            <React.Suspense fallback={<div>Loading FDS Demo...</div>}>
-              <FDSSurveyDemo />
-            </React.Suspense>
-          } />
           <Route index element={<Home />} />
           <Route path="login" element={<Login />} />
           <Route path="welcome" element={<Login />} />
@@ -92,19 +81,17 @@ root.render(
           <Route path="s/:eventID/stats/login" element={<Login />} />
           <Route path="s/:eventID/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="s/:eventID/dashboard/login" element={<Login />} />
-          <Route path="s/:eventID/charts" element={<ProtectedRoute><Charts /></ProtectedRoute>} />
-          <Route path="s/:eventID/charts/login" element={<Login />} />
           <Route path="thanks" element={<Thanks />} />
-
-          <Route path="bronco/" element={<BroncoQuiz />} />
 
           <Route path="admin" element={<ProtectedRoute requireAdmin={true}><Admin /></ProtectedRoute>} />
           <Route path="admin/event/:eventID" element={<ProtectedRoute requireAdmin={true}><EditEvent /></ProtectedRoute>} />
           <Route path="admin/event/:eventID/survey" element={<ProtectedRoute requireAdmin={true}><EditSurvey /></ProtectedRoute>} />
+          <Route path="admin/reupload" element={<ProtectedRoute requireAdmin={true}><ReUpload /></ProtectedRoute>} />
           
           <Route path="admin/login" element={<Login />} />
           <Route path="admin/event/:eventID/login" element={<Login />} />
           <Route path="admin/event/:eventID/survey/login" element={<Login />} />
+          <Route path="admin/reupload/login" element={<Login />} />
         </Route>
       </Routes>
     </BrowserRouter>

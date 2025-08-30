@@ -20,7 +20,6 @@ import { ICreatorOptions } from 'survey-creator-core';
 
 import 'survey-core/survey-core.css';
 import 'survey-creator-core/survey-creator-core.css';
-import "../Surveys.css";
 import "./admin.css";
 import './EditSurvey.css';
 

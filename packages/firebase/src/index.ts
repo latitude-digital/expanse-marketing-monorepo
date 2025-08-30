@@ -31,6 +31,14 @@ import {
 import { setCloudFrontCookies as realCloudFrontImpl } from "./setCloudFrontCookies";
 import { generateCreatorUploadUrl as generateCreatorUploadUrlImpl } from "./generateCreatorUploadUrl";
 import { generateRespondentUploadUrl as generateRespondentUploadUrlImpl } from "./generateRespondentUploadUrl";
+import { 
+  getFordLincolnEventsImpl,
+  getEventSurveysImpl,
+  reuploadEventSurveysImpl
+} from "./getEventsForReupload";
+
+// Re-export shared utilities from shared package
+export { uploadSurveyToAPI, type UploadResult } from "@expanse/shared";
 
 // Initialize Firebase Admin SDK with emulator support
 let app: admin.app.App;
@@ -58,6 +66,9 @@ const checkInOutSurvey = checkInOutSurveyImpl(app);
 const createNewUser = sparkpostCreateNewUserImpl(app);
 const generateCreatorUploadUrl = generateCreatorUploadUrlImpl;
 const generateRespondentUploadUrl = generateRespondentUploadUrlImpl;
+const getFordLincolnEvents = getFordLincolnEventsImpl(app);
+const getEventSurveys = getEventSurveysImpl(app);
+const reuploadEventSurveys = reuploadEventSurveysImpl(app);
 
 // Task-based functions (these don't need app parameter)
 // Create different trigger instances for staging and production
@@ -97,7 +108,10 @@ export const staging = {
   getBookeoProducts,
   getBookeoSlotsByProduct,
   holdBookeoBooking,
-  makeBookeoBooking
+  makeBookeoBooking,
+  getFordLincolnEvents,
+  getEventSurveys,
+  reuploadEventSurveys
 };
 
 // Production environment
@@ -122,5 +136,8 @@ export const prod = {
   getBookeoProducts,
   getBookeoSlotsByProduct,
   holdBookeoBooking,
-  makeBookeoBooking
+  makeBookeoBooking,
+  getFordLincolnEvents,
+  getEventSurveys,
+  reuploadEventSurveys
 };

@@ -45,7 +45,6 @@ pipeline {
 				sh "echo \"Building with REACT_APP_ENV=${env.REACT_APP_ENV}\""
 				
 				// sh "sed -i -- 's/%REACTBUILDVERSION%/${env.VERSION_NUMBER}/g' src/index.js"
-				sh "npx kendo-ui-license activate"
 				// sh "npx browserslist@latest --update-db"
 			}
 		}

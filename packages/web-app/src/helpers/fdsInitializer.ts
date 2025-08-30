@@ -9,6 +9,11 @@ import { AllSurveys, FordSurveys, LincolnSurveys, FMCSurveys } from '../surveyjs
 // FDS Renderer imports - conditionally loaded
 let FDSRenderersLoaded = false;
 
+// Export a function to check if FDS renderers are loaded
+export function areFDSRenderersLoaded(): boolean {
+  return FDSRenderersLoaded;
+}
+
 /**
  * Loads FDS renderers and registers them with useAsDefault: true
  * This replaces default SurveyJS renderers with Ford Design System components
@@ -29,9 +34,6 @@ async function loadFDSRenderers(): Promise<void> {
     const { FDSTextAreaRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSTextArea');
     const { FDSToggleRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSToggle');
     const { FDSRatingRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSRating');
-    
-    // Import custom survey question renderer
-    await import('../surveysjs_renderers/FDSRenderers/CustomSurveyQuestion');
 
     console.log('FDS renderers loaded successfully');
     FDSRenderersLoaded = true;
@@ -77,6 +79,16 @@ export async function initializeFDSForBrand(brand: string): Promise<void> {
     }
   } else {
     console.log(`No FDS loading for brand: ${brand} - using universal questions only`);
+  }
+
+  // Load and conditionally register CustomSurveyQuestion based on brand
+  try {
+    const customSurveyQuestionModule = await import('../surveysjs_renderers/FDSRenderers/CustomSurveyQuestion');
+    // Call the registration function which will check if FDS is loaded
+    customSurveyQuestionModule.registerCustomSurveyQuestion();
+  } catch (error) {
+    console.error('Failed to load CustomSurveyQuestion:', error);
+    // Non-critical error - continue without enhanced scroll-to-error
   }
 }
 

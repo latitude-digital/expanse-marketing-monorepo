@@ -19,6 +19,8 @@ node_modules/
 dist/
 build/
 .next/
+packages/shared/lib/
+packages/shared/dist/
 
 # Runtime data
 pids

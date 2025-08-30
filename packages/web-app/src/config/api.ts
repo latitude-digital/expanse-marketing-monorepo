@@ -3,45 +3,42 @@
  *
  * This file manages API endpoint configurations for different environments.
  * Environment is determined by:
- * 1. Build-time REACT_APP_ENV environment variable
+ * 1. Build-time VITE_ENV environment variable
  * 2. Default to production if none is available
  */
 
-// Environment type definition
-type Environment = 'production' | 'staging' | 'local';
+import { 
+  Environment,
+  FORD_BASE_URLS, 
+  FORD_ENDPOINTS, 
+  getFordApiUrl,
+  LINCOLN_BASE_URLS, 
+  LINCOLN_ENDPOINTS, 
+  getLincolnApiUrl 
+} from '@expanse/shared';
 
-// Available environments
-const ENV = {
-  PRODUCTION: 'production' as const,
-  STAGING: 'staging' as const,
-  LOCAL: 'local' as const
-} as const;
-
-// Type for environment keys
-type EnvKey = keyof typeof ENV;
-
-// Base URLs for each environment
-const BASE_URLS: Record<Environment, string> = {
-  [ENV.PRODUCTION]: 'https://pfg.latitudewebservices.com/microsite/v1',
-  [ENV.STAGING]: 'https://staging.pfg.latitudewebservices.com/microsite/v1',  
-  [ENV.LOCAL]: 'http://localhost:3000/microsite/v1'
-};
+// Base URLs for each environment (for legacy/general APIs)
+const BASE_URLS: Record<Environment, string> = FORD_BASE_URLS;
 
 // Determine current environment from build-time environment variable
 const determineEnvironment = (): Environment => {
   // Check Vite environment variables
   const viteEnv = import.meta.env.VITE_ENV;
-  if (viteEnv === ENV.PRODUCTION) return ENV.PRODUCTION;
-  if (viteEnv === ENV.STAGING) return ENV.STAGING;
-  if (viteEnv === ENV.LOCAL) return ENV.LOCAL;
+  if (viteEnv === 'production' || viteEnv === 'prod') return 'production';
+  if (viteEnv === 'staging' || viteEnv === 'stage') return 'staging';
+  if (viteEnv === 'local' || viteEnv === 'development' || viteEnv === 'dev') return 'local';
   // Default to production
   console.log('No environment setting found, defaulting to PRODUCTION');
-  return ENV.PRODUCTION;
+  return 'production';
 };
 
 // Current environment
 const CURRENT_ENV: Environment = determineEnvironment();
 console.log('Selected API environment:', CURRENT_ENV);
+
+// Log the API URLs being used
+console.log('Ford API Base URL:', FORD_BASE_URLS[CURRENT_ENV]);
+console.log('Lincoln API Base URL:', LINCOLN_BASE_URLS[CURRENT_ENV]);
 
 // Get current base URL based on environment
 export const getBaseUrl = (): string => {
@@ -123,17 +120,20 @@ interface ApiEndpoints {
   GET_BRONCO_RANK_BASE: string;
 }
 
-// API endpoints (paths relative to base URL)
+// API endpoints (paths relative to base URL or full URLs)
 export const ENDPOINTS: ApiEndpoints = {
-  SURVEY_UPLOAD: '/survey/upload/v9',
-  SURVEY_UPLOAD_V10: '/survey/upload/v10',
-  SURVEY_UPLOAD_V11: '/survey/upload/v11',
-  LINCOLN_SURVEY_UPLOAD: 'https://api.latitudeshowtracker.com/events/v1/survey/insert/v13',
-  LINCOLN_VEHICLES_INTERESTED: 'https://api.latitudeshowtracker.com/events/v1/survey/insert/vehicles/interested',
-  LINCOLN_VEHICLES_DRIVEN: 'https://api.latitudeshowtracker.com/events/v1/survey/insert/vehicles/driven',
-  VEHICLES_INSERT: '/survey/insert/vehicles',
-  EVENTS_CHECK: '/events/check/v2',
-  EVENTS_QR: '/events/qr',
+  // Ford endpoints (relative paths)
+  SURVEY_UPLOAD: FORD_ENDPOINTS.SURVEY_UPLOAD,
+  SURVEY_UPLOAD_V10: FORD_ENDPOINTS.SURVEY_UPLOAD_V10,
+  SURVEY_UPLOAD_V11: FORD_ENDPOINTS.SURVEY_UPLOAD_V11,
+  VEHICLES_INSERT: FORD_ENDPOINTS.VEHICLES_INSERT,
+  EVENTS_CHECK: FORD_ENDPOINTS.EVENTS_CHECK,
+  EVENTS_QR: FORD_ENDPOINTS.EVENTS_QR,
+  
+  // Lincoln endpoints (full URLs with environment-specific base)
+  LINCOLN_SURVEY_UPLOAD: getLincolnApiUrl(CURRENT_ENV, LINCOLN_ENDPOINTS.SURVEY_UPLOAD),
+  LINCOLN_VEHICLES_INTERESTED: getLincolnApiUrl(CURRENT_ENV, LINCOLN_ENDPOINTS.VEHICLES_INTERESTED),
+  LINCOLN_VEHICLES_DRIVEN: getLincolnApiUrl(CURRENT_ENV, LINCOLN_ENDPOINTS.VEHICLES_DRIVEN),
   // Firebase functions are full URLs with namespace
   VALIDATE_EMAIL: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-validateEmail`,
   GET_SURVEY: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-getSurvey`,
@@ -159,5 +159,15 @@ export const getApiUrl = (endpoint: string): string => {
   return getBaseUrl() + endpoint;
 };
 
+// Environment constants for backward compatibility
+const ENV = {
+  PRODUCTION: 'production' as const,
+  STAGING: 'staging' as const,
+  LOCAL: 'local' as const
+};
+
+// Export everything needed by other modules
 export { ENV, CURRENT_ENV };
 export type { Environment, ApiEndpoints };
+// Re-export from shared for backward compatibility
+export { getFordApiUrl, FORD_ENDPOINTS, getLincolnApiUrl, LINCOLN_ENDPOINTS } from '@expanse/shared';

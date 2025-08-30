@@ -125,6 +125,9 @@ function AdminScreen() {
     useEffect(() => {
         if (!gridApi || !events) return;
 
+        // Check if grid is still alive before making API calls
+        if (gridApi.isDestroyed && gridApi.isDestroyed()) return;
+
         gridApi.onFilterChanged();
         
         // Apply sort based on filter type
@@ -146,6 +149,7 @@ function AdminScreen() {
         
         // Reset row heights after filtering
         setTimeout(() => {
+            if (gridApi.isDestroyed && gridApi.isDestroyed()) return;
             gridApi.resetRowHeights();
             gridApi.onRowHeightChanged();
         }, 100);
@@ -460,6 +464,7 @@ function AdminScreen() {
         setGridApi(params.api);
         // Ensure rows are sized correctly after grid is ready
         setTimeout(() => {
+            if (params.api.isDestroyed && params.api.isDestroyed()) return;
             params.api.resetRowHeights();
             params.api.onRowHeightChanged();
         }, 100);
@@ -614,7 +619,6 @@ function AdminScreen() {
                             filter: true,
                             resizable: true,
                             floatingFilter: true,
-                            menuTabs: ['filterMenuTab', 'generalMenuTab', 'columnsMenuTab'],
                             headerComponentParams: {
                                 menuIcon: 'fa-bars'
                             }
@@ -635,12 +639,14 @@ function AdminScreen() {
                         suppressRowTransform={true}
                         onRowDataUpdated={(params) => {
                             setTimeout(() => {
+                                if (params.api.isDestroyed && params.api.isDestroyed()) return;
                                 params.api.resetRowHeights();
                                 params.api.onRowHeightChanged();
                             }, 100);
                         }}
                         onModelUpdated={(params) => {
                             setTimeout(() => {
+                                if (params.api.isDestroyed && params.api.isDestroyed()) return;
                                 params.api.resetRowHeights();
                                 params.api.onRowHeightChanged();
                             }, 100);
@@ -650,13 +656,6 @@ function AdminScreen() {
                         getRowHeight={(params) => {
                             // Calculate row height based on content
                             return undefined; // Let AG Grid calculate automatically
-                        }}
-                        statusBar={{
-                            statusPanels: [
-                                { statusPanel: 'agTotalAndFilteredRowCountComponent', align: 'left' },
-                                { statusPanel: 'agTotalRowCountComponent', align: 'center' },
-                                { statusPanel: 'agFilteredRowCountComponent', align: 'right' }
-                            ]
                         }}
                     />
                 </div>

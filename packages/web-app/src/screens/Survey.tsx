@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Model, SurveyError, FunctionFactory, ITheme } from "survey-core";
 import { Survey } from "survey-react-ui";
 import { useNavigate, useParams, useLocation, useSearchParams } from 'react-router-dom';
-import { Loader } from "@progress/kendo-react-indicators";
+import { SurveySkeleton } from '../components/LoadingStates';
 import * as Sentry from "@sentry/react";
 import showdown from 'showdown';
 import { v4 as uuidv4 } from 'uuid';
@@ -30,13 +30,10 @@ import { StyledTextField } from "@ui/ford-ui-components/src/v2/inputField/Input"
 import logo from '../assets/ford-signature.svg';
 import globeIcon from '../assets/icons/ford/globe.svg';
 import "survey-core/survey-core.min.css";
-
-import "./Surveys.css";
 import { prepareForSurvey, prepareSurveyOnQuestionAdded } from "../helpers/surveyTemplatesAll";
 import GlobalFooter from "../components/GlobalFooter";
 import { createDefaultFordSurvey } from '../helpers/fordSurvey';
-import { mapSurveyToFordSurvey } from '../helpers/mapSurveyToFord';
-import { mapSurveyToLincolnSurvey } from '../helpers/mapSurveyToLincoln';
+import { uploadSurveyToAPI } from '@expanse/shared';
 import { getCustomContentLocales, getDefaultLocale } from '../helpers/surveyLocaleHelper';
 import { LanguageSelector, FordLanguageSelector } from '../components/LanguageSelector';
 
@@ -162,11 +159,6 @@ interface SurveyData {
   voi?: string[];
 }
 
-interface VOIBody {
-  vehicle_id: string;
-  device_survey_guid: string;
-  survey_vehicle_guid: string;
-}
 
 // Register email validation function
 FunctionFactory.Instance.register("validateEmail", validateEmailForSurveyJS, true);
@@ -369,6 +361,126 @@ const SurveyComponent: React.FC = () => {
           }
 
           const survey = new Model(defaultSurveyProperties);
+          
+          // Configure validation scrolling behavior
+          survey.autoFocusFirstError = true; // This should scroll to first error on validation
+          
+          // Since FDS renderers don't preserve SurveyJS element IDs, we need to handle scrolling differently
+          // The onScrollingElementToTop event fires but can't find elements, so we'll use our custom approach
+          survey.onScrollingElementToTop.add((sender: Model, options: any) => {
+            // Cancel the default scrolling since it won't work with FDS renderers
+            options.cancel = true;
+            
+            // Use our custom scrolling logic in onCompleting instead
+          });
+          
+          // Add a more direct approach - watch for errors after any validation
+          if (survey.onCurrentPageChanging) {
+            survey.onCurrentPageChanging.add((sender: Model, options: any) => {
+              // If moving forward and current page has errors, scroll to first error
+              if (options.isNextPage && !sender.currentPage?.validate(true, true)) {
+              console.log('[Page Change] Validation failed, preventing page change and scrolling to error');
+              
+              // Allow time for errors to render, then scroll
+              setTimeout(() => {
+                const errorSelectors = [
+                  '.fds-question-error', // FDS brands
+                  '.sd-question__erbox:not(:empty)', // SurveyJS v2 errors  
+                  '.sv-string-viewer--error', // SurveyJS error text
+                  '.sv_q_erbox:not(:empty)' // SurveyJS v1 errors
+                ];
+                
+                const errorElements = document.querySelectorAll(errorSelectors.join(', '));
+                if (errorElements.length > 0) {
+                  const firstError = errorElements[0];
+                  const rect = firstError.getBoundingClientRect();
+                  const scrollY = window.pageYOffset + rect.top - 100;
+                  
+                  console.log('[Page Change] Scrolling to error at position:', scrollY);
+                  window.scrollTo({ top: scrollY, behavior: 'smooth' });
+                  
+                  // Try to focus input
+                  const questionElement = firstError.closest('.sd-question, .sv_q, .sv_qstn, [data-name]');
+                  if (questionElement) {
+                    const firstInput = questionElement.querySelector('input:not([type="hidden"]):not([type="button"]):not([type="submit"]), textarea, select') as HTMLElement;
+                    if (firstInput) {
+                      setTimeout(() => {
+                        firstInput.focus();
+                      }, 300);
+                    }
+                  }
+                }
+              }, 100);
+              
+              options.allow = false; // Prevent page change if validation fails
+            }
+          });
+          }
+          
+          survey.onCurrentPageChanged.add(() => {
+            // Reset scroll position when page changes successfully
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          });
+          
+          // The CustomSurveyQuestion component now handles error detection and scrolling/focusing
+          // This ensures proper integration with SurveyJS validation flow
+          
+          // Intercept validation errors to ensure scrolling happens
+          let lastErrorCount = 0;
+          if (survey.onValidatedErrorsChanged) {
+            survey.onValidatedErrorsChanged.add((sender: Model) => {
+            const currentPage = sender.currentPage;
+            if (!currentPage) return;
+            
+            // Count errors on current page
+            const currentErrorCount = currentPage.questions.reduce((count, q) => 
+              count + (q.errors ? q.errors.length : 0), 0
+            );
+            
+            // If errors increased (validation just happened), scroll to first error
+            if (currentErrorCount > lastErrorCount && currentErrorCount > 0) {
+              console.log('[Validation Scroll] Errors detected, scrolling to first error');
+              
+              // Let React render the errors, then scroll
+              setTimeout(() => {
+                // For FDS brands, look for FDS error elements
+                // For non-FDS brands, look for standard SurveyJS error elements
+                const errorSelectors = [
+                  '.fds-question-error', // FDS brands
+                  '.sd-question__erbox:not(:empty)', // SurveyJS v2 errors
+                  '.sv-string-viewer--error', // SurveyJS error text
+                  '.sv_q_erbox:not(:empty)' // SurveyJS v1 errors (fallback)
+                ];
+                
+                const errorElements = document.querySelectorAll(errorSelectors.join(', '));
+                if (errorElements.length > 0) {
+                  const firstError = errorElements[0];
+                  const rect = firstError.getBoundingClientRect();
+                  
+                  // Only scroll if error is not in viewport
+                  if (rect.top < 0 || rect.bottom > window.innerHeight) {
+                    const scrollY = window.pageYOffset + rect.top - 100;
+                    console.log('[Validation Scroll] Scrolling to:', scrollY);
+                    window.scrollTo({ top: scrollY, behavior: 'smooth' });
+                    
+                    // For non-FDS brands, also try to focus the first input
+                    const questionElement = firstError.closest('.sd-question, .sv_q, .sv_qstn');
+                    if (questionElement) {
+                      const firstInput = questionElement.querySelector('input:not([type="hidden"]):not([type="button"]):not([type="submit"]), textarea, select') as HTMLElement;
+                      if (firstInput) {
+                        setTimeout(() => {
+                          firstInput.focus();
+                        }, 300);
+                      }
+                    }
+                  }
+                }
+              }, 100);
+            }
+            
+            lastErrorCount = currentErrorCount;
+          });
+          }
           
           if (res.event.fordEventID || res.event.lincolnEventID) {
             survey.questionErrorLocation = "bottom";
@@ -655,13 +767,81 @@ const SurveyComponent: React.FC = () => {
           survey.onAfterRenderSurvey.add((sender: Model) => {
             (sender as any).showCompleteButton = (surveyJSON as any).showCompleteButton;
             (sender as any).showNavigationButtons = (surveyJSON as any).showNavigationButtons;
+            
+            // Add click handler to Complete button for scroll-to-error fallback
+            setTimeout(() => {
+              // More comprehensive selectors for complete button
+              const completeButtons = document.querySelectorAll(
+                'input[type="button"][value="Complete"], ' +
+                'button, ' + 
+                '.sd_btn.sv_complete_btn, ' +
+                '.sv-action-bar-item--primary, ' +
+                '[data-name="complete-button"], ' +
+                'input.sv_complete_btn'
+              );
+              
+              // Filter for only "Complete" buttons
+              const actualCompleteButtons = Array.from(completeButtons).filter(btn => 
+                btn.textContent?.includes('Complete') || 
+                (btn as HTMLInputElement).value?.includes('Complete')
+              );
+              
+              console.log('[Complete Button Setup] Found Complete buttons:', actualCompleteButtons.length);
+              
+              actualCompleteButtons.forEach(button => {
+                // Add listener without cloning to preserve SurveyJS behavior
+                button.addEventListener('click', (e) => {
+                  console.log('[Complete Button] Click intercepted');
+                  
+                  // Don't prevent default - let SurveyJS handle validation
+                  // Just add scroll behavior after validation
+                  setTimeout(() => {
+                    // Check if there are visible errors on the page
+                    const errorSelectors = [
+                      '.fds-question-error', // FDS brands
+                      '.sd-question__erbox:not(:empty)', // SurveyJS v2 errors
+                      '.sv-string-viewer--error', // SurveyJS error text
+                      '.sv_q_erbox:not(:empty)', // SurveyJS v1 errors
+                      '[data-name] .sd-question__erbox:not(:empty)' // More specific selector
+                    ];
+                    
+                    const errorElements = document.querySelectorAll(errorSelectors.join(', '));
+                    console.log('[Complete Button] Found error elements after validation:', errorElements.length);
+                    
+                    if (errorElements.length > 0) {
+                      const firstError = errorElements[0];
+                      const rect = firstError.getBoundingClientRect();
+                      
+                      // Only scroll if error is not in viewport
+                      if (rect.top < 0 || rect.bottom > window.innerHeight) {
+                        const scrollY = window.pageYOffset + rect.top - 100;
+                        console.log('[Complete Button] Scrolling to error at position:', scrollY);
+                        window.scrollTo({ top: scrollY, behavior: 'smooth' });
+                        
+                        // Try to focus the first input
+                        const questionElement = firstError.closest('.sd-question, .sv_q, .sv_qstn, [data-name]');
+                        if (questionElement) {
+                          const firstInput = questionElement.querySelector('input:not([type="hidden"]):not([type="button"]):not([type="submit"]), textarea, select') as HTMLElement;
+                          if (firstInput) {
+                            setTimeout(() => {
+                              console.log('[Complete Button] Focusing input');
+                              firstInput.focus();
+                            }, 300);
+                          }
+                        }
+                      }
+                    }
+                  }, 150); // Small delay to allow validation errors to render
+                });
+              });
+            }, 500); // Delay to ensure buttons are rendered
 
             // Set default values
             const defaultValues: SurveyData = {
               'start_time': new Date(),
               'survey_date': new Date(),
               'event_id': res.event.fordEventID || res.event.lincolnEventID || params.eventID,
-              'app_version': 'surveyjs_1.0',
+              'app_version': 'surveyjs_2.0',
               'abandoned': 0,
               '_utm': extractUTM(),
               '_referrer': (window as any).frames?.top?.document?.referrer,
@@ -751,6 +931,55 @@ const SurveyComponent: React.FC = () => {
 
           survey.onCompleting.add(async (sender: Model, options: any) => {
             console.log('=== Survey onCompleting Started ===');
+            
+            // First, run validation to show errors
+            const isValid = sender.validate(true, true);
+            console.log('[Survey onCompleting] Validation result:', isValid);
+            
+            if (!isValid) {
+              // Validation failed - scroll to first error
+              console.log('[Survey onCompleting] Validation failed, scrolling to first error');
+              
+              // Allow time for errors to render
+              setTimeout(() => {
+                // Find first error element based on brand
+                const errorSelectors = [
+                  '.fds-question-error', // FDS brands
+                  '.sd-question__erbox:not(:empty)', // SurveyJS v2 errors
+                  '.sv-string-viewer--error', // SurveyJS error text
+                  '.sv_q_erbox:not(:empty)', // SurveyJS v1 errors
+                  '[data-name] .sd-question__erbox:not(:empty)' // More specific selector
+                ];
+                
+                const errorElements = document.querySelectorAll(errorSelectors.join(', '));
+                console.log('[Survey onCompleting] Found error elements:', errorElements.length);
+                
+                if (errorElements.length > 0) {
+                  const firstError = errorElements[0];
+                  const rect = firstError.getBoundingClientRect();
+                  const scrollY = window.pageYOffset + rect.top - 100;
+                  
+                  console.log('[Survey onCompleting] Scrolling to position:', scrollY);
+                  window.scrollTo({ top: scrollY, behavior: 'smooth' });
+                  
+                  // Try to focus the first input in the question with error
+                  const questionElement = firstError.closest('.sd-question, .sv_q, .sv_qstn, [data-name]');
+                  if (questionElement) {
+                    const firstInput = questionElement.querySelector('input:not([type="hidden"]):not([type="button"]):not([type="submit"]), textarea, select') as HTMLElement;
+                    if (firstInput) {
+                      setTimeout(() => {
+                        console.log('[Survey onCompleting] Focusing input:', firstInput);
+                        firstInput.focus();
+                      }, 300);
+                    }
+                  }
+                }
+              }, 100);
+              
+              // Prevent completion since validation failed
+              options.allow = false;
+              return;
+            }
             
             // Check survey limit before allowing submission
             if (res.event.survey_count_limit && res.event.survey_count_limit > 0) {
@@ -871,186 +1100,7 @@ const SurveyComponent: React.FC = () => {
               const firestoreData = await firestoreRes.json();
               console.log('saved to firestore', firestoreData);
 
-              // If this is a Ford event, also save to Ford API
-              if (res.event.fordEventID) {
-                console.log('[Ford Event] Starting Ford API submission process');
-                console.log('[Ford Event] Event ID:', res.event.fordEventID);
-                
-                const fordSurvey = mapSurveyToFordSurvey(survey, surveyData, res.event);
-                console.log('[Ford Event] fordSurvey from mapSurveyToFordSurvey:', JSON.stringify(fordSurvey, null, 2));
-                
-                // Merge fordSurvey with surveyData to ensure all expected fields are present
-                const mergedSurveyData = { ...fordSurvey, ...surveyData };
-                console.log('[Ford Event] mergedSurveyData before final adjustments:', JSON.stringify(mergedSurveyData, null, 2));
-                
-                // Ensure microsite_email_template is present (even if null)
-                if (!mergedSurveyData.microsite_email_template) {
-                  mergedSurveyData.microsite_email_template = null;
-                }
-                
-                // Log signature fields for debugging
-                console.log('[Ford Event] Signature fields before API call:', {
-                  signature: mergedSurveyData.signature,
-                  minor_signature: mergedSurveyData.minor_signature,
-                  signature_type: typeof mergedSurveyData.signature,
-                  minor_signature_type: typeof mergedSurveyData.minor_signature
-                });
-                
-                const fordPayload = { surveyCollection: [mergedSurveyData] };
-
-                console.log('[Ford Event] Final payload being sent to Ford API:', fordPayload);
-
-                // Save to Ford API
-                const fordRes = await fetch(getApiUrl(ENDPOINTS.SURVEY_UPLOAD_V11), {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': '989ae554-08ca-4142-862c-0058407d2769',
-                  },
-                  body: JSON.stringify(fordPayload),
-                });
-
-                if (!fordRes.ok) {
-                  throw new Error(fordRes.statusText);
-                }
-
-                const fordData = await fordRes.json();
-                console.log('saved to ford api', fordData);
-
-                // If there are vehicles of interest, save those too
-                if ((fordSurvey as any).voi && (fordSurvey as any).voi.length) {
-                  const voiBody: VOIBody[] = (fordSurvey as any).voi.map((vehicle_id: string) => ({
-                    vehicle_id,
-                    device_survey_guid: surveyData.device_survey_guid || '',
-                    survey_vehicle_guid: uuidv4(),
-                  }));
-
-                  const voiRes = await fetch(getApiUrl(ENDPOINTS.VEHICLES_INSERT), {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': '989ae554-08ca-4142-862c-0058407d2769',
-                    },
-                    body: JSON.stringify(voiBody),
-                  });
-
-                  if (!voiRes.ok) {
-                    throw new Error(voiRes.statusText);
-                  }
-
-                  console.log('saved voi');
-                }
-              }
-
-              // If this is a Lincoln event, also save to Lincoln API
-              if (res.event.lincolnEventID) {
-                console.log('[Lincoln Event] Starting Lincoln API submission process');
-                console.log('[Lincoln Event] Event ID:', res.event.lincolnEventID);
-                
-                const lincolnSurvey = mapSurveyToLincolnSurvey(survey, surveyData, res.event);
-                console.log('[Lincoln Event] lincolnSurvey from mapSurveyToLincolnSurvey:', JSON.stringify(lincolnSurvey, null, 2));
-                
-                // Merge lincolnSurvey with surveyData to ensure all expected fields are present
-                const mergedLincolnSurveyData = { ...lincolnSurvey, ...surveyData };
-                console.log('[Lincoln Event] mergedLincolnSurveyData before final adjustments:', JSON.stringify(mergedLincolnSurveyData, null, 2));
-                
-                // Ensure microsite_email_template is present (even if null)
-                if (!mergedLincolnSurveyData.microsite_email_template) {
-                  mergedLincolnSurveyData.microsite_email_template = null;
-                }
-                
-                // Log signature fields for debugging
-                console.log('[Lincoln Event] Signature fields before API call:', {
-                  signature: mergedLincolnSurveyData.signature,
-                  minor_signature: mergedLincolnSurveyData.minor_signature,
-                  signature_type: typeof mergedLincolnSurveyData.signature,
-                  minor_signature_type: typeof mergedLincolnSurveyData.minor_signature
-                });
-                
-                const lincolnPayload = [mergedLincolnSurveyData];
-
-                console.log('[Lincoln Event] Final payload being sent to Lincoln API:', lincolnPayload);
-
-                // Save to Lincoln API
-                const lincolnRes = await fetch(getApiUrl(ENDPOINTS.LINCOLN_SURVEY_UPLOAD), {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': '91827364',
-                  },
-                  body: JSON.stringify(lincolnPayload),
-                });
-
-                if (!lincolnRes.ok) {
-                  throw new Error(lincolnRes.statusText);
-                }
-
-                const lincolnData = await lincolnRes.json();
-                console.log('saved to lincoln api', lincolnData);
-
-                // If there are vehicles of interest, save those too
-                if ((lincolnSurvey as any).voi && (lincolnSurvey as any).voi.length) {
-                  const voiBody = (lincolnSurvey as any).voi.map((vehicle_id: string) => ({
-                    event_id: res.event.lincolnEventID,
-                    device_survey_guid: surveyData.device_survey_guid || '',
-                    survey_vehicle_guid: uuidv4(),
-                    survey_date: new Date().toISOString(),
-                    vehicle_id,
-                    app_version: 'expanse_2.0',
-                    abandoned: false,
-                    custom_data: {
-                      survey_type: res.event.surveyType || 'basic'
-                    }
-                  }));
-
-                  const lincolnVoiRes = await fetch(getApiUrl(ENDPOINTS.LINCOLN_VEHICLES_INTERESTED), {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': '91827364',
-                    },
-                    body: JSON.stringify(voiBody),
-                  });
-
-                  if (!lincolnVoiRes.ok) {
-                    throw new Error(lincolnVoiRes.statusText);
-                  }
-
-                  console.log('saved lincoln voi');
-                }
-
-                // If there are vehicles driven, save those too
-                if ((lincolnSurvey as any).vehiclesDriven && (lincolnSurvey as any).vehiclesDriven.length) {
-                  const drivenBody = (lincolnSurvey as any).vehiclesDriven.map((vehicle_id: string, index: number) => ({
-                    event_id: res.event.lincolnEventID,
-                    device_survey_guid: surveyData.device_survey_guid || '',
-                    survey_vehicle_guid: uuidv4(),
-                    survey_date: new Date().toISOString(),
-                    vehicle_id,
-                    order_driven: index + 1,
-                    app_version: 'expanse_2.0',
-                    abandoned: false,
-                    custom_data: {
-                      survey_type: res.event.surveyType || 'basic'
-                    }
-                  }));
-
-                  const lincolnDrivenRes = await fetch(getApiUrl(ENDPOINTS.LINCOLN_VEHICLES_DRIVEN), {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': '91827364',
-                    },
-                    body: JSON.stringify(drivenBody),
-                  });
-
-                  if (!lincolnDrivenRes.ok) {
-                    throw new Error(lincolnDrivenRes.statusText);
-                  }
-
-                  console.log('saved lincoln driven vehicles');
-                }
-              }
+              // Firebase function will handle upload to Ford/Lincoln APIs via surveyTrigger
 
               options.showDataSavingSuccess();
               sender.completedHtml = originalMesage;
@@ -1152,7 +1202,7 @@ const SurveyComponent: React.FC = () => {
         }
       </div>
       :
-      thisError ? <h2>{thisError.message}</h2> : <Loader type="converging-spinner" size="large" />
+      thisError ? <h2>{thisError.message}</h2> : <SurveySkeleton />
   );
 };
 

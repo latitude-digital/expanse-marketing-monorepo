@@ -1,13 +1,12 @@
-import { FordSurvey, createDefaultFordSurvey } from './fordSurvey';
+import { LincolnSurvey, createDefaultLincolnSurvey } from '@expanse/shared';
 
 /**
  * Maps SurveyJS data and question FFS/custom fields to a Lincoln survey-compliant object.
- * Uses the same structure as Ford surveys but maps to Lincoln event ID.
  * @param survey The SurveyJS Model instance
  * @param surveyData The raw survey data object
  * @param event (optional) event data for event_id etc.
  */
-export function mapSurveyToLincolnSurvey(survey: any, surveyData: any, event?: any): FordSurvey {
+export function mapSurveyToLincolnSurvey(survey: any, surveyData: any, event?: any): LincolnSurvey {
   const ffsData: any = {};
   const customData: any = {};
 
@@ -81,8 +80,8 @@ export function mapSurveyToLincolnSurvey(survey: any, surveyData: any, event?: a
     }
   });
 
-  // Compose the Lincoln survey object (using same structure as Ford)
-  const lincolnSurvey: FordSurvey = createDefaultFordSurvey();
+  // Compose the Lincoln survey object
+  const lincolnSurvey: LincolnSurvey = createDefaultLincolnSurvey();
   
   // Helper function to filter out undefined values
   const filterUndefined = (obj: any) => {
@@ -95,6 +94,9 @@ export function mapSurveyToLincolnSurvey(survey: any, surveyData: any, event?: a
     return filtered;
   };
   
+  // IMPORTANT: Do NOT remove pre_drive_survey_guid - it's already set to null in createDefaultFordSurvey()
+  // The Lincoln API requires this field to be present, even if null
+  
   Object.assign(lincolnSurvey, {
     ...filterUndefined(ffsData),
     ...filterUndefined(surveyData),
@@ -105,29 +107,7 @@ export function mapSurveyToLincolnSurvey(survey: any, surveyData: any, event?: a
       event_id: event.lincolnEventID,
       survey_type: event.surveyType || "basic"
     } : {}),
-    
-    // Lincoln API v13 specific required fields - default to null except where specified
-    how_familiar_other: null,
-    how_familiar: null,
-    impression: null,
-    impression_pre_navigator: null,
-    impression_post: null,
-    impression_post_navigator: null,
-    impression_other: null,
-    competitive_make: null,
-    how_likely_purchasing_other: null,
-    how_likely_recommend_pre: null,
-    how_likely_recommend_other: null,
-    most_likely_buy_model_id: null,
-    most_likely_buy_model_id_pre: null,
-    most_likely_buy_model_id_post: null,
-    rep_initials: null,
-    drove_bonus_vehicle: null,
-    user_name: null,
-    melissa_data_complete: null,
-    melissa_data_response: null,
-    one_word_impression: null,
-    brand_impression_changed: null,
+    // Only set language explicitly, let other fields come from ffsData/surveyData
     language: (surveyData._language || surveyData.language || "en").substring(0, 2),
   });
 

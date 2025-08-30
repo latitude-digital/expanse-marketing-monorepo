@@ -5,7 +5,6 @@ packages:
 onlyBuiltDependencies:
   - '@firebase/util'
   - '@parcel/watcher'
-  - '@progress/kendo-licensing'
   - core-js
   - protobufjs
   - survey-analytics
