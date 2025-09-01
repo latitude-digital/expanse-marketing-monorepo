@@ -19,6 +19,7 @@ import {
   FORD_AUTH_TOKEN,
   LINCOLN_AUTH_TOKEN
 } from './config';
+import { registerUniversalQuestions } from '../surveyjs/universal-registration';
 
 export interface UploadResult {
   success: boolean;
@@ -38,11 +39,41 @@ export async function uploadSurveyToAPI(
   surveyModel?: Model
 ): Promise<UploadResult> {
   try {
+    console.log('[Upload] Start - surveyModel provided:', !!surveyModel);
+    console.log('[Upload] Event has surveyJSModel:', !!event.surveyJSModel);
+    
     // Recreate the survey model if not provided
     let model = surveyModel;
     if (!model && event.surveyJSModel) {
-      model = new Model(event.surveyJSModel);
+      // Parse surveyJSModel if it's a string
+      const modelJson = typeof event.surveyJSModel === 'string' 
+        ? JSON.parse(event.surveyJSModel) 
+        : event.surveyJSModel;
+      
+      console.log('[Upload] Creating Model from surveyJSModel:', {
+        isString: typeof event.surveyJSModel === 'string',
+        hasPages: modelJson.pages ? modelJson.pages.length : 0,
+        hasElements: modelJson.pages && modelJson.pages[0] ? modelJson.pages[0].elements?.length : 0
+      });
+      
+      // Register custom questions before creating Model
+      // This ensures custom question types are recognized
+      const normalizedBrand = normalizeBrand(event.brand);
+      // Convert to lowercase for Brand type
+      const brandForRegistration = normalizedBrand.toLowerCase() as 'ford' | 'lincoln' | 'unbranded';
+      console.log('[Upload] Registering questions for brand:', brandForRegistration);
+      registerUniversalQuestions(brandForRegistration, 'backend', true); // Force registration to ensure it happens
+      
+      model = new Model(modelJson);
       // DO NOT set model.data - the mappers use surveyData directly
+      
+      console.log('[Upload] Model created, questions count:', model.getAllQuestions().length);
+      console.log('[Upload] First question details:', model.getAllQuestions()[0] ? {
+        name: model.getAllQuestions()[0].name,
+        type: model.getAllQuestions()[0].getType(),
+        hasFFSProperty: model.getAllQuestions()[0].hasOwnProperty('_ffs'),
+        ffsValue: (model.getAllQuestions()[0] as any)._ffs
+      } : 'No questions');
     }
     if (!model) {
       return {

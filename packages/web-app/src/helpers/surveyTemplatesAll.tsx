@@ -35,10 +35,19 @@ const converter = new Showdown.Converter({
 
 registerIcons([
   "person-circle-question",
-  "person-circle-question",
+  "user",
   "house-circle-check",
+  "mailbox-flag-up",
   "at",
   "phone",
+  "mobile-retro",
+  "signature",
+  "calendar-circle-user",
+  "cash-register",
+  "scale-unbalanced",
+  "scale-unbalanced-flip",
+  "trophy",
+  "envelopes-bulk",
   // Ford/Lincoln icons
   "cars",
   "thumbs-up",
@@ -50,6 +59,8 @@ registerIcons([
   "calendar-clock",
   "pen-field",
   "car-garage",
+  "road-circle-check",
+  "comments",
 ]);
 
 export const initSurvey = () => {

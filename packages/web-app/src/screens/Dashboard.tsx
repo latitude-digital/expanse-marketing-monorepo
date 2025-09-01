@@ -6,7 +6,7 @@ import auth from '../services/auth';
 
 import { useAuthState } from 'react-firebase-hooks/auth';
 import app from '../services/firebase';
-import db from '../services/db';
+import db from '../services/firestore';
 import { ensureCloudFrontAccess } from '../services/cloudFrontAuth';
 
 import { Model, Question, slk } from "survey-core";
@@ -15,8 +15,8 @@ import { ColDef, GridApi, GridReadyEvent, ModuleRegistry, AllCommunityModule } f
 
 // Import custom survey question definitions
 import AllSurveys from '../surveyjs_questions/AllSurveys';
-import FordSurveys from '../surveyjs_questions/FordSurveys';
-import LincolnSurveys from '../surveyjs_questions/LincolnSurveys';
+import FordSurveysNew from '../surveyjs_questions/FordSurveysNew';
+import LincolnSurveysNew from '../surveyjs_questions/LincolnSurveysNew';
 import FMCSurveys from '../surveyjs_questions/FMCSurveys';
 // Import AG Grid CSS
 import 'ag-grid-community/styles/ag-grid.css';
@@ -35,11 +35,9 @@ slk(
   "NDBhNThlYzYtN2EwMy00ZTgxLWIyNGQtOGFkZWJkM2NlNjI3OzE9MjAyNi0wNy0xOSwyPTIwMjYtMDctMTksND0yMDI2LTA3LTE5"
 );
 
-// Initialize custom survey question definitions
+// Initialize only universal questions globally for the dashboard
+// Brand-specific questions should be initialized per-event based on brand
 AllSurveys.globalInit();
-FordSurveys.fordInit();
-LincolnSurveys.lincolnInit();
-FMCSurveys.fmcInit();
 
 // Helper function to intelligently format array values
 const formatArrayValue = (value: any): string => {

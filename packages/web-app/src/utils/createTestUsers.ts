@@ -6,7 +6,7 @@
 import { createUserWithEmailAndPassword, updateProfile, User } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import authService from '../services/authService';
-import db from '../services/db';
+import db from '../services/firestore';
 
 interface TestUser {
   email: string;

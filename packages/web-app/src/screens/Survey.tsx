@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Model, SurveyError, FunctionFactory, ITheme } from "survey-core";
 import { Survey } from "survey-react-ui";
+import type { SurveyEvent, SurveyData, BookeoData, PreSurvey, GetSurveyResponse, SurveyLimitResult, UploadResponse } from '@expanse/shared';
 import { useNavigate, useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { SurveySkeleton } from '../components/LoadingStates';
 import * as Sentry from "@sentry/react";
@@ -32,7 +33,6 @@ import globeIcon from '../assets/icons/ford/globe.svg';
 import "survey-core/survey-core.min.css";
 import { prepareForSurvey, prepareSurveyOnQuestionAdded } from "../helpers/surveyTemplatesAll";
 import GlobalFooter from "../components/GlobalFooter";
-import { createDefaultFordSurvey } from '../helpers/fordSurvey';
 import { uploadSurveyToAPI } from '@expanse/shared';
 import { getCustomContentLocales, getDefaultLocale } from '../helpers/surveyLocaleHelper';
 import { LanguageSelector, FordLanguageSelector } from '../components/LanguageSelector';
@@ -63,101 +63,7 @@ interface RouteParams {
   eventID: string;
 }
 
-interface SurveyEvent {
-  name: string;
-  brand?: string;
-  fordEventID?: string;
-  lincolnEventID?: string;
-  disabled?: string;
-  _preEventID?: string;
-  survey_count_limit?: number;
-  limit_reached_message?: string;
-  surveyType?: string;
-  questions: string;  // Legacy field
-  surveyJSModel?: any;  // New map field
-  theme?: string;  // Legacy field
-  surveyJSTheme?: any;  // New map field
-  showHeader?: boolean;
-  showLanguageChooser?: boolean;
-}
-
-interface PreSurvey {
-  device_survey_guid?: string;
-  first_name?: string;
-  last_name?: string;
-  email?: string;
-  phone?: string;
-}
-
-interface GetSurveyResponse {
-  success: boolean;
-  event: SurveyEvent;
-  preSurvey?: PreSurvey;
-  message?: string;
-}
-
-interface SurveyLimitResult {
-  data: {
-    limitReached: boolean;
-    message?: string;
-  };
-}
-
-interface BookeoData {
-  bookeoKey: string;
-  customFieldId: string;
-  seats: number;
-  productId: string;
-  previousHoldId: string;
-  eventId: string;
-  firstName: string;
-  lastName: string;
-  emailAddress: string;
-  phone: string;
-  type: string;
-  customData: string;
-}
-
-interface UploadResponse {
-  uploadUrl: string;
-  fields: Record<string, string>;
-  finalImageUrl: string;
-}
-
-interface SurveyData {
-  [key: string]: any;
-  device_survey_guid?: string;
-  start_time?: Date;
-  survey_date?: Date;
-  event_id?: string;
-  app_version?: string;
-  abandoned?: number;
-  _utm?: any;
-  _referrer?: string;
-  _language?: string;
-  device_id?: string;
-  _screenWidth?: number;
-  _offset?: number;
-  _timeZone?: string;
-  end_time?: Date;
-  _preSurveyID?: string | null;
-  _checkedIn?: any;
-  _checkedOut?: any;
-  _claimed?: any;
-  _used?: any;
-  _email?: any;
-  _sms?: any;
-  _exported?: any;
-  pre_drive_survey_guid?: string | null;
-  first_name?: string;
-  last_name?: string;
-  email?: string;
-  phone?: string;
-  microsite_email_template?: any;
-  signature?: string;
-  minor_signature?: string;
-  voi?: string[];
-}
+// Types are now imported from @packages/shared/types
 
 
 // Register email validation function
@@ -253,14 +159,44 @@ const SurveyComponent: React.FC = () => {
                             (res.event.theme ? JSON.parse(res.event.theme) : {"cssVariables": {}});
 
           // Auto-fix missing headerView when theme has header configuration
+          // BUT only if there's actual content to show (title or description)
           if (eventTheme.header && !surveyJSON.headerView) {
-            console.log('[Header Debug] Auto-fixing missing headerView for survey with theme header configuration');
-            surveyJSON.headerView = "advanced";
-            // Also ensure description is not null (SurveyJS may require this for header rendering)
-            if (!surveyJSON.description) {
-              surveyJSON.description = " ";
-              console.log('[Header Debug] Auto-fixing missing description for header');
+            // Check if there's actual header text content (not just background image)
+            const hasHeaderContent = surveyJSON.title || surveyJSON.description;
+            
+            if (hasHeaderContent) {
+              console.log('[Header Debug] Auto-fixing missing headerView for survey with theme header configuration');
+              surveyJSON.headerView = "advanced";
+              // Only add empty description if there's a title
+              // (Don't add it if header would be completely empty)
+              if (!surveyJSON.description && surveyJSON.title) {
+                surveyJSON.description = " ";
+                console.log('[Header Debug] Auto-fixing missing description for header');
+              }
             }
+          }
+          
+          // IMPORTANT: Remove headerView if there's no actual content to display
+          // This prevents empty headers from taking up space
+          console.log('[Header Debug] Survey config check:', {
+            title: surveyJSON.title || 'none',
+            description: surveyJSON.description || 'none',
+            headerView: surveyJSON.headerView || 'none',
+            hasThemeHeader: !!eventTheme.header
+          });
+          
+          // Check for ACTUAL content, not just truthy values (empty strings/spaces don't count)
+          const hasRealTitle = surveyJSON.title && surveyJSON.title.trim().length > 0;
+          const hasRealDescription = surveyJSON.description && surveyJSON.description.trim().length > 0;
+          
+          if (!hasRealTitle && !hasRealDescription && surveyJSON.headerView) {
+            console.log('[Header Debug] Removing headerView since there is no real title or description content');
+            delete surveyJSON.headerView;
+            // Also clear the empty description to prevent header from rendering
+            delete surveyJSON.description;
+            delete surveyJSON.title;
+          } else if (!hasRealTitle && !hasRealDescription && !surveyJSON.headerView) {
+            console.log('[Header Debug] No title/description and no headerView - header should not render');
           }
 
           // Set default properties before creating model (can be overridden by survey definition)
@@ -361,6 +297,16 @@ const SurveyComponent: React.FC = () => {
           }
 
           const survey = new Model(defaultSurveyProperties);
+          
+          // Completely disable the header view if there's no title or description
+          if (!defaultSurveyProperties.title && !defaultSurveyProperties.description) {
+            survey.showTitle = false;
+            survey.showDescription = false;
+            // Remove the header view entirely to prevent empty header from rendering
+            delete survey.headerView;
+            // Also ensure the header property is undefined
+            survey.setPropertyValue("header", undefined);
+          }
           
           // Configure validation scrolling behavior
           survey.autoFocusFirstError = true; // This should scroll to first error on validation
@@ -519,6 +465,29 @@ const SurveyComponent: React.FC = () => {
               console.log('[Theme Debug] Applying custom theme for', eventBrand, 'brand');
               survey.applyTheme(eventTheme);
             }
+          } else if (eventBrand === 'Ford' || eventBrand === 'Lincoln') {
+            // No theme specified for Ford/Lincoln - apply default Ford/Lincoln theme
+            console.log('[Theme Debug] No surveyJSTheme specified for', eventBrand, 'brand, applying default theme');
+            const defaultFordLincolnTheme = {
+              themeName: "default",
+              colorPalette: "light",
+              isPanelless: true,
+              backgroundImage: "",
+              backgroundImageFit: "cover",
+              backgroundImageAttachment: "scroll",
+              backgroundOpacity: 1,
+              cssVariables: {
+                "--sjs-general-backcolor": "#ffffff",  // White background
+                "--sjs-general-backcolor-dim": "#ffffff",
+                "--sjs-primary-backcolor": "var(--colors-ford-fill-interactive)",  // Ford blue highlight
+                "--sjs-primary-backcolor-light": "var(--colors-ford-fill-interactive)",
+                "--sjs-primary-backcolor-dark": "var(--colors-ford-fill-interactive)",
+                "--sjs-corner-radius": "4px",
+                "--sjs-base-unit": "8px",
+                "--sjs-font-size": "16px"
+              }
+            };
+            survey.applyTheme(defaultFordLincolnTheme);
           }
 
           prepareForSurvey(survey, eventBrand);
@@ -1140,13 +1109,10 @@ const SurveyComponent: React.FC = () => {
         {
           (() => {
             const currentBrand = normalizeBrand(thisEvent?.brand);
-            const shouldShowHeader = (currentBrand === 'Ford' || currentBrand === 'Lincoln') 
-              && thisEvent?.showHeader !== false; // Default to true if not specified
-            
-            return shouldShowHeader && (
+            return (currentBrand === 'Ford' || currentBrand === 'Lincoln') && thisEvent?.showHeader !== false && (
               <GlobalHeader
                 brand={currentBrand}
-                showLanguageChooser={thisEvent?.showLanguageChooser === true && supportedLocales.length > 1}
+                showLanguageChooser={!!thisEvent?.showLanguageChooser && supportedLocales.length > 1}
                 supportedLocales={supportedLocales}
                 currentLocale={currentLocale}
                 onLanguageChange={handleLanguageChange}
@@ -1155,7 +1121,7 @@ const SurveyComponent: React.FC = () => {
           })()
         }
         {/* Show standard language selector only for non-Ford/Lincoln surveys */}
-        {supportedLocales.length > 1 && normalizeBrand(thisEvent?.brand) === 'Other' && (thisEvent?.showLanguageChooser === true) && (
+        {supportedLocales.length > 1 && normalizeBrand(thisEvent?.brand) === 'Other' && thisEvent?.showLanguageChooser && (
           <LanguageSelector 
             survey={thisSurvey}
             supportedLocales={supportedLocales}
@@ -1186,16 +1152,13 @@ const SurveyComponent: React.FC = () => {
         {
           (() => {
             const currentBrand = normalizeBrand(thisEvent?.brand);
-            const shouldShowFooter = (currentBrand === 'Ford' || currentBrand === 'Lincoln') 
-              && thisEvent?.showFooter !== false; // Default to true if not specified
-            
-            return shouldShowFooter && (
+            return (currentBrand === 'Ford' || currentBrand === 'Lincoln') && thisEvent?.showFooter !== false && (
               <GlobalFooter
                 brand={currentBrand}
                 supportedLanguages={supportedLocales}
                 currentLocale={currentLocale}
                 onLanguageChange={handleLanguageChange}
-                showLanguageSelector={thisEvent?.showLanguageChooser === true && supportedLocales.length > 1}
+                showLanguageSelector={!!thisEvent?.showLanguageChooser && supportedLocales.length > 1}
               />
             );
           })()

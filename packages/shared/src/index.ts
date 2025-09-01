@@ -20,8 +20,8 @@ export {
 } from './api/config';
 
 // Core Types
-export * from './types/expanse';
-export * from './types/survey';
+export * from './types';  // Exports all types including core.ts
+export * from './types/expanse';  // Keep for backward compatibility
 
 // Survey Type Definitions
 export { 
@@ -38,6 +38,9 @@ export {
 export { mapToFordPayload } from './mappers/ford';
 export { mapToLincolnPayload } from './mappers/lincoln';
 
+// Services
+export * from './services';  // Email validation and other services
+
 // Utility Functions
 export * from './utils/validation';
 export * from './utils/network';
@@ -46,7 +49,10 @@ export * from './utils/surveyLocale';
 export * from './utils/browser';
 
 // SurveyJS Registration
-export { registerCustomQuestionTypes } from './surveyjs/question-registration';
+export { 
+  registerCustomQuestionTypes,
+  registerUniversalQuestions
+} from './surveyjs/universal-registration';
 
 // Legacy exports for backward compatibility (to be removed later)
 export { FordSurveyPayload as FordSurvey } from './types/ford';

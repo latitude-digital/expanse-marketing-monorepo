@@ -6,7 +6,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 
 import auth from '../../services/auth';
 import app from '../../services/firebase';
-import db from '../../services/db';
+import db from '../../services/firestore';
 
 import { QuestionRadiogroupModel, Serializer } from "survey-core";
 import { SurveyCreatorComponent, SurveyCreator } from "survey-creator-react";
@@ -28,7 +28,9 @@ import { initCreatorFord, prepareCreatorOnQuestionAddedFord } from '../../helper
 import { initCreatorLincoln, prepareCreatorOnQuestionAddedLincoln } from '../../helpers/surveyTemplatesLincoln';
 import { shouldLoadFDS, getBrandTheme, normalizeBrand } from '../../utils/brandUtils';
 import { initializeFDSForBrand } from '../../helpers/fdsInitializer';
-import { AllSurveys, FordSurveys, LincolnSurveys } from '../../surveyjs_questions';
+import { AllSurveys, FMCSurveys } from '../../surveyjs_questions';
+import FordSurveysNew from '../../surveyjs_questions/FordSurveysNew';
+import LincolnSurveysNew from '../../surveyjs_questions/LincolnSurveysNew';
 
 // Register SurveyJS themes for theme editor functionality
 registerSurveyTheme(SurveyTheme); // Add predefined Form Library UI themes
@@ -118,16 +120,22 @@ function DashboardScreen() {
             console.log(`Survey Creator - Event brand detected: ${eventBrand}`);
             
             try {
-                // Initialize FDS for Ford/Lincoln events, otherwise use basic SurveyJS
-                if (shouldLoadFDS(eventBrand)) {
+                // Always initialize basic SurveyJS and universal questions
+                initSurvey();
+                AllSurveys.globalInit();
+                
+                // Initialize brand-specific components
+                if (eventBrand === 'Ford') {
                     await initializeFDSForBrand(eventBrand);
-                    console.log(`FDS initialized for ${eventBrand} event`);
+                    // The FDS initializer already calls FMCSurveys.fmcInit() and FordSurveysNew.fordInit()
+                    console.log(`FDS and Ford-specific questions initialized for ${eventBrand} event`);
+                } else if (eventBrand === 'Lincoln') {
+                    await initializeFDSForBrand(eventBrand);
+                    // The FDS initializer already calls FMCSurveys.fmcInit() and LincolnSurveysNew.lincolnInit()
+                    console.log(`FDS and Lincoln-specific questions initialized for ${eventBrand} event`);
                 } else {
-                    // For non-branded events, initialize basic SurveyJS with universal questions only
-                    initSurvey(); // Basic SurveyJS initialization
-                    AllSurveys.globalInit(); // Initialize universal questions (firstname, lastname, email, etc.)
-                    
-                    console.log('Basic SurveyJS and universal questions initialized for non-branded event');
+                    // For non-branded events, only universal questions are initialized
+                    console.log('Basic SurveyJS with universal questions initialized for non-branded event');
                 }
             } catch (error) {
                 console.error('Failed to initialize survey system:', error);
@@ -195,14 +203,49 @@ function DashboardScreen() {
             // Initialize creator with base settings
             initCreator(newCreator);
             
-            // Apply brand-specific creator settings
+            // Apply brand-specific creator settings and hide irrelevant categories
             const eventBrand = normalizeBrand(thisEvent?.brand);
             if (eventBrand === 'Ford') {
                 initCreatorFord(newCreator);
-                console.log('Ford creator settings applied');
+                // Hide Lincoln category for Ford events
+                const lincolnCategory = newCreator.toolbox.categories.find((c: any) => c.name === '__lincolnCategory');
+                if (lincolnCategory) {
+                    lincolnCategory.visible = false;
+                }
+                console.log('Ford creator settings applied, Lincoln category hidden');
             } else if (eventBrand === 'Lincoln') {
                 initCreatorLincoln(newCreator);
-                console.log('Lincoln creator settings applied');
+                // Hide Ford category for Lincoln events
+                const fordCategory = newCreator.toolbox.categories.find((c: any) => c.name === '__fordCategory');
+                if (fordCategory) {
+                    fordCategory.visible = false;
+                }
+                console.log('Lincoln creator settings applied, Ford category hidden');
+            } else {
+                // For non-branded events, hide both Ford and Lincoln categories AND FMC category
+                const fordCategory = newCreator.toolbox.categories.find((c: any) => c.name === '__fordCategory');
+                const lincolnCategory = newCreator.toolbox.categories.find((c: any) => c.name === '__lincolnCategory');
+                const fmcCategory = newCreator.toolbox.categories.find((c: any) => c.name === '__0fmc');
+                if (fordCategory) {
+                    fordCategory.visible = false;
+                }
+                if (lincolnCategory) {
+                    lincolnCategory.visible = false;
+                }
+                if (fmcCategory) {
+                    fmcCategory.visible = false;
+                }
+                console.log('Non-branded event: Ford, Lincoln, and FMC categories hidden');
+                
+                // Also hide individual FMC question items from the toolbox
+                const fmcQuestions = ['gender', 'agebracket', 'howlikelyacquire', 'inmarkettiming', 'vehicledrivenmostmake'];
+                fmcQuestions.forEach(questionName => {
+                    const item = newCreator.toolbox.getItemByName(questionName);
+                    if (item) {
+                        item.visible = false;
+                    }
+                });
+                console.log('FMC question items hidden from toolbox');
             }
 
             newCreator.onSurveyInstanceCreated.add((creator, options) => {

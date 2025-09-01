@@ -35,7 +35,7 @@ const fmcInit = () => {
   ComponentCollection.Instance.add({
     name: "gender",
     title: "Gender",
-    iconName: "icon-genderless",
+    iconName: "icon-person-circle-question",
     showInToolbox: true,
     inheritBaseProps: true,
     onLoaded(question: Question) {
@@ -90,7 +90,7 @@ const fmcInit = () => {
   ComponentCollection.Instance.add({
     name: "agebracket",
     title: "Age Bracket",
-    iconName: "icon-calendar-star",
+    iconName: "icon-calendar-circle-user",
     showInToolbox: true,
     inheritBaseProps: true,
     onLoaded(question: Question) {
@@ -163,7 +163,7 @@ const fmcInit = () => {
   ComponentCollection.Instance.add({
     name: "howlikelyacquire",
     title: "How Likely to Acquire",
-    iconName: "icon-money-check-dollar-pen",
+    iconName: "icon-cash-register",
     showInToolbox: true,
     inheritBaseProps: true,
     onLoaded(question: Question) {

@@ -4,7 +4,9 @@
  */
 
 import { ReactQuestionFactory } from 'survey-react-ui';
-import { AllSurveys, FordSurveys, LincolnSurveys, FMCSurveys } from '../surveyjs_questions';
+import { AllSurveys, FMCSurveys } from '../surveyjs_questions';
+import FordSurveysNew from '../surveyjs_questions/FordSurveysNew';
+import LincolnSurveysNew from '../surveyjs_questions/LincolnSurveysNew';
 
 // FDS Renderer imports - conditionally loaded
 let FDSRenderersLoaded = false;
@@ -60,15 +62,15 @@ export async function initializeFDSForBrand(brand: string): Promise<void> {
       await loadFDSRenderers();
 
 
-      // Initialize brand-specific questions
+      // Initialize brand-specific questions using new universal system
       if (brand === 'Ford') {
         FMCSurveys.fmcInit();
-        FordSurveys.fordInit();
-        console.log('FMC and Ford-specific questions initialized');
+        FordSurveysNew.fordInit();
+        console.log('FMC and Ford-specific questions initialized using universal system');
       } else if (brand === 'Lincoln') {
         FMCSurveys.fmcInit();
-        LincolnSurveys.lincolnInit();
-        console.log('FMC and Lincoln-specific questions initialized');
+        LincolnSurveysNew.lincolnInit();
+        console.log('FMC and Lincoln-specific questions initialized using universal system');
       }
 
       console.log(`FDS initialization complete for ${brand}`);

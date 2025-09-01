@@ -7,12 +7,13 @@ import { useParams } from 'react-router-dom';
 import { SurveySkeleton } from '../components/LoadingStates';
 import * as Sentry from "@sentry/react";
 // import { Button } from '../../../ford-ui/packages/@ui/ford-ui-components/src/components/button'; // Commented out for TypeScript migration testing
-import { mapSurveyToFordSurvey } from '../helpers/mapSurveyToFord';
+import { mapToFordPayload } from '@expanse/shared';
 import { baseSurvey, incentiveThanks, activationThanks } from "./ExperienceSurvey";
 import { baseSurvey as derbyBaseSurvey, themeOverride as derbyThemeOverride } from './DerbySurvey';
 import { prepareForSurvey, prepareSurveyOnQuestionAdded } from "../helpers/surveyTemplatesAll";
 import { getApiUrl, ENDPOINTS } from '../config/api';
 import { validateEmailForSurveyJS, type EmailValidationResponse } from '../utils/surveyUtilities';
+import type { SurveyData } from '@expanse/shared';
 
 // Import FDS custom SurveyJS renderers
 import { CheckboxVOIQuestion } from "../surveysjs_renderers/FDSRenderers/CheckboxVOI";
@@ -85,15 +86,11 @@ interface VOI {
   survey_vehicle_guid: string;
 }
 
-interface SurveyData {
-  [key: string]: any;
-  device_survey_guid?: string;
-  fordVOI?: string[];
-  voi?: string[];
-  optins?: OptIn[];
-  signature?: string;
-  minor_signature?: string;
-  customData?: any;
+// SurveyData type is now imported from @packages/shared/types
+// Additional fields specific to Experiential surveys can be added via the index signature
+interface OptIn {
+  type: string;
+  value: boolean;
 }
 
 declare global {
@@ -498,7 +495,7 @@ ${minorWaiverText}
                         }
 
                         // save survey (v10 only, using FordSurvey)
-                        const fordSurvey = mapSurveyToFordSurvey(survey, surveyData, retEvent);
+                        const fordSurvey = mapToFordPayload(survey, surveyData, retEvent);
                         const mergedSurveyData = { ...fordSurvey, ...surveyData };
 
                         fetch(getApiUrl(ENDPOINTS.SURVEY_UPLOAD_V10), {

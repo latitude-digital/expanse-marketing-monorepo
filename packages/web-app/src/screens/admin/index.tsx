@@ -6,7 +6,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 
 import auth from '../../services/auth';
 import app from '../../services/firebase';
-import db from '../../services/db';
+import db from '../../services/firestore';
 
 import { Model, Question, slk, SurveyModel, ITheme } from "survey-core";
 import { SurveyCreator } from "survey-creator-react";

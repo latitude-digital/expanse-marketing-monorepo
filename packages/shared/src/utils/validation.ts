@@ -2,19 +2,7 @@
  * Shared validation utilities for the Expanse platform
  */
 
-/**
- * Email validation result from external service
- */
-export interface EmailValidationResult {
-  valid?: boolean;
-  is_disposable?: boolean;
-  delivery_confidence?: number;
-  did_you_mean?: string;
-}
-
-export interface EmailValidationResponse {
-  results: EmailValidationResult;
-}
+import { EmailValidationResult, EmailValidationResponse } from '../types/core';
 
 /**
  * File validation result

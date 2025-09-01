@@ -3,7 +3,7 @@ import { useNavigate, useLocation, useParams } from "react-router-dom";
 import auth from '../services/auth';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
-import db from '../services/db';
+import db from '../services/firestore';
 import { ensureCloudFrontAccess, getCloudFrontCookies } from '../services/cloudFrontAuth';
 import * as Sentry from "@sentry/react";
 import { CollectionReference, Query, DocumentData, DocumentReference, FirestoreDataConverter, collection, query, where, orderBy, updateDoc, Timestamp } from 'firebase/firestore';

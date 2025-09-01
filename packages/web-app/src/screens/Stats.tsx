@@ -6,7 +6,7 @@ import { onSnapshot, doc } from "firebase/firestore";
 
 import { useAuthState } from 'react-firebase-hooks/auth';
 import app from '../services/firebase';
-import db from '../services/db';
+import db from '../services/firestore';
 
 import { Model, Question } from "survey-core";
 import { StatsSkeleton } from '../components/LoadingStates';
