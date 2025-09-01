@@ -30,7 +30,11 @@ import Thanks from './screens/Thanks';
 import Stats from './screens/Stats';
 import Dashboard from './screens/Dashboard';
 
-import Admin from './screens/admin/index';
+// Admin components
+import AdminLayout from './components/AdminLayout';
+import AdminEvents from './screens/admin/AdminEvents';
+import AdminTags from './screens/admin/AdminTags';
+import AdminUsers from './screens/admin/AdminUsers';
 import EditEvent from './screens/admin/EditEvent';
 import EditSurvey from './screens/admin/EditSurvey';
 import ReUpload from './screens/admin/ReUpload';
@@ -83,15 +87,18 @@ root.render(
           <Route path="s/:eventID/dashboard/login" element={<Login />} />
           <Route path="thanks" element={<Thanks />} />
 
-          <Route path="admin" element={<ProtectedRoute requireAdmin={true}><Admin /></ProtectedRoute>} />
-          <Route path="admin/event/:eventID" element={<ProtectedRoute requireAdmin={true}><EditEvent /></ProtectedRoute>} />
-          <Route path="admin/event/:eventID/survey" element={<ProtectedRoute requireAdmin={true}><EditSurvey /></ProtectedRoute>} />
-          <Route path="admin/reupload" element={<ProtectedRoute requireAdmin={true}><ReUpload /></ProtectedRoute>} />
+          <Route path="admin" element={<AdminLayout />}>
+            <Route index element={<AdminEvents />} />
+            <Route path="tags" element={<AdminTags />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="event/:eventID" element={<EditEvent />} />
+            <Route path="event/new" element={<EditEvent />} />
+            <Route path="survey/:eventID" element={<EditSurvey />} />
+            <Route path="reupload" element={<ReUpload />} />
+          </Route>
           
           <Route path="admin/login" element={<Login />} />
-          <Route path="admin/event/:eventID/login" element={<Login />} />
-          <Route path="admin/event/:eventID/survey/login" element={<Login />} />
-          <Route path="admin/reupload/login" element={<Login />} />
+          <Route path="admin/*/login" element={<Login />} />
         </Route>
       </Routes>
     </BrowserRouter>

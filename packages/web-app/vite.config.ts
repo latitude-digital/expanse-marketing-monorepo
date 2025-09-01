@@ -76,6 +76,7 @@ export default defineConfig(async ({ command, mode }) => {
         '@common/helpers': path.resolve(__dirname, '../ford-ui/packages/@common/helpers/src/lib'),
         '@common/interfaces': path.resolve(__dirname, '../ford-ui/packages/@common/interfaces/src/lib'),
         '@common/utils': path.resolve(__dirname, '../ford-ui/packages/@common/utils/src/lib'),
+        '@fontawesome': path.resolve(__dirname, '../../fontawesome/svgs'),
         // Add any other aliases that were used in the original app
       }
     },

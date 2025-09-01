@@ -470,16 +470,16 @@ function DashboardScreen() {
     }, [initializationComplete, thisEvent, eventID]);
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-            <h1>Edit Event {thisEvent?.id}</h1>
+        <div className="flex flex-col h-full">
+            <h1 className="text-2xl font-bold mb-4">Edit Event {thisEvent?.id}</h1>
 
             {!initializationComplete ? (
                 <div style={{ padding: '20px', textAlign: 'center' }}>
                     Loading survey editor...
                 </div>
             ) : creator ? (
-                <div id="fd-nxt" className={getBrandTheme(thisEvent?.brand)} style={{ flex: 1 }}>
-                    <SurveyCreatorComponent creator={creator} style={{ flex: 1 }} />
+                <div id="fd-nxt" className={`${getBrandTheme(thisEvent?.brand)} flex-1 flex flex-col`}>
+                    <SurveyCreatorComponent creator={creator} />
                 </div>
             ) : (
                 <div style={{ padding: '20px', textAlign: 'center' }}>
