@@ -1,21 +1,4 @@
 {
   "mcpServers": {
-    "Figma-FDS-LDS": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@composio/mcp@latest",
-        "start",
-        "--url",
-        "https://mcp.composio.dev/composio/server/816cab9d-bf16-45e9-bdd9-06b08dc91703/mcp?include_composio_helper_actions=true"
-      ],
-      "env": {
-        "npm_config_yes": "true"
-      }
-    },
-    "firebase": {
-      "command": "npx",
-      "args": ["-y", "firebase-tools@latest", "experimental:mcp"]
-    }
   }
 }

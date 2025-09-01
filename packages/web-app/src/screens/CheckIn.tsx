@@ -3,7 +3,7 @@ import { useNavigate, useLocation, useParams } from "react-router-dom";
 import auth from '../services/auth';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
-import db from '../services/db';
+import db from '../services/firestore';
 import { ensureCloudFrontAccess, getCloudFrontCookies } from '../services/cloudFrontAuth';
 import * as Sentry from "@sentry/react";
 import { CollectionReference, Query, DocumentData, DocumentReference, FirestoreDataConverter, collection, query, where, orderBy, updateDoc, Timestamp } from 'firebase/firestore';
@@ -12,8 +12,9 @@ import { Model } from 'survey-core';
 import CloudFrontImage from '../components/CloudFrontImage';
 
 import JSONPretty from 'react-json-pretty';
-import { Button, ButtonGroup } from "@progress/kendo-react-buttons";
-import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
+import Button, { ButtonGroup } from "../components/Button";
+import Dialog from "../components/Dialog";
+import { TableSkeleton, LoadingMessage } from "../components/LoadingStates";
 import { AgGridReact } from 'ag-grid-react';
 import { ColDef, GridApi, GridReadyEvent, ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
@@ -364,7 +365,12 @@ function CheckInScreen() {
     <>
       <h1 className="text-center my-3 title">Check In {(thisEvent && <> - {thisEvent?.name}</>)}</h1>
 
-      {(userLoading || !thisEvent) && <><br /><br /><p>Loading...</p></>}
+      {(userLoading || !thisEvent) && (
+        <LoadingMessage 
+          message="Loading check-in data" 
+          subMessage="Fetching event and survey information..."
+        />
+      )}
 
       {
         surveys &&
@@ -412,10 +418,60 @@ function CheckInScreen() {
       }
 
       {dialogVisible && selectedUser && (
-        <Dialog title="Check In Person?" onClose={() => {
-          setDialogVisible(false);
-          setSelectedUser(null);
-        }}>
+        <Dialog 
+          open={dialogVisible}
+          title="Check In Person?" 
+          onClose={() => {
+            setDialogVisible(false);
+            setSelectedUser(null);
+          }}
+          actions={
+            <>
+              <Button 
+                variant="danger"
+                onClick={() => {
+                  fetch(getApiUrl(ENDPOINTS.CHECK_IN_OUT_SURVEY), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                      eventID: params.eventID,
+                      surveyID: selectedUser.id,
+                      action: 'checkIn',
+                      data: {
+                        _checkedIn: new Date().toISOString()
+                      }
+                    }),
+                  }).then(response => {
+                    response.json().then((res) => {
+                      if (res.success) {
+                        // console.log('checked in');
+                      } else {
+                        console.error('Check In Error', res);
+                        Sentry.captureException(new Error(res.message));
+                      }
+                    });
+                  }).catch((err: any) => {
+                    console.error('Check In Error', err);
+                    Sentry.captureException(err);
+                  });
+                  setDialogVisible(false);
+                  setSelectedUser(null);
+                }}
+              >
+                Check In
+              </Button>
+              <Button 
+                variant="secondary"
+                onClick={() => {
+                  setDialogVisible(false);
+                  setSelectedUser(null);
+                }}
+              >
+                Cancel
+              </Button>
+            </>
+          }
+        >
           {
             thisEvent?.checkInDisplay ? (
               <ul>
@@ -508,40 +564,6 @@ function CheckInScreen() {
               </>
             )
           }
-          <DialogActionsBar>
-            <Button themeColor="warning" onClick={() => {
-              setDialogVisible(false);
-              setSelectedUser(null);
-            }}>Cancel</Button>
-            <Button themeColor="success" onClick={() => {
-              fetch(getApiUrl(ENDPOINTS.CHECK_IN_OUT_SURVEY), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                  eventID: params.eventID,
-                  surveyID: selectedUser.id,
-                  action: 'checkIn',
-                  data: {
-                    _checkedIn: new Date().toISOString()
-                  }
-                }),
-              }).then(response => {
-                response.json().then((res) => {
-                  if (res.success) {
-                    // console.log('checked in');
-                  } else {
-                    console.error('Check In Error', res);
-                    Sentry.captureException(new Error(res.message));
-                  }
-                });
-              }).catch((err: any) => {
-                console.error('Check In Error', err);
-                Sentry.captureException(err);
-              });
-              setDialogVisible(false);
-              setSelectedUser(null);
-            }}>Check In</Button>
-          </DialogActionsBar>
         </Dialog>
       )}
     </>

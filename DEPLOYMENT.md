@@ -6,7 +6,6 @@
 1. AWS credentials configured for S3 deployment
 2. Firebase CLI installed and authenticated
 3. Sentry auth token available
-4. Kendo UI license configured
 
 ### Deploy to Staging
 
@@ -22,13 +21,12 @@ This script will:
 1. Update version numbers
 2. Install dependencies
 3. Sync Ford UI components
-4. Activate Kendo UI license
-5. Create Sentry release
-6. Build the web application with staging environment
-7. Deploy web app to S3 (staging.survey.expansemarketing.com)
-8. Build Firebase functions
-9. Deploy Firebase functions to staging namespace
-10. Deploy Firestore rules and indexes
+4. Create Sentry release
+5. Build the web application with staging environment
+6. Deploy web app to S3 (staging.survey.expansemarketing.com)
+7. Build Firebase functions
+8. Deploy Firebase functions to staging namespace
+9. Deploy Firestore rules and indexes
 
 ### What Gets Deployed
 
@@ -109,13 +107,12 @@ This script will:
 1. Update version numbers
 2. Install dependencies
 3. Sync Ford UI components
-4. Activate Kendo UI license
-5. Create Sentry release
-6. Build the web application with production environment
-7. Deploy web app to S3 (survey.expansemarketing.com)
-8. Build Firebase functions
-9. Deploy Firebase functions to prod namespace
-10. Deploy Firestore rules and indexes to default database
+4. Create Sentry release
+5. Build the web application with production environment
+6. Deploy web app to S3 (survey.expansemarketing.com)
+7. Build Firebase functions
+8. Deploy Firebase functions to prod namespace
+9. Deploy Firestore rules and indexes to default database
 
 ### What Gets Deployed (Production)
 

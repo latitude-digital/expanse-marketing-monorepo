@@ -1,23 +1,4 @@
 // App.scss
-// Kendo theme integration with Ford UI v2
-// Enable the new color system with Ford brand colors.
-$kendo-enable-color-system: true;
-
-$kendo-colors: (
-    primary-subtle: #EBE0FF,
-    primary-subtle-hover: #DAC7FF,
-    primary-subtle-active: #C7ADFF,
-    primary: #573D7F,
-    primary-hover: #7151A9,
-    primary-active: #46325D,
-    primary-emphasis: #916DD5,
-    primary-on-subtle: #3F3649,
-    on-primary: #ffffff,
-    primary-on-surface: #AC8BEE,
-);
-
-// Import Kendo theme for components we still use (Loader, etc.)
-@import "@progress/kendo-theme-default/dist/all.scss";
 
 .app {
     display: flex;

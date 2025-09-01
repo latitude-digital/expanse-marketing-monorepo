@@ -97,13 +97,7 @@ if $DEPLOY_WEB; then
     ./packages/web-app/scripts/sync-ford-ui.sh
     echo -e "${GREEN}✅ Ford UI synced${NC}"
 
-    # Step 4: Activate Kendo UI license
-    echo -e "${YELLOW}🔑 Activating Kendo UI license${NC}"
-    cd packages/web-app
-    npx kendo-ui-license activate
-    echo -e "${GREEN}✅ Kendo UI license activated${NC}"
-
-    # Step 5: Create Sentry release
+    # Step 4: Create Sentry release
     echo -e "${YELLOW}📊 Creating Sentry release${NC}"
     pnpm sentry-cli releases new ${BUILD_NUMBER}
     pnpm sentry-cli releases set-commits ${BUILD_NUMBER} --commit latitude-digital/expanse-marketing-monorepo@${GIT_COMMIT}

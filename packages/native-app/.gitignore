@@ -88,4 +88,4 @@ temp/
 
 # Native folders (prebuild)
 /android
-/ios
+/ios.expo/

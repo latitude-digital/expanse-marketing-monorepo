@@ -7,6 +7,7 @@ import { offlineDetector } from '../src/utils/offline-detector';
 import type { ExpanseEvent } from '@expanse/shared/types';
 
 export default function EventListPage() {
+  console.log('EventListPage rendering');
   const [isInitialized, setIsInitialized] = useState(false);
   const [events, setEvents] = useState<ExpanseEvent[]>([]);
   const [loading, setLoading] = useState(false);
@@ -14,18 +15,22 @@ export default function EventListPage() {
   const [eventCache] = useState(() => new EventCacheService(dbService));
 
   useEffect(() => {
+    console.log('useEffect running');
     initializeApp();
   }, []);
 
   const initializeApp = async () => {
+    console.log('initializeApp starting');
     try {
       await dbService.initialize();
       const isDbReady = await dbService.isInitialized();
+      console.log('Database ready:', isDbReady);
       if (!isDbReady) {
         throw new Error('Database initialization failed');
       }
       await loadEvents();
       setIsInitialized(true);
+      console.log('App initialized successfully');
     } catch (error) {
       console.error('App initialization failed:', error);
       setIsInitialized(true);

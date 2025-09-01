@@ -76,8 +76,6 @@ pipeline {
 
 			// Output the current environment for debugging
 			sh "echo \\\"Building with VITE_ENV=${env.VITE_ENV}\\\""
-			
-			sh "cd packages/web-app && npx kendo-ui-license activate"
 		}
 	}
 	stage("Build") {

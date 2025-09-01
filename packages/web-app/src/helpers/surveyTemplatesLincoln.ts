@@ -1,5 +1,6 @@
 import {
   surveyLocalization,
+  ComponentCollection,
 } from "survey-core";
 import {
   DefaultFonts,
@@ -8,7 +9,7 @@ import {
   SurveyCreatorModel,
 } from "survey-creator-core";
 
-import { LincolnSurveys } from "../surveyjs_questions";
+import LincolnSurveysNew from "../surveyjs_questions/LincolnSurveysNew";
 
 import { registerIcons } from "./fontAwesomeIcons";
 
@@ -23,13 +24,26 @@ registerIcons([
   "calendar-clock",
   "pen-field",
   "car-garage",
+  "road-circle-check",
+  "comments",
+  "signature",
+  "calendar-circle-user",
+  "cash-register",
+  "person-circle-question",
+  "user",
+  "mobile-retro",
+  "mailbox-flag-up",
+  "scale-unbalanced",
+  "scale-unbalanced-flip",
+  "trophy",
+  "envelopes-bulk",
 ]);
 
 export const initSurveyLincoln = () => {
   // surveyLocalization.supportedLocales = ["en", "es", "fr"];
 
-  // Initialize Lincoln-specific questions
-  LincolnSurveys.lincolnInit();
+  // Initialize Lincoln-specific questions using new universal system
+  LincolnSurveysNew.lincolnInit();
 
   DefaultFonts.unshift("ProximaNovaRgRegular", "lincolnmillerbblack");
 };
@@ -41,31 +55,70 @@ export const initCreatorLincoln = (creator: SurveyCreatorModel) => {
   enLocale.toolboxCategories["__lincolnCategory"] = "Lincoln Questions";
   enLocale.toolboxCategories["__0fmc"] = "FMC Questions";
 
-  creator.toolbox.changeCategories([
-    { name: "lincolnvoi", category: "__lincolnCategory" },
-    { name: "lincolnvehiclesdriven", category: "__lincolnCategory" },
-    { name: "lincolnoptin", category: "__lincolnCategory" },
-    { name: "lincolnrecommend", category: "__lincolnCategory" },
-    { name: "lincolnrecommendpost", category: "__lincolnCategory" },
-    { name: "lincolnoverallopinion", category: "__lincolnCategory" },
-    { name: "lincolnoverallopinionpost", category: "__lincolnCategory" },
-    { name: "lincolnpurchaseconsideration", category: "__lincolnCategory" },
-    { name: "lincolnpurchaseconsiderationpost", category: "__lincolnCategory" },
-    // FMC questions
-    { name: "gender", category: "__0fmc" },
-    { name: "agebracket", category: "__0fmc" },
-    { name: "howlikelyacquire", category: "__0fmc" },
-    { name: "inmarkettiming", category: "__0fmc" },
-    { name: "vehicledrivenmostmake", category: "__0fmc" },
-  ]);
+  // Manually add Lincoln questions to the toolbox if they're not already there
+  // This is needed because questions registered via the universal system after
+  // Creator instantiation don't automatically appear in the toolbox
 
-  // Apply Lincoln-specific category sorting - Lincoln Questions first
+  // Map question names to proper titles and icons
+  const lincolnQuestionConfig: Record<string, { title: string; icon: string }> = {
+    lincolnvoi: { title: "Lincoln VOI", icon: "icon-cars" },
+    lincolnvehiclesdriven: { title: "Lincoln Vehicles Driven", icon: "icon-road-circle-check" },
+    lincolnoptin: { title: "Lincoln Opt-in", icon: "icon-envelopes-bulk" },
+    lincolnrecommend: { title: "Lincoln Recommend", icon: "icon-comments" },
+    lincolnrecommendpost: { title: "Lincoln Recommend Post", icon: "icon-comments" },
+    lincolnoverallopinion: { title: "Lincoln Overall Opinion", icon: "icon-rating" },
+    lincolnoverallopinionpost: { title: "Lincoln Overall Opinion Post", icon: "icon-rating" },
+    lincolnpurchaseconsideration: { title: "Lincoln Purchase Consideration", icon: "icon-scale-unbalanced" },
+    lincolnpurchaseconsiderationpost: { title: "Lincoln Purchase Consideration Post", icon: "icon-scale-unbalanced-flip" },
+  };
+
+  // First, ensure Lincoln questions exist in the toolbox
+  // The questions should already be registered via LincolnSurveysNew.lincolnInit()
+  const lincolnQuestions = Object.keys(lincolnQuestionConfig);
+
+  // Check if Lincoln questions exist and assign them to the category
+  const categoriesToChange = [];
+  lincolnQuestions.forEach(questionName => {
+    let item = creator.toolbox.getItemByName(questionName);
+    if (!item) {
+      // Question not in toolbox, manually add it
+      // The questions are registered in ComponentCollection but not automatically added to toolbox
+      const config = lincolnQuestionConfig[questionName];
+      creator.toolbox.addItem({
+        name: questionName,
+        title: config.title,
+        iconName: config.icon,
+        json: { type: questionName },
+        category: "__lincolnCategory"
+      });
+      console.log(`Manually added Lincoln question '${questionName}' to toolbox`);
+    } else {
+      categoriesToChange.push({ name: questionName, category: "__lincolnCategory" });
+    }
+  });
+
+  // Also reassign FMC questions to their category
+  const fmcQuestions = ["gender", "agebracket", "howlikelyacquire", "inmarkettiming", "vehicledrivenmostmake"];
+  fmcQuestions.forEach(questionName => {
+    const item = creator.toolbox.getItemByName(questionName);
+    if (item) {
+      categoriesToChange.push({ name: questionName, category: "__0fmc" });
+    }
+  });
+
+  if (categoriesToChange.length > 0) {
+    creator.toolbox.changeCategories(categoriesToChange);
+  } else {
+    console.error("No Lincoln questions found in toolbox to categorize!");
+  }
+
+  // Apply Lincoln-specific category sorting - Personal Info first, then FMC, then Lincoln
   creator.toolbox.categories = creator.toolbox.categories.sort((a: any, b: any) => {
     const getPriority = (name: string) => {
-      if (name === "__lincolnCategory") return 1;
-      if (name === "__fordCategory") return 2;
-      if (name === "__0pii") return 3;
-      if (name === "__0fmc") return 4;
+      if (name === "__0pii") return 1;  // Personal Information Questions
+      if (name === "__0fmc") return 2;  // FMC Questions  
+      if (name === "__lincolnCategory") return 3;  // Lincoln Questions
+      if (name === "__fordCategory") return 4;  // Ford Questions (if present)
       if (name === "__1wav") return 5;
       if (name.startsWith("__")) return 6;
       return 7;

@@ -6,11 +6,10 @@ import { onSnapshot, doc } from "firebase/firestore";
 
 import { useAuthState } from 'react-firebase-hooks/auth';
 import app from '../services/firebase';
-import db from '../services/db';
+import db from '../services/firestore';
 
 import { Model, Question } from "survey-core";
-
-import { Loader } from "@progress/kendo-react-indicators";
+import { StatsSkeleton } from '../components/LoadingStates';
 
 function ResultsScreen() {
   const navigate = useNavigate();
@@ -52,11 +51,16 @@ function ResultsScreen() {
     return unsubscribe;
   }, [userLoading]);
 
+  // Show skeleton while loading
+  if (!thisEvent || !thisSurvey) {
+    return <StatsSkeleton />;
+  }
+
   return (
     <div>
       <h1>{thisSurvey?.title} (Responders: {thisEvent?.results?.__totalCount})</h1>
 
-      {thisEvent?.results?.__questions.map((q:string) => {
+      {thisEvent?.results?.__questions?.map((q:string) => {
         const thisQuestion = thisSurvey!.getQuestionByName(q);
 
         return (

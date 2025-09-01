@@ -13,6 +13,7 @@ import axios, {AxiosError} from "axios";
 import moment from "moment-timezone";
 import {Model} from "survey-core";
 import {formatPhoneNumber, createMD5Hash, getFunctionUrl} from "./utils";
+import {uploadSurveyToAPI} from "@expanse/shared";
 
 const fordEventsCronKey = defineSecret("FORD_EVENTS_CRON_KEY");
 
@@ -214,6 +215,54 @@ export const surveyTriggerImpl = (database = "(default)") => onDocumentCreated(
                   .update({
                     _used: new Date(),
                   });
+            }
+
+            // Upload to Ford/Lincoln APIs if applicable
+            if ((thisEvent.brand === 'Ford' && thisEvent.fordEventID) || 
+                (thisEvent.brand === 'Lincoln' && thisEvent.lincolnEventID)) {
+              console.log('Attempting to upload survey to', thisEvent.brand, 'API');
+              
+              try {
+                const uploadResult = await uploadSurveyToAPI(
+                  {
+                    id: eventID,
+                    name: thisEvent.name,
+                    brand: thisEvent.brand,
+                    fordEventID: thisEvent.fordEventID,
+                    lincolnEventID: thisEvent.lincolnEventID,
+                    surveyType: thisEvent.surveyType || 'basic',
+                    surveyJSModel: surveyJSModel
+                  },
+                  survey
+                );
+                
+                if (uploadResult.success) {
+                  console.log('Survey successfully uploaded to', thisEvent.brand, 'API');
+                  
+                  // Mark survey as uploaded
+                  await snapshot.ref.update({
+                    _uploadedToAPI: true,
+                    _uploadedAt: new Date(),
+                    _uploadBrand: thisEvent.brand
+                  });
+                } else {
+                  console.error('Failed to upload survey to', thisEvent.brand, 'API:', uploadResult.error);
+                  
+                  // Mark upload attempt with error
+                  await snapshot.ref.update({
+                    _uploadError: uploadResult.error,
+                    _uploadAttemptedAt: new Date()
+                  });
+                }
+              } catch (error) {
+                console.error('Error uploading survey to API:', error);
+                
+                // Mark upload attempt with error
+                await snapshot.ref.update({
+                  _uploadError: error instanceof Error ? error.message : 'Unknown error',
+                  _uploadAttemptedAt: new Date()
+                });
+              }
             }
 
             // REPORTING

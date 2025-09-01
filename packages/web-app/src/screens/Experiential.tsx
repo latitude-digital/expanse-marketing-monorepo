@@ -4,15 +4,16 @@ import { Survey } from "survey-react-ui";
 import * as SurveyCore from "survey-core";  
 import { v4 as uuidv4 } from 'uuid';
 import { useParams } from 'react-router-dom';
-import { Loader } from "@progress/kendo-react-indicators";
+import { SurveySkeleton } from '../components/LoadingStates';
 import * as Sentry from "@sentry/react";
 // import { Button } from '../../../ford-ui/packages/@ui/ford-ui-components/src/components/button'; // Commented out for TypeScript migration testing
-import { mapSurveyToFordSurvey } from '../helpers/mapSurveyToFord';
+import { mapToFordPayload } from '@expanse/shared';
 import { baseSurvey, incentiveThanks, activationThanks } from "./ExperienceSurvey";
 import { baseSurvey as derbyBaseSurvey, themeOverride as derbyThemeOverride } from './DerbySurvey';
 import { prepareForSurvey, prepareSurveyOnQuestionAdded } from "../helpers/surveyTemplatesAll";
 import { getApiUrl, ENDPOINTS } from '../config/api';
 import { validateEmailForSurveyJS, type EmailValidationResponse } from '../utils/surveyUtilities';
+import type { SurveyData } from '@expanse/shared';
 
 // Import FDS custom SurveyJS renderers
 import { CheckboxVOIQuestion } from "../surveysjs_renderers/FDSRenderers/CheckboxVOI";
@@ -34,7 +35,6 @@ import { initializeFDSForBrand } from '../helpers/fdsInitializer';
 import { StyledButton } from '@ui/ford-ui-components/src/v2/button/Button';
 
 import "survey-core/survey-core.min.css";
-import "./Surveys.css";
 
 // TypeScript interfaces
 interface RouteParams {
@@ -86,15 +86,11 @@ interface VOI {
   survey_vehicle_guid: string;
 }
 
-interface SurveyData {
-  [key: string]: any;
-  device_survey_guid?: string;
-  fordVOI?: string[];
-  voi?: string[];
-  optins?: OptIn[];
-  signature?: string;
-  minor_signature?: string;
-  customData?: any;
+// SurveyData type is now imported from @packages/shared/types
+// Additional fields specific to Experiential surveys can be added via the index signature
+interface OptIn {
+  type: string;
+  value: boolean;
 }
 
 declare global {
@@ -263,7 +259,7 @@ const SurveyComponent: React.FC = () => {
                     if (res.data.waiver) {
                         const waiverText = JSON.parse(res.data.waiver).english.body.replace(/(?:\r\n|\r|\n)/g, '<br/><br/>');
 
-                        let waiverPage = {
+                        let waiverPage:any = {
                             "name": "pageWaiver",
                             "elements": [
                                 {
@@ -431,7 +427,7 @@ ${minorWaiverText}
                         sender.setValue('start_time', new Date());
                         sender.setValue('survey_date', new Date());
                         sender.setValue('event_id', res.data?.event_id);
-                        sender.setValue('app_version', 'surveyjs_1.0');
+                        sender.setValue('app_version', 'surveyjs_2.0');
                         sender.setValue('abandoned', 0);
                         sender.setValue("custom_data", {});
                         console.log('survey started', sender.getValue('device_survey_guid'));
@@ -499,7 +495,7 @@ ${minorWaiverText}
                         }
 
                         // save survey (v10 only, using FordSurvey)
-                        const fordSurvey = mapSurveyToFordSurvey(survey, surveyData, retEvent);
+                        const fordSurvey = mapToFordPayload(survey, surveyData, retEvent);
                         const mergedSurveyData = { ...fordSurvey, ...surveyData };
 
                         fetch(getApiUrl(ENDPOINTS.SURVEY_UPLOAD_V10), {
@@ -658,7 +654,7 @@ ${minorWaiverText}
     }
 
     if (!thisSurvey) {
-        return <Loader type="converging-spinner" size="large" />;
+        return <SurveySkeleton />;
     }
 
     if (thisEvent?.event_ended) {

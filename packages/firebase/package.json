@@ -16,6 +16,7 @@
     "node": "20"
   },
   "dependencies": {
+    "@expanse/shared": "workspace:*",
     "@aws-sdk/client-s3": "^3.864.0",
     "@aws-sdk/cloudfront-signer": "^3.862.0",
     "@aws-sdk/s3-presigned-post": "^3.864.0",
@@ -28,12 +29,14 @@
     "google-auth-library": "^10.2.1",
     "moment-timezone": "^0.5.45",
     "sqids": "^0.3.0",
-    "survey-core": "^2.3.1"
+    "survey-core": "^2.3.1",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/axios": "^0.14.4",
     "@types/cors": "^2.8.19",
     "@types/jest": "^29.5.5",
+    "@types/uuid": "^9.0.7",
     "firebase-functions-test": "^3.4.1",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",

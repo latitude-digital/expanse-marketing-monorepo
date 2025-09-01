@@ -132,7 +132,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
   };
 
   return (
-    <div className="w-full max-w-sm sm:max-w-md lg:max-w-lg mx-auto" onKeyDown={handleKeyDown}>
+    <div className="w-full" onKeyDown={handleKeyDown}>
       {/* Screen reader live region for announcements */}
       <div 
         ref={liveRegionRef}
@@ -154,14 +154,6 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
             role="main"
             aria-label="Password reset request form"
           >
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-4 sm:mb-6 lg:mb-8 text-center leading-tight">
-              Reset Password
-            </h1>
-            
-            <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8 text-center leading-relaxed">
-              Enter your email address and we'll send you instructions to reset your password.
-            </p>
-            
             {/* Error alert */}
             {error && (
               <AuthAlert
@@ -182,86 +174,60 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
               />
             )}
 
-            <fieldset disabled={isLoading} className="space-y-4 sm:space-y-6">
+            <fieldset disabled={isLoading} className="space-y-6">
               <legend className="sr-only">Password reset email</legend>
 
-              {/* Email field with enhanced accessibility and mobile optimization */}
-              <div className="mb-6 sm:mb-8">
+              {/* Email field */}
+              <div>
                 <label 
                   htmlFor="email" 
-                  className="block text-gray-900 text-sm sm:text-base font-semibold mb-2 required-field"
+                  className="block text-sm font-medium text-gray-900"
                 >
-                  Email Address
-                  <abbr className="text-red-600 ml-1" aria-label="required" title="This field is required">*</abbr>
+                  Email address
                 </label>
-                <Field
-                  ref={emailFieldRef}
-                  id="email"
-                  name="email"
-                  type="email"
-                  className={`w-full 
-                    px-4 sm:px-5 
-                    py-3 sm:py-4 
-                    border-2 rounded-md font-medium
-                    text-base sm:text-lg
-                    focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-blue-600
-                    transition-all duration-200 text-gray-900 placeholder-gray-500
-                    ${errors.email && touched.email
-                      ? 'border-red-500 bg-red-50 focus:border-red-600 focus:ring-red-200'
-                      : 'border-gray-600 bg-white hover:border-gray-700'
-                    }
-                    disabled:bg-gray-100 disabled:border-gray-300 disabled:cursor-not-allowed
-                  `}
-                  placeholder="Enter your email address"
-                  autoComplete="email"
-                  inputMode="email"
-                  disabled={isLoading}
-                  aria-required="true"
-                  aria-invalid={errors.email && touched.email ? 'true' : 'false'}
-                  aria-describedby={`email-description ${errors.email && touched.email ? 'email-error' : ''}`}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      if (isValid && dirty && !isLoading) {
-                        submitButtonRef.current?.click();
+                <div className="mt-2">
+                  <Field
+                    ref={emailFieldRef}
+                    id="email"
+                    name="email"
+                    type="email"
+                    className={`block w-full rounded-md px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6
+                      ${
+                        errors.email && touched.email
+                          ? 'outline-red-500 focus:outline-red-600'
+                          : 'outline-gray-300'
                       }
-                    }
-                  }}
-                />
-                <div id="email-description" className="sr-only">
-                  Enter the email address associated with your account
+                      disabled:bg-gray-50 disabled:text-gray-500 disabled:outline-gray-200
+                    `}
+                    placeholder="Enter your email address"
+                    autoComplete="email"
+                    inputMode="email"
+                    disabled={isLoading}
+                    aria-required="true"
+                    aria-invalid={errors.email && touched.email ? 'true' : 'false'}
+                    aria-describedby={errors.email && touched.email ? 'email-error' : undefined}
+                  />
                 </div>
                 <ErrorMessage 
                   id="email-error"
                   name="email" 
-                  component="div" 
-                  className="mt-2 text-sm sm:text-base text-red-700 font-medium" 
+                  component="p" 
+                  className="mt-2 text-sm text-red-600" 
                   role="alert"
                 />
               </div>
 
-              {/* Submit button with enhanced accessibility and mobile optimization */}
-              <button
-                ref={submitButtonRef}
-                type="submit"
-                disabled={isLoading || !isValid || !dirty}
-                className="w-full bg-blue-700 hover:bg-blue-800 active:bg-blue-900
-                  text-white font-bold 
-                  py-4 sm:py-3 px-6 
-                  rounded-md 
-                  text-lg sm:text-xl
-                  min-h-[56px] sm:min-h-[48px]
-                  focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-offset-2
-                  transition-all duration-200
-                  disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-75
-                  transform hover:scale-[1.02] active:scale-[0.98]
-                  touch-manipulation"
-                aria-describedby="submit-button-description"
-              >
-                <span className="flex items-center justify-center">
+              {/* Submit button */}
+              <div>
+                <button
+                  ref={submitButtonRef}
+                  type="submit"
+                  disabled={isLoading || !isValid || !dirty}
+                  className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   {isLoading && (
                     <svg 
-                      className="animate-spin -ml-1 mr-3 h-5 w-5 sm:h-6 sm:w-6 text-white" 
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" 
                       xmlns="http://www.w3.org/2000/svg" 
                       fill="none" 
                       viewBox="0 0 24 24"
@@ -282,56 +248,20 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
                       />
                     </svg>
                   )}
-                  {isLoading ? 'Sending Email...' : 'Send Reset Email'}
-                </span>
-              </button>
-              <div id="submit-button-description" className="sr-only">
-                {isLoading 
-                  ? 'Please wait while we send your password reset email'
-                  : isValid && dirty 
-                    ? 'Click to send password reset email' 
-                    : 'Enter a valid email address to continue'
-                }
+                  {isLoading ? 'Sending email...' : 'Send reset email'}
+                </button>
               </div>
             </fieldset>
 
             {/* Back to sign in link */}
-            <div className="mt-6 sm:mt-8 text-center">
+            <div className="text-center">
               <Link
                 to={returnPath}
-                className="text-sm sm:text-base text-blue-700 hover:text-blue-900 underline
-                  focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-offset-2 
-                  rounded px-2 py-2 transition-colors duration-200
-                  min-h-[44px] sm:min-h-auto flex items-center justify-center
-                  touch-manipulation"
+                className="text-sm font-semibold text-indigo-600 hover:text-indigo-500"
                 aria-label="Return to sign in page"
               >
-                ← Back to Sign In
+                ← Back to sign in
               </Link>
-            </div>
-
-            {/* Keyboard shortcuts help - responsive design */}
-            <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-gray-50 rounded-md border">
-              <details>
-                <summary className="text-sm sm:text-base text-gray-700 cursor-pointer font-medium hover:text-gray-900 
-                  py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded">
-                  Keyboard shortcuts
-                </summary>
-                <div className="mt-2 sm:mt-3 text-xs sm:text-sm text-gray-600 space-y-1 sm:space-y-2">
-                  <div className="flex items-center">
-                    <kbd className="px-2 py-1 bg-gray-200 rounded text-xs sm:text-sm font-mono">Enter</kbd>
-                    <span className="ml-2">in email field submits form</span>
-                  </div>
-                  <div className="flex items-center">
-                    <kbd className="px-2 py-1 bg-gray-200 rounded text-xs sm:text-sm font-mono">Escape</kbd>
-                    <span className="ml-2">clears error messages</span>
-                  </div>
-                  <div className="flex items-center">
-                    <kbd className="px-2 py-1 bg-gray-200 rounded text-xs sm:text-sm font-mono">Tab</kbd>
-                    <span className="ml-2">to navigate between elements</span>
-                  </div>
-                </div>
-              </details>
             </div>
           </Form>
         )}
