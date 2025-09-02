@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { collection, query, getDocs, orderBy, Timestamp, FirestoreDataConverter, DocumentData, QueryDocumentSnapshot, SnapshotOptions } from "firebase/firestore";
 import db from '../../services/firestore';
 import { normalizeBrand } from '@expanse/shared';
+import TagPill from '../../components/TagPill';
 
 // Import FontAwesome SVG icons as URLs
 import GearIconUrl from '@fontawesome/regular/gear.svg';
@@ -424,13 +425,8 @@ export default function AdminEvents() {
                                         <td className="hidden xl:table-cell w-1/4 px-3 py-4 text-sm text-gray-500">
                                             {event.tags && event.tags.length > 0 ? (
                                                 <div className="flex flex-wrap gap-1">
-                                                    {event.tags.map((tag, index) => (
-                                                        <span
-                                                            key={index}
-                                                            className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800"
-                                                        >
-                                                            {tag}
-                                                        </span>
+                                                    {event.tags.map((tagId) => (
+                                                        <TagPill key={tagId} tagId={tagId} />
                                                     ))}
                                                 </div>
                                             ) : (

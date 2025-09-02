@@ -278,18 +278,18 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
           </View>
         </View>
       ) : (
-        // Mobile layout: stacked
-        <View style={styles.searchAndTabsContainer}>
-          <View style={[styles.searchContainer, { marginRight: 0 }]}>
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search events..."
-              value={searchTerm}
-              onChangeText={setSearchTerm}
-              clearButtonMode="while-editing"
-            />
-          </View>
-          {currentUser?.isAdmin && (
+        // Mobile layout: stacked - only show container for admins
+        currentUser?.isAdmin ? (
+          <View style={styles.searchAndTabsContainer}>
+            <View style={[styles.searchContainer, { marginRight: 0 }]}>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search events..."
+                value={searchTerm}
+                onChangeText={setSearchTerm}
+                clearButtonMode="while-editing"
+              />
+            </View>
             <View style={styles.tabsContainer}>
               <View style={styles.filterContainer}>
                 {renderFilterButton('today', 'Today')}
@@ -298,8 +298,8 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
                 {renderFilterButton('all', 'All')}
               </View>
             </View>
-          )}
-        </View>
+          </View>
+        ) : null
       )}
 
       {loading && !refreshing ? (
@@ -332,7 +332,7 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#F2E5BF',
   },
   searchAndTabsContainer: {
     backgroundColor: '#ffffff',
