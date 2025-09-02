@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: '#0066CC',
+    backgroundColor: '#257180',
     borderRadius: 8,
   },
   sortButtonText: {
@@ -140,8 +140,8 @@ const styles = StyleSheet.create({
     borderColor: '#dee2e6',
   },
   activeSortOption: {
-    backgroundColor: '#0066CC',
-    borderColor: '#0066CC',
+    backgroundColor: '#257180',
+    borderColor: '#257180',
   },
   sortOptionText: {
     fontSize: 12,

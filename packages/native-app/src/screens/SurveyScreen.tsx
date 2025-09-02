@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   exitButton: {
-    backgroundColor: '#0066CC',
+    backgroundColor: '#257180',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,

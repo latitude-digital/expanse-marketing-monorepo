@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
 import EventListScreen from '../src/screens/EventListScreen';
 import { DatabaseService } from '../src/services/database';
 import { EventCacheService } from '../src/services/event-cache';
 import { offlineDetector } from '../src/utils/offline-detector';
+import { useAuth } from '../src/contexts/AuthContext';
+import { Stack } from 'expo-router';
 import type { ExpanseEvent } from '@expanse/shared/types';
 
 export default function EventListPage() {
   console.log('EventListPage rendering');
+  const { signOut, currentUser } = useAuth();
   const [isInitialized, setIsInitialized] = useState(false);
   const [events, setEvents] = useState<ExpanseEvent[]>([]);
   const [loading, setLoading] = useState(false);
@@ -18,6 +21,14 @@ export default function EventListPage() {
     console.log('useEffect running');
     initializeApp();
   }, []);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Sign out failed:', error);
+    }
+  };
 
   const initializeApp = async () => {
     console.log('initializeApp starting');
@@ -164,8 +175,8 @@ export default function EventListPage() {
   if (!isInitialized) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0066CC" />
-        <Text style={styles.loadingText}>Initializing Expanse Survey...</Text>
+        <ActivityIndicator size="large" color="#257180" />
+        <Text style={styles.loadingText}>Initializing Meridian Events...</Text>
       </View>
     );
   }

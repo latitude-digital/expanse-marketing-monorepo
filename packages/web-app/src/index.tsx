@@ -35,7 +35,8 @@ import AdminLayout from './components/AdminLayout';
 import AdminEvents from './screens/admin/AdminEvents';
 import AdminTags from './screens/admin/AdminTags';
 import AdminUsers from './screens/admin/AdminUsers';
-import EditEvent from './screens/admin/EditEvent';
+import EditEventTailwind from './screens/admin/EditEventTailwind';
+import EditEventLegacy from './screens/admin/EditEventLegacy';
 import EditSurvey from './screens/admin/EditSurvey';
 import ReUpload from './screens/admin/ReUpload';
 
@@ -91,8 +92,10 @@ root.render(
             <Route index element={<AdminEvents />} />
             <Route path="tags" element={<AdminTags />} />
             <Route path="users" element={<AdminUsers />} />
-            <Route path="event/:eventID" element={<EditEvent />} />
-            <Route path="event/new" element={<EditEvent />} />
+            <Route path="event/:eventID" element={<EditEventTailwind />} />
+            <Route path="event/new" element={<EditEventTailwind />} />
+            <Route path="event-legacy/:eventID" element={<EditEventLegacy />} />
+            <Route path="event-legacy/new" element={<EditEventLegacy />} />
             <Route path="survey/:eventID" element={<EditSurvey />} />
             <Route path="reupload" element={<ReUpload />} />
           </Route>

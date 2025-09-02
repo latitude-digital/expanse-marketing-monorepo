@@ -72,7 +72,7 @@ const CustomRendererTest: React.FC = () => {
         }
         
         .test-header {
-            background: ${brand === 'ford' ? '#0066CC' : brand === 'lincoln' ? '#8B1538' : '#333333'};
+            background: ${brand === 'ford' ? '#257180' : brand === 'lincoln' ? '#8B1538' : '#333333'};
             color: white;
             padding: 15px;
             border-radius: 4px;
@@ -87,7 +87,7 @@ const CustomRendererTest: React.FC = () => {
             padding: 15px;
             border-radius: 4px;
             background: #f8f9fa;
-            border-left: 4px solid ${brand === 'ford' ? '#0066CC' : brand === 'lincoln' ? '#8B1538' : '#333333'};
+            border-left: 4px solid ${brand === 'ford' ? '#257180' : brand === 'lincoln' ? '#8B1538' : '#333333'};
         }
         
         .test-item {
@@ -121,7 +121,7 @@ const CustomRendererTest: React.FC = () => {
         }
         
         .touch-test-button {
-            background: ${brand === 'ford' ? '#0066CC' : brand === 'lincoln' ? '#8B1538' : '#333333'};
+            background: ${brand === 'ford' ? '#257180' : brand === 'lincoln' ? '#8B1538' : '#333333'};
             color: white;
             padding: 12px 24px;
             border: none;
@@ -163,8 +163,8 @@ const CustomRendererTest: React.FC = () => {
         
         .custom-text-input:focus {
             outline: none;
-            border-color: var(--semantic-color-fill-onlight-interactive, ${brand === 'ford' ? '#0066CC' : brand === 'lincoln' ? '#8B1538' : '#333333'});
-            box-shadow: 0 0 0 2px var(--semantic-color-fill-onlight-interactive, ${brand === 'ford' ? '#0066CC' : brand === 'lincoln' ? '#8B1538' : '#333333'})33;
+            border-color: var(--semantic-color-fill-onlight-interactive, ${brand === 'ford' ? '#257180' : brand === 'lincoln' ? '#8B1538' : '#333333'});
+            box-shadow: 0 0 0 2px var(--semantic-color-fill-onlight-interactive, ${brand === 'ford' ? '#257180' : brand === 'lincoln' ? '#8B1538' : '#333333'})33;
         }
         
         .custom-dropdown {
@@ -690,7 +690,7 @@ const CustomRendererTest: React.FC = () => {
 
   const getBrandColor = (brand: string) => {
     switch (brand) {
-      case 'ford': return '#0066CC';
+      case 'ford': return '#257180';
       case 'lincoln': return '#8B1538';
       default: return '#333333';
     }

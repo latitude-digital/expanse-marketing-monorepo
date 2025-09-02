@@ -42,7 +42,7 @@ const FDSWebViewTest: React.FC = () => {
     <style id="fallback-css">
         /* Test brand colors to verify CSS loading */
         :root {
-            --test-primary-color: ${brand === 'ford' ? '#0066CC' : brand === 'lincoln' ? '#8B1538' : '#333333'};
+            --test-primary-color: ${brand === 'ford' ? '#257180' : brand === 'lincoln' ? '#8B1538' : '#333333'};
             --test-font-family: ${brand === 'ford' ? '"FordF1", Arial, sans-serif' : brand === 'lincoln' ? '"LincolnFont", Georgia, serif' : 'Arial, sans-serif'};
         }
         
@@ -388,7 +388,7 @@ const FDSWebViewTest: React.FC = () => {
 
   const getBrandColor = (brand: string) => {
     switch (brand) {
-      case 'ford': return '#0066CC';
+      case 'ford': return '#257180';
       case 'lincoln': return '#8B1538';
       default: return '#333333';
     }

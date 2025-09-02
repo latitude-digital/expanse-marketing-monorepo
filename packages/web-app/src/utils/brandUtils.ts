@@ -1,6 +1,7 @@
 /**
  * Brand detection and utility functions for FDS conditional loading
  */
+import { normalizeBrand as sharedNormalizeBrand } from '@expanse/shared';
 
 /**
  * Determines if Ford Design System should be loaded for the given brand
@@ -28,13 +29,9 @@ export function getBrandTheme(brand?: string): string {
 }
 
 /**
+ * Re-export normalizeBrand from shared package for consistency
  * Gets a normalized brand value, treating undefined/null as 'Other'
  * @param brand - The event brand
  * @returns Normalized brand string
  */
-export function normalizeBrand(brand?: string | null): 'Ford' | 'Lincoln' | 'Other' {
-  if (brand === 'Ford' || brand === 'Lincoln') {
-    return brand;
-  }
-  return 'Other';
-}
+export const normalizeBrand = sharedNormalizeBrand;

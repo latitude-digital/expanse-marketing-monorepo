@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { collection, query, getDocs, orderBy, Timestamp, FirestoreDataConverter, DocumentData, QueryDocumentSnapshot, SnapshotOptions } from "firebase/firestore";
 import db from '../../services/firestore';
+import { normalizeBrand } from '@expanse/shared';
 
 // Import FontAwesome SVG icons as URLs
 import GearIconUrl from '@fontawesome/regular/gear.svg';
@@ -35,7 +36,7 @@ interface ExpanseEvent {
     isInternal?: boolean;
     locked?: boolean;
     template?: string;
-    brand?: 'ford' | 'lincoln';
+    brand?: 'Ford' | 'Lincoln' | 'Other';
     brandConfig?: {
         ford?: boolean;
         lincoln?: boolean;
@@ -146,6 +147,18 @@ export default function AdminEvents() {
         );
     });
 
+    // Define brand display function before using it
+    const getBrandDisplay = (event: ExpanseEvent) => {
+        const brands = [];
+        if (event.brandConfig?.ford) brands.push('Ford');
+        if (event.brandConfig?.lincoln) brands.push('Lincoln');
+        if (brands.length === 0) {
+            // Use the shared normalizeBrand function for consistent brand handling
+            return normalizeBrand(event.brand);
+        }
+        return brands.join(', ');
+    };
+
     // Filter events based on active tab (current/past/future)
     const filteredEvents = searchedEvents.filter(event => {
         const now = new Date();
@@ -182,8 +195,8 @@ export default function AdminEvents() {
                 bValue = b.endDate.getTime();
                 break;
             case 'brand':
-                aValue = a.brandConfig?.ford ? 'ford' : a.brandConfig?.lincoln ? 'lincoln' : 'none';
-                bValue = b.brandConfig?.ford ? 'ford' : b.brandConfig?.lincoln ? 'lincoln' : 'none';
+                aValue = getBrandDisplay(a);
+                bValue = getBrandDisplay(b);
                 break;
             default:
                 return 0;
@@ -193,18 +206,6 @@ export default function AdminEvents() {
         if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
         return 0;
     });
-
-    const getBrandDisplay = (event: ExpanseEvent) => {
-        const brands = [];
-        if (event.brandConfig?.ford) brands.push('Ford');
-        if (event.brandConfig?.lincoln) brands.push('Lincoln');
-        if (brands.length === 0) {
-            if (event.brand === 'ford') return 'Ford';
-            if (event.brand === 'lincoln') return 'Lincoln';
-            return 'None';
-        }
-        return brands.join(', ');
-    };
 
     if (loading) {
         return <div className="flex justify-center items-center h-64">Loading events...</div>;

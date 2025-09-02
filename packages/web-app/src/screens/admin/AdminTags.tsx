@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import { collection, query, getDocs, addDoc, updateDoc, deleteDoc, doc, orderBy } from "firebase/firestore";
 import db from '../../services/firestore';
 // Import FontAwesome SVG icons as URLs
-import PlusIconUrl from '@fontawesome/regular/plus.svg';
+import TagIconUrl from '@fontawesome/regular/tag.svg';
 import PencilIconUrl from '@fontawesome/regular/pencil.svg';
 import TrashIconUrl from '@fontawesome/regular/trash.svg';
 import { FontAwesomeIcon } from '../../components/FontAwesomeIcon';
 
 // Create icon components
-const PlusIcon = (props: any) => <FontAwesomeIcon src={PlusIconUrl} {...props} />;
+const TagIcon = (props: any) => <FontAwesomeIcon src={TagIconUrl} {...props} />;
 const PencilIcon = (props: any) => <FontAwesomeIcon src={PencilIconUrl} {...props} />;
 const TrashIcon = (props: any) => <FontAwesomeIcon src={TrashIconUrl} {...props} />;
 
@@ -127,7 +127,7 @@ export default function AdminTags() {
                         onClick={() => setShowForm(true)}
                         className="inline-flex items-center justify-center rounded-md bg-[#257180] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#1a4d57] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#257180]"
                     >
-                        <PlusIcon className="h-4 w-4 mr-2" />
+                        <TagIcon className="h-4 w-4 mr-2" style={{ filter: 'brightness(0) invert(1)' }} />
                         Add Tag
                     </button>
                 </div>
@@ -224,18 +224,22 @@ export default function AdminTags() {
                                             />
                                             <h3 className="text-lg font-medium text-gray-900">{tag.name}</h3>
                                         </div>
-                                        <div className="flex space-x-2">
+                                        <div className="flex gap-1">
                                             <button
                                                 onClick={() => handleEdit(tag)}
-                                                className="text-gray-400 hover:text-gray-500"
+                                                className="bg-[#257180] hover:bg-[#1a4d57] text-white rounded inline-flex items-center justify-center flex-shrink-0"
+                                                style={{ width: '36px', height: '36px' }}
+                                                title="Edit tag"
                                             >
-                                                <PencilIcon className="h-5 w-5" />
+                                                <PencilIcon className="h-4 w-4 filter brightness-0 invert" />
                                             </button>
                                             <button
                                                 onClick={() => tag.id && handleDelete(tag.id)}
-                                                className="text-gray-400 hover:text-red-500"
+                                                className="bg-red-600 hover:bg-red-800 text-white rounded inline-flex items-center justify-center flex-shrink-0"
+                                                style={{ width: '36px', height: '36px' }}
+                                                title="Delete tag"
                                             >
-                                                <TrashIcon className="h-5 w-5" />
+                                                <TrashIcon className="h-4 w-4 filter brightness-0 invert" />
                                             </button>
                                         </div>
                                     </div>

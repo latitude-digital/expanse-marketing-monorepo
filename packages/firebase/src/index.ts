@@ -15,7 +15,8 @@ import {
   validateEmailImpl as sparkpostValidateEmailImpl,
   createNewUserImpl as sparkpostCreateNewUserImpl,
   autoCheckOutImpl,
-  scheduledEmailImpl
+  scheduledEmailImpl,
+  fetchSparkPostTemplatesImpl
 } from "./email-functions";
 import {
   surveyTriggerImpl,
@@ -36,6 +37,12 @@ import {
   getEventSurveysImpl,
   reuploadEventSurveysImpl
 } from "./getEventsForReupload";
+import {
+  listUsersImpl,
+  setAdminClaimImpl,
+  deleteUserImpl,
+  updateUserTagsImpl
+} from "./user-management-functions";
 
 // Re-export shared utilities from shared package
 export { uploadSurveyToAPI, type UploadResult } from "@expanse/shared";
@@ -64,11 +71,18 @@ const saveSurvey = saveSurveyImpl(app);
 const validateEmail = sparkpostValidateEmailImpl(app);
 const checkInOutSurvey = checkInOutSurveyImpl(app);
 const createNewUser = sparkpostCreateNewUserImpl(app);
+const fetchSparkPostTemplates = fetchSparkPostTemplatesImpl(app);
 const generateCreatorUploadUrl = generateCreatorUploadUrlImpl;
 const generateRespondentUploadUrl = generateRespondentUploadUrlImpl;
 const getFordLincolnEvents = getFordLincolnEventsImpl(app);
 const getEventSurveys = getEventSurveysImpl(app);
 const reuploadEventSurveys = reuploadEventSurveysImpl(app);
+
+// User management functions
+const listUsers = listUsersImpl(app);
+const setAdminClaim = setAdminClaimImpl(app);
+const deleteUser = deleteUserImpl(app);
+const updateUserTags = updateUserTagsImpl(app);
 
 // Task-based functions (these don't need app parameter)
 // Create different trigger instances for staging and production
@@ -98,6 +112,7 @@ export const staging = {
   validateEmail,
   checkInOutSurvey,
   createNewUser,
+  fetchSparkPostTemplates,
   generateCreatorUploadUrl,
   generateRespondentUploadUrl,
   surveyTrigger: stagingSurveyTrigger,
@@ -111,7 +126,11 @@ export const staging = {
   makeBookeoBooking,
   getFordLincolnEvents,
   getEventSurveys,
-  reuploadEventSurveys
+  reuploadEventSurveys,
+  listUsers,
+  setAdminClaim,
+  deleteUser,
+  updateUserTags
 };
 
 // Production environment
@@ -126,6 +145,7 @@ export const prod = {
   validateEmail,
   checkInOutSurvey,
   createNewUser,
+  fetchSparkPostTemplates,
   generateCreatorUploadUrl,
   generateRespondentUploadUrl,
   surveyTrigger: productionSurveyTrigger,
@@ -139,5 +159,9 @@ export const prod = {
   makeBookeoBooking,
   getFordLincolnEvents,
   getEventSurveys,
-  reuploadEventSurveys
+  reuploadEventSurveys,
+  listUsers,
+  setAdminClaim,
+  deleteUser,
+  updateUserTags
 };

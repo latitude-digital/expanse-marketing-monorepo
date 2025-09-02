@@ -5,7 +5,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 // Import FontAwesome SVG icons as URLs
 import Bars3IconUrl from '@fontawesome/regular/bars.svg';
 import CalendarDaysIconUrl from '@fontawesome/regular/calendar-days.svg';
-import TagIconUrl from '@fontawesome/regular/tag.svg';
+import TagsIconUrl from '@fontawesome/regular/tags.svg';
 import UsersIconUrl from '@fontawesome/regular/users.svg';
 import XMarkIconUrl from '@fontawesome/regular/xmark.svg';
 import ArrowUpLeftFromCircleIconUrl from '@fontawesome/regular/arrow-up-left-from-circle.svg';
@@ -13,7 +13,7 @@ import { FontAwesomeIcon } from './FontAwesomeIcon';
 
 // Create icon components for navigation
 const CalendarDaysIcon = (props: any) => <FontAwesomeIcon src={CalendarDaysIconUrl} {...props} />;
-const TagIcon = (props: any) => <FontAwesomeIcon src={TagIconUrl} {...props} />;
+const TagsIcon = (props: any) => <FontAwesomeIcon src={TagsIconUrl} {...props} />;
 const UsersIcon = (props: any) => <FontAwesomeIcon src={UsersIconUrl} {...props} />;
 const Bars3Icon = (props: any) => <FontAwesomeIcon src={Bars3IconUrl} {...props} />;
 const XMarkIcon = (props: any) => <FontAwesomeIcon src={XMarkIconUrl} {...props} />;
@@ -23,7 +23,7 @@ import MeridianLogo from '../assets/meridian-square.svg';
 
 const navigation = [
   { name: 'Events', href: '/admin', icon: CalendarDaysIcon },
-  { name: 'Tags', href: '/admin/tags', icon: TagIcon },
+  { name: 'Tags', href: '/admin/tags', icon: TagsIcon },
   { name: 'Users', href: '/admin/users', icon: UsersIcon },
 ];
 

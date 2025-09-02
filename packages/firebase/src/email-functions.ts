@@ -297,3 +297,53 @@ export const scheduledEmailImpl = () => onTaskDispatched(
           });
     }
 );
+
+// Fetch email templates from SparkPost
+export const fetchSparkPostTemplatesImpl = (app: admin.app.App) =>
+  onRequest({cors: true, secrets: ["SPARKPOST_API_KEY_EXPANSE"]}, async (req, res) => {
+    const sparkpostBaseURL = "https://api.sparkpost.com/api/v1";
+    const sparkpostAPISecret = sparkpostSenderAPIKey.value();
+    const sparkpostHeaders = {
+      Authorization: sparkpostAPISecret,
+    };
+
+    try {
+      const response = await axios.get(
+        `${sparkpostBaseURL}/templates`,
+        {
+          headers: sparkpostHeaders,
+        }
+      );
+      
+      // Return the templates list wrapped in data field for callable function
+      res.status(200).json({
+        data: {
+          success: true,
+          templates: response.data.results || []
+        }
+      });
+    } catch (err) {
+      if (isAxiosError(err)) {
+        console.error(
+          "Error fetching SparkPost templates:",
+          err.response?.status,
+          err.response?.statusText,
+          err.response?.data
+        );
+        res.status(err.response?.status || 500).json({
+          data: {
+            success: false,
+            error: err.response?.data || "Failed to fetch templates"
+          }
+        });
+      } else {
+        console.error("Unexpected error:", err);
+        res.status(500).json({
+          data: {
+            success: false,
+            error: "Internal server error"
+          }
+        });
+      }
+    }
+  });

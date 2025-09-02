@@ -158,6 +158,30 @@ const lincolnTheme: Theme = {
   ...baseTheme,
 };
 
+const meridianTheme: Theme = {
+  name: 'Meridian',
+  brand: 'Other',
+  colors: {
+    primary: '#257180',
+    primaryDark: '#1B5560',
+    primaryLight: '#3A94A8',
+    secondary: '#F8F9FA',
+    secondaryLight: '#FFFFFF',
+    accent: '#FF6B35',
+    background: '#F8F9FA',
+    surface: '#FFFFFF',
+    text: '#1A1A1A',
+    textSecondary: '#666666',
+    textOnPrimary: '#FFFFFF',
+    border: '#DEE2E6',
+    error: '#DC3545',
+    warning: '#FFC107',
+    success: '#28A745',
+    info: '#17A2B8',
+  },
+  ...baseTheme,
+};
+
 const otherTheme: Theme = {
   name: 'Other',
   brand: 'Other',
@@ -383,4 +407,4 @@ export class ThemeProvider {
 export const themeProvider = new ThemeProvider();
 
 // Export individual themes
-export { fordTheme, lincolnTheme, otherTheme };
+export { fordTheme, lincolnTheme, meridianTheme, otherTheme };

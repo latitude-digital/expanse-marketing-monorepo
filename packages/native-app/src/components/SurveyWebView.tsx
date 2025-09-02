@@ -63,7 +63,7 @@ const SurveyWebView: React.FC<SurveyWebViewProps> = ({
    */
   const getSurveyHTML = useCallback((): string => {
     const surveyJson = JSON.stringify(event.questions);
-    const brandColor = event.brand === 'Ford' ? '#0066CC' : 
+    const brandColor = event.brand === 'Ford' ? '#257180' : 
                        event.brand === 'Lincoln' ? '#8B1538' : '#666666';
     
     return `
@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   retryButton: {
-    backgroundColor: '#0066CC',
+    backgroundColor: '#257180',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,

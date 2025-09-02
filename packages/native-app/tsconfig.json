@@ -28,9 +28,15 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@expanse/shared": ["../shared/dist/index"],
-      "@expanse/shared/*": ["../shared/dist/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@expanse/shared": [
+        "../shared/dist/index"
+      ],
+      "@expanse/shared/*": [
+        "../shared/dist/*"
+      ]
     }
   },
   "include": [
@@ -39,7 +45,8 @@
     "**/*.js",
     "**/*.jsx",
     "expo-env.d.ts",
-    ".expo/types/**/*.ts"
+    ".expo/types/**/*.ts",
+    "nativewind-env.d.ts"
   ],
   "exclude": [
     "node_modules",

@@ -5,6 +5,7 @@ packages:
 onlyBuiltDependencies:
   - '@firebase/util'
   - '@parcel/watcher'
+  - '@sentry-internal/node-cpu-profiler'
   - core-js
   - protobufjs
   - survey-analytics

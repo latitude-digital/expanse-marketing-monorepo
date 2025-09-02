@@ -21,7 +21,7 @@ jest.mock('../../src/utils/theme-provider', () => ({
     setTheme: jest.fn(),
     getBrandCSSClass: jest.fn().mockReturnValue('ford_light'),
     getBrandFontFamily: jest.fn().mockReturnValue('FordF1, Arial, sans-serif'),
-    getBrandPrimaryColor: jest.fn().mockReturnValue('#0066CC'),
+    getBrandPrimaryColor: jest.fn().mockReturnValue('#257180'),
   },
 }));
 

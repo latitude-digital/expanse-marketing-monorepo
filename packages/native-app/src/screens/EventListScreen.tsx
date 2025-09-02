@@ -84,7 +84,7 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
 
   const getBrandColor = (brand?: Brand): string => {
     switch (brand?.toLowerCase()) {
-      case 'ford': return '#0066CC';
+      case 'ford': return '#257180';
       case 'lincoln': return '#8B1538';
       default: return '#333333';
     }
@@ -182,7 +182,7 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
 
       {loading && !refreshing ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#0066CC" />
+          <ActivityIndicator size="large" color="#257180" />
           <Text style={styles.loadingText}>Loading events...</Text>
         </View>
       ) : (
@@ -195,8 +195,8 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
             <RefreshControl
               refreshing={refreshing}
               onRefresh={handleRefresh}
-              colors={['#0066CC']}
-              tintColor="#0066CC"
+              colors={['#257180']}
+              tintColor="#257180"
             />
           }
           ListEmptyComponent={renderEmptyState}
@@ -247,8 +247,8 @@ const styles = StyleSheet.create({
     borderColor: '#dee2e6',
   },
   activeFilterButton: {
-    backgroundColor: '#0066CC',
-    borderColor: '#0066CC',
+    backgroundColor: '#257180',
+    borderColor: '#257180',
   },
   filterButtonText: {
     fontSize: 14,
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   refreshButton: {
-    backgroundColor: '#0066CC',
+    backgroundColor: '#257180',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,

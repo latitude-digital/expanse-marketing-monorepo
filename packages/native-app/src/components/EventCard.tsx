@@ -11,7 +11,7 @@ interface EventCardProps {
 const EventCard: React.FC<EventCardProps> = ({ event, onPress, style }) => {
   const getBrandColor = (brand?: Brand): string => {
     switch (brand?.toLowerCase()) {
-      case 'ford': return '#0066CC';
+      case 'ford': return '#257180';
       case 'lincoln': return '#8B1538';
       default: return '#333333';
     }

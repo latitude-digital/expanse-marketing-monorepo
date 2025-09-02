@@ -194,8 +194,8 @@ export default function App() {
     return (
       <SafeAreaProvider>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#0066CC" />
-          <Text style={styles.loadingText}>Initializing Expanse Survey...</Text>
+          <ActivityIndicator size="large" color="#257180" />
+          <Text style={styles.loadingText}>Initializing Meridian Events...</Text>
         </View>
         <StatusBar style="auto" />
       </SafeAreaProvider>

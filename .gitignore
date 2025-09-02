@@ -92,6 +92,11 @@ yarn.lock
 ehthumbs.db
 Thumbs.db
 
+# Expo
+packages/native-app/.expo/
+packages/native-app/ios/
+packages/native-app/android/
+
 # Firebase
 .firebase/
 firebase-debug.log
