@@ -148,27 +148,45 @@ if $DEPLOY_WEB; then
 fi
 
 if $DEPLOY_FUNCTIONS; then
-    # Step 10: Build Firebase Functions
+    # Step 10: Build shared package if not already built
+    if [ ! -d "packages/shared/lib" ]; then
+        echo -e "${YELLOW}📦 Building shared package for functions${NC}"
+        pnpm --filter @expanse/shared build
+        echo -e "${GREEN}✅ Shared package built${NC}"
+    fi
+
+    # Step 11: Build Firebase Functions
     echo -e "${YELLOW}🔥 Building Firebase Functions${NC}"
     cd packages/firebase
-    rm -rf .firebase-pnpm-workspaces
 
     # Switch to staging alias (this will make Firebase load .env.staging automatically)
     echo -e "${BLUE}Switching to staging Firebase alias${NC}"
     firebase use staging
 
-    npm run build
+    # Build the functions (TypeScript compilation)
+    pnpm build
     echo -e "${GREEN}✅ Firebase Functions built${NC}"
 
-    # Step 11: Deploy Firebase Functions (staging namespace only)
+    # Step 12: Deploy Firebase Functions (staging namespace only)
     echo -e "${YELLOW}🚀 Deploying Firebase Functions to staging${NC}"
-
+    
+    # Run firebase-pnpm-workspaces explicitly before deployment
+    echo -e "${BLUE}Bundling workspace dependencies...${NC}"
+    rm -rf .firebase-pnpm-workspaces
+    npx firebase-pnpm-workspaces --filter @expanse/firebase
+    
+    # Now the package.json should have file: references instead of workspace:
     # Deploy only staging functions (no need to specify --project since we're using the alias)
     firebase deploy --only functions:staging
 
     # Deploy Firestore rules and indexes to STAGING database only using staging config
     firebase deploy --only firestore:rules,firestore:indexes --config firebase.staging.json
     echo -e "${GREEN}✅ Firebase Functions deployed to staging${NC}"
+
+    # Restore the original package.json with workspace references
+    echo -e "${BLUE}Restoring workspace references in package.json...${NC}"
+    sed -i '' 's|"@expanse/shared": "file:.firebase-pnpm-workspaces/@expanse/shared"|"@expanse/shared": "workspace:*"|' package.json
+    echo -e "${GREEN}✅ package.json restored${NC}"
 
     cd ../..
 fi

@@ -98,30 +98,30 @@ if $DEPLOY_WEB; then
     pnpm install --prefer-offline
     echo -e "${GREEN}✅ Dependencies installed${NC}"
 
-    # Step 3: Build shared package
+    # Step 4: Build shared package
     echo -e "${YELLOW}📦 Building shared package${NC}"
     pnpm --filter @expanse/shared build
     echo -e "${GREEN}✅ Shared package built${NC}"
 
-    # Step 4: Sync Ford UI
+    # Step 5: Sync Ford UI
     echo -e "${YELLOW}🎨 Syncing Ford UI${NC}"
     ./packages/web-app/scripts/sync-ford-ui.sh
     echo -e "${GREEN}✅ Ford UI synced${NC}"
 
-    # Step 4: Create Sentry release
+    # Step 6: Create Sentry release
     echo -e "${YELLOW}📊 Creating Sentry release${NC}"
     pnpm sentry-cli releases new ${BUILD_NUMBER}
     pnpm sentry-cli releases set-commits ${BUILD_NUMBER} --commit latitude-digital/expanse-marketing-monorepo@${GIT_COMMIT}
     pnpm sentry-cli releases finalize ${BUILD_NUMBER}
     echo -e "${GREEN}✅ Sentry release created${NC}"
 
-    # Step 6: Build the application
+    # Step 7: Build the application
     echo -e "${YELLOW}🏗️  Building application${NC}"
     # Vite will automatically load .env.prod in production mode
     pnpm --filter @expanse/web-app build:production
     echo -e "${GREEN}✅ Application built${NC}"
 
-    # Step 7: Deploy to S3
+    # Step 8: Deploy to S3
     echo -e "${YELLOW}☁️  Deploying to S3${NC}"
 
     # Upload all files except index.html and .map files with 1-week cache
@@ -142,7 +142,7 @@ if $DEPLOY_WEB; then
 
     echo -e "${GREEN}✅ Deployed to S3${NC}"
 
-    # Step 8: Finalize Sentry release with deployment
+    # Step 9: Finalize Sentry release with deployment
     echo -e "${YELLOW}📊 Finalizing Sentry deployment${NC}"
     pnpm sentry-cli releases deploys ${BUILD_NUMBER} new -e production
     echo -e "${GREEN}✅ Sentry deployment recorded${NC}"
@@ -150,27 +150,45 @@ if $DEPLOY_WEB; then
 fi
 
 if $DEPLOY_FUNCTIONS; then
-    # Step 9: Build Firebase Functions
+    # Step 10: Build shared package if not already built
+    if [ ! -d "packages/shared/lib" ]; then
+        echo -e "${YELLOW}📦 Building shared package for functions${NC}"
+        pnpm --filter @expanse/shared build
+        echo -e "${GREEN}✅ Shared package built${NC}"
+    fi
+
+    # Step 11: Build Firebase Functions
     echo -e "${YELLOW}🔥 Building Firebase Functions${NC}"
     cd packages/firebase
-    rm -rf .firebase-pnpm-workspaces
 
     # Switch to prod alias (this will make Firebase load .env.prod automatically)
     echo -e "${BLUE}Switching to prod Firebase alias${NC}"
     firebase use prod
 
-    npm run build
+    # Build the functions (TypeScript compilation)
+    pnpm build
     echo -e "${GREEN}✅ Firebase Functions built${NC}"
 
-    # Step 10: Deploy Firebase Functions (prod namespace only)
+    # Step 12: Deploy Firebase Functions (prod namespace only)
     echo -e "${YELLOW}🚀 Deploying Firebase Functions to production${NC}"
-
+    
+    # Run firebase-pnpm-workspaces explicitly before deployment
+    echo -e "${BLUE}Bundling workspace dependencies...${NC}"
+    rm -rf .firebase-pnpm-workspaces
+    npx firebase-pnpm-workspaces --filter @expanse/firebase
+    
+    # Now the package.json should have file: references instead of workspace:
     # Deploy only prod functions (no need to specify --project since we're using the alias)
     firebase deploy --only functions:prod
 
     # Deploy Firestore rules and indexes to PRODUCTION database only using production config
     firebase deploy --only firestore:rules,firestore:indexes --config firebase.production.json
     echo -e "${GREEN}✅ Firebase Functions deployed to production${NC}"
+
+    # Restore the original package.json with workspace references
+    echo -e "${BLUE}Restoring workspace references in package.json...${NC}"
+    sed -i '' 's|"@expanse/shared": "file:.firebase-pnpm-workspaces/@expanse/shared"|"@expanse/shared": "workspace:*"|' package.json
+    echo -e "${GREEN}✅ package.json restored${NC}"
 
     cd ../..
 fi
