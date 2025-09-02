@@ -125,8 +125,8 @@ if $DEPLOY_WEB; then
 
     # Upload all files except index.html and .map files with 1-week cache
     echo -e "${BLUE}Uploading assets with cache headers (excluding .map files)...${NC}"
-    aws configure set default.s3.max_concurrent_requests 20
-    aws configure set default.s3.max_bandwidth 100MB/s
+    aws configure set default.s3.max_concurrent_requests 50
+    aws configure set default.s3.max_bandwidth 1000MB/s
     aws s3 sync packages/web-app/build/ s3://${DEPLOY_BUCKET}/ \
         --exclude "index.html" \
         --exclude "*.map" \
@@ -151,6 +151,7 @@ if $DEPLOY_FUNCTIONS; then
     # Step 10: Build Firebase Functions
     echo -e "${YELLOW}🔥 Building Firebase Functions${NC}"
     cd packages/firebase
+    rm -rf .firebase-pnpm-workspaces
 
     # Switch to staging alias (this will make Firebase load .env.staging automatically)
     echo -e "${BLUE}Switching to staging Firebase alias${NC}"

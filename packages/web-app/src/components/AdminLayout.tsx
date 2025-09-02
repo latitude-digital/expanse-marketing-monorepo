@@ -9,12 +9,14 @@ import TagsIconUrl from '@fontawesome/regular/tags.svg';
 import UsersIconUrl from '@fontawesome/regular/users.svg';
 import XMarkIconUrl from '@fontawesome/regular/xmark.svg';
 import ArrowUpLeftFromCircleIconUrl from '@fontawesome/regular/arrow-up-left-from-circle.svg';
+import CloudArrowUpIconUrl from '@fontawesome/regular/cloud-arrow-up.svg';
 import { FontAwesomeIcon } from './FontAwesomeIcon';
 
 // Create icon components for navigation
 const CalendarDaysIcon = (props: any) => <FontAwesomeIcon src={CalendarDaysIconUrl} {...props} />;
 const TagsIcon = (props: any) => <FontAwesomeIcon src={TagsIconUrl} {...props} />;
 const UsersIcon = (props: any) => <FontAwesomeIcon src={UsersIconUrl} {...props} />;
+const CloudArrowUpIcon = (props: any) => <FontAwesomeIcon src={CloudArrowUpIconUrl} {...props} />;
 const Bars3Icon = (props: any) => <FontAwesomeIcon src={Bars3IconUrl} {...props} />;
 const XMarkIcon = (props: any) => <FontAwesomeIcon src={XMarkIconUrl} {...props} />;
 const ArrowUpLeftFromCircleIcon = (props: any) => <FontAwesomeIcon src={ArrowUpLeftFromCircleIconUrl} {...props} />;
@@ -25,6 +27,7 @@ const navigation = [
   { name: 'Events', href: '/admin', icon: CalendarDaysIcon },
   { name: 'Tags', href: '/admin/tags', icon: TagsIcon },
   { name: 'Users', href: '/admin/users', icon: UsersIcon },
+  { name: 'Reupload', href: '/admin/reupload', icon: CloudArrowUpIcon },
 ];
 
 function classNames(...classes: string[]) {
