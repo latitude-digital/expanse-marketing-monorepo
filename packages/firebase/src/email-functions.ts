@@ -1,5 +1,5 @@
 import {onTaskDispatched} from "firebase-functions/v2/tasks";
-import {onRequest} from "firebase-functions/v2/https";
+import {onRequest, onCall, HttpsError} from "firebase-functions/v2/https";
 import {defineSecret} from "firebase-functions/params";
 import {getFunctions} from "firebase-admin/functions";
 import * as admin from "firebase-admin";
@@ -52,8 +52,26 @@ export const validateEmailImpl = (app: admin.app.App) =>
 
 // Create new user with Firebase Auth and send verification email
 export const createNewUserImpl = (app: admin.app.App) =>
-  onRequest({cors: true, secrets: ["SPARKPOST_API_KEY_EXPANSE"]}, (req, res) => {
-    const {email, phoneNumber, displayName, password} = req.body;
+  onCall({cors: true, secrets: ["SPARKPOST_API_KEY_EXPANSE"]}, async (request) => {
+    // Check if user is authenticated and has admin claim
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Authentication required');
+    }
+    
+    if (!request.auth.token.admin) {
+      throw new HttpsError('permission-denied', 'Admin privileges required');
+    }
+
+    const {email, phoneNumber, displayName, password} = request.data;
+
+    console.log("createNewUser called by admin:", request.auth.uid, "with:", { email, phoneNumber, displayName, passwordProvided: !!password });
+
+    if (!email) {
+      return {
+        success: false,
+        error: "Email is required"
+      };
+    }
 
     const sparkpostBaseURL = "https://api.sparkpost.com/api/v1";
     const sparkpostAPISecret = sparkpostSenderAPIKey.value();
@@ -61,71 +79,71 @@ export const createNewUserImpl = (app: admin.app.App) =>
       Authorization: sparkpostAPISecret,
     };
 
-    admin
-        .auth()
+    try {
+      const userRecord = await admin
+        .auth(app)
         .createUser({
-          email,
+          email: email,
           emailVerified: true,
-          phoneNumber,
-          displayName,
+          phoneNumber: phoneNumber || undefined,
+          displayName: displayName || undefined,
           password: password || "latitud123",
-        })
-        .then((userRecord) => {
-          const actionCodeSettings = {
-            url: "https://survey.expansemarketing.com/welcome",
-            handleCodeInApp: true,
-          };
-
-          admin
-              .auth()
-              .generatePasswordResetLink(email, actionCodeSettings)
-              .then((link) => {
-                axios
-                    .post(
-                        `${sparkpostBaseURL}/transmissions/`,
-                        {
-                          content: {
-                            template_id: "expanse-verify-email",
-                          },
-                          recipients: [
-                            {
-                              address: {
-                                email,
-                              },
-                              // eslint-disable-next-line camelcase
-                              substitution_data: {
-                                link,
-                              },
-                            },
-                          ],
-                        },
-                        {
-                          headers: sparkpostHeaders,
-                        }
-                    )
-                    .then((response: AxiosResponse) => {
-                      console.log("verify email sent!!!!!", response.data);
-                      return;
-                    })
-                    .catch((err: Error | AxiosError) => {
-                      if (isAxiosError(err)) {
-                        console.error(
-                            err.response?.status,
-                            err.response?.statusText,
-                            err.response?.data
-                        );
-                      } else {
-                        console.error(err);
-                      }
-                      return;
-                    });
-              });
-
-          res.status(200).send(`User ${email} created ${userRecord.toJSON()}`);
-        })
-        .catch((err) => {
-          res.status(500).send(JSON.stringify(err));
         });
+
+      // Generate password reset link for welcome email
+      const actionCodeSettings = {
+        url: "https://survey.expansemarketing.com/welcome",
+        handleCodeInApp: true,
+      };
+
+      try {
+        const link = await admin
+          .auth(app)
+          .generatePasswordResetLink(email, actionCodeSettings);
+
+        // Send verification email
+        await axios.post(
+          `${sparkpostBaseURL}/transmissions/`,
+          {
+            content: {
+              template_id: "expanse-verify-email",
+            },
+            recipients: [
+              {
+                address: {
+                  email,
+                },
+                // eslint-disable-next-line camelcase
+                substitution_data: {
+                  link,
+                },
+              },
+            ],
+          },
+          {
+            headers: sparkpostHeaders,
+          }
+        );
+        
+        console.log("verify email sent for:", email);
+      } catch (emailError) {
+        // Log email error but don't fail the user creation
+        console.error("Failed to send verification email:", emailError);
+      }
+
+      return {
+        success: true,
+        uid: userRecord.uid,
+        email: userRecord.email,
+        displayName: userRecord.displayName
+      };
+    } catch (err: any) {
+      console.error("Failed to create user:", err);
+      return {
+        success: false,
+        error: err.message || JSON.stringify(err)
+      };
+    }
   });
 
 // Auto-checkout task dispatcher

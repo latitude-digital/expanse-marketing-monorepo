@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { collection, query, getDocs, orderBy, doc, setDoc, getDoc } from "firebase/firestore";
 import { httpsCallable } from 'firebase/functions';
-import { getAuth, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/react';
 import { ChevronDownIcon, XMarkIcon } from '@heroicons/react/20/solid';
 import db from '../../services/firestore';
@@ -277,6 +277,7 @@ export default function AdminUsers() {
                             const userData = userDoc.data();
                             return {
                                 ...authUser,
+                                email: authUser.email, // Explicitly preserve email from auth
                                 tags: userData.tags || [], // Array of tag IDs
                                 displayName: userData.displayName || authUser.displayName
                             };
@@ -374,15 +375,27 @@ export default function AdminUsers() {
                 setShowForm(false);
                 setEditingUser(null);
             } else {
-                // Create new user
+                // Create new user via Cloud Function
                 if (!password) {
                     alert('Password is required for new users');
                     return;
                 }
                 
-                // Create auth user
-                const userCredential = await createUserWithEmailAndPassword(auth, formData.email!, password);
-                const userId = userCredential.user.uid;
+                // Call Cloud Function to create user
+                const createNewUser = httpsCallable(functions, 'staging-createNewUser');
+                const result = await createNewUser({
+                    email: formData.email!,
+                    password: password,
+                    displayName: formData.displayName || '',
+                    phoneNumber: null // Optional field
+                });
+                
+                // Get the created user ID from the result
+                const userId = (result.data as any).uid || (result.data as any).userId;
+                
+                if (!userId) {
+                    throw new Error('Failed to get user ID from Cloud Function response');
+                }
                 
                 // Set admin claim if needed via Cloud Function
                 if (formData.isAdmin) {
