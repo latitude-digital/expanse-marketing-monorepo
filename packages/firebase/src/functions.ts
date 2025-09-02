@@ -4,6 +4,7 @@ import * as admin from "firebase-admin";
 import { defineString } from "firebase-functions/params";
 import * as Sentry from "@sentry/node";
 import { nodeProfilingIntegration } from "@sentry/profiling-node";
+import { getFirestoreDatabase } from './utils/getFirestoreDatabase';
 
 // Initialize Sentry
 Sentry.init({
@@ -22,24 +23,16 @@ Sentry.init({
 const dbName = defineString("DB_NAME", { default: "(default)" });
 const environment = defineString("LATITUDE_ENV", { default: "production" });
 
-// Get the appropriate Firestore instance based on environment
+// Legacy function - kept for backward compatibility but should not be used
+// @deprecated Use getFirestoreDatabase from utils/getFirestoreDatabase.ts instead
 export const getFirestore = (app: admin.app.App) => {
   const database = process.env.DB_NAME || "(default)";
-  logger.info(`Using database: ${database}, environment: ${process.env.LATITUDE_ENV || "production"}`);
-  
-  // For Firebase Admin SDK v11+, use the getFirestore method with database parameter
-  const { getFirestore: getFirestoreDb } = require('firebase-admin/firestore');
-  
-  if (database === "(default)") {
-    return getFirestoreDb(app);
-  } else {
-    // Use the named database for non-default databases
-    return getFirestoreDb(app, database);
-  }
+  logger.warn(`DEPRECATED: Using legacy getFirestore. This will not work correctly with namespace exports!`);
+  return getFirestoreDatabase(app, database);
 };
 
 // Bronco Rank Function Implementation
-export const getBroncoRankImpl = (app: admin.app.App) => 
+export const getBroncoRankImpl = (app: admin.app.App, database: string = "(default)") => 
   onRequest(
     {
       cors: true,
@@ -47,7 +40,7 @@ export const getBroncoRankImpl = (app: admin.app.App) =>
     },
     async (req, res) => {
       try {
-        const db = getFirestore(app);
+        const db = getFirestoreDatabase(app, database);
         const query = await db
             .collection("events/BroncoQuizDraft/surveys")
             .orderBy("start_time", "desc")
@@ -129,7 +122,7 @@ export const setCloudFrontCookiesImpl = (app: admin.app.App) =>
   });
 
 // Survey Limit Check Function Implementation (from original index.ts)
-export const checkSurveyLimitImpl = (app: admin.app.App) =>
+export const checkSurveyLimitImpl = (app: admin.app.App, database: string = "(default)") =>
   onCall(
     {
       cors: true,
@@ -184,7 +177,7 @@ export const checkSurveyLimitImpl = (app: admin.app.App) =>
   );
 
 // Survey Limit Validation Function Implementation (from original index.ts)
-export const validateSurveyLimitImpl = (app: admin.app.App) =>
+export const validateSurveyLimitImpl = (app: admin.app.App, database: string = "(default)") =>
   onCall(
     {
       cors: true,
@@ -236,7 +229,7 @@ export const validateSurveyLimitImpl = (app: admin.app.App) =>
   );
 
 // Lions Followups Function Implementation
-export const getLionsFollowupsImpl = (app: admin.app.App) =>
+export const getLionsFollowupsImpl = (app: admin.app.App, database: string = "(default)") =>
   onRequest(
     {
       cors: true,
@@ -278,7 +271,7 @@ export const getLionsFollowupsImpl = (app: admin.app.App) =>
 
         // Query the collection for surveys on or after the specified date
         // Using string comparison since survey_date is stored as an ISO string
-        const db = getFirestore(app);
+        const db = getFirestoreDatabase(app, database);
         const surveysQuery = await db
           .collection(collectionPath)
           .where("survey_date", ">=", sinceDateString)

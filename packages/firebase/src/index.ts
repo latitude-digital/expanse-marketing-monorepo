@@ -60,23 +60,49 @@ if (process.env.FIRESTORE_EMULATOR_HOST) {
   logger.info(`Firestore emulator detected at: ${process.env.FIRESTORE_EMULATOR_HOST}`);
 }
 
-// Create function implementations
-const getBroncoRank = getBroncoRankImpl(app);
+// Create function implementations with proper database parameter
+// Functions that don't use Firestore
 const setCloudFrontCookies = realCloudFrontImpl;
-const checkSurveyLimit = checkSurveyLimitImpl(app);
-const validateSurveyLimit = validateSurveyLimitImpl(app);
-const getLionsFollowups = getLionsFollowupsImpl(app);
-const getSurvey = getSurveyImpl(app);
-const saveSurvey = saveSurveyImpl(app);
-const validateEmail = sparkpostValidateEmailImpl(app);
-const checkInOutSurvey = checkInOutSurveyImpl(app);
-const createNewUser = sparkpostCreateNewUserImpl(app);
-const fetchSparkPostTemplates = fetchSparkPostTemplatesImpl(app);
 const generateCreatorUploadUrl = generateCreatorUploadUrlImpl;
 const generateRespondentUploadUrl = generateRespondentUploadUrlImpl;
-const getFordLincolnEvents = getFordLincolnEventsImpl(app);
-const getEventSurveys = getEventSurveysImpl(app);
-const reuploadEventSurveys = reuploadEventSurveysImpl(app);
+
+// Create separate instances for staging and production for functions that use Firestore
+// Functions from functions.ts
+const getBroncoRankStaging = getBroncoRankImpl(app, "staging");
+const getBroncoRankProd = getBroncoRankImpl(app, "(default)");
+
+const checkSurveyLimitStaging = checkSurveyLimitImpl(app, "staging");
+const checkSurveyLimitProd = checkSurveyLimitImpl(app, "(default)");
+
+const validateSurveyLimitStaging = validateSurveyLimitImpl(app, "staging");
+const validateSurveyLimitProd = validateSurveyLimitImpl(app, "(default)");
+
+const getLionsFollowupsStaging = getLionsFollowupsImpl(app, "staging");
+const getLionsFollowupsProd = getLionsFollowupsImpl(app, "(default)");
+
+// Functions from survey-functions.ts
+const getSurveyStaging = getSurveyImpl(app, "staging");
+const getSurveyProd = getSurveyImpl(app, "(default)");
+
+const saveSurveyStaging = saveSurveyImpl(app, "staging");
+const saveSurveyProd = saveSurveyImpl(app, "(default)");
+
+const checkInOutSurveyStaging = checkInOutSurveyImpl(app, "staging");
+const checkInOutSurveyProd = checkInOutSurveyImpl(app, "(default)");
+
+// Email functions - need to check if they use Firestore
+const validateEmail = sparkpostValidateEmailImpl(app);
+const createNewUser = sparkpostCreateNewUserImpl(app);
+const fetchSparkPostTemplates = fetchSparkPostTemplatesImpl(app);
+
+// Create separate instances for staging and production
+const getFordLincolnEventsStaging = getFordLincolnEventsImpl(app, "staging");
+const getEventSurveysStaging = getEventSurveysImpl(app, "staging");
+const reuploadEventSurveysStaging = reuploadEventSurveysImpl(app, "staging");
+
+const getFordLincolnEventsProd = getFordLincolnEventsImpl(app, "(default)");
+const getEventSurveysProd = getEventSurveysImpl(app, "(default)");
+const reuploadEventSurveysProd = reuploadEventSurveysImpl(app, "(default)");
 
 // User management functions
 const listUsers = listUsersImpl(app);
@@ -102,15 +128,15 @@ const makeBookeoBooking = makeBookeoBookingImpl(app);
 // Export functions with explicit namespaces
 // Staging environment
 export const staging = {
-  getBroncoRank,
+  getBroncoRank: getBroncoRankStaging,
   setCloudFrontCookies,
-  checkSurveyLimit,
-  validateSurveyLimit,
-  getLionsFollowups,
-  getSurvey,
-  saveSurvey,
+  checkSurveyLimit: checkSurveyLimitStaging,
+  validateSurveyLimit: validateSurveyLimitStaging,
+  getLionsFollowups: getLionsFollowupsStaging,
+  getSurvey: getSurveyStaging,
+  saveSurvey: saveSurveyStaging,
   validateEmail,
-  checkInOutSurvey,
+  checkInOutSurvey: checkInOutSurveyStaging,
   createNewUser,
   fetchSparkPostTemplates,
   generateCreatorUploadUrl,
@@ -124,9 +150,9 @@ export const staging = {
   getBookeoSlotsByProduct,
   holdBookeoBooking,
   makeBookeoBooking,
-  getFordLincolnEvents,
-  getEventSurveys,
-  reuploadEventSurveys,
+  getFordLincolnEvents: getFordLincolnEventsStaging,
+  getEventSurveys: getEventSurveysStaging,
+  reuploadEventSurveys: reuploadEventSurveysStaging,
   listUsers,
   setAdminClaim,
   deleteUser,
@@ -135,15 +161,15 @@ export const staging = {
 
 // Production environment
 export const prod = {
-  getBroncoRank,
+  getBroncoRank: getBroncoRankProd,
   setCloudFrontCookies,
-  checkSurveyLimit,
-  validateSurveyLimit,
-  getLionsFollowups,
-  getSurvey,
-  saveSurvey,
+  checkSurveyLimit: checkSurveyLimitProd,
+  validateSurveyLimit: validateSurveyLimitProd,
+  getLionsFollowups: getLionsFollowupsProd,
+  getSurvey: getSurveyProd,
+  saveSurvey: saveSurveyProd,
   validateEmail,
-  checkInOutSurvey,
+  checkInOutSurvey: checkInOutSurveyProd,
   createNewUser,
   fetchSparkPostTemplates,
   generateCreatorUploadUrl,
@@ -157,9 +183,9 @@ export const prod = {
   getBookeoSlotsByProduct,
   holdBookeoBooking,
   makeBookeoBooking,
-  getFordLincolnEvents,
-  getEventSurveys,
-  reuploadEventSurveys,
+  getFordLincolnEvents: getFordLincolnEventsProd,
+  getEventSurveys: getEventSurveysProd,
+  reuploadEventSurveys: reuploadEventSurveysProd,
   listUsers,
   setAdminClaim,
   deleteUser,

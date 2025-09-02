@@ -64,8 +64,8 @@ importers:
         specifier: ^3.864.0
         version: 3.864.0
       '@expanse/shared':
-        specifier: workspace:*
-        version: link:../shared
+        specifier: file:.firebase-pnpm-workspaces/@expanse/shared
+        version: file:packages/firebase/.firebase-pnpm-workspaces/@expanse/shared(typescript@5.8.3)
       '@sentry/node':
         specifier: ^10.3.0
         version: 10.3.0
@@ -3004,6 +3004,12 @@ packages:
   '@eslint/js@8.57.1':
     resolution: {integrity: sha512-d9zaMRSTIKDLhctzH12MtXvJKSSUhaHcjV+2Z+GK+EEY7XKpP5yR4x+N3TAcHTcu963nIr+TMcCb4DBCYX1z6Q==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+
+  '@expanse/shared@file:packages/firebase/.firebase-pnpm-workspaces/@expanse/shared':
+    resolution: {directory: packages/firebase/.firebase-pnpm-workspaces/@expanse/shared, type: directory}
+    engines: {node: '20'}
+    peerDependencies:
+      typescript: ^5.0.0
 
   '@expo/cli@0.24.21':
     resolution: {integrity: sha512-DT6K9vgFHqqWL/19mU1ofRcPoO1pn4qmgi76GtuiNU4tbBe/02mRHwFsQw7qRfFAT28If5e/wiwVozgSuZVL8g==}
@@ -21556,6 +21562,16 @@ snapshots:
 
   '@eslint/js@8.57.1': {}
 
+  '@expanse/shared@file:packages/firebase/.firebase-pnpm-workspaces/@expanse/shared(typescript@5.8.3)':
+    dependencies:
+      axios: 1.7.4
+      react: 18.3.1
+      survey-core: 2.3.1
+      typescript: 5.8.3
+      uuid: 9.0.1
+    transitivePeerDependencies:
+      - debug
+
   '@expo/cli@0.24.21':
     dependencies:
       '@0no-co/graphql.web': 1.2.0
@@ -37419,7 +37435,7 @@ snapshots:
   metro-source-map@0.82.5:
     dependencies:
       '@babel/traverse': 7.28.0(supports-color@5.5.0)
-      '@babel/traverse--for-generate-function-map': '@babel/traverse@7.28.0(supports-color@5.5.0)'
+      '@babel/traverse--for-generate-function-map': '@babel/traverse@7.28.3'
       '@babel/types': 7.28.2
       flow-enums-runtime: 0.0.6
       invariant: 2.2.4

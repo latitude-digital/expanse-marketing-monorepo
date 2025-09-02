@@ -3,32 +3,13 @@ import * as admin from 'firebase-admin';
 import { QueryDocumentSnapshot } from 'firebase-admin/firestore';
 import { uploadSurveyToAPI, registerCustomQuestionTypes } from "@expanse/shared";
 import { Model } from 'survey-core';
+import { getFirestoreDatabase } from './utils/getFirestoreDatabase';
 
-// Get the appropriate Firestore instance based on environment
-const getFirestoreDb = (app: admin.app.App) => {
-  // When using emulator, always use default database
-  if (process.env.FIRESTORE_EMULATOR_HOST) {
-    console.log('Using Firestore emulator with default database');
-    const { getFirestore } = require('firebase-admin/firestore');
-    return getFirestore(app);
-  }
-  
-  // Use the environment-specific database
-  const database = process.env.DB_NAME || "(default)";
-  console.log(`Using Firestore database: ${database}`);
-  const { getFirestore } = require('firebase-admin/firestore');
-  if (database === "(default)") {
-    return getFirestore(app);
-  } else {
-    // Use the named database for non-default databases
-    return getFirestore(app, database);
-  }
-};
 
 /**
  * Get Ford and Lincoln events with survey counts for re-upload
  */
-export const getFordLincolnEventsImpl = (app: admin.app.App) => 
+export const getFordLincolnEventsImpl = (app: admin.app.App, database: string = "(default)") => 
   onCall({ cors: true }, async (request) => {
     try {
       // Check if user is authenticated and is an admin
@@ -41,7 +22,7 @@ export const getFordLincolnEventsImpl = (app: admin.app.App) =>
         // In production, you should set admin custom claims on specific users
         console.warn('User accessing admin function without admin claim:', request.auth.uid);
       }
-      const db = getFirestoreDb(app);
+      const db = getFirestoreDatabase(app, database);
       
       // Query events that have either fordEventID or lincolnEventID
       const eventsRef = db.collection('events');
@@ -87,7 +68,7 @@ export const getFordLincolnEventsImpl = (app: admin.app.App) =>
 /**
  * Get all surveys for a specific event
  */
-export const getEventSurveysImpl = (app: admin.app.App) => 
+export const getEventSurveysImpl = (app: admin.app.App, database: string = "(default)") => 
   onCall({ cors: true }, async (request) => {
     try {
       // Check if user is authenticated and is an admin
@@ -106,7 +87,7 @@ export const getEventSurveysImpl = (app: admin.app.App) =>
         throw new Error('Event ID is required');
       }
 
-      const db = getFirestoreDb(app);
+      const db = getFirestoreDatabase(app, database);
       
       // Get all surveys for this event from the subcollection
       const surveysSnapshot = await db
@@ -135,7 +116,7 @@ export const getEventSurveysImpl = (app: admin.app.App) =>
 /**
  * Re-upload surveys for a specific event using server-side API calls
  */
-export const reuploadEventSurveysImpl = (app: admin.app.App) => 
+export const reuploadEventSurveysImpl = (app: admin.app.App, database: string = "(default)") => 
   onCall({ cors: true }, async (request) => {
     try {
       // Check if user is authenticated and is an admin
@@ -154,7 +135,7 @@ export const reuploadEventSurveysImpl = (app: admin.app.App) =>
         throw new Error('Event ID is required');
       }
 
-      const db = getFirestoreDb(app);
+      const db = getFirestoreDatabase(app, database);
       
       // Get event data
       const eventDoc = await db.collection('events').doc(eventId).get();

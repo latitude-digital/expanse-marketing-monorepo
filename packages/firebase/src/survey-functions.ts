@@ -5,34 +5,24 @@ import {getFunctions} from "firebase-admin/functions";
 import cors from "cors";
 import moment from "moment-timezone";
 import {getFunctionUrl} from "./utils";
+import { getFirestoreDatabase } from './utils/getFirestoreDatabase';
 
 // Configure CORS
 const corsHandler = cors({ origin: true });
 
-// Helper to get Firestore instance with correct database
+// Legacy function - kept for backward compatibility
+// @deprecated Use getFirestoreDatabase from utils/getFirestoreDatabase.ts instead
 export const getFirestoreDb = (app: admin.app.App) => {
-  // When using emulator, always use default database
-  if (process.env.FIRESTORE_EMULATOR_HOST) {
-    logger.info(`Using Firestore emulator at: ${process.env.FIRESTORE_EMULATOR_HOST}`);
-    const { getFirestore } = require('firebase-admin/firestore');
-    return getFirestore(app);
-  }
-  
   const database = process.env.DB_NAME || "(default)";
-  logger.info(`Using database: ${database}, environment: ${process.env.LATITUDE_ENV || "production"}`);
-  const { getFirestore } = require('firebase-admin/firestore');
-  if (database === "(default)") {
-    return getFirestore(app);
-  } else {
-    return getFirestore(app, database);
-  }
+  logger.warn(`DEPRECATED: Using legacy getFirestoreDb. This will not work correctly with namespace exports!`);
+  return getFirestoreDatabase(app, database);
 };
 
 /**
  * Get Survey Function
  * Fetches survey configuration and event data
  */
-export const getSurveyImpl = (app: admin.app.App) => onRequest(
+export const getSurveyImpl = (app: admin.app.App, database: string = "(default)") => onRequest(
   { cors: true },
   async (req, res) => {
     corsHandler(req, res, async () => {
@@ -51,7 +41,7 @@ export const getSurveyImpl = (app: admin.app.App) => onRequest(
 
         logger.info(`Getting survey for event: ${eventID}, preSurveyID: ${preSurveyID}`);
         
-        const db = getFirestoreDb(app);
+        const db = getFirestoreDatabase(app, database);
         
         // Fetch event data
         const eventRef = db.collection('events').doc(eventID);
@@ -139,7 +129,7 @@ export const getSurveyImpl = (app: admin.app.App) => onRequest(
  * Save Survey Function - COMPLETE RESTORATION
  * This includes all the missing logic from the original implementation
  */
-export const saveSurveyImpl = (app: admin.app.App) => onRequest(
+export const saveSurveyImpl = (app: admin.app.App, database: string = "(default)") => onRequest(
   {
     cors: true,
     concurrency: 50,
@@ -251,7 +241,7 @@ export const saveSurveyImpl = (app: admin.app.App) => onRequest(
  * Check In/Out Survey Function - COMPLETE RESTORATION
  * This includes all the missing auto-checkout and email logic
  */
-export const checkInOutSurveyImpl = (app: admin.app.App) => onRequest(
+export const checkInOutSurveyImpl = (app: admin.app.App, database: string = "(default)") => onRequest(
   {
     cors: true,
     concurrency: 50,
