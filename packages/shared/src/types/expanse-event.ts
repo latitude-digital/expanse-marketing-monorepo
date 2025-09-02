@@ -100,6 +100,9 @@ export interface ExpanseEvent {
   survey_count_limit?: number;
   limit_reached_message?: string;
   
+  // User targeting
+  tags?: string[];                 // Event tags for user filtering
+  
   // Email automation (Firestore only)
   confirmationEmail?: EmailDefinition;
   reminderEmail?: EmailDefinition;

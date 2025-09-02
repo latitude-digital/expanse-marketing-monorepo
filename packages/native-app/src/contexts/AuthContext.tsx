@@ -5,6 +5,8 @@ interface User {
   uid: string;
   email: string | null;
   displayName: string | null;
+  isAdmin?: boolean;
+  tags?: string[];
 }
 
 interface AuthContextType {
@@ -34,12 +36,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = authService.onAuthStateChanged((user) => {
+    const unsubscribe = authService.onAuthStateChanged(async (user) => {
       if (user) {
+        // Get custom claims for admin status and user tags
+        const idTokenResult = await user.getIdTokenResult();
+        const customClaims = idTokenResult.claims;
+        
         setCurrentUser({
           uid: user.uid,
           email: user.email,
           displayName: user.displayName,
+          isAdmin: customClaims.admin === true,
+          tags: customClaims.tags || [],
         });
       } else {
         setCurrentUser(null);
@@ -52,10 +60,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signIn = async (email: string, password: string) => {
     const userCredential = await authService.signIn(email, password);
+    
+    // Get custom claims for admin status and user tags
+    const idTokenResult = await userCredential.user.getIdTokenResult();
+    const customClaims = idTokenResult.claims;
+    
     setCurrentUser({
       uid: userCredential.user.uid,
       email: userCredential.user.email,
       displayName: userCredential.user.displayName,
+      isAdmin: customClaims.admin === true,
+      tags: customClaims.tags || [],
     });
   };
 

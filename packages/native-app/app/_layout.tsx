@@ -64,7 +64,7 @@ function AuthenticatedLayout() {
       <Stack.Screen 
         name="index" 
         options={{ 
-          title: "Survey Events",
+          title: "Meridian Events",
           headerShown: true,
           headerTintColor: "#257180",
           headerStyle: {
