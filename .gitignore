@@ -119,3 +119,4 @@ playwright/.cache/
 # Test credentials (never commit real credentials)
 **/test-credentials.json
 test-credentials.json
+packages/firebase/.firebase-pnpm-workspaces

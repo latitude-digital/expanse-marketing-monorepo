@@ -11,6 +11,7 @@
         "*.local"
       ],
       "predeploy": [
+        "npx firebase-pnpm-workspaces --filter @expanse/firebase",
         "npm --prefix \"$RESOURCE_DIR\" run build"
       ]
     }

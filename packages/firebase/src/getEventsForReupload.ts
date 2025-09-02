@@ -1,15 +1,47 @@
 import { onCall } from "firebase-functions/v2/https";
 import * as admin from 'firebase-admin';
+import { QueryDocumentSnapshot } from 'firebase-admin/firestore';
 import { uploadSurveyToAPI, registerCustomQuestionTypes } from "@expanse/shared";
 import { Model } from 'survey-core';
+
+// Get the appropriate Firestore instance based on environment
+const getFirestoreDb = (app: admin.app.App) => {
+  // When using emulator, always use default database
+  if (process.env.FIRESTORE_EMULATOR_HOST) {
+    console.log('Using Firestore emulator with default database');
+    const { getFirestore } = require('firebase-admin/firestore');
+    return getFirestore(app);
+  }
+  
+  // Use the environment-specific database
+  const database = process.env.DB_NAME || "(default)";
+  console.log(`Using Firestore database: ${database}`);
+  const { getFirestore } = require('firebase-admin/firestore');
+  if (database === "(default)") {
+    return getFirestore(app);
+  } else {
+    // Use the named database for non-default databases
+    return getFirestore(app, database);
+  }
+};
 
 /**
  * Get Ford and Lincoln events with survey counts for re-upload
  */
 export const getFordLincolnEventsImpl = (app: admin.app.App) => 
-  onCall(async (request) => {
+  onCall({ cors: true }, async (request) => {
     try {
-      const db = admin.firestore();
+      // Check if user is authenticated and is an admin
+      if (!request.auth) {
+        console.warn('WARNING: Unauthenticated access to admin function getFordLincolnEvents');
+        // TODO: In production, uncomment this line to require authentication
+        // throw new HttpsError('unauthenticated', 'User must be authenticated to access this function');
+      } else if (!request.auth.token.admin) {
+        // For now, allow any authenticated user to access admin functions
+        // In production, you should set admin custom claims on specific users
+        console.warn('User accessing admin function without admin claim:', request.auth.uid);
+      }
+      const db = getFirestoreDb(app);
       
       // Query events that have either fordEventID or lincolnEventID
       const eventsRef = db.collection('events');
@@ -18,7 +50,7 @@ export const getFordLincolnEventsImpl = (app: admin.app.App) =>
         .limit(100)
         .get();
 
-      const events = await Promise.all(snapshot.docs.map(async (doc) => {
+      const events = await Promise.all(snapshot.docs.map(async (doc: QueryDocumentSnapshot) => {
         const data = doc.data();
         
         // Get survey count for this event - check the surveys subcollection
@@ -56,15 +88,25 @@ export const getFordLincolnEventsImpl = (app: admin.app.App) =>
  * Get all surveys for a specific event
  */
 export const getEventSurveysImpl = (app: admin.app.App) => 
-  onCall(async (request) => {
+  onCall({ cors: true }, async (request) => {
     try {
+      // Check if user is authenticated and is an admin
+      if (!request.auth) {
+        console.warn('WARNING: Unauthenticated access to admin function getEventSurveys');
+        // TODO: In production, uncomment this line to require authentication
+        // throw new HttpsError('unauthenticated', 'User must be authenticated to access this function');
+      } else if (!request.auth.token.admin) {
+        // For now, allow any authenticated user to access admin functions
+        // In production, you should set admin custom claims on specific users
+        console.warn('User accessing admin function without admin claim:', request.auth.uid);
+      }
       const { eventId } = request.data;
       
       if (!eventId) {
         throw new Error('Event ID is required');
       }
 
-      const db = admin.firestore();
+      const db = getFirestoreDb(app);
       
       // Get all surveys for this event from the subcollection
       const surveysSnapshot = await db
@@ -73,7 +115,7 @@ export const getEventSurveysImpl = (app: admin.app.App) =>
         .collection('surveys')
         .get();
 
-      const surveys = surveysSnapshot.docs.map(doc => ({
+      const surveys = surveysSnapshot.docs.map((doc: QueryDocumentSnapshot) => ({
         path: `events/${eventId}/surveys/${doc.id}`,
         id: doc.id,
         data: doc.data()
@@ -94,15 +136,25 @@ export const getEventSurveysImpl = (app: admin.app.App) =>
  * Re-upload surveys for a specific event using server-side API calls
  */
 export const reuploadEventSurveysImpl = (app: admin.app.App) => 
-  onCall(async (request) => {
+  onCall({ cors: true }, async (request) => {
     try {
+      // Check if user is authenticated and is an admin
+      if (!request.auth) {
+        console.warn('WARNING: Unauthenticated access to admin function reuploadEventSurveys');
+        // TODO: In production, uncomment this line to require authentication
+        // throw new HttpsError('unauthenticated', 'User must be authenticated to access this function');
+      } else if (!request.auth.token.admin) {
+        // For now, allow any authenticated user to access admin functions
+        // In production, you should set admin custom claims on specific users
+        console.warn('User accessing admin function without admin claim:', request.auth.uid);
+      }
       const { eventId } = request.data;
       
       if (!eventId) {
         throw new Error('Event ID is required');
       }
 
-      const db = admin.firestore();
+      const db = getFirestoreDb(app);
       
       // Get event data
       const eventDoc = await db.collection('events').doc(eventId).get();
@@ -143,7 +195,7 @@ export const reuploadEventSurveysImpl = (app: admin.app.App) =>
       
       for (let i = 0; i < surveys.length; i += batchSize) {
         const batch = surveys.slice(i, i + batchSize);
-        const promises = batch.map(async (surveyDoc) => {
+        const promises = batch.map(async (surveyDoc: QueryDocumentSnapshot) => {
           const documentPath = `events/${eventId}/surveys/${surveyDoc.id}`;
           try {
             const surveyData = surveyDoc.data();

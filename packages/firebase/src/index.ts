@@ -36,6 +36,7 @@ import {
   getEventSurveysImpl,
   reuploadEventSurveysImpl
 } from "./getEventsForReupload";
+import { getUsersListImpl } from "./getUsersList";
 
 // Re-export shared utilities from shared package
 export { uploadSurveyToAPI, type UploadResult } from "@expanse/shared";
@@ -69,6 +70,7 @@ const generateRespondentUploadUrl = generateRespondentUploadUrlImpl;
 const getFordLincolnEvents = getFordLincolnEventsImpl(app);
 const getEventSurveys = getEventSurveysImpl(app);
 const reuploadEventSurveys = reuploadEventSurveysImpl(app);
+const getUsersList = getUsersListImpl(app);
 
 // Task-based functions (these don't need app parameter)
 // Create different trigger instances for staging and production
@@ -111,7 +113,8 @@ export const staging = {
   makeBookeoBooking,
   getFordLincolnEvents,
   getEventSurveys,
-  reuploadEventSurveys
+  reuploadEventSurveys,
+  getUsersList
 };
 
 // Production environment
@@ -139,5 +142,6 @@ export const prod = {
   makeBookeoBooking,
   getFordLincolnEvents,
   getEventSurveys,
-  reuploadEventSurveys
+  reuploadEventSurveys,
+  getUsersList
 };

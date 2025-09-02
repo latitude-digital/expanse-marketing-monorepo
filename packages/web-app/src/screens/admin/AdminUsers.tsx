@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
-import { collection, query, getDocs, doc, updateDoc, orderBy } from "firebase/firestore";
 import { getFunctions, httpsCallable } from 'firebase/functions';
-import db from '../../services/firestore';
 import app from '../../services/firebase';
 // Import FontAwesome SVG icons as URLs
 import UserIconUrl from '@fontawesome/regular/user.svg';
@@ -38,16 +36,16 @@ export default function AdminUsers() {
 
     const loadUsers = async () => {
         try {
-            const usersQuery = query(
-                collection(db, 'users'),
-                orderBy('email', 'asc')
-            );
-            const snapshot = await getDocs(usersQuery);
-            const usersData = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            } as User));
-            setUsers(usersData);
+            // Call Firebase function to get users from Firebase Auth
+            const getUsersList = httpsCallable(functions, `${import.meta.env.VITE_FIREBASE_NAMESPACE || 'staging'}-getUsersList`);
+            const result = await getUsersList();
+            const data = result.data as any;
+            
+            if (data.success) {
+                setUsers(data.users);
+            } else {
+                console.error('Failed to load users');
+            }
         } catch (error) {
             console.error('Error loading users:', error);
         } finally {

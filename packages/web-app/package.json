@@ -1,6 +1,6 @@
 {
   "name": "@expanse/web-app",
-  "version": "1.0.1756837157",
+  "version": "1.0.1756842812",
   "private": true,
   "dependencies": {
     "@expanse/shared": "workspace:*",

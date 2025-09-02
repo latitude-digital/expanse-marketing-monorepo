@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import auth from '../../services/auth';
+import firebaseApp from '../../services/firebase';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import Dialog from '../../components/Dialog';
 import Button from '../../components/Button';
@@ -48,7 +49,7 @@ const ReUploadModal: React.FC<ReUploadModalProps> = ({ event, isOpen, onClose })
   });
   const [selectedError, setSelectedError] = useState<number | null>(null);
   const [confirmed, setConfirmed] = useState(false);
-  const functions = getFunctions();
+  const functions = getFunctions(firebaseApp);
 
   const handleReUpload = async () => {
     setConfirmed(true);
@@ -190,7 +191,7 @@ const ReUpload: React.FC = () => {
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const functions = getFunctions();
+  const functions = getFunctions(firebaseApp);
 
   useEffect(() => {
     if (user) {
