@@ -67,6 +67,7 @@ export default {
     },
     scheme: "meridian-events",
     plugins: [
+      "./plugins/withSurveyBundle",
       "expo-router",
       "@react-native-firebase/app",
       "@react-native-firebase/auth",

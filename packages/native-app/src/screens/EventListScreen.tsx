@@ -257,6 +257,12 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
           <Text style={styles.refreshButtonText}>Refresh</Text>
         </TouchableOpacity>
       )}
+      <TouchableOpacity 
+        style={[styles.refreshButton, { marginLeft: 10, backgroundColor: '#FF6F00' }]} 
+        onPress={() => router.push('/survey-test')}
+      >
+        <Text style={styles.refreshButtonText}>Test Survey</Text>
+      </TouchableOpacity>
     </View>
   );
 
