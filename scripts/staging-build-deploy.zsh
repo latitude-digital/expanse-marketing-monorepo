@@ -80,43 +80,54 @@ case $DEPLOY_CHOICE in
 esac
 
 if $DEPLOY_WEB; then
-    # Step 1: Update version in package.json
+    # Step 1: Clean previous build artifacts
+    echo -e "${YELLOW}🧹 Cleaning previous build artifacts${NC}"
+    rm -rf packages/web-app/dist packages/web-app/build
+    rm -rf packages/shared/lib packages/shared/dist
+    echo -e "${GREEN}✅ Build artifacts cleaned${NC}"
+
+    # Step 2: Update version in package.json
     echo -e "${YELLOW}📦 Updating package version to ${VERSION_NUMBER}${NC}"
     cd packages/web-app
     sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"${VERSION_NUMBER}\"/" package.json
     echo -e "${GREEN}✅ Updated web-app version to ${VERSION_NUMBER}${NC}"
     cd ../..
 
-    # Step 2: Install dependencies
+    # Step 3: Install dependencies
     echo -e "${YELLOW}📥 Installing dependencies${NC}"
     pnpm install --prefer-offline
     echo -e "${GREEN}✅ Dependencies installed${NC}"
 
-    # Step 3: Sync Ford UI
+    # Step 4: Build shared package
+    echo -e "${YELLOW}📦 Building shared package${NC}"
+    pnpm --filter @expanse/shared build
+    echo -e "${GREEN}✅ Shared package built${NC}"
+
+    # Step 5: Sync Ford UI
     echo -e "${YELLOW}🎨 Syncing Ford UI${NC}"
     ./packages/web-app/scripts/sync-ford-ui.sh
     echo -e "${GREEN}✅ Ford UI synced${NC}"
 
-    # Step 4: Create Sentry release
+    # Step 6: Create Sentry release
     echo -e "${YELLOW}📊 Creating Sentry release${NC}"
     pnpm sentry-cli releases new ${BUILD_NUMBER}
     pnpm sentry-cli releases set-commits ${BUILD_NUMBER} --commit latitude-digital/expanse-marketing-monorepo@${GIT_COMMIT}
     pnpm sentry-cli releases finalize ${BUILD_NUMBER}
     echo -e "${GREEN}✅ Sentry release created${NC}"
 
-    # Step 6: Build the application
+    # Step 7: Build the application
     echo -e "${YELLOW}🏗️  Building application${NC}"
-    pnpm run build:staging
+    pnpm --filter @expanse/web-app build:staging
     echo -e "${GREEN}✅ Application built${NC}"
 
-    # Step 7: Deploy to S3
+    # Step 8: Deploy to S3
     echo -e "${YELLOW}☁️  Deploying to S3${NC}"
 
     # Upload all files except index.html and .map files with 1-week cache
     echo -e "${BLUE}Uploading assets with cache headers (excluding .map files)...${NC}"
     aws configure set default.s3.max_concurrent_requests 20
     aws configure set default.s3.max_bandwidth 100MB/s
-    aws s3 sync build/ s3://${DEPLOY_BUCKET}/ \
+    aws s3 sync packages/web-app/build/ s3://${DEPLOY_BUCKET}/ \
         --exclude "index.html" \
         --exclude "*.map" \
         --exclude "**/*.map" \
@@ -125,21 +136,19 @@ if $DEPLOY_WEB; then
 
     # Upload index.html without caching
     echo -e "${BLUE}Uploading index.html without cache...${NC}"
-    aws s3 cp build/index.html s3://${DEPLOY_BUCKET}/index.html \
+    aws s3 cp packages/web-app/build/index.html s3://${DEPLOY_BUCKET}/index.html \
         --cache-control "max-age=0"
 
     echo -e "${GREEN}✅ Deployed to S3${NC}"
 
-    # Step 8: Finalize Sentry release with deployment
+    # Step 9: Finalize Sentry release with deployment
     echo -e "${YELLOW}📊 Finalizing Sentry deployment${NC}"
     pnpm sentry-cli releases deploys ${BUILD_NUMBER} new -e staging
     echo -e "${GREEN}✅ Sentry deployment recorded${NC}"
-
-    cd ../..
 fi
 
 if $DEPLOY_FUNCTIONS; then
-    # Step 9: Build Firebase Functions
+    # Step 10: Build Firebase Functions
     echo -e "${YELLOW}🔥 Building Firebase Functions${NC}"
     cd packages/firebase
 
@@ -150,7 +159,7 @@ if $DEPLOY_FUNCTIONS; then
     npm run build
     echo -e "${GREEN}✅ Firebase Functions built${NC}"
 
-    # Step 10: Deploy Firebase Functions (staging namespace only)
+    # Step 11: Deploy Firebase Functions (staging namespace only)
     echo -e "${YELLOW}🚀 Deploying Firebase Functions to staging${NC}"
 
     # Deploy only staging functions (no need to specify --project since we're using the alias)

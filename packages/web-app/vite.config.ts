@@ -3,20 +3,11 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 // https://vitejs.dev/config/
-export default defineConfig(async ({ command, mode }) => {
+export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   
-  // Dynamically import the console forward plugin
-  let consoleForward = null
-  try {
-    const plugin = await import('vite-console-forward-plugin')
-    consoleForward = plugin.default()
-  } catch (error) {
-    console.log('Console forward plugin not available:', error.message)
-  }
-  
   return {
-    plugins: [react(), ...(consoleForward ? [consoleForward] : [])],
+    plugins: [react()],
     
     // Build configuration to match CRA output structure
     build: {

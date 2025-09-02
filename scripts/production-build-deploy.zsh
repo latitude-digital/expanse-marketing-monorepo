@@ -80,19 +80,30 @@ case $DEPLOY_CHOICE in
 esac
 
 if $DEPLOY_WEB; then
-    # Step 1: Update version in package.json
+    # Step 1: Clean previous build artifacts
+    echo -e "${YELLOW}🧹 Cleaning previous build artifacts${NC}"
+    rm -rf packages/web-app/dist packages/web-app/build
+    rm -rf packages/shared/lib packages/shared/dist
+    echo -e "${GREEN}✅ Build artifacts cleaned${NC}"
+
+    # Step 2: Update version in package.json
     echo -e "${YELLOW}📦 Updating package version to ${VERSION_NUMBER}${NC}"
     cd packages/web-app
     sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"${VERSION_NUMBER}\"/" package.json
     echo -e "${GREEN}✅ Updated web-app version to ${VERSION_NUMBER}${NC}"
     cd ../..
 
-    # Step 2: Install dependencies
+    # Step 3: Install dependencies
     echo -e "${YELLOW}📥 Installing dependencies${NC}"
     pnpm install --prefer-offline
     echo -e "${GREEN}✅ Dependencies installed${NC}"
 
-    # Step 3: Sync Ford UI
+    # Step 3: Build shared package
+    echo -e "${YELLOW}📦 Building shared package${NC}"
+    pnpm --filter @expanse/shared build
+    echo -e "${GREEN}✅ Shared package built${NC}"
+
+    # Step 4: Sync Ford UI
     echo -e "${YELLOW}🎨 Syncing Ford UI${NC}"
     ./packages/web-app/scripts/sync-ford-ui.sh
     echo -e "${GREEN}✅ Ford UI synced${NC}"
@@ -107,7 +118,7 @@ if $DEPLOY_WEB; then
     # Step 6: Build the application
     echo -e "${YELLOW}🏗️  Building application${NC}"
     # Vite will automatically load .env.prod in production mode
-    pnpm run build:production
+    pnpm --filter @expanse/web-app build:production
     echo -e "${GREEN}✅ Application built${NC}"
 
     # Step 7: Deploy to S3
@@ -117,7 +128,7 @@ if $DEPLOY_WEB; then
     echo -e "${BLUE}Uploading assets with cache headers (excluding .map files)...${NC}"
     aws configure set default.s3.max_concurrent_requests 20
     aws configure set default.s3.max_bandwidth 100MB/s
-    aws s3 sync build/ s3://${DEPLOY_BUCKET}/ \
+    aws s3 sync packages/web-app/build/ s3://${DEPLOY_BUCKET}/ \
         --exclude "index.html" \
         --exclude "*.map" \
         --exclude "**/*.map" \
@@ -126,7 +137,7 @@ if $DEPLOY_WEB; then
 
     # Upload index.html without caching
     echo -e "${BLUE}Uploading index.html without cache...${NC}"
-    aws s3 cp build/index.html s3://${DEPLOY_BUCKET}/index.html \
+    aws s3 cp packages/web-app/build/index.html s3://${DEPLOY_BUCKET}/index.html \
         --cache-control "max-age=0"
 
     echo -e "${GREEN}✅ Deployed to S3${NC}"
@@ -136,7 +147,6 @@ if $DEPLOY_WEB; then
     pnpm sentry-cli releases deploys ${BUILD_NUMBER} new -e production
     echo -e "${GREEN}✅ Sentry deployment recorded${NC}"
 
-    cd ../..
 fi
 
 if $DEPLOY_FUNCTIONS; then
