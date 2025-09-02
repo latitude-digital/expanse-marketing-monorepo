@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { useNavigate, useParams } from "react-router-dom";
-import { doc, getDoc, Timestamp, FirestoreDataConverter, DocumentData, QueryDocumentSnapshot, SnapshotOptions, setDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, Timestamp, FirestoreDataConverter, DocumentData, QueryDocumentSnapshot, SnapshotOptions, setDoc, updateDoc, collection, query, orderBy, getDocs } from "firebase/firestore";
 import { useAuthState } from 'react-firebase-hooks/auth';
 
 import auth from '../../services/auth';
@@ -58,6 +58,7 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
             showLanguageChooser: event.showLanguageChooser !== undefined ? event.showLanguageChooser : false,
             showHeader: event.showHeader !== undefined ? event.showHeader : true,
             showFooter: event.showFooter !== undefined ? event.showFooter : true,
+            tags: event.tags || [],
         };
     },
     fromFirestore(
@@ -94,6 +95,7 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
             showLanguageChooser: data.showLanguageChooser !== undefined ? data.showLanguageChooser : false,
             showHeader: data.showHeader !== undefined ? data.showHeader : true,
             showFooter: data.showFooter !== undefined ? data.showFooter : true,
+            tags: data.tags || [],
         };
     },
 };
@@ -105,6 +107,7 @@ function DashboardScreen() {
     const [user, userLoading, userError] = useAuthState(auth);
     const [thisEvent, setThisEvent] = useState<ExpanseEvent>();
     const [thisSurvey, setThisSurvey] = useState<SurveyModel>();
+    const [availableTags, setAvailableTags] = useState<Array<{id: string, name: string, color: string}>>([]);
 
     const eventID: string = params.eventID!;
 
@@ -119,6 +122,27 @@ function DashboardScreen() {
             navigate('./login');
         }
 
+        // Load available tags
+        const loadTags = async () => {
+            try {
+                const tagsQuery = query(
+                    collection(db, 'tags'),
+                    orderBy('name', 'asc')
+                );
+                const snapshot = await getDocs(tagsQuery);
+                const tagsData = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    name: doc.data().name,
+                    color: doc.data().color
+                }));
+                setAvailableTags(tagsData);
+            } catch (error) {
+                console.error('Error loading tags:', error);
+            }
+        };
+
+        loadTags();
+
         if (eventID === 'new') {
             setThisEvent({
                 id: 'new',
@@ -131,6 +155,7 @@ function DashboardScreen() {
                 showLanguageChooser: true,
                 showHeader: true,
                 showFooter: true,
+                tags: [],
             });
         } else {
             // get the event
@@ -553,6 +578,29 @@ function DashboardScreen() {
                             "descriptionLocation": "underInput",
                             "defaultValue": true
                         },
+                        // Tags Panel
+                        {
+                            "type": "panel",
+                            "name": "tagsPanel",
+                            "title": "Event Access Tags",
+                            "description": "Select tags to control which users can access this event. Only users with at least one matching tag will see this event.",
+                            "elements": [
+                                {
+                                    "type": "checkbox",
+                                    "name": "tags",
+                                    "title": "Select Tags",
+                                    "description": "Users must have at least one of these tags to access this event. Leave empty to allow all users.",
+                                    "descriptionLocation": "underTitle",
+                                    "choices": availableTags.map(tag => ({
+                                        value: tag.id,
+                                        text: tag.name
+                                    })),
+                                    "selectAllText": "Select All",
+                                    "noneText": "No tags selected",
+                                    "showSelectAllItem": false
+                                }
+                            ]
+                        },
                         {
                             "type": "boolean",
                             "name": "editSurvey",
@@ -703,7 +751,9 @@ function DashboardScreen() {
                 Object.entries(thisEvent.checkInDisplay).map(([questionId, displayName]) => ({
                     questionId,
                     displayName
-                })) : []
+                })) : [],
+            // Map tags - ensure it's an array
+            tags: thisEvent.tags || []
         };
 
         survey.addNavigationItem({
@@ -762,6 +812,8 @@ function DashboardScreen() {
             eventData.lincolnEventID = sender.data.lincolnEventID || null;
             // Clear surveyType if both fordEventID and lincolnEventID are empty
             eventData.surveyType = ((sender.data.fordEventID || sender.data.lincolnEventID) && sender.data.surveyType) ? sender.data.surveyType : null;
+            // Map tags - ensure it's an array
+            eventData.tags = sender.data.tags || [];
 
             // Handle email configurations based on enablePreRegistration toggle
             if (sender.data.enablePreRegistration) {

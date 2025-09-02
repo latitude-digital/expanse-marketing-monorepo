@@ -92,6 +92,11 @@ yarn.lock
 ehthumbs.db
 Thumbs.db
 
+# Expo
+packages/native-app/.expo/
+packages/native-app/ios/
+packages/native-app/android/
+
 # Firebase
 .firebase/
 firebase-debug.log
@@ -106,6 +111,9 @@ coverage/
 test-results/
 playwright-report/
 playwright/.cache/
+
+# Claude local configuration
+CLAUDE.local.md
 
 # Reference libraries (for development reference only)
 /survey-library

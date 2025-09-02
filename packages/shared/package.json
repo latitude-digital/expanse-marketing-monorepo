@@ -1,7 +1,7 @@
 {
   "name": "@expanse/shared",
   "version": "1.0.0",
-  "description": "Shared utilities for Expanse Marketing",
+  "description": "Shared TypeScript interfaces and utilities for Expanse native and web apps",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
   "types": "./lib/cjs/index.d.ts",
@@ -19,6 +19,20 @@
     "build:watch": "tsc --watch",
     "clean": "rm -rf lib"
   },
+  "files": [
+    "lib",
+    "src"
+  ],
+  "keywords": [
+    "typescript",
+    "shared",
+    "interfaces",
+    "ford",
+    "lincoln",
+    "survey"
+  ],
+  "author": "Expanse Marketing",
+  "license": "UNLICENSED",
   "engines": {
     "node": "20"
   },
@@ -33,5 +47,8 @@
     "@types/react": "^18.3.3",
     "@types/uuid": "^9.0.7",
     "typescript": "^5.2.2"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
   }
 }
