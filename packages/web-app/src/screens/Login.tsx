@@ -7,7 +7,7 @@ function SigninScreen() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { currentUser, signOut, loading: authLoading, resetCloudFrontAccess } = useAuth();
+  const { currentUser, isAdmin, signOut, loading: authLoading, resetCloudFrontAccess } = useAuth();
   
   useEffect(() => {
     const handleLogout = async () => {
@@ -30,7 +30,7 @@ function SigninScreen() {
   
   useEffect(() => {
     if (!authLoading && currentUser) {
-      console.log('User is already signed in:', currentUser.email);
+      console.log('User is already signed in:', currentUser.email, 'isAdmin:', isAdmin);
       
       // Check for redirect parameter
       const redirectParam = searchParams.get('r');
@@ -43,20 +43,27 @@ function SigninScreen() {
           console.error('Invalid redirect parameter:', e);
         }
       } else if (location.pathname === '/auth' || location.pathname === '/welcome' || location.pathname === '/login') {
-        redirectPath = '/';
+        // For standard login routes, check if admin to determine redirect
+        redirectPath = isAdmin ? '/admin' : '/home';
+      } else if (location.pathname === '/admin/login') {
+        // Admin login should go to admin page
+        redirectPath = '/admin';
       } else if (location.pathname.endsWith('/login')) {
-        // Legacy support
+        // Legacy support for other page-specific logins
         redirectPath = location.pathname.substring(0, location.pathname.lastIndexOf('/login')) || '/';
       }
       
       navigate(redirectPath, { replace: true });
     }
-  }, [currentUser, authLoading, navigate, location.pathname, searchParams]);
+  }, [currentUser, authLoading, isAdmin, navigate, location.pathname, searchParams]);
 
   const handleLoginSuccess = async () => {
     // AUTH-009: CloudFront cookies are now automatically handled in authService.signIn
     // No need for manual cookie management here
     console.log('Login successful, checking for redirect parameter');
+    
+    // Wait a moment for auth context to update with user data
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     // Check for redirect parameter in URL
     const redirectParam = searchParams.get('r');
@@ -72,8 +79,9 @@ function SigninScreen() {
         redirectPath = '/';
       }
     } else if (location.pathname === '/auth' || location.pathname === '/welcome' || location.pathname === '/login') {
-      // Default redirects for standard login routes
-      redirectPath = '/';
+      // Default redirects for standard login routes - will be handled by useEffect above
+      // Just wait for the auth state to update and let useEffect handle the redirect
+      return; // Don't navigate here, let useEffect handle it
     } else if (location.pathname.endsWith('/login')) {
       // Legacy support: Remove '/login' from the path to go to parent
       redirectPath = location.pathname.substring(0, location.pathname.lastIndexOf('/login')) || '/';

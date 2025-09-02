@@ -68,9 +68,23 @@ const SurveyWebViewSPA: React.FC<SurveyWebViewSPAProps> = ({
   }, [event.brand]);
 
   useEffect(() => {
-    // Use very simple inline HTML that should work immediately
-    const getBasicSurveyHTML = () => {
-      return `
+    // For now, we'll read the HTML file content directly
+    // In a production app, you'd use a proper bundler configuration
+    // to load the SPA as a static asset
+    const loadSPA = async () => {
+      try {
+        // Try to load the bundled SPA HTML directly
+        const spaHtml = require('../../assets/survey-spa/index.html');
+        
+        // If it's a module ID (number), we can't use it directly
+        // Fall back to inline HTML for now
+        console.log('[SurveyWebViewSPA] SPA asset type:', typeof spaHtml);
+        throw new Error('Cannot load HTML file directly, using fallback');
+      } catch (error) {
+        console.error('[SurveyWebViewSPA] Using fallback HTML:', error.message);
+        // Fallback to inline HTML if bundle is not available
+        const getBasicSurveyHTML = () => {
+        return `
         <!DOCTYPE html>
         <html>
         <head>
@@ -230,13 +244,17 @@ const SurveyWebViewSPA: React.FC<SurveyWebViewSPAProps> = ({
         </body>
         </html>
       `;
-    };
+      };
 
-    // Set HTML content directly
-    const htmlContent = getBasicSurveyHTML();
-    setSurveyHtml(htmlContent);
-    setSpaPath(null); // We'll use HTML source instead
-    console.log('[SurveyWebViewSPA] Using simple inline HTML survey - updated!');
+        // Set HTML content directly
+        const htmlContent = getBasicSurveyHTML();
+        setSurveyHtml(htmlContent);
+        setSpaPath(null); // We'll use HTML source instead
+        console.log('[SurveyWebViewSPA] Using simple inline HTML survey - updated!');
+      }
+    };
+    
+    loadSPA();
   }, []);
 
   /**
@@ -245,10 +263,22 @@ const SurveyWebViewSPA: React.FC<SurveyWebViewSPAProps> = ({
   const initializeSurvey = useCallback(() => {
     if (!webViewRef.current) return;
 
+    // Try multiple possible field names for survey data
+    const surveyData = event.surveyJSON || event.surveyJSModel || event.questions || { pages: [] };
+    const themeData = event.surveyJSTheme || event.theme || { cssVariables: {} };
+    
+    console.log('[SurveyWebViewSPA] Survey data fields available:', {
+      hasQuestions: !!event.questions,
+      hasSurveyJSON: !!event.surveyJSON,
+      hasSurveyJSModel: !!event.surveyJSModel,
+      questionsPreview: JSON.stringify(event.questions).substring(0, 100),
+      surveyJSONPreview: JSON.stringify(event.surveyJSON).substring(0, 100),
+    });
+
     const message = {
       type: 'INIT_SURVEY',
       payload: {
-        surveyJSON: event.questions,
+        surveyJSON: surveyData,
         brand: event.brand?.toLowerCase() || 'ford',
         theme: 'light',
         eventId: event.id,
@@ -259,7 +289,8 @@ const SurveyWebViewSPA: React.FC<SurveyWebViewSPAProps> = ({
     const messageString = JSON.stringify(message);
     webViewRef.current.postMessage(messageString);
     
-    console.log('[SurveyWebViewSPA] Survey initialization message sent');
+    console.log('[SurveyWebViewSPA] Survey initialization message sent with surveyJSON:', 
+      JSON.stringify(surveyData).substring(0, 200));
   }, [event]);
 
   /**
@@ -377,8 +408,8 @@ const SurveyWebViewSPA: React.FC<SurveyWebViewSPAProps> = ({
     return url.startsWith('file://') || url.startsWith('about:blank');
   }, []);
 
-  // Show loading if HTML content is not ready
-  if (!surveyHtml) {
+  // Show loading if neither SPA path nor HTML content is ready
+  if (!spaPath && !surveyHtml) {
     return (
       <View style={[styles.container, styles.errorContainer, style]}>
         <ActivityIndicator 
@@ -407,7 +438,7 @@ const SurveyWebViewSPA: React.FC<SurveyWebViewSPAProps> = ({
     <View style={[styles.container, style]}>
       <WebView
         ref={webViewRef}
-        source={{ html: surveyHtml || '<div>Loading...</div>' }}
+        source={spaPath ? { uri: spaPath } : { html: surveyHtml || '<div>Loading...</div>' }}
         onMessage={handleMessage}
         onLoadStart={handleLoadStart}
         onError={handleError}

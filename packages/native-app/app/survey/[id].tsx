@@ -4,102 +4,61 @@ import SurveyScreen from '../../src/screens/SurveyScreen';
 import type { ExpanseEvent } from '@expanse/shared/types';
 
 export default function SurveyPage() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, eventData } = useLocalSearchParams<{ id: string; eventData?: string }>();
 
-  // In a real app, you'd fetch the event by ID
-  // For now, create a mock event based on the ID with survey questions
-  const mockEvent: ExpanseEvent = {
-    id: id || 'unknown',
-    name: id === 'ford-event-1' ? 'Ford F-150 Lightning Experience' :
-          id === 'lincoln-event-1' ? 'Lincoln Aviator Luxury Test Drive' :
-          'General Automotive Survey',
-    brand: id === 'ford-event-1' ? 'Ford' : 
-           id === 'lincoln-event-1' ? 'Lincoln' : 'Other',
-    startDate: new Date(Date.now() - 60 * 60 * 1000), // Started 1 hour ago
-    endDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
-    questions: {
-      pages: [
-        {
-          name: "page1",
-          elements: [
-            {
-              type: "text",
-              name: "firstName",
-              title: "What is your first name?",
-              isRequired: true
-            },
-            {
-              type: "text", 
-              name: "lastName",
-              title: "What is your last name?",
-              isRequired: true
-            },
-            {
-              type: "radiogroup",
-              name: "vehicleInterest",
-              title: id === 'ford-event-1' ? "Which Ford F-150 Lightning feature interests you most?" : "What interests you most about this vehicle?",
-              choices: id === 'ford-event-1' ? [
-                "All-electric powertrain",
-                "Pro Power Onboard capability", 
-                "Intelligent Range technology",
-                "Advanced towing features",
-                "Ford Co-Pilot360 technology"
-              ] : [
-                "Performance",
-                "Technology",
-                "Design",
-                "Safety",
-                "Value"
-              ],
-              isRequired: true
-            }
-          ]
-        },
-        {
-          name: "page2", 
-          elements: [
-            {
-              type: "rating",
-              name: "overallExperience",
-              title: "How would you rate your overall experience?",
-              rateMin: 1,
-              rateMax: 5,
-              minRateDescription: "Poor",
-              maxRateDescription: "Excellent",
-              isRequired: true
-            },
-            {
-              type: "comment",
-              name: "feedback",
-              title: "Please share any additional feedback:",
-              rows: 4
-            },
-            {
-              type: "boolean",
-              name: "recommend",
-              title: "Would you recommend this to others?",
-              isRequired: true
-            }
-          ]
-        }
-      ]
-    },
-    theme: { cssVariables: {} },
-  };
+  // Parse the event data from navigation params
+  let event: ExpanseEvent;
+  
+  if (eventData) {
+    try {
+      // Parse the JSON event data passed from EventListScreen
+      event = JSON.parse(eventData);
+      console.log('Survey Page: Using event data from navigation params:', event.name);
+      console.log('Survey Page: Event has questions:', !!event.questions);
+      console.log('Survey Page: Event has surveyJSON:', !!event.surveyJSON);
+      console.log('Survey Page: Event has surveyJSModel:', !!event.surveyJSModel);
+      console.log('Survey Page: Questions preview:', JSON.stringify(event.questions || {}).substring(0, 200));
+      console.log('Survey Page: SurveyJSON preview:', JSON.stringify(event.surveyJSON || {}).substring(0, 200));
+    } catch (error) {
+      console.error('Failed to parse event data:', error);
+      // Fallback to a basic event structure if parsing fails
+      event = {
+        id: id || 'unknown',
+        name: 'Survey',
+        brand: 'Other',
+        startDate: new Date(),
+        endDate: new Date(),
+        questions: { pages: [] },
+        theme: { cssVariables: {} },
+      };
+    }
+  } else {
+    // If no event data passed, create a minimal event structure
+    console.log('Survey Page: No event data provided, using minimal structure');
+    event = {
+      id: id || 'unknown', 
+      name: 'Survey',
+      brand: 'Other',
+      startDate: new Date(),
+      endDate: new Date(),
+      questions: { pages: [] },
+      theme: { cssVariables: {} },
+    };
+  }
 
   const handleSurveyComplete = async (data: any) => {
     console.log('Survey completed:', data);
     // Handle survey completion
   };
 
-  const handleSurveyAbandoned = (event: ExpanseEvent) => {
-    console.log('Survey abandoned for event:', event.id);
+  const handleSurveyAbandoned = (abandonedEvent: ExpanseEvent) => {
+    console.log('Survey abandoned for event:', abandonedEvent.id);
     // Handle survey abandonment
   };
 
   return (
     <SurveyScreen
-      event={mockEvent}
+      event={event}
       onSurveyComplete={handleSurveyComplete}
       onSurveyAbandoned={handleSurveyAbandoned}
     />

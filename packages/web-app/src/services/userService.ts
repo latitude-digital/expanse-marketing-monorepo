@@ -11,6 +11,7 @@ export interface UserData {
   email: string;
   displayName: string;
   role: 'user' | 'admin';
+  tags?: string[];
   isTestAccount?: boolean;
   createdAt?: any;
   updatedAt?: any;
@@ -56,6 +57,7 @@ class UserService {
           email: userData.email || user.email || '',
           displayName: userData.displayName || user.displayName || '',
           role: userData.role || 'user',
+          tags: userData.tags || [],
           isTestAccount: userData.isTestAccount,
           createdAt: userData.createdAt,
           updatedAt: userData.updatedAt

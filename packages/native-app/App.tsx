@@ -7,7 +7,6 @@ import { View, StyleSheet, Text, ActivityIndicator } from 'react-native';
 
 // Screens
 import EventListScreen from './src/screens/EventListScreen';
-import EventDetailScreen from './src/screens/EventDetailScreen';
 import SurveyScreen from './src/screens/SurveyScreen';
 
 // Components
@@ -233,15 +232,6 @@ export default function App() {
               />
             )}
           </Stack.Screen>
-          
-          <Stack.Screen 
-            name="EventDetail" 
-            component={EventDetailScreen}
-            options={({ route }: any) => ({
-              title: (route.params as any)?.event?.name || 'Event Details',
-              headerShown: true,
-            })}
-          />
           
           <Stack.Screen 
             name="Survey" 

@@ -51,8 +51,11 @@ export const eventsService = {
           locked: data.locked || false,
           template: data.template,
           brandConfig: data.brandConfig,
-          questions: data.questions || { pages: [] },
-          theme: data.theme || { cssVariables: {} },
+          questions: data.questions || data.surveyJSON || { pages: [] },
+          surveyJSON: data.surveyJSON || data.questions || { pages: [] },
+          surveyJSModel: data.surveyJSModel || data.surveyJSON || data.questions || { pages: [] },
+          theme: data.theme || data.surveyJSTheme || { cssVariables: {} },
+          surveyJSTheme: data.surveyJSTheme || data.theme || { cssVariables: {} },
         };
       });
 
@@ -93,8 +96,11 @@ export const eventsService = {
               locked: data.locked || false,
               template: data.template,
               brandConfig: data.brandConfig,
-              questions: data.questions || { pages: [] },
-              theme: data.theme || { cssVariables: {} },
+              questions: data.questions || data.surveyJSON || { pages: [] },
+              surveyJSON: data.surveyJSON || data.questions || { pages: [] },
+              surveyJSModel: data.surveyJSModel || data.surveyJSON || data.questions || { pages: [] },
+              theme: data.theme || data.surveyJSTheme || { cssVariables: {} },
+              surveyJSTheme: data.surveyJSTheme || data.theme || { cssVariables: {} },
             };
           });
           callback(events);

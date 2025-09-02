@@ -13,11 +13,13 @@ import {
 // Auth provider
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import EventAccessRoute from './components/auth/EventAccessRoute';
 import SessionProvider from './components/auth/SessionProvider';
 
 // screens
 import App from './App';
 import Home from './screens/Home';
+import UserHome from './screens/UserHome';
 import Experiential from './screens/Experiential';
 import CheckIn from './screens/CheckIn';
 import CheckOut from './screens/CheckOut';
@@ -69,6 +71,7 @@ root.render(
         <Routes>
           <Route path="/" element={<App />}>
           <Route index element={<Home />} />
+          <Route path="home" element={<ProtectedRoute><UserHome /></ProtectedRoute>} />
           <Route path="login" element={<Login />} />
           <Route path="welcome" element={<Login />} />
           <Route path="auth" element={<Login />} />
@@ -78,13 +81,13 @@ root.render(
           <Route path="ford/:eventID" element={<Experiential />} />
           <Route path="s/:eventID/" element={<Survey />} />
           <Route path="s/:eventID/in/login" element={<Login />} />
-          <Route path="s/:eventID/in" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
+          <Route path="s/:eventID/in" element={<ProtectedRoute><EventAccessRoute><CheckIn /></EventAccessRoute></ProtectedRoute>} />
           <Route path="s/:eventID/out/login" element={<Login />} />
-          <Route path="s/:eventID/out" element={<ProtectedRoute><CheckOut /></ProtectedRoute>} />
+          <Route path="s/:eventID/out" element={<ProtectedRoute><EventAccessRoute><CheckOut /></EventAccessRoute></ProtectedRoute>} />
           <Route path="s/:eventID/p/:preSurveyID" element={<Survey />} />
-          <Route path="s/:eventID/stats" element={<ProtectedRoute><Stats /></ProtectedRoute>} />
+          <Route path="s/:eventID/stats" element={<ProtectedRoute><EventAccessRoute><Stats /></EventAccessRoute></ProtectedRoute>} />
           <Route path="s/:eventID/stats/login" element={<Login />} />
-          <Route path="s/:eventID/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="s/:eventID/dashboard" element={<ProtectedRoute><EventAccessRoute><Dashboard /></EventAccessRoute></ProtectedRoute>} />
           <Route path="s/:eventID/dashboard/login" element={<Login />} />
           <Route path="thanks" element={<Thanks />} />
 

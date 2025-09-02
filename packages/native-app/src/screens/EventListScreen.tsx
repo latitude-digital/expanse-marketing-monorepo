@@ -165,7 +165,14 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
     if (onEventPress) {
       onEventPress(event);
     } else {
-      router.push(`/event/${event.id}`);
+      // Navigate directly to survey screen with full event data
+      router.push({
+        pathname: `/survey/[id]`,
+        params: { 
+          id: event.id,
+          eventData: JSON.stringify(event) // Pass the entire event as JSON
+        }
+      });
     }
   };
 
