@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { httpsCallable } from 'firebase/functions';
 import functions from '../services/functions';
-import { getFirebaseFunctionName } from '../utils/getFirebaseFunctionPrefix';
 import moment from 'moment';
 
 interface ExpanseEvent {
@@ -43,7 +42,7 @@ export default function LincolnCharityEvents() {
             // Call Firebase function to get Lincoln charity events
             const getLincolnCharityEvents = httpsCallable<{ tagId: string }, ExpanseEvent[]>(
                 functions,
-                getFirebaseFunctionName('getLincolnCharityEvents')
+                'getLincolnCharityEvents'
             );
             
             const result = await getLincolnCharityEvents({ tagId });

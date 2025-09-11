@@ -61,139 +61,34 @@ if (process.env.FIRESTORE_EMULATOR_HOST) {
   logger.info(`Firestore emulator detected at: ${process.env.FIRESTORE_EMULATOR_HOST}`);
 }
 
-// Create function implementations with proper database parameter
-// Functions that don't use Firestore
-const setCloudFrontCookies = realCloudFrontImpl;
-const generateCreatorUploadUrl = generateCreatorUploadUrlImpl;
-const generateRespondentUploadUrl = generateRespondentUploadUrlImpl;
-
-// Create separate instances for staging and production for functions that use Firestore
-// Functions from functions.ts
-const getBroncoRankStaging = getBroncoRankImpl(app, "staging");
-const getBroncoRankProd = getBroncoRankImpl(app, "(default)");
-
-const checkSurveyLimitStaging = checkSurveyLimitImpl(app, "staging");
-const checkSurveyLimitProd = checkSurveyLimitImpl(app, "(default)");
-
-const validateSurveyLimitStaging = validateSurveyLimitImpl(app, "staging");
-const validateSurveyLimitProd = validateSurveyLimitImpl(app, "(default)");
-
-const getLionsFollowupsStaging = getLionsFollowupsImpl(app, "staging");
-const getLionsFollowupsProd = getLionsFollowupsImpl(app, "(default)");
-
-const getLincolnCharityEventsStaging = getLincolnCharityEventsImpl(app, "staging");
-const getLincolnCharityEventsProd = getLincolnCharityEventsImpl(app, "(default)");
-
-// Functions from survey-functions.ts
-const getSurveyStaging = getSurveyImpl(app, "staging");
-const getSurveyProd = getSurveyImpl(app, "(default)");
-
-const saveSurveyStaging = saveSurveyImpl(app, "staging");
-const saveSurveyProd = saveSurveyImpl(app, "(default)");
-
-const checkInOutSurveyStaging = checkInOutSurveyImpl(app, "staging");
-const checkInOutSurveyProd = checkInOutSurveyImpl(app, "(default)");
-
-// Email functions - need to check if they use Firestore
-const validateEmail = sparkpostValidateEmailImpl(app);
-const createNewUser = sparkpostCreateNewUserImpl(app);
-const fetchSparkPostTemplates = fetchSparkPostTemplatesImpl(app);
-
-// Create separate instances for staging and production
-const getFordLincolnEventsStaging = getFordLincolnEventsImpl(app, "staging");
-const getEventSurveysStaging = getEventSurveysImpl(app, "staging");
-const reuploadEventSurveysStaging = reuploadEventSurveysImpl(app, "staging");
-
-const getFordLincolnEventsProd = getFordLincolnEventsImpl(app, "(default)");
-const getEventSurveysProd = getEventSurveysImpl(app, "(default)");
-const reuploadEventSurveysProd = reuploadEventSurveysImpl(app, "(default)");
-
-// User management functions
-const listUsers = listUsersImpl(app);
-const setAdminClaim = setAdminClaimImpl(app);
-const deleteUser = deleteUserImpl(app);
-const updateUserTags = updateUserTagsImpl(app);
-
-// Task-based functions (these don't need app parameter)
-// Create different trigger instances for staging and production
-const stagingSurveyTrigger = surveyTriggerImpl("staging");
-const productionSurveyTrigger = surveyTriggerImpl("(default)");
-const queuedReporting = queuedReportingImpl();
-// const sendFordSurveys = sendFordSurveysImpl();
-const autoCheckOut = autoCheckOutImpl();
-const scheduledEmail = scheduledEmailImpl();
-
-// Bookeo functions
-const getBookeoProducts = getBookeoProductsImpl(app);
-const getBookeoSlotsByProduct = getBookeoSlotsByProductImpl(app);
-const holdBookeoBooking = holdBookeoBookingImpl(app);
-const makeBookeoBooking = makeBookeoBookingImpl(app);
-
-// Export functions with explicit namespaces
-// Staging environment
-export const staging = {
-  getBroncoRank: getBroncoRankStaging,
-  setCloudFrontCookies,
-  checkSurveyLimit: checkSurveyLimitStaging,
-  validateSurveyLimit: validateSurveyLimitStaging,
-  getLionsFollowups: getLionsFollowupsStaging,
-  getLincolnCharityEvents: getLincolnCharityEventsStaging,
-  getSurvey: getSurveyStaging,
-  saveSurvey: saveSurveyStaging,
-  validateEmail,
-  checkInOutSurvey: checkInOutSurveyStaging,
-  createNewUser,
-  fetchSparkPostTemplates,
-  generateCreatorUploadUrl,
-  generateRespondentUploadUrl,
-  surveyTrigger: stagingSurveyTrigger,
-  queuedReporting,
-  // sendFordSurveys,
-  autoCheckOut,
-  scheduledEmail,
-  getBookeoProducts,
-  getBookeoSlotsByProduct,
-  holdBookeoBooking,
-  makeBookeoBooking,
-  getFordLincolnEvents: getFordLincolnEventsStaging,
-  getEventSurveys: getEventSurveysStaging,
-  reuploadEventSurveys: reuploadEventSurveysStaging,
-  listUsers,
-  setAdminClaim,
-  deleteUser,
-  updateUserTags
-};
-
-// Production environment
-export const prod = {
-  getBroncoRank: getBroncoRankProd,
-  setCloudFrontCookies,
-  checkSurveyLimit: checkSurveyLimitProd,
-  validateSurveyLimit: validateSurveyLimitProd,
-  getLionsFollowups: getLionsFollowupsProd,
-  getLincolnCharityEvents: getLincolnCharityEventsProd,
-  getSurvey: getSurveyProd,
-  saveSurvey: saveSurveyProd,
-  validateEmail,
-  checkInOutSurvey: checkInOutSurveyProd,
-  createNewUser,
-  fetchSparkPostTemplates,
-  generateCreatorUploadUrl,
-  generateRespondentUploadUrl,
-  surveyTrigger: productionSurveyTrigger,
-  queuedReporting,
-  // sendFordSurveys,
-  autoCheckOut,
-  scheduledEmail,
-  getBookeoProducts,
-  getBookeoSlotsByProduct,
-  holdBookeoBooking,
-  makeBookeoBooking,
-  getFordLincolnEvents: getFordLincolnEventsProd,
-  getEventSurveys: getEventSurveysProd,
-  reuploadEventSurveys: reuploadEventSurveysProd,
-  listUsers,
-  setAdminClaim,
-  deleteUser,
-  updateUserTags
-};
+// Export functions directly without namespaces
+// Since we have separate projects for staging and prod, we don't need database parameters
+export const getBroncoRank = getBroncoRankImpl(app, "(default)");
+export const setCloudFrontCookies = realCloudFrontImpl;
+export const checkSurveyLimit = checkSurveyLimitImpl(app, "(default)");
+export const validateSurveyLimit = validateSurveyLimitImpl(app, "(default)");
+export const getLionsFollowups = getLionsFollowupsImpl(app, "(default)");
+export const getLincolnCharityEvents = getLincolnCharityEventsImpl(app, "(default)");
+export const getSurvey = getSurveyImpl(app, "(default)");
+export const saveSurvey = saveSurveyImpl(app, "(default)");
+export const validateEmail = sparkpostValidateEmailImpl(app);
+export const checkInOutSurvey = checkInOutSurveyImpl(app, "(default)");
+export const createNewUser = sparkpostCreateNewUserImpl(app);
+export const fetchSparkPostTemplates = fetchSparkPostTemplatesImpl(app);
+export const generateCreatorUploadUrl = generateCreatorUploadUrlImpl;
+export const generateRespondentUploadUrl = generateRespondentUploadUrlImpl;
+export const surveyTrigger = surveyTriggerImpl("(default)");
+export const queuedReporting = queuedReportingImpl();
+export const autoCheckOut = autoCheckOutImpl();
+export const scheduledEmail = scheduledEmailImpl();
+export const getBookeoProducts = getBookeoProductsImpl(app);
+export const getBookeoSlotsByProduct = getBookeoSlotsByProductImpl(app);
+export const holdBookeoBooking = holdBookeoBookingImpl(app);
+export const makeBookeoBooking = makeBookeoBookingImpl(app);
+export const getFordLincolnEvents = getFordLincolnEventsImpl(app, "(default)");
+export const getEventSurveys = getEventSurveysImpl(app, "(default)");
+export const reuploadEventSurveys = reuploadEventSurveysImpl(app, "(default)");
+export const listUsers = listUsersImpl(app);
+export const setAdminClaim = setAdminClaimImpl(app);
+export const deleteUser = deleteUserImpl(app);
+export const updateUserTags = updateUserTagsImpl(app);

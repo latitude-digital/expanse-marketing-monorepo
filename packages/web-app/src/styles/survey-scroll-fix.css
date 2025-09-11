@@ -1,0 +1,84 @@
+/**
+ * Survey Scroll Fix
+ * Fixes nested scrolling issue where SurveyJS creates internal scrollable containers
+ * instead of allowing the survey to expand naturally and make the page taller.
+ */
+
+/* Fix Lincoln theme scrolling */
+.lincoln_light,
+.lincoln_dark {
+  /* Remove fixed height and overflow that creates internal scrollbars */
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  overflow-y: visible !important;
+}
+
+/* Fix Ford theme scrolling */
+.ford_light,
+.ford_dark {
+  /* Remove fixed height and overflow that creates internal scrollbars */
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  overflow-y: visible !important;
+}
+
+/* Fix SurveyJS internal scroll containers */
+.sv-scroll__scroller,
+.sv-scroll__scroller.sv-drag-target-skipped {
+  /* Allow natural expansion instead of internal scrolling */
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  overflow-y: visible !important;
+}
+
+/* Hide SurveyJS scrollbar elements */
+.sv-scroll__scrollbar {
+  display: none !important;
+}
+
+/* Ensure survey container expands naturally */
+.sv-container-modern {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Fix for any generic survey containers that might have height constraints */
+.sv_main,
+.sv-root-modern,
+.sd-root-modern {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Ensure the survey body expands properly */
+.sv-body {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Fix for the main survey wrapper */
+#fd-nxt {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Fix for the overall survey component */
+.gdux-ford {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Ensure page-level containers allow natural expansion */
+.app,
+.layout-base {
+  height: auto !important;
+  min-height: 100vh;
+}

@@ -31,6 +31,7 @@ import { StyledTextField } from "@ui/ford-ui-components";
 import logo from '../assets/ford-signature.svg';
 import globeIcon from '../assets/icons/ford/globe.svg';
 import "survey-core/survey-core.min.css";
+import "../styles/survey-scroll-fix.css";
 import { prepareForSurvey, prepareSurveyOnQuestionAdded } from "../helpers/surveyTemplatesAll";
 import GlobalFooter from "../components/GlobalFooter";
 import { uploadSurveyToAPI } from '@meridian-event-tech/shared';
@@ -356,6 +357,7 @@ const SurveyComponent: React.FC = () => {
               setTimeout(() => {
                 const errorSelectors = [
                   '.fds-question-error', // FDS brands
+                  '.sv-question--has-error', // SurveyJS error containers
                   '.sd-question__erbox:not(:empty)', // SurveyJS v2 errors  
                   '.sv-string-viewer--error', // SurveyJS error text
                   '.sv_q_erbox:not(:empty)' // SurveyJS v1 errors
@@ -418,6 +420,7 @@ const SurveyComponent: React.FC = () => {
                 // For non-FDS brands, look for standard SurveyJS error elements
                 const errorSelectors = [
                   '.fds-question-error', // FDS brands
+                  '.sv-question--has-error', // SurveyJS error containers
                   '.sd-question__erbox:not(:empty)', // SurveyJS v2 errors
                   '.sv-string-viewer--error', // SurveyJS error text
                   '.sv_q_erbox:not(:empty)' // SurveyJS v1 errors (fallback)
@@ -793,6 +796,7 @@ const SurveyComponent: React.FC = () => {
                     // Check if there are visible errors on the page
                     const errorSelectors = [
                       '.fds-question-error', // FDS brands
+                      '.sv-question--has-error', // SurveyJS error containers
                       '.sd-question__erbox:not(:empty)', // SurveyJS v2 errors
                       '.sv-string-viewer--error', // SurveyJS error text
                       '.sv_q_erbox:not(:empty)', // SurveyJS v1 errors
@@ -939,6 +943,7 @@ const SurveyComponent: React.FC = () => {
                 // Find first error element based on brand
                 const errorSelectors = [
                   '.fds-question-error', // FDS brands
+                  '.sv-question--has-error', // SurveyJS error containers
                   '.sd-question__erbox:not(:empty)', // SurveyJS v2 errors
                   '.sv-string-viewer--error', // SurveyJS error text
                   '.sv_q_erbox:not(:empty)', // SurveyJS v1 errors

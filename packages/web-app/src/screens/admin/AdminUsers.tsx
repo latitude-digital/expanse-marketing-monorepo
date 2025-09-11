@@ -7,7 +7,6 @@ import { ChevronDownIcon, XMarkIcon } from '@heroicons/react/20/solid';
 import db from '../../services/firestore';
 import app from '../../services/firebase';
 import functions from '../../services/functions';
-import { getFirebaseFunctionName } from '../../utils/getFirebaseFunctionPrefix';
 // Import FontAwesome SVG icons as URLs
 import UserIconUrl from '@fontawesome/regular/user.svg';
 import UserPlusIconUrl from '@fontawesome/regular/user-plus.svg';
@@ -260,7 +259,7 @@ export default function AdminUsers() {
     const loadUsers = async () => {
         try {
             // Call Cloud Function to list all users from Auth
-            const listUsers = httpsCallable(functions, getFirebaseFunctionName('listUsers'));
+            const listUsers = httpsCallable(functions, 'listUsers');
             const result = await listUsers();
             const authUsers = (result.data as any).users || [];
             
@@ -306,7 +305,7 @@ export default function AdminUsers() {
     const toggleAdminStatus = async (userId: string, currentStatus: boolean) => {
         try {
             // Call a cloud function to update admin status
-            const setAdminClaim = httpsCallable(functions, getFirebaseFunctionName('setAdminClaim'));
+            const setAdminClaim = httpsCallable(functions, 'setAdminClaim');
             await setAdminClaim({ userId, admin: !currentStatus });
             
             // Update local state
@@ -326,7 +325,7 @@ export default function AdminUsers() {
         
         try {
             // Call Cloud Function to delete user
-            const deleteUser = httpsCallable(functions, getFirebaseFunctionName('deleteUser'));
+            const deleteUser = httpsCallable(functions, 'deleteUser');
             await deleteUser({ userId });
             setUsers(users.filter(u => u.uid !== userId));
         } catch (error) {
@@ -352,7 +351,7 @@ export default function AdminUsers() {
             if (editingUser) {
                 // Update admin status if changed
                 if (editingUser.isAdmin !== formData.isAdmin) {
-                    const setAdminClaim = httpsCallable(functions, getFirebaseFunctionName('setAdminClaim'));
+                    const setAdminClaim = httpsCallable(functions, 'setAdminClaim');
                     await setAdminClaim({ 
                         userId: editingUser.uid, 
                         admin: formData.isAdmin 
@@ -378,7 +377,7 @@ export default function AdminUsers() {
                 }
                 
                 // Call Cloud Function to create user
-                const createNewUser = httpsCallable(functions, getFirebaseFunctionName('createNewUser'));
+                const createNewUser = httpsCallable(functions, 'createNewUser');
                 const result = await createNewUser({
                     email: formData.email!,
                     password: password,
@@ -396,7 +395,7 @@ export default function AdminUsers() {
                 // Set admin claim if needed via Cloud Function
                 if (formData.isAdmin) {
                     try {
-                        const setAdminClaim = httpsCallable(functions, getFirebaseFunctionName('setAdminClaim'));
+                        const setAdminClaim = httpsCallable(functions, 'setAdminClaim');
                         await setAdminClaim({ userId, admin: true });
                     } catch (error) {
                         console.error('Failed to set admin claim:', error);

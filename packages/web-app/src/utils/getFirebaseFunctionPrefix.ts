@@ -1,30 +1,15 @@
 /**
- * Determines the correct Firebase function prefix based on the current environment.
+ * No longer adds prefixes - we use separate Firebase projects for staging and prod
  * 
- * - Production (survey.expansemarketing.com) uses 'prod-' prefix
- * - Staging (survey.staging.expansemarketing.com) uses 'staging-' prefix
- * - Local development uses 'staging-' prefix by default
+ * @deprecated No longer needed - functions are called without prefixes
  */
 export function getFirebaseFunctionPrefix(): string {
-  const hostname = window.location.hostname;
-  
-  // Production environment
-  if (hostname === 'survey.expansemarketing.com') {
-    return 'prod-';
-  }
-  
-  // Staging environment
-  if (hostname === 'survey.staging.expansemarketing.com') {
-    return 'staging-';
-  }
-  
-  // Local development or other environments default to staging
-  return 'staging-';
+  return '';
 }
 
 /**
- * Helper function to get the full function name with the correct prefix
+ * Helper function to get the function name (no longer adds prefix)
  */
 export function getFirebaseFunctionName(functionName: string): string {
-  return `${getFirebaseFunctionPrefix()}${functionName}`;
+  return functionName;
 }

@@ -30,7 +30,7 @@ import { shouldLoadFDS, getBrandTheme, normalizeBrand } from '../../utils/brandU
 import { initializeFDSForBrand } from '../../helpers/fdsInitializer';
 import { AllSurveys, FMCSurveys } from '../../surveyjs_questions';
 import FordSurveysNew from '../../surveyjs_questions/FordSurveysNew';
-import LincolnSurveysNew from '../../surveyjs_questions/LincolnSurveysNew';
+import LincolnSurveys from '../../surveyjs_questions/LincolnSurveys';
 
 // Register SurveyJS themes for theme editor functionality
 registerSurveyTheme(SurveyTheme); // Add predefined Form Library UI themes
@@ -131,7 +131,7 @@ function DashboardScreen() {
                     console.log(`FDS and Ford-specific questions initialized for ${eventBrand} event`);
                 } else if (eventBrand === 'Lincoln') {
                     await initializeFDSForBrand(eventBrand);
-                    // The FDS initializer already calls FMCSurveys.fmcInit() and LincolnSurveysNew.lincolnInit()
+                    // The FDS initializer already calls FMCSurveys.fmcInit() and LincolnSurveys.lincolnInit()
                     console.log(`FDS and Lincoln-specific questions initialized for ${eventBrand} event`);
                 } else {
                     // For non-branded events, only universal questions are initialized

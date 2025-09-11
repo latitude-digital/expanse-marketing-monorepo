@@ -20,7 +20,7 @@ export const getLincolnCharityEventsImpl = (app: admin.app.App, database: string
             cors: true,
             maxInstances: 10,
         },
-        (async (request) => {
+        (async (request: any) => {
             const { tagId } = request.data;
 
             if (!tagId) {

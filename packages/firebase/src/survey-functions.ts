@@ -54,6 +54,41 @@ export const getSurveyImpl = (app: admin.app.App, database: string = "(default)"
         
         const eventData = eventDoc.data();
         
+        // Validate event dates before proceeding
+        // if event/preReg hasn't started
+        if (
+          moment
+              .tz(
+                  eventData.preRegDate?.toDate() || eventData.startDate.toDate(),
+                  eventData.timeZone || "America/New_York"
+              )
+              .startOf("day")
+              .toDate() > new Date()
+        ) {
+          res.status(403).json({
+            success: false,
+            error: "Event has not started yet"
+          });
+          return;
+        }
+
+        // if event ended
+        if (
+          moment
+              .tz(
+                  eventData.endDate.toDate(),
+                  eventData.timeZone || "America/Los_Angeles"
+              )
+              .endOf("day")
+              .toDate() < new Date()
+        ) {
+          res.status(403).json({
+            success: false,
+            error: "Event has ended"
+          });
+          return;
+        }
+        
         // Convert Firestore timestamps to ISO strings
         const event = {
           ...eventData,
@@ -138,7 +173,7 @@ export const saveSurveyImpl = (app: admin.app.App, database: string = "(default)
     const {eventID, survey} = req.body;
 
     try {
-      const db = getFirestoreDb(app);
+      const db = getFirestoreDatabase(app, database);
       const doc = await db
           .collection("events")
           .doc(eventID)
@@ -271,7 +306,7 @@ export const checkInOutSurveyImpl = (app: admin.app.App, database: string = "(de
     }
 
     try {
-      const db = getFirestoreDb(app);
+      const db = getFirestoreDatabase(app, database);
       
       // Update the survey with the provided data
       await db

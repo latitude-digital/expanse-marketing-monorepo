@@ -138,16 +138,13 @@ const lincolnInit = () => {
    */
   // Register lincolnoptin if it doesn't exist
   if (!ComponentCollection.Instance.getCustomQuestionByName("lincolnoptin")) {
+    console.log('Registering Lincoln optin question type...');
     ComponentCollection.Instance.add({
       name: "lincolnoptin",
       title: "Lincoln Opt-In",
       iconName: "icon-thumbs-up",
       showInToolbox: true,
       inheritBaseProps: true,
-      onInit: () => {
-        setPropertyReadOnly("lincolnoptin", "name");
-        setPropertyReadOnly("lincolnoptin", "_ffs");
-      },
       questionJSON: {
         type: "radiogroup",
         title: {
@@ -161,26 +158,16 @@ const lincolnInit = () => {
           fr: "Lincoln respecte votre vie privée et traite vos informations personnelles avec soin. [Cliquez ici pour lire la politique de confidentialité de Lincoln.](https://lincoln.com/help/privacy/)",
         },
         descriptionLocation: "underInput",
-        renderAs: "radiobuttongroup",
-        buttonSize: "medium",
-        name: "email_opt_in",
         isRequired: true,
+        renderAs: "radiobuttongroup",
         choices: [
           {
             value: 1,
-            text: {
-              en: "Yes",
-              es: "Sí",
-              fr: "Oui",
-            },
+            text: "Yes",
           },
           {
             value: 0,
-            text: {
-              en: "No",
-              es: "No",
-              fr: "Non",
-            },
+            text: "No",
           },
         ],
       },

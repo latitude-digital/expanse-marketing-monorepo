@@ -1,7 +1,6 @@
 {
   "projects": {
-    "dev": "latitude-lead-system",
-    "staging": "latitude-lead-system",
+    "staging": "latitude-leads-staging",
     "prod": "latitude-lead-system"
   }
 }

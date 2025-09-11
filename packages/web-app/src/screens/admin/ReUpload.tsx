@@ -6,7 +6,6 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 import Dialog from '../../components/Dialog';
 import Button from '../../components/Button';
 import { LoadingStates } from '../../components/LoadingStates';
-import { getFirebaseFunctionName } from '../../utils/getFirebaseFunctionPrefix';
 
 interface Event {
   id: string;
@@ -64,7 +63,7 @@ const ReUploadModal: React.FC<ReUploadModalProps> = ({ event, isOpen, onClose })
 
     try {
       // Call the new server-side Firebase function to handle re-upload
-      const reuploadFunction = httpsCallable(functions, getFirebaseFunctionName('reuploadEventSurveys'));
+      const reuploadFunction = httpsCallable(functions, 'reuploadEventSurveys');
       const result = await reuploadFunction({ eventId: event.id });
       const uploadResults = (result.data as any).results;
       
@@ -203,7 +202,7 @@ const ReUpload: React.FC = () => {
   const loadEvents = async () => {
     try {
       setLoadingEvents(true);
-      const getEvents = httpsCallable(functions, getFirebaseFunctionName('getFordLincolnEvents'));
+      const getEvents = httpsCallable(functions, 'getFordLincolnEvents');
       const result = await getEvents();
       const eventsData = (result.data as any).events || [];
       
