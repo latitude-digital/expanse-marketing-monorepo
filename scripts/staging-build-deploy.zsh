@@ -117,7 +117,7 @@ if $DEPLOY_WEB; then
 
     # Step 7: Build the application
     echo -e "${YELLOW}🏗️  Building application${NC}"
-    pnpm --filter @expanse/web-app build:staging
+    pnpm --filter @meridian-event-tech/web-app build:staging
     echo -e "${GREEN}✅ Application built${NC}"
 
     # Step 8: Deploy to S3
@@ -173,7 +173,7 @@ if $DEPLOY_FUNCTIONS; then
     # Run firebase-pnpm-workspaces explicitly before deployment
     echo -e "${BLUE}Bundling workspace dependencies...${NC}"
     rm -rf .firebase-pnpm-workspaces
-    npx firebase-pnpm-workspaces --filter @expanse/firebase
+    npx firebase-pnpm-workspaces --filter @meridian-event-tech/firebase
     
     # Deploy all functions to the staging project (no namespace needed)
     firebase deploy --only functions

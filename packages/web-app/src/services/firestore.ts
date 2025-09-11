@@ -13,8 +13,8 @@ if (isUsingEmulator) {
     // Emulator always uses default database
     databaseId = '(default)';
 } else if (isStaging) {
-    // Production/staging uses staging database
-    databaseId = 'staging';
+    // Production/staging uses default database
+    databaseId = '(default)';
 } else {
     // Everything else uses default
     databaseId = '(default)';

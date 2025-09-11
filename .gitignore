@@ -128,3 +128,5 @@ CLAUDE.local.md
 **/test-credentials.json
 test-credentials.json
 packages/firebase/.firebase-pnpm-workspaces
+packages/firebase/.env.latitude-lead-system
+packages/firebase/.env.latitude-leads-staging
