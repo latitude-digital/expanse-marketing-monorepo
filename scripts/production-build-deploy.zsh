@@ -169,7 +169,7 @@ if $DEPLOY_FUNCTIONS; then
     pnpm build
     echo -e "${GREEN}✅ Firebase Functions built${NC}"
 
-    # Step 12: Deploy Firebase Functions (prod namespace only)
+    # Step 12: Deploy Firebase Functions to production project
     echo -e "${YELLOW}🚀 Deploying Firebase Functions to production${NC}"
     
     # Run firebase-pnpm-workspaces explicitly before deployment
@@ -177,11 +177,10 @@ if $DEPLOY_FUNCTIONS; then
     rm -rf .firebase-pnpm-workspaces
     npx firebase-pnpm-workspaces --filter @expanse/firebase
     
-    # Now the package.json should have file: references instead of workspace:
-    # Deploy only prod functions (no need to specify --project since we're using the alias)
-    firebase deploy --only functions:prod
+    # Deploy all functions to the production project (no namespace needed)
+    firebase deploy --only functions
 
-    # Deploy Firestore rules and indexes to PRODUCTION database only using production config
+    # Deploy Firestore rules and indexes using production config
     firebase deploy --only firestore:rules,firestore:indexes --config firebase.production.json
     echo -e "${GREEN}✅ Firebase Functions deployed to production${NC}"
 
@@ -198,7 +197,7 @@ if $DEPLOY_WEB; then
     echo -e "${GREEN}Web App: https://survey.expansemarketing.com/${NC}"
 fi
 if $DEPLOY_FUNCTIONS; then
-    echo -e "${GREEN}Firebase Functions: Deployed to prod namespace${NC}"
+    echo -e "${GREEN}Firebase Functions: Deployed to latitude-lead-system project${NC}"
 fi
 echo -e "${GREEN}Version: ${VERSION_NUMBER}${NC}"
 echo -e "${GREEN}Build: ${BUILD_NUMBER}${NC}"

@@ -167,7 +167,7 @@ if $DEPLOY_FUNCTIONS; then
     pnpm build
     echo -e "${GREEN}✅ Firebase Functions built${NC}"
 
-    # Step 12: Deploy Firebase Functions (staging namespace only)
+    # Step 12: Deploy Firebase Functions to staging project
     echo -e "${YELLOW}🚀 Deploying Firebase Functions to staging${NC}"
     
     # Run firebase-pnpm-workspaces explicitly before deployment
@@ -175,11 +175,10 @@ if $DEPLOY_FUNCTIONS; then
     rm -rf .firebase-pnpm-workspaces
     npx firebase-pnpm-workspaces --filter @expanse/firebase
     
-    # Now the package.json should have file: references instead of workspace:
-    # Deploy only staging functions (no need to specify --project since we're using the alias)
-    firebase deploy --only functions:staging
+    # Deploy all functions to the staging project (no namespace needed)
+    firebase deploy --only functions
 
-    # Deploy Firestore rules and indexes to STAGING database only using staging config
+    # Deploy Firestore rules and indexes using staging config
     firebase deploy --only firestore:rules,firestore:indexes --config firebase.staging.json
     echo -e "${GREEN}✅ Firebase Functions deployed to staging${NC}"
 
@@ -196,7 +195,7 @@ if $DEPLOY_WEB; then
     echo -e "${GREEN}Web App: https://survey.staging.expansemarketing.com/${NC}"
 fi
 if $DEPLOY_FUNCTIONS; then
-    echo -e "${GREEN}Firebase Functions: Deployed to staging namespace${NC}"
+    echo -e "${GREEN}Firebase Functions: Deployed to latitude-leads-staging project${NC}"
 fi
 echo -e "${GREEN}Version: ${VERSION_NUMBER}${NC}"
 echo -e "${GREEN}Build: ${BUILD_NUMBER}${NC}"
