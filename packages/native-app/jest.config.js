@@ -19,8 +19,8 @@ module.exports = {
   ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    '^@expanse/shared/(.*)$': '<rootDir>/../shared/dist/$1',
-    '^@expanse/shared$': '<rootDir>/../shared/dist/index.js'
+    '^@meridian-event-tech/shared/(.*)$': '<rootDir>/../shared/dist/$1',
+    '^@meridian-event-tech/shared$': '<rootDir>/../shared/dist/index.js'
   },
   globals: {
     __DEV__: true

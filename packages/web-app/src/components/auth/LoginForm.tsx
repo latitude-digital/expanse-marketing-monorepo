@@ -207,13 +207,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onError }) => {
                     aria-describedby={errors.email && touched.email ? 'email-error' : undefined}
                   />
                 </div>
-                <ErrorMessage 
-                  id="email-error"
-                  name="email" 
-                  component="p" 
-                  className="mt-2 text-sm text-red-600" 
-                  role="alert"
-                />
+                <ErrorMessage name="email">
+                  {msg => (
+                    <p id="email-error" className="mt-2 text-sm text-red-600" role="alert">
+                      {msg}
+                    </p>
+                  )}
+                </ErrorMessage>
               </div>
 
               {/* Password field */}
@@ -246,13 +246,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onError }) => {
                     aria-describedby={errors.password && touched.password ? 'password-error' : undefined}
                   />
                 </div>
-                <ErrorMessage 
-                  id="password-error"
-                  name="password" 
-                  component="p" 
-                  className="mt-2 text-sm text-red-600" 
-                  role="alert"
-                />
+                <ErrorMessage name="password">
+                  {msg => (
+                    <p id="password-error" className="mt-2 text-sm text-red-600" role="alert">
+                      {msg}
+                    </p>
+                  )}
+                </ErrorMessage>
               </div>
 
               {/* Remember me checkbox and forgot password link */}

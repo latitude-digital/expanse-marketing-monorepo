@@ -1,7 +1,7 @@
 import { LincolnSurveyPayload, createDefaultLincolnPayload } from '../types/lincoln';
 import { Model } from 'survey-core';
-import { ExpanseEvent } from '../types/expanse';
-import { SurveyData, CustomSurveyData } from '../types/survey';
+import { MeridianEvent } from '../types/meridian-event';
+import { MeridianSurveyData as SurveyData, CustomSurveyData } from '../types/core';
 
 /**
  * Maps SurveyJS data and question FFS/custom fields to a Lincoln API-compliant payload.
@@ -9,7 +9,7 @@ import { SurveyData, CustomSurveyData } from '../types/survey';
  * @param surveyData The raw survey data object
  * @param event (optional) event data for event_id etc.
  */
-export function mapToLincolnPayload(survey: Model, surveyData: SurveyData, event?: ExpanseEvent): LincolnSurveyPayload {
+export function mapToLincolnPayload(survey: Model, surveyData: SurveyData, event?: MeridianEvent): LincolnSurveyPayload {
   console.log('[Lincoln Mapper] Starting mapping with survey questions count:', survey.getAllQuestions().length);
   console.log('[Lincoln Mapper] Survey data keys:', Object.keys(surveyData));
   
@@ -77,6 +77,15 @@ export function mapToLincolnPayload(survey: Model, surveyData: SurveyData, event
           ffsData[ffsKey] = questionValue;
         } else {
           ffsData[ffsKey] = null;
+        }
+      } else if (ffsKey === 'vehiclesDriven') {
+        // Normalize to API field 'vehicles_driven' (snake_case) expected by v13
+        if (typeof questionValue === 'string') {
+          (ffsData as any)['vehicles_driven'] = [questionValue];
+        } else if (Array.isArray(questionValue)) {
+          (ffsData as any)['vehicles_driven'] = questionValue as string[];
+        } else {
+          (ffsData as any)['vehicles_driven'] = null;
         }
       } else if (ffsKey === 'emailOptIn') {
         // Email opt-in should be a number (0 or 1)

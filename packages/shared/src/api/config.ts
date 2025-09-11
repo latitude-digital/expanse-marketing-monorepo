@@ -3,7 +3,7 @@
  * Central configuration for all API endpoints
  */
 
-import { Environment } from './types';
+import type { Environment } from './types';
 import { FORD_BASE_URLS, FORD_ENDPOINTS, FORD_AUTH_TOKEN, getFordApiUrl } from './ford';
 import { LINCOLN_BASE_URLS, LINCOLN_ENDPOINTS, LINCOLN_AUTH_TOKEN, getLincolnApiUrl } from './lincoln';
 
@@ -46,10 +46,8 @@ export function normalizeBrand(brand?: string | null): 'Ford' | 'Lincoln' | 'Oth
 }
 
 // Export everything for convenience
+export type { Environment };
 export {
-  // Types
-  Environment,
-  
   // Ford configuration
   FORD_BASE_URLS,
   FORD_ENDPOINTS,

@@ -52,8 +52,8 @@ export const initCreatorLincoln = (creator: SurveyCreatorModel) => {
   initThemeLincoln(creator);
 
   const enLocale = editorLocalization.getLocale("en");
-  enLocale.toolboxCategories["__lincolnCategory"] = "Lincoln Questions";
-  enLocale.toolboxCategories["__0fmc"] = "FMC Questions";
+  enLocale.toolboxCategories["__02lincolnCategory"] = "Lincoln Questions";
+  enLocale.toolboxCategories["__01fmc"] = "FMC Questions";
 
   // Manually add Lincoln questions to the toolbox if they're not already there
   // This is needed because questions registered via the universal system after
@@ -77,7 +77,7 @@ export const initCreatorLincoln = (creator: SurveyCreatorModel) => {
   const lincolnQuestions = Object.keys(lincolnQuestionConfig);
 
   // Check if Lincoln questions exist and assign them to the category
-  const categoriesToChange = [];
+  const categoriesToChange: Array<{ name: string; category: string }> = [];
   lincolnQuestions.forEach(questionName => {
     let item = creator.toolbox.getItemByName(questionName);
     if (!item) {
@@ -89,11 +89,11 @@ export const initCreatorLincoln = (creator: SurveyCreatorModel) => {
         title: config.title,
         iconName: config.icon,
         json: { type: questionName },
-        category: "__lincolnCategory"
+        category: "__02lincolnCategory"
       });
       console.log(`Manually added Lincoln question '${questionName}' to toolbox`);
     } else {
-      categoriesToChange.push({ name: questionName, category: "__lincolnCategory" });
+      categoriesToChange.push({ name: questionName, category: "__02lincolnCategory" });
     }
   });
 
@@ -102,7 +102,7 @@ export const initCreatorLincoln = (creator: SurveyCreatorModel) => {
   fmcQuestions.forEach(questionName => {
     const item = creator.toolbox.getItemByName(questionName);
     if (item) {
-      categoriesToChange.push({ name: questionName, category: "__0fmc" });
+      categoriesToChange.push({ name: questionName, category: "__01fmc" });
     }
   });
 
@@ -115,11 +115,11 @@ export const initCreatorLincoln = (creator: SurveyCreatorModel) => {
   // Apply Lincoln-specific category sorting - Personal Info first, then FMC, then Lincoln
   creator.toolbox.categories = creator.toolbox.categories.sort((a: any, b: any) => {
     const getPriority = (name: string) => {
-      if (name === "__0pii") return 1;  // Personal Information Questions
-      if (name === "__0fmc") return 2;  // FMC Questions  
-      if (name === "__lincolnCategory") return 3;  // Lincoln Questions
-      if (name === "__fordCategory") return 4;  // Ford Questions (if present)
-      if (name === "__1wav") return 5;
+      if (name === "__00pii") return 1;  // Personal Information Questions  
+      if (name === "__01fmc") return 2;  // FMC Questions  
+      if (name === "__02lincolnCategory") return 3;  // Lincoln Questions
+      if (name === "__02fordCategory") return 4;  // Ford Questions (if present)
+      if (name === "__10wav") return 5;
       if (name.startsWith("__")) return 6;
       return 7;
     };
@@ -129,7 +129,7 @@ export const initCreatorLincoln = (creator: SurveyCreatorModel) => {
 
   // Open Lincoln Questions category by default
   creator.toolbox.collapseAllCategories();
-  creator.toolbox.expandCategory("__lincolnCategory");
+  creator.toolbox.expandCategory("__02lincolnCategory");
   creator.toolbox.updateTitles();
 };
 

@@ -324,7 +324,7 @@ function CheckOutScreen() {
           </ButtonGroup>
           <div className="mt-4 bg-white shadow overflow-hidden sm:rounded-md">
             {surveys.map((user, index) => (
-              <CheckOutItem key={user.id} user={user} index={index} />
+              <CheckOutItem key={(user as any).id} user={user as any} index={index} />
             ))}
           </div>
         </div>

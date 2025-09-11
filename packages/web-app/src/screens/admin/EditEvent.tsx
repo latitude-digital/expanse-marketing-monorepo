@@ -109,7 +109,9 @@ function DashboardScreen() {
     const [thisSurvey, setThisSurvey] = useState<SurveyModel>();
     const [availableTags, setAvailableTags] = useState<Array<{id: string, name: string, color: string}>>([]);
 
-    const eventID: string = params.eventID!;
+    // When navigating to "/admin/event/new", there is no :eventID param.
+    // Default to 'new' so we don't pass undefined to Firestore doc refs.
+    const eventID: string = params.eventID ?? 'new';
 
     useEffect(() => {
         console.error(userError);
@@ -183,7 +185,7 @@ function DashboardScreen() {
             "navigateToUrlOnCondition": [
                 {
                     "expression": "{editSurvey} = true",
-                    "url": "/admin/event/{id}/survey"
+                    "url": "/admin/survey/{id}"
                 },
                 {
                     "expression": "{editSurvey} != true",

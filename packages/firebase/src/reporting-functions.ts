@@ -13,7 +13,7 @@ import axios, {AxiosError} from "axios";
 import moment from "moment-timezone";
 import {Model} from "survey-core";
 import {formatPhoneNumber, createMD5Hash, getFunctionUrl} from "./utils";
-import {uploadSurveyToAPI} from "@expanse/shared";
+import {uploadSurveyToAPI} from "@meridian-event-tech/shared";
 
 const fordEventsCronKey = defineSecret("FORD_EVENTS_CRON_KEY");
 
@@ -231,7 +231,9 @@ export const surveyTriggerImpl = (database = "(default)") => onDocumentCreated(
                     fordEventID: thisEvent.fordEventID,
                     lincolnEventID: thisEvent.lincolnEventID,
                     surveyType: thisEvent.surveyType || 'basic',
-                    surveyJSModel: surveyJSModel
+                    surveyJSModel: surveyJSModel,
+                    startDate: (thisEvent as any).startDate || new Date(),
+                    endDate: (thisEvent as any).endDate || new Date()
                   },
                   survey
                 );

@@ -23,6 +23,9 @@ export interface LincolnSurveyPayload {
   phone: string | null;
   email: string | null;
   email_opt_in: number;
+  // Arrays expected by v13 payload
+  voi?: (number | string)[] | null;
+  vehicles_driven?: (number | string)[] | null;
   age_bracket: string | null;
   gender: string | null;
   how_familiar_other: string | null;

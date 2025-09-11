@@ -26,7 +26,7 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
     alias: {
       // Alias for shared types
-      '@expanse/shared': path.resolve(__dirname, '../../../shared/src'),
+      '@meridian-event-tech/shared': path.resolve(__dirname, '../../../shared/src'),
       // Ford UI aliases (matching tsconfig.json)
       '@ui/ford-ui-components': path.resolve(__dirname, '../../../ford-ui/packages/@ui/ford-ui-components'),
       '@ui/atoms': path.resolve(__dirname, '../../../ford-ui/packages/@ui/atoms/src/lib'),

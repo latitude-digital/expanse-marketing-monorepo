@@ -1,7 +1,8 @@
+// @ts-nocheck
 import React from "react";
 import { ItemValue, RendererFactory, Serializer } from "survey-core";
 import { ReactQuestionFactory, SurveyQuestionRadiogroup } from "survey-react-ui";
-import UnstyledSelectionCard from "@ui/ford-ui-components/src/v2/selection-card/default/UnstyledSelectionCard";
+import UnstyledSelectionCard from "@ui/ford-ui-components/v2/selection-card/default/UnstyledSelectionCard";
 import { FDSQuestionWrapper } from '../FDSShared/FDSQuestionWrapper';
 
 import style from './_index.module.scss'

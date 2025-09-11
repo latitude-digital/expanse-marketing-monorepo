@@ -100,7 +100,7 @@ if $DEPLOY_WEB; then
 
     # Step 4: Build shared package
     echo -e "${YELLOW}📦 Building shared package${NC}"
-    pnpm --filter @expanse/shared build
+    pnpm --filter @meridian-event-tech/shared build
     echo -e "${GREEN}✅ Shared package built${NC}"
 
     # Step 5: Sync Ford UI
@@ -153,7 +153,7 @@ if $DEPLOY_FUNCTIONS; then
     # Step 10: Build shared package if not already built
     if [ ! -d "packages/shared/lib" ]; then
         echo -e "${YELLOW}📦 Building shared package for functions${NC}"
-        pnpm --filter @expanse/shared build
+        pnpm --filter @meridian-event-tech/shared build
         echo -e "${GREEN}✅ Shared package built${NC}"
     fi
 
@@ -187,7 +187,7 @@ if $DEPLOY_FUNCTIONS; then
 
     # Restore the original package.json with workspace references
     echo -e "${BLUE}Restoring workspace references in package.json...${NC}"
-    sed -i '' 's|"@expanse/shared": "file:.firebase-pnpm-workspaces/@expanse/shared"|"@expanse/shared": "workspace:*"|' package.json
+    sed -i '' 's|"@meridian-event-tech/shared": "file:.firebase-pnpm-workspaces/@meridian-event-tech/shared"|"@meridian-event-tech/shared": "workspace:*"|' package.json
     echo -e "${GREEN}✅ package.json restored${NC}"
 
     cd ../..

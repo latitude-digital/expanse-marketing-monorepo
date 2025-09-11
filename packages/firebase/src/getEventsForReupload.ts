@@ -1,7 +1,7 @@
 import { onCall } from "firebase-functions/v2/https";
 import * as admin from 'firebase-admin';
 import { QueryDocumentSnapshot } from 'firebase-admin/firestore';
-import { uploadSurveyToAPI, registerCustomQuestionTypes } from "@expanse/shared";
+import { uploadSurveyToAPI, registerCustomQuestionTypes } from "@meridian-event-tech/shared";
 import { Model } from 'survey-core';
 import { getFirestoreDatabase } from './utils/getFirestoreDatabase';
 
@@ -256,7 +256,9 @@ export const reuploadEventSurveysImpl = (app: admin.app.App, database: string = 
                 fordEventID: eventData.fordEventID,
                 lincolnEventID: eventData.lincolnEventID,
                 surveyType: eventData.surveyType || 'basic',
-                surveyJSModel: eventData.surveyJSModel
+                surveyJSModel: eventData.surveyJSModel,
+                startDate: (eventData as any).startDate || new Date(),
+                endDate: (eventData as any).endDate || new Date()
               },
               fullSurveyData,
               surveyModel  // Pass the model with survey data loaded for proper _ffs mapping

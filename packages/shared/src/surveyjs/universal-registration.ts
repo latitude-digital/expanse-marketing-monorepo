@@ -9,6 +9,7 @@ import { RegistrarFactory } from './registrars/registrar-factory';
 import { fordQuestions } from './questions/ford-questions';
 import { lincolnQuestions } from './questions/lincoln-questions';
 import { fmcQuestions } from './questions/fmc-questions';
+import { sharedQuestions } from './questions/shared-questions';
 
 // Track initialization to prevent duplicate registration
 const initializedBrands = new Set<string>();
@@ -49,8 +50,13 @@ function registerFFSProperty(): void {
 function getQuestionsForBrand(brand: Brand): QuestionConfig[] {
   const questions: QuestionConfig[] = [];
 
-  // Always include FMC questions (shared by all brands)
-  questions.push(...fmcQuestions);
+  // Always include PII shared questions
+  questions.push(...sharedQuestions);
+
+  // Include FMC questions (PII + market research) only for Ford and Lincoln brands
+  if (brand === 'ford' || brand === 'lincoln') {
+    questions.push(...fmcQuestions);
+  }
 
   // Add brand-specific questions
   switch (brand) {
@@ -61,12 +67,11 @@ function getQuestionsForBrand(brand: Brand): QuestionConfig[] {
       questions.push(...lincolnQuestions);
       break;
     case 'fmc':
-      // FMC only gets the shared questions
+      // FMC brand (if ever used directly) can include FMC questions only
+      questions.push(...fmcQuestions);
       break;
     case 'unbranded':
-      // Unbranded gets all questions
-      questions.push(...fordQuestions);
-      questions.push(...lincolnQuestions);
+      // Unbranded gets no brand-specific or FMC questions by default
       break;
   }
 

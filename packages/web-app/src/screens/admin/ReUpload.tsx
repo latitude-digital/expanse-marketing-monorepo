@@ -316,7 +316,7 @@ const ReUpload: React.FC = () => {
                         <Button
                           onClick={() => handleReUploadClick(event)}
                           variant="primary"
-                          size="small"
+                          size="sm"
                           disabled={!event.surveyCount || event.surveyCount === 0}
                         >
                           Re-upload

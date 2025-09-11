@@ -10,7 +10,7 @@ import {
   BackHandler,
 } from 'react-native';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
-import type { ExpanseEvent } from '@expanse/shared/types';
+import type { MeridianEvent as ExpanseEvent } from '@meridian-event-tech/shared/types';
 import SurveyWebViewSPA, { SurveyCompletionData } from '../components/SurveyWebViewSPA';
 import { themeProvider } from '../utils/theme-provider';
 import { offlineDetector } from '../utils/offline-detector';

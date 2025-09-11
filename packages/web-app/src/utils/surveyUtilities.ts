@@ -1,7 +1,8 @@
 import UAParser from 'ua-parser-js';
 import { getApiUrl, ENDPOINTS } from '../config/api';
 import * as Sentry from '@sentry/react';
-import { EmailValidationResult, EmailValidationResponse } from '@expanse/shared';
+import { EmailValidationResult, EmailValidationResponse } from '@meridian-event-tech/shared';
+export type { EmailValidationResult, EmailValidationResponse } from '@meridian-event-tech/shared';
 
 // File validation types
 export interface FileValidationResult {

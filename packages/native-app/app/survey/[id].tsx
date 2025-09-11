@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import SurveyScreen from '../../src/screens/SurveyScreen';
-import type { ExpanseEvent } from '@expanse/shared/types';
+import type { MeridianEvent as ExpanseEvent } from '@meridian-event-tech/shared/types';
 
 export default function SurveyPage() {
   const { id, eventData } = useLocalSearchParams<{ id: string; eventData?: string }>();

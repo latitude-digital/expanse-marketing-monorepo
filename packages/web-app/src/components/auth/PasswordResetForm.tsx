@@ -345,7 +345,7 @@ const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
                   aria-required="true"
                   aria-invalid={errors.password && touched.password ? 'true' : 'false'}
                   aria-describedby={`password-description password-strength ${errors.password && touched.password ? 'password-error' : ''}`}
-                  onKeyDown={(e) => {
+                  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
                       confirmPasswordFieldRef.current?.focus();
@@ -361,13 +361,13 @@ const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
                   <PasswordStrengthIndicator password={values.password} />
                 </div>
                 
-                <ErrorMessage 
-                  id="password-error"
-                  name="password" 
-                  component="div" 
-                  className="mt-2 text-sm sm:text-base text-red-700 font-medium" 
-                  role="alert"
-                />
+                <ErrorMessage name="password">
+                  {msg => (
+                    <div id="password-error" className="mt-2 text-sm sm:text-base text-red-700 font-medium" role="alert">
+                      {msg}
+                    </div>
+                  )}
+                </ErrorMessage>
               </div>
 
               {/* Confirm password field */}
@@ -405,7 +405,7 @@ const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
                   aria-required="true"
                   aria-invalid={errors.confirmPassword && touched.confirmPassword ? 'true' : 'false'}
                   aria-describedby={`confirm-password-description ${errors.confirmPassword && touched.confirmPassword ? 'confirm-password-error' : ''}`}
-                  onKeyDown={(e) => {
+                  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
                       if (isValid && dirty && !isLoading) {
@@ -439,13 +439,13 @@ const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
                   </div>
                 )}
                 
-                <ErrorMessage 
-                  id="confirm-password-error"
-                  name="confirmPassword" 
-                  component="div" 
-                  className="mt-2 text-sm sm:text-base text-red-700 font-medium" 
-                  role="alert"
-                />
+                <ErrorMessage name="confirmPassword">
+                  {msg => (
+                    <div id="confirm-password-error" className="mt-2 text-sm sm:text-base text-red-700 font-medium" role="alert">
+                      {msg}
+                    </div>
+                  )}
+                </ErrorMessage>
               </div>
 
               {/* Submit button */}

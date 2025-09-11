@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
-import { SparkPostTemplate } from '@expanse/shared';
+import { SparkPostTemplate } from '@meridian-event-tech/shared';
 import { httpsCallable } from 'firebase/functions';
 import functions from '../services/functions';
 

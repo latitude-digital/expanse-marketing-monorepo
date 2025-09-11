@@ -1,7 +1,7 @@
 /**
  * Brand detection and utility functions for FDS conditional loading
  */
-import { normalizeBrand as sharedNormalizeBrand } from '@expanse/shared';
+import { normalizeBrand as sharedNormalizeBrand } from '@meridian-event-tech/shared';
 
 /**
  * Determines if Ford Design System should be loaded for the given brand

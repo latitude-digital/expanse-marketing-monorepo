@@ -15,7 +15,7 @@ import {
   LINCOLN_BASE_URLS, 
   LINCOLN_ENDPOINTS, 
   getLincolnApiUrl 
-} from '@expanse/shared';
+} from '@meridian-event-tech/shared';
 
 // Base URLs for each environment (for legacy/general APIs)
 const BASE_URLS: Record<Environment, string> = FORD_BASE_URLS;
@@ -102,9 +102,6 @@ interface ApiEndpoints {
   SURVEY_UPLOAD_V10: string;
   SURVEY_UPLOAD_V11: string;
   LINCOLN_SURVEY_UPLOAD: string;
-  LINCOLN_VEHICLES_INTERESTED: string;
-  LINCOLN_VEHICLES_DRIVEN: string;
-  VEHICLES_INSERT: string;
   EVENTS_CHECK: string;
   EVENTS_QR: string;
   VALIDATE_EMAIL: string;
@@ -123,17 +120,16 @@ interface ApiEndpoints {
 // API endpoints (paths relative to base URL or full URLs)
 export const ENDPOINTS: ApiEndpoints = {
   // Ford endpoints (relative paths)
-  SURVEY_UPLOAD: FORD_ENDPOINTS.SURVEY_UPLOAD,
+  // Use v10 by default for Ford uploads
+  SURVEY_UPLOAD: FORD_ENDPOINTS.SURVEY_UPLOAD_V10,
   SURVEY_UPLOAD_V10: FORD_ENDPOINTS.SURVEY_UPLOAD_V10,
   SURVEY_UPLOAD_V11: FORD_ENDPOINTS.SURVEY_UPLOAD_V11,
-  VEHICLES_INSERT: FORD_ENDPOINTS.VEHICLES_INSERT,
+  // Event management endpoints used by Ford microsite API
   EVENTS_CHECK: FORD_ENDPOINTS.EVENTS_CHECK,
   EVENTS_QR: FORD_ENDPOINTS.EVENTS_QR,
   
   // Lincoln endpoints (full URLs with environment-specific base)
-  LINCOLN_SURVEY_UPLOAD: getLincolnApiUrl(CURRENT_ENV, LINCOLN_ENDPOINTS.SURVEY_UPLOAD),
-  LINCOLN_VEHICLES_INTERESTED: getLincolnApiUrl(CURRENT_ENV, LINCOLN_ENDPOINTS.VEHICLES_INTERESTED),
-  LINCOLN_VEHICLES_DRIVEN: getLincolnApiUrl(CURRENT_ENV, LINCOLN_ENDPOINTS.VEHICLES_DRIVEN),
+  LINCOLN_SURVEY_UPLOAD: getLincolnApiUrl(CURRENT_ENV, LINCOLN_ENDPOINTS.SURVEY_UPLOAD_V13),
   // Firebase functions are full URLs with namespace
   VALIDATE_EMAIL: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-validateEmail`,
   GET_SURVEY: `${FIREBASE_FUNCTIONS_BASE}/${FIREBASE_NAMESPACE}-getSurvey`,
@@ -170,4 +166,4 @@ const ENV = {
 export { ENV, CURRENT_ENV };
 export type { Environment, ApiEndpoints };
 // Re-export from shared for backward compatibility
-export { getFordApiUrl, FORD_ENDPOINTS, getLincolnApiUrl, LINCOLN_ENDPOINTS } from '@expanse/shared';
+export { getFordApiUrl, FORD_ENDPOINTS, getLincolnApiUrl, LINCOLN_ENDPOINTS } from '@meridian-event-tech/shared';

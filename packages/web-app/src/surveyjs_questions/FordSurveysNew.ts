@@ -2,8 +2,8 @@
  * Ford questions registration using the new universal system
  */
 
-import { registerUniversalQuestions } from '@expanse/shared';
-import { ComponentCollection, Question } from 'survey-core';
+import { fordQuestions } from '@meridian-event-tech/shared';
+import { ComponentCollection, Question, Serializer } from 'survey-core';
 import { handleChoicesByUrl } from './choicesByUrlHelper';
 
 // Global flag to prevent multiple initialization
@@ -21,8 +21,8 @@ export const fordInit = () => {
 
   console.log('Initializing Ford questions using universal registration...');
   
-  // Use the universal registration system
-  registerUniversalQuestions('ford', 'frontend');
+  // Register Ford questions directly using our own ComponentCollection
+  registerFordQuestions();
 
   // Add frontend-specific behaviors for VOI and vehicles driven questions
   setupFrontendBehaviors();
@@ -31,6 +31,118 @@ export const fordInit = () => {
   fordQuestionsInitialized = true;
   console.log('Ford questions initialization completed');
 };
+
+/**
+ * Register Ford questions using the web-app's ComponentCollection instance
+ */
+function registerFordQuestions() {
+  // Register each Ford question from the shared package
+  fordQuestions.forEach(config => {
+    // Check if already registered
+    if (ComponentCollection.Instance.getCustomQuestionByName(config.name)) {
+      console.log(`[FordSurveysNew] Question type already registered: ${config.name}`);
+      return;
+    }
+
+    // Build the question JSON - merge all defaultValues first, then override type
+    const questionJSON: any = {
+      ...config.defaultValues,
+      type: config.baseType,
+      name: config.name,
+    };
+    
+    // Apply _ffs if defined in properties
+    const ffsProperty = config.properties?.find(p => p.name === '_ffs');
+    if (ffsProperty && ffsProperty.default) {
+      questionJSON._ffs = ffsProperty.default;
+    }
+
+    // Register the question type
+    ComponentCollection.Instance.add({
+      name: config.name,
+      title: config.title || config.name,
+      iconName: config.icon,
+      showInToolbox: true,
+      inheritBaseProps: true,
+      questionJSON,
+      onInit: () => {
+        // Register custom properties
+        if (config.properties) {
+          config.properties.forEach(prop => {
+            if (prop.name !== '_ffs') { // _ffs is handled specially
+              const serializerProp: any = {
+                name: prop.name,
+                displayName: prop.displayName || prop.name,
+                type: prop.type || 'text',
+                category: prop.category || 'general',
+                isSerializable: true,
+              };
+
+              if (prop.default !== undefined) {
+                serializerProp.default = prop.default;
+              }
+
+              if (prop.choices) {
+                serializerProp.choices = prop.choices;
+              }
+
+              if (prop.visible !== undefined) {
+                serializerProp.visible = prop.visible;
+              }
+
+              if (prop.isLocalizable) {
+                serializerProp.isLocalizable = true;
+              }
+
+              Serializer.addProperty(config.name, serializerProp);
+            }
+          });
+        }
+      },
+      onLoaded: (question: Question) => {
+        // Handle special properties like onlyInclude for VOI questions
+        const onlyIncludeProp = config.properties?.find(p => p.name === 'onlyInclude');
+        if (onlyIncludeProp && question.contentQuestion) {
+          question.contentQuestion.onlyInclude = question.onlyInclude;
+        }
+
+        // Sync isRequired and validators from parent to child
+        const child = question.contentQuestion;
+        if (child) {
+          if (question.isRequired) {
+            child.isRequired = true;
+          }
+          if (question.validators?.length > 0) {
+            child.validators = [...(child.validators || []), ...question.validators];
+          }
+        }
+      },
+      onPropertyChanged: (question: Question, propertyName: string, newValue: any) => {
+        // Handle property changes like onlyInclude
+        if (propertyName === 'onlyInclude' && question.contentQuestion) {
+          question.contentQuestion.onlyInclude = newValue;
+        }
+      },
+    });
+
+    // If this pre-defined question declares an _ffs default, make _ffs read-only for this type
+    if (ffsProperty) {
+      const prop = Serializer.findProperty(config.name, '_ffs');
+      if (prop) {
+        if (ffsProperty.default !== undefined) prop.default = ffsProperty.default;
+        prop.readOnly = true; // visible in property grid but not editable for this specific type
+        if (ffsProperty.visible !== undefined) prop.visible = ffsProperty.visible;
+      }
+    }
+
+    console.log(`[FordSurveysNew] Registered question type: ${config.name}`, {
+      baseType: config.baseType,
+      questionJSON: questionJSON,
+      hasChoices: !!questionJSON.choices,
+      renderAs: questionJSON.renderAs
+    });
+  });
+}
 
 /**
  * Setup frontend-specific behaviors that can't be defined in the shared config

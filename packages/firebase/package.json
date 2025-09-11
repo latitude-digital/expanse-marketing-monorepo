@@ -1,5 +1,5 @@
 {
-  "name": "@expanse/firebase",
+  "name": "@meridian-event-tech/firebase",
   "version": "1.0.0",
   "description": "Expanse Marketing Firebase Functions",
   "main": "lib/index.js",
@@ -16,7 +16,7 @@
     "node": "20"
   },
   "dependencies": {
-    "@expanse/shared": "workspace:*",
+    "@meridian-event-tech/shared": "workspace:*",
     "@aws-sdk/client-s3": "^3.864.0",
     "@aws-sdk/cloudfront-signer": "^3.862.0",
     "@aws-sdk/s3-presigned-post": "^3.864.0",

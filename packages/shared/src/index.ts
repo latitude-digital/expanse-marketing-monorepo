@@ -24,15 +24,11 @@ export * from './types';  // Exports all types including core.ts
 export * from './types/expanse';  // Keep for backward compatibility
 
 // Survey Type Definitions
-export { 
-  FordSurveyPayload,
-  createDefaultFordPayload 
-} from './types/ford';
+export type { FordSurveyPayload } from './types/ford';
+export { createDefaultFordPayload } from './types/ford';
 
-export { 
-  LincolnSurveyPayload,
-  createDefaultLincolnPayload 
-} from './types/lincoln';
+export type { LincolnSurveyPayload } from './types/lincoln';
+export { createDefaultLincolnPayload } from './types/lincoln';
 
 // Survey Mapping Functions
 export { mapToFordPayload } from './mappers/ford';
@@ -51,12 +47,20 @@ export * from './utils/browser';
 // SurveyJS Registration
 export { 
   registerCustomQuestionTypes,
-  registerUniversalQuestions
+  registerUniversalQuestions,
+  clearRegistrationCache,
+  isBrandInitialized
 } from './surveyjs/universal-registration';
 
+// SurveyJS Question Configurations
+export { fordQuestions } from './surveyjs/questions/ford-questions';
+export { lincolnQuestions } from './surveyjs/questions/lincoln-questions';
+export { fmcQuestions } from './surveyjs/questions/fmc-questions';
+export { sharedQuestions } from './surveyjs/questions/shared-questions';
+
 // Legacy exports for backward compatibility (to be removed later)
-export { FordSurveyPayload as FordSurvey } from './types/ford';
-export { LincolnSurveyPayload as LincolnSurvey } from './types/lincoln';
+export type { FordSurveyPayload as FordSurvey } from './types/ford';
+export type { LincolnSurveyPayload as LincolnSurvey } from './types/lincoln';
 export { createDefaultFordPayload as createDefaultFordSurvey } from './types/ford';
 export { createDefaultLincolnPayload as createDefaultLincolnSurvey } from './types/lincoln';
 export { mapToFordPayload as mapSurveyToFordSurvey } from './mappers/ford';

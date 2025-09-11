@@ -63,7 +63,7 @@ importers:
       '@aws-sdk/s3-presigned-post':
         specifier: ^3.864.0
         version: 3.864.0
-      '@expanse/shared':
+      '@meridian-event-tech/shared':
         specifier: workspace:*
         version: link:../shared
       '@sentry/node':
@@ -679,7 +679,7 @@ importers:
       '@dr.pogodin/react-native-static-server':
         specifier: ^0.24.1
         version: 0.24.1(@dr.pogodin/react-native-fs@2.35.1(react-native@0.79.5(@babel/core@7.28.3)(@react-native-community/cli@19.1.1(typescript@5.8.3))(@types/react@18.3.1)(react@19.0.0))(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.3)(@react-native-community/cli@19.1.1(typescript@5.8.3))(@types/react@18.3.1)(react@19.0.0))(react@19.0.0)
-      '@expanse/shared':
+      '@meridian-event-tech/shared':
         specifier: workspace:*
         version: link:../shared
       '@react-native-async-storage/async-storage':
@@ -870,9 +870,6 @@ importers:
 
   packages/web-app:
     dependencies:
-      '@expanse/shared':
-        specifier: workspace:*
-        version: link:../shared
       '@headlessui/react':
         specifier: ^2.2.7
         version: 2.2.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -882,6 +879,9 @@ importers:
       '@internationalized/date':
         specifier: ^3.8.2
         version: 3.8.2
+      '@meridian-event-tech/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@react-aria/calendar':
         specifier: ^3.9.0
         version: 3.9.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)

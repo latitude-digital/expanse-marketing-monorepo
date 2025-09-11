@@ -22,6 +22,9 @@ export interface FordSurveyPayload {
   phone: string | null;
   email: string | null;
   email_opt_in: number;
+  // Arrays expected by v10 payload
+  voi?: (number | string)[] | null;
+  vehicles_driven?: (number | string)[] | null;
   vehicle_driven_most_model_id: number | string | null;
   vehicle_driven_most_make_id: number | string | null;
   vehicle_driven_most_year: number | string | null;
@@ -70,6 +73,7 @@ export function createDefaultFordPayload(): FordSurveyPayload {
     phone: null,
     email: null,
     email_opt_in: 0,
+    // arrays are optional; omit by default
     vehicle_driven_most_model_id: null,
     vehicle_driven_most_make_id: null,
     vehicle_driven_most_year: null,

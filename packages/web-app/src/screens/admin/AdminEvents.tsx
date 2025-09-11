@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { collection, query, getDocs, orderBy, Timestamp, FirestoreDataConverter, DocumentData, QueryDocumentSnapshot, SnapshotOptions } from "firebase/firestore";
 import db from '../../services/firestore';
-import { normalizeBrand } from '@expanse/shared';
+import { normalizeBrand } from '@meridian-event-tech/shared';
 import TagPill from '../../components/TagPill';
 
 // Import FontAwesome SVG icons as URLs

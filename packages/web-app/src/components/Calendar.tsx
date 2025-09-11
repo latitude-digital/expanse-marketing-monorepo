@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { useCalendar, useCalendarGrid, useCalendarCell } from '@react-aria/calendar';
 import { useCalendarState } from '@react-stately/calendar';
-import { CalendarDate, parseDate, getLocalTimeZone, toCalendarDate } from '@internationalized/date';
+import { CalendarDate, parseDate, createCalendar } from '@internationalized/date';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import Button from './Button';
 
@@ -124,12 +124,15 @@ export default function Calendar({
   className = '',
 }: CalendarProps) {
   // Convert JS Date to CalendarDate
-  const convertToCalendarDate = (date: Date | null | undefined) => {
+  const convertToCalendarDate = (date: Date | null | undefined): CalendarDate | null => {
     if (!date) return null;
-    return toCalendarDate(date);
+    const iso = date.toISOString().slice(0, 10); // YYYY-MM-DD
+    return parseDate(iso);
   };
 
   const state = useCalendarState({
+    locale: navigator.language || 'en-US',
+    createCalendar: () => createCalendar('gregory'),
     value: convertToCalendarDate(value),
     onChange: (date) => {
       if (onChange && date) {
@@ -141,7 +144,7 @@ export default function Calendar({
     minValue: min ? convertToCalendarDate(min) : undefined,
     maxValue: max ? convertToCalendarDate(max) : undefined,
     focusedValue: focusedDate ? convertToCalendarDate(focusedDate) : undefined,
-    isDisabled: (date) => {
+    isDateUnavailable: (date) => {
       const jsDate = new Date(date.year, date.month - 1, date.day);
       
       // Check if date is disabled
@@ -164,8 +167,7 @@ export default function Calendar({
       minValue: min ? convertToCalendarDate(min) : undefined,
       maxValue: max ? convertToCalendarDate(max) : undefined,
     },
-    state,
-    ref
+    state
   );
 
   return (

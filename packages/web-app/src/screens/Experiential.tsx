@@ -7,13 +7,14 @@ import { useParams } from 'react-router-dom';
 import { SurveySkeleton } from '../components/LoadingStates';
 import * as Sentry from "@sentry/react";
 // import { Button } from '../../../ford-ui/packages/@ui/ford-ui-components/src/components/button'; // Commented out for TypeScript migration testing
-import { mapToFordPayload } from '@expanse/shared';
+import { mapToFordPayload } from '@meridian-event-tech/shared';
 import { baseSurvey, incentiveThanks, activationThanks } from "./ExperienceSurvey";
 import { baseSurvey as derbyBaseSurvey, themeOverride as derbyThemeOverride } from './DerbySurvey';
 import { prepareForSurvey, prepareSurveyOnQuestionAdded } from "../helpers/surveyTemplatesAll";
+import { extractUTM } from '../utils/surveyUtilities';
 import { getApiUrl, ENDPOINTS } from '../config/api';
 import { validateEmailForSurveyJS, type EmailValidationResponse } from '../utils/surveyUtilities';
-import type { SurveyData } from '@expanse/shared';
+import type { MeridianSurveyData as SurveyData } from '@meridian-event-tech/shared/types';
 
 // Import FDS custom SurveyJS renderers
 import { CheckboxVOIQuestion } from "../surveysjs_renderers/FDSRenderers/CheckboxVOI";
@@ -32,7 +33,7 @@ import { FordSurveyNavigation } from '../components/FordSurveyNavigation';
 import { initializeFDSForBrand } from '../helpers/fdsInitializer';
 
 // Import Ford UI Button
-import { StyledButton } from '@ui/ford-ui-components/src/v2/button/Button';
+import { StyledButton } from '@ui/ford-ui-components';
 
 import "survey-core/survey-core.min.css";
 
@@ -86,13 +87,6 @@ interface VOI {
   survey_vehicle_guid: string;
 }
 
-// SurveyData type is now imported from @packages/shared/types
-// Additional fields specific to Experiential surveys can be added via the index signature
-interface OptIn {
-  type: string;
-  value: boolean;
-}
-
 declare global {
   interface Window {
     google: {
@@ -120,7 +114,8 @@ const formatPhone = (value: string): string => {
     return `${areaCode}-${centralOfficeCode}-${lineNumber}`;
 };
 
-function validateEmail(this: any, [email]: [string]): void {
+function validateEmail(this: any, params: any[]): void {
+    const [email] = params as [string];
     console.log('[validateEmail]', arguments);
     if (!email) {
         this.returnResult();
@@ -168,7 +163,7 @@ function validateEmail(this: any, [email]: [string]): void {
 FunctionFactory.Instance.register("validateEmail", validateEmail, true);
 
 const SurveyComponent: React.FC = () => {
-    const params = useParams<RouteParams>();
+    const params = useParams<{ eventID: string }>();
     const [thisEvent, setThisEvent] = useState<EventData | null>(null);
     const [thisSurvey, setThisSurvey] = useState<Model | null>(null);
     const [customData, setCustomData] = useState<CustomData>({});
@@ -191,7 +186,7 @@ const SurveyComponent: React.FC = () => {
             response.json().then(async (res: EventResponse) => {
                 const retEvent = res.data;
                 const retCustomData: CustomData = JSON.parse(retEvent.custom_data || '{}');
-                const retCustomQuestions = JSON.parse(retEvent.custom_questions || '{}');
+                // const retCustomQuestions = JSON.parse(retEvent.custom_questions || '{}');
                 
                 setThisEvent(res.data);
                 setCustomData(JSON.parse(res.data.custom_data || '{}'));
@@ -255,6 +250,7 @@ const SurveyComponent: React.FC = () => {
                         }
                     }
 
+                    // TODO: use our real waiver / minor waiver SurveyJS question types
                     // if there's a waiver, add it
                     if (res.data.waiver) {
                         const waiverText = JSON.parse(res.data.waiver).english.body.replace(/(?:\r\n|\r|\n)/g, '<br/><br/>');
@@ -423,14 +419,33 @@ ${minorWaiverText}
                     survey.onAfterRenderSurvey.add((sender: Model) => {
                         const deviceSurveyGuid = uuidv4();
                         setDeviceSurveyGuid(deviceSurveyGuid);
-                        sender.setValue('device_survey_guid', deviceSurveyGuid);
-                        sender.setValue('start_time', new Date());
-                        sender.setValue('survey_date', new Date());
-                        sender.setValue('event_id', res.data?.event_id);
-                        sender.setValue('app_version', 'surveyjs_2.0');
-                        sender.setValue('abandoned', 0);
-                        sender.setValue("custom_data", {});
+                        
+                        // Set default values matching Survey.tsx pattern
+                        const defaultValues: SurveyData = {
+                            'device_survey_guid': deviceSurveyGuid,
+                            'start_time': new Date(),
+                            'survey_date': new Date(),
+                            'event_id': res.data?.event_id,
+                            'app_version': 'surveyjs_2.0',
+                            'abandoned': 0,
+                            'custom_data': {},
+                            // Add missing browser and environment data
+                            '_utm': { ...extractUTM() },
+                            '_referrer': (window as any).frames?.top?.document?.referrer,
+                            '_language': window.navigator?.language,
+                            'device_id': window.navigator?.userAgent,
+                            '_screenWidth': window.screen?.width,
+                            '_offset': (new Date()).getTimezoneOffset(),
+                            '_timeZone': Intl.DateTimeFormat().resolvedOptions().timeZone,
+                        };
+                        
+                        // Set all default values
+                        Object.entries(defaultValues).forEach(([key, value]) => {
+                            sender.setValue(key, value);
+                        });
+                        
                         console.log('survey started', sender.getValue('device_survey_guid'));
+                        console.log('Default values set:', defaultValues);
                     });
 
                     survey.onComplete.add((sender: Model, options: any) => {
@@ -441,8 +456,8 @@ ${minorWaiverText}
                             return;
                         }
 
-                        let originalMesage = sender.completedHtml;
-                        console.log('originalMesage', originalMesage);
+                        let originalMessage = sender.completedHtml;
+                        console.log('originalMessage', originalMessage);
                         sender.completedHtml = "<h3>Saving, please wait...</h3>";
                         options.showDataSaving('Saving, please wait...');
                         survey.setValue('end_time', new Date());
@@ -464,6 +479,25 @@ ${minorWaiverText}
                         survey.setValue("optins", optins || []);
 
                         let surveyData: SurveyData = sender.data;
+                        console.log('[onComplete] Initial survey data:', JSON.stringify(surveyData, null, 2));
+                        
+                        // Set hidden tracking properties (matching Survey.tsx pattern)
+                        surveyData['_preSurveyID'] = null;
+                        surveyData['_checkedIn'] = null;
+                        surveyData['_checkedOut'] = null;
+                        surveyData['_claimed'] = null;
+                        surveyData['_used'] = null;
+                        surveyData['_email'] = null;
+                        surveyData['_sms'] = null;
+                        surveyData['_exported'] = null;
+                        surveyData['end_time'] = new Date();
+                        
+                        // Ensure device_survey_guid is set (if not already set in onAfterRenderSurvey)
+                        if (!surveyData['device_survey_guid']) {
+                            surveyData['device_survey_guid'] = uuidv4();
+                        }
+                        
+                        // Add specific fields
                         surveyData["optins"] = survey.getValue("optins") || null;
                         surveyData["signature"] = survey.getValue("signature") || null;
                         surveyData["minor_signature"] = survey.getValue("minor_signature") || null;
@@ -472,7 +506,7 @@ ${minorWaiverText}
                             surveyData[question.valueName || question.name] = (typeof question.value === 'undefined' || question.value === null) ? null : question.value;
                         });
 
-                        console.log('survey completed', JSON.stringify(surveyData));
+                        console.log('survey completed with all fields', JSON.stringify(surveyData));
 
                         // if this is a activation_event_code, add special properties to customData
                         if (retCustomData.activation_event_code) {
@@ -486,7 +520,7 @@ ${minorWaiverText}
                                 }
                             );
                             surveyData.customData = {
-                                ...surveyData.customData,
+                                ...(surveyData.customData || {}),
                                 activation_event_code: retCustomData.activation_event_code,
                                 source: retEvent.event_id,
                                 used: [retEvent.event_id],
@@ -495,8 +529,9 @@ ${minorWaiverText}
                         }
 
                         // save survey (v10 only, using FordSurvey)
-                        const fordSurvey = mapToFordPayload(survey, surveyData, retEvent);
-                        const mergedSurveyData = { ...fordSurvey, ...surveyData };
+                        const fordSurvey = mapToFordPayload(survey, surveyData, retEvent as any);
+                        // IMPORTANT: fordSurvey should override surveyData to ensure _ffs mapped fields are included
+                        const mergedSurveyData = { ...surveyData, ...fordSurvey };
 
                         fetch(getApiUrl(ENDPOINTS.SURVEY_UPLOAD_V10), {
                             method: 'POST',
@@ -520,10 +555,10 @@ ${minorWaiverText}
                             const showQRCode = retEvent.microsite_incentives || retEvent.check_in_qr;
                             if (showQRCode) {
                                 // replace all {key} with surveyData[key]
-                                originalMesage = incentiveThanks.replace(/{([^}]+)}/g, (match, key) => {
-                                    return surveyData[key] !== undefined ? surveyData[key] : match;
+                                originalMessage = incentiveThanks.replace(/{([^}]+)}/g, (match, key) => {
+                                    return String(surveyData[key] !== undefined ? surveyData[key] : match);
                                 });
-                                console.log('originalMesage', originalMesage);
+                                console.log('originalMessage', originalMessage);
                             }
 
                             setShowActivationQRCode(!!retCustomData.activation_event_code);
@@ -531,10 +566,10 @@ ${minorWaiverText}
                             const showActivationQRCode = retCustomData.activation_event_code;
                             if (showActivationQRCode) {
                                 // replace all {key} with surveyData[key]
-                                originalMesage = activationThanks.replace(/{([^}]+)}/g, (match, key) => {
-                                    return surveyData[key] !== undefined ? surveyData[key] : match;
+                                originalMessage = activationThanks.replace(/{([^}]+)}/g, (match, key) => {
+                                    return String(surveyData[key] !== undefined ? surveyData[key] : match);
                                 });
-                                console.log('originalMesage', originalMesage);
+                                console.log('originalMessage', originalMessage);
                             }
 
                             if (surveyData.fordVOI) {
@@ -542,48 +577,15 @@ ${minorWaiverText}
                             }
 
                             const showSuccess = () => {
-                                sender.completedHtml = originalMesage;
+                                sender.completedHtml = originalMessage;
                                 options.showDataSavingSuccess();
                             };
 
-                            if (surveyData.voi && surveyData.voi.length) {
-                                const voiBody: VOI[] = surveyData.voi.map(vehicle_id => {
-                                    return {
-                                        vehicle_id,
-                                        device_survey_guid: surveyData.device_survey_guid || '',
-                                        survey_vehicle_guid: uuidv4(),
-                                    };
-                                });
-
-                                fetch(getApiUrl(ENDPOINTS.VEHICLES_INSERT), {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'Authorization': '989ae554-08ca-4142-862c-0058407d2769',
-                                    },
-                                    body: JSON.stringify(voiBody),
-                                }).then((res) => {
-                                    if (res.ok) {
-                                        return res.json();
-                                    }
-
-                                    Sentry.captureException(new Error(res.statusText));
-                                    throw new Error(res.statusText);
-                                }).then(res => {
-                                    console.log('saved voi');
-                                    if (showQRCode) {
-                                        setTimeout(showSuccess, 15000);
-                                    } else {
-                                        showSuccess();
-                                    }
-                                });
+                            // VOI and vehicles_driven are now embedded in the v10 payload (no separate calls)
+                            if (showQRCode) {
+                                setTimeout(showSuccess, 15000);
                             } else {
-                                console.log('no voi');
-                                if (showQRCode) {
-                                    setTimeout(showSuccess, 15000);
-                                } else {
-                                    showSuccess();
-                                }
+                                showSuccess();
                             }
 
                         }).catch(err => {
@@ -635,7 +637,8 @@ ${minorWaiverText}
                         }
                     });
 
-                    prepareSurveyOnQuestionAdded(null, { survey });
+                    // Creator not used here; pass a placeholder to satisfy types
+                    prepareSurveyOnQuestionAdded({} as any, { survey } as any);
                     setThisSurvey(survey);
                 } else {
                     const err = new Error(res.message || 'Unknown error');

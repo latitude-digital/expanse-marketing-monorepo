@@ -335,7 +335,7 @@ function CheckInScreen() {
     if (checkInMode) {
       return (
         <div style={{ display: 'flex', alignItems: 'center', height: '45px', padding: '0 10px' }}>
-          <Button themeColor="primary" onClick={handleCheckInClick} style={buttonStyle}>
+          <Button variant="primary" onClick={handleCheckInClick} style={buttonStyle as any}>
             Check In
           </Button>
         </div>
@@ -344,11 +344,11 @@ function CheckInScreen() {
       return (
         <div style={{ display: 'flex', alignItems: 'center', height: '45px', padding: '0 10px' }}>
           {user._checkedOut ? (
-            <Button themeColor="primary" disabled style={buttonStyle}>
+            <Button variant="primary" disabled style={buttonStyle as any}>
               Already Checked Out
             </Button>
           ) : (
-            <Button themeColor="primary" onClick={handleUndoCheckIn} style={buttonStyle}>
+            <Button variant="primary" onClick={handleUndoCheckIn} style={buttonStyle as any}>
               Undo Check In
             </Button>
           )}
@@ -377,8 +377,8 @@ function CheckInScreen() {
         <div style={{ marginTop: '3em' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1em' }}>
             <ButtonGroup>
-              <Button themeColor={checkInMode ? "primary" : "base"} onClick={() => setCheckInMode(true)}>Check In</Button>
-              <Button themeColor={!checkInMode ? "primary" : "base"} onClick={() => setCheckInMode(false)}>View Checked In</Button>
+              <Button variant={checkInMode ? "primary" : "secondary"} onClick={() => setCheckInMode(true)}>Check In</Button>
+              <Button variant={!checkInMode ? "primary" : "secondary"} onClick={() => setCheckInMode(false)}>View Checked In</Button>
             </ButtonGroup>
             <input
               type="text"

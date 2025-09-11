@@ -6,134 +6,30 @@
 import { QuestionConfig } from '../types';
 
 export const fmcQuestions: QuestionConfig[] = [
-  // Personal information questions
+  // Demographics (FMC)
   {
-    name: 'firstname',
-    baseType: 'text',
-    title: 'First Name',
-    properties: [
-      {
-        name: '_ffs',
-        type: 'text',
-        default: 'firstName',  // Maps to firstName field
-        visible: false,
-      },
-    ],
+    name: 'agebracket', baseType: 'radiogroup', title: 'Age Bracket',
+    properties: [{ name: '_ffs', type: 'text', default: 'age_bracket', visible: true }],
   },
   {
-    name: 'lastname',
-    baseType: 'text',
-    title: 'Last Name',
-    properties: [
-      {
-        name: '_ffs',
-        type: 'text',
-        default: 'lastName',  // Maps to lastName field
-        visible: false,
-      },
-    ],
+    name: 'gender', baseType: 'radiogroup', title: 'Gender',
+    properties: [{ name: '_ffs', type: 'text', default: 'gender', visible: true }],
+  },
+  // Market research (FMC)
+  {
+    name: 'howlikelyacquire', baseType: 'radiogroup', title: 'How Likely Acquire',
+    properties: [{ name: '_ffs', type: 'text', default: 'how_likely_acquire', visible: true }],
   },
   {
-    name: 'phone',
-    baseType: 'text',
-    title: 'Phone',
-    properties: [
-      {
-        name: '_ffs',
-        type: 'text',
-        default: 'phone',  // Maps to phone field
-        visible: false,
-      },
-    ],
+    name: 'inmarkettiming', baseType: 'radiogroup', title: 'In Market Timing',
+    properties: [{ name: '_ffs', type: 'text', default: 'in_market_timing', visible: true }],
   },
   {
-    name: 'email',
-    baseType: 'text',
-    title: 'Email',
-    properties: [
-      {
-        name: '_ffs',
-        type: 'text',
-        default: 'email',  // Maps to email field
-        visible: false,
-      },
-    ],
-  },
-  // Address questions
-  {
-    name: 'autocompleteaddress',
-    baseType: 'text',
-    title: 'Address',
-    properties: [
-      {
-        name: '_ffs',
-        type: 'text',
-        default: 'address',  // Maps to address field
-        visible: false,
-      },
-    ],
-  },
-  {
-    name: 'autocompleteaddressall',
-    baseType: 'text',
-    title: 'Full Address',
-    properties: [
-      {
-        name: '_ffs',
-        type: 'text',
-        default: 'fullAddress',  // Maps to fullAddress field
-        visible: false,
-      },
-    ],
-  },
-  // Age bracket questions - no _ffs values
-  {
-    name: 'agegroup',
-    baseType: 'radiogroup',
-    title: 'Age Group',
-  },
-  {
-    name: 'agebracket',
-    baseType: 'radiogroup',
-    title: 'Age Bracket',
-  },
-  // Gender questions - no _ffs values
-  {
-    name: 'genderchoice',
-    baseType: 'radiogroup',
-    title: 'Gender Choice',
-  },
-  {
-    name: 'gender',
-    baseType: 'radiogroup',
-    title: 'Gender',
-  },
-  // Ethnicity - no _ffs value
-  {
-    name: 'ethnicityselect',
-    baseType: 'checkbox',
-    title: 'Ethnicity Select',
-  },
-  // Income - no _ffs value
-  {
-    name: 'incomelevel',
-    baseType: 'radiogroup',
-    title: 'Income Level',
-  },
-  // Waiver questions - no _ffs values
-  {
-    name: 'waiver',
-    baseType: 'panel',
-    title: 'Waiver',
-  },
-  {
-    name: 'adultwaiver',
-    baseType: 'panel',
-    title: 'Adult Waiver',
-  },
-  {
-    name: 'minorwaiver',
-    baseType: 'panel',
-    title: 'Minor Waiver',
+    name: 'vehicledrivenmostmake', baseType: 'dropdown', title: 'Vehicle Make Most Driven',
+    properties: [{ name: '_ffs', type: 'text', default: 'vehicle_driven_most_make_id', visible: true }],
+    defaultValues: {
+      choicesByUrl: { url: 'https://cdn.latitudewebservices.com/data/makes.json', valueName: 'make_id', titleName: 'make' },
+      placeholder: { en: 'Select / Search...' },
+    },
   },
 ];

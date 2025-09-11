@@ -52,9 +52,8 @@ const lincolnInit = () => {
    * Lincoln Vehicle of Interest (VOI) Question
    * 
    * @description Multi-select checkbox for Lincoln vehicles the customer is interested in
-   * @_ffs "voi" - Maps to voi field in Lincoln API
+   * @_ffs "voi" - Maps to `voi` array in Lincoln v13 upload payload (no separate endpoint)
    * @see /src/helpers/surveyTemplatesLincoln.ts - Where _ffs value and other properties are configured
-   * @api_endpoint LINCOLN_VEHICLES_INTERESTED - Sends selected vehicle_ids to separate endpoint
    * @max_selections 3 vehicles
    */
   // Register lincolnvoi if it doesn't exist
@@ -302,8 +301,7 @@ const lincolnInit = () => {
    * Lincoln Vehicles Driven Question
    * 
    * @description Multi-select checkbox for Lincoln vehicles actually test driven at event
-   * @_ffs "vehiclesDriven" - Maps to vehiclesDriven field, sends to LINCOLN_VEHICLES_DRIVEN endpoint
-   * @api_endpoint LINCOLN_VEHICLES_DRIVEN - Sends vehicle_ids with order_driven sequence
+   * @_ffs "vehiclesDriven" - Mapped by mappers to `vehicles_driven` array in v13 payload (no separate endpoint)
    * @order_driven Tracks sequence in which vehicles were driven (1st, 2nd, 3rd, etc.)
    * @note Different from "vehicle driven most often" survey question - this is for event test drives
    */

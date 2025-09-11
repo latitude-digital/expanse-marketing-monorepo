@@ -8,9 +8,21 @@ import { IQuestionRegistrar, QuestionConfig, QuestionProperty } from '../types';
 
 export class BackendRegistrar implements IQuestionRegistrar {
   registerQuestion(config: QuestionConfig): void {
+    // Extract _ffs property (if provided)
+    const ffsProperty = config.properties?.find(p => p.name === '_ffs');
+
     // Check if already registered
     if (ComponentCollection.Instance.getCustomQuestionByName(config.name)) {
       console.log(`[Backend] Question type already registered: ${config.name}`);
+      // Ensure _ffs default and readOnly are applied even if type pre-registered elsewhere
+      if (ffsProperty) {
+        const prop = Serializer.findProperty(config.name, '_ffs');
+        if (prop) {
+          if (ffsProperty.default !== undefined) prop.default = ffsProperty.default;
+          prop.readOnly = true;
+          prop.visible = ffsProperty.visible !== undefined ? ffsProperty.visible : prop.visible;
+        }
+      }
       return;
     }
 
@@ -21,7 +33,6 @@ export class BackendRegistrar implements IQuestionRegistrar {
     };
 
     // Apply _ffs if defined in properties
-    const ffsProperty = config.properties?.find(p => p.name === '_ffs');
     if (ffsProperty && ffsProperty.default) {
       questionJSON._ffs = ffsProperty.default;
     }
@@ -37,6 +48,16 @@ export class BackendRegistrar implements IQuestionRegistrar {
       config.properties.forEach(prop => {
         this.registerProperty(config.name, prop);
       });
+    }
+
+    // If this pre-defined question declares an _ffs default, make _ffs read-only for this type
+    if (ffsProperty) {
+      const prop = Serializer.findProperty(config.name, '_ffs');
+      if (prop) {
+        if (ffsProperty.default !== undefined) prop.default = ffsProperty.default;
+        prop.readOnly = true; // keep visible but lock editing for this custom type
+        if (ffsProperty.visible !== undefined) prop.visible = ffsProperty.visible;
+      }
     }
 
     console.log(`[Backend] Registered question type: ${config.name} (base: ${config.baseType})`);

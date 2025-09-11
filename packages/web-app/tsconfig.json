@@ -21,19 +21,25 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
+      "@meridian-event-tech/shared": ["../shared/src"],
+      "@meridian-event-tech/shared/*": ["../shared/src/*"],
       "@/*": ["src/*"],
-      "@ui/ford-ui-components/*": ["../ford-ui/packages/@ui/ford-ui-components/*"],
-      "@ui/atoms/*": ["../ford-ui/packages/@ui/atoms/src/lib/*"],
-      "@ui/icons/*": ["../ford-ui/packages/@ui/icons/src/lib/*"],
-      "@common/helpers/*": ["../ford-ui/packages/@common/helpers/src/lib/*"],
-      "@common/interfaces/*": ["../ford-ui/packages/@common/interfaces/src/lib/*"],
-      "@common/utils/*": ["../ford-ui/packages/@common/utils/src/lib/*"]
+      "@ui/ford-ui-components": ["src/types/ford-ui-stubs.d.ts"],
+      "@ui/ford-ui-components/*": ["src/types/ford-ui-stubs.d.ts"],
+      "@ui/*": ["src/types/ford-ui-stubs.d.ts"],
+      "@common/*": ["src/types/ford-ui-stubs.d.ts"]
     }
   },
   "include": [
     "src"
   ],
   "exclude": [
-    "../../survey-library/**"
+    "../../survey-library/**",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/__tests__/**",
+    "src/surveysjs_renderers/**",
+    "src/survey-spa/**",
+    "src/test-utils.tsx"
   ]
 }

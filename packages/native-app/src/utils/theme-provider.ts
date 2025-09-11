@@ -1,4 +1,4 @@
-import type { Brand } from '@expanse/shared/types';
+import type { Brand } from '@meridian-event-tech/shared/types';
 
 export interface ThemeColors {
   primary: string;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Model } from 'survey-core';
-import { StyledButton } from '@ui/ford-ui-components/src/v2/button/Button';
+import { StyledButton } from '@ui/ford-ui-components';
 
 interface FordSurveyNavigationProps {
   survey: Model;
@@ -22,7 +22,13 @@ export const FordSurveyNavigation: React.FC<FordSurveyNavigationProps> = ({
       setIsFirstPage(survey.isFirstPage);
       setIsLastPage(survey.isLastPage);
       setCanComplete(survey.isLastPage && survey.currentPage.hasErrors === false);
-      setIsCompleted(survey.isCompleted || survey.state === 'completed');
+      // Use public SurveyJS state to determine completion.
+      // TODO(meridian): We previously relied on a private field `survey.isCompleted` to work around
+      // a SurveyJS bug where `state` didn't always flip to "completed" in some flows.
+      // If we observe regressions, consider restoring the fallback below or deleting this note.
+      // const completed = (survey as any).isCompleted || survey.state === 'completed';
+      // setIsCompleted(completed);
+      setIsCompleted(survey.state === 'completed');
     };
 
     // Initial state
@@ -74,9 +80,10 @@ export const FordSurveyNavigation: React.FC<FordSurveyNavigationProps> = ({
   // Don't render navigation buttons in these scenarios:
   // 1. Survey is completed (state = "completed") 
   // 2. Survey is in any non-running state (loading, empty, etc.)
-  // 3. Survey has isCompleted property set to true
-  // 4. React state isCompleted is true (from our event listener)
-  if (survey.state === 'completed' || survey.state !== 'running' || survey.isCompleted || isCompleted) {
+  // 3. React state isCompleted is true (from our event listener)
+  // TODO(meridian): If the old workaround is needed again, extend the guard with
+  // `|| (survey as any).isCompleted` — see note above.
+  if (survey.state === 'completed' || survey.state !== 'running' || isCompleted) {
     return null;
   }
 

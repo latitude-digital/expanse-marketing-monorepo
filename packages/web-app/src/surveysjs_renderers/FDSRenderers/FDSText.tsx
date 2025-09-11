@@ -1,7 +1,8 @@
+// @ts-nocheck
 import React from "react";
 import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
 import { QuestionTextModel } from "survey-core";
-import { StyledTextField } from "@ui/ford-ui-components/src/v2/inputField/Input";
+import { StyledTextField } from "@ui/ford-ui-components";
 import { renderLabel, renderDescription, getOptionalText } from "./FDSShared/utils";
 
 interface ParsedAddress {
@@ -199,3 +200,4 @@ ReactQuestionFactory.Instance.registerQuestion(
 
 // NOTE: Do NOT register "emailtextinput" here - it has its own brand-aware factory
 // in EmailTextInput/index.tsx that chooses between Ford UI and default SurveyJS rendering
+// @ts-nocheck

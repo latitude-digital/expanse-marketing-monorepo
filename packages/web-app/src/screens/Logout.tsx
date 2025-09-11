@@ -9,13 +9,13 @@ import { authService } from '../services/authService';
  */
 const Logout: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     const performLogout = async () => {
       try {
         // Log the logout action
-        console.log('Logging out user:', user?.email);
+        console.log('Logging out user:', currentUser?.email);
         
         // Sign out from Firebase
         await authService.signOut();
@@ -41,7 +41,7 @@ const Logout: React.FC = () => {
     };
 
     performLogout();
-  }, [navigate, user]);
+  }, [navigate, currentUser]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">

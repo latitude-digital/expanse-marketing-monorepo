@@ -28,7 +28,7 @@ export const PreEventCombobox: React.FC<PreEventComboboxProps> = ({
 }) => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
-  const [query, setQuery] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -58,7 +58,7 @@ export const PreEventCombobox: React.FC<PreEventComboboxProps> = ({
         snapshot.forEach((doc) => {
           // Exclude the current event
           if (doc.id !== currentEventId) {
-            const data = doc.data();
+            const data: any = doc.data();
             fetchedEvents.push({
               id: doc.id,
               name: data.name || data.eventTitle || doc.id,
@@ -79,10 +79,10 @@ export const PreEventCombobox: React.FC<PreEventComboboxProps> = ({
   }, [startDate, currentEventId]);
 
   const filteredEvents =
-    query === ''
+    searchTerm === ''
       ? events
       : events.filter((event) => {
-          const searchQuery = query.toLowerCase();
+          const searchQuery = searchTerm.toLowerCase();
           return (
             event.name.toLowerCase().includes(searchQuery) ||
             event.id.toLowerCase().includes(searchQuery)
@@ -103,7 +103,7 @@ export const PreEventCombobox: React.FC<PreEventComboboxProps> = ({
               id="preEventId"
               className="w-full rounded-md border-0 bg-white py-1.5 pl-3 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
               displayValue={(eventId: string) => eventId}
-              onChange={(event) => setQuery(event.target.value)}
+              onChange={(event) => setSearchTerm(event.target.value)}
               placeholder={loading ? "Loading events..." : "Select a pre-event"}
               disabled={loading || !startDate}
               autoComplete="off"

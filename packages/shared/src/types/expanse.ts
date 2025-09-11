@@ -3,28 +3,13 @@
  * Core types used across the entire Expanse platform
  */
 
-import { SurveyJSModel } from './survey';
+// Deprecated: use MeridianEvent from './meridian-event'
+export type { MeridianEvent as ExpanseEvent } from './meridian-event';
 
 /**
  * Expanse Event - Core event structure
  */
-export interface ExpanseEvent {
-  id: string;
-  name: string;
-  brand?: 'Ford' | 'Lincoln' | string;
-  fordEventID?: string;
-  lincolnEventID?: string;
-  surveyType?: string;
-  surveyJSModel?: SurveyJSModel;
-  questions?: string;
-  surveyCount?: number;
-  lastModified?: Date;
-  startDate?: Date;
-  endDate?: Date;
-  location?: string;
-  status?: 'active' | 'inactive' | 'completed';
-  metadata?: Record<string, unknown>;
-}
+// Legacy interfaces below can be removed if unused by consumers
 
 /**
  * Survey Response - Core survey response structure

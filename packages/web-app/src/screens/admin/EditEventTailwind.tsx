@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from "react-router-dom";
 import { doc, getDoc, Timestamp, FirestoreDataConverter, DocumentData, QueryDocumentSnapshot, SnapshotOptions, setDoc, updateDoc, collection, query, orderBy, getDocs } from "firebase/firestore";
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -6,13 +6,14 @@ import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOption
 import { ChevronDownIcon, XMarkIcon } from '@heroicons/react/20/solid';
 import moment from 'moment';
 import { SurveyModel } from 'survey-core';
+import Showdown from 'showdown';
 
 import auth from '../../services/auth';
 import db from '../../services/firestore';
 import { EmailTemplateCombobox } from '../../components/EmailTemplateCombobox';
 import { PreEventCombobox } from '../../components/PreEventCombobox';
 
-// Event converter (same as legacy)
+// Event converter (aligned with SurveyJS version)
 const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
     toFirestore(event: ExpanseEvent): DocumentData {
         const surveyModel = event.surveyJSModel || event.questions || {};
@@ -52,19 +53,36 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
         options: SnapshotOptions
     ): ExpanseEvent {
         const data = snapshot.data(options);
-        
         return {
-            ...data,
-            eventID: snapshot.id,
+            id: snapshot.id,
+            name: data.name,
+            brand: data.brand || undefined,
+            _preEventID: data._preEventID,
+            preRegDate: data.preRegDate?.toDate(),
             startDate: data.startDate.toDate(),
             endDate: data.endDate.toDate(),
-            preRegDate: data.preRegDate ? data.preRegDate.toDate() : null,
-            questions: data.questions,
-            surveyJSModel: data.surveyJSModel,
-            theme: data.theme,
-            surveyJSTheme: data.surveyJSTheme,
+            confirmationEmail: data.confirmationEmail,
+            reminderEmail: data.reminderEmail,
+            thankYouEmail: data.thankYouEmail,
+            autoCheckOut: data.autoCheckOut,
+            checkOutEmail: data.checkOutEmail,
             checkInDisplay: data.checkInDisplay,
-        } as ExpanseEvent;
+            disabled: data.disabled,
+            questions: data.surveyJSModel || (data.questions ? JSON.parse(data.questions) : {}),
+            surveyJSModel: data.surveyJSModel || (data.questions ? JSON.parse(data.questions) : {}),
+            theme: data.surveyJSTheme || (data.theme ? JSON.parse(data.theme) : {}),
+            surveyJSTheme: data.surveyJSTheme || (data.theme ? JSON.parse(data.theme) : {}),
+            thanks: data.thanks,
+            fordEventID: data.fordEventID || undefined,
+            lincolnEventID: data.lincolnEventID || undefined,
+            surveyType: data.surveyType || null,
+            survey_count_limit: data.survey_count_limit || undefined,
+            limit_reached_message: data.limit_reached_message || undefined,
+            showLanguageChooser: data.showLanguageChooser !== undefined ? data.showLanguageChooser : false,
+            showHeader: data.showHeader !== undefined ? data.showHeader : true,
+            showFooter: data.showFooter !== undefined ? data.showFooter : true,
+            tags: data.tags || [],
+        };
     },
 };
 
@@ -177,7 +195,7 @@ function TagCombobox({ availableTags, selectedTags, onChange }: TagComboboxProps
                 ))}
             </div>
             
-            <Combobox as="div" value={null} onChange={handleAddTag}>
+            <Combobox as="div" value={''} onChange={(value: any) => handleAddTag(String(value || ''))}>
                 <div className="relative">
                     <ComboboxInput
                         className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#257180] sm:text-sm/6"
@@ -223,82 +241,69 @@ export default function EditEventTailwind() {
     const [saving, setSaving] = useState(false);
     const [availableTags, setAvailableTags] = useState<Tag[]>([]);
     const [surveyQuestions, setSurveyQuestions] = useState<Array<{value: string, text: string}>>([]);
-    
-    // Form state with all fields from legacy
     const [formData, setFormData] = useState<ExpanseEvent>({
-        eventID: '',
+        id: '',
         name: '',
+        brand: 'Other',
+        questions: {} as any,
+        theme: {} as any,
         startDate: new Date(),
         endDate: new Date(),
-        preRegDate: null,
-        brand: 'Other',
-        fordEventID: null,
-        lincolnEventID: null,
-        surveyType: null,
-        _preEventID: null,
-        thanks: null,
-        confirmationEmail: null,
-        reminderEmail: null,
-        thankYouEmail: null,
-        autoCheckOut: null,
-        checkOutEmail: null,
-        checkInDisplay: null,
-        survey_count_limit: null,
-        limit_reached_message: null,
         showLanguageChooser: false,
         showHeader: true,
         showFooter: true,
         tags: [],
-        questions: '{}',
-        surveyJSModel: {},
-        theme: '{}',
-        surveyJSTheme: {},
-    });
-    
-    // Additional form state for UI toggles
+    } as ExpanseEvent);
     const [enablePreRegistration, setEnablePreRegistration] = useState(false);
     const [sendThankYouEmail, setSendThankYouEmail] = useState(false);
     const [thankYouEmailTiming, setThankYouEmailTiming] = useState<'immediate' | 'daysAfter'>('immediate');
     const [thankYouEmailDaysAfter, setThankYouEmailDaysAfter] = useState(1);
     const [enableAutoCheckOut, setEnableAutoCheckOut] = useState(false);
     const [checkInDisplayMatrix, setCheckInDisplayMatrix] = useState<CheckInDisplayEntry[]>([]);
-    
+    const [afterSaveGoEditSurvey, setAfterSaveGoEditSurvey] = useState(false);
+    const markdownConverter = useMemo(() => new Showdown.Converter(), []);
+
     useEffect(() => {
         loadTags();
-        if (eventID && eventID !== 'new') {
+        if (!eventID) return;
+        if (eventID !== 'new') {
             loadEvent(eventID);
         } else {
+            setFormData({
+                id: 'new',
+                name: 'New Event',
+                brand: 'Other',
+                questions: {} as any,
+                theme: {} as any,
+                startDate: moment().add(7, 'days').toDate(),
+                endDate: moment().add(7, 'days').toDate(),
+                showLanguageChooser: true,
+                showHeader: true,
+                showFooter: true,
+                tags: [],
+            } as ExpanseEvent);
             setLoading(false);
         }
     }, [eventID]);
-    
+
     useEffect(() => {
-        // Load survey questions if we have them
-        if (formData.questions && formData.eventID !== 'new') {
+        if (formData?.questions && formData.id !== 'new') {
             try {
-                const questionsObj = typeof formData.questions === 'string' ? 
-                    JSON.parse(formData.questions) : formData.questions;
-                
+                const questionsObj = typeof formData.questions === 'string' ? JSON.parse(formData.questions) : formData.questions;
                 const tempSurvey = new SurveyModel(questionsObj);
                 const questionChoices: Array<{value: string, text: string}> = [];
-                
-                const allQuestions = tempSurvey.getAllQuestions();
-                allQuestions.forEach((question: any) => {
+                tempSurvey.getAllQuestions().forEach((question: any) => {
                     const questionType = question.getType();
                     if (questionType !== 'panel' && questionType !== 'paneldynamic' && question.name) {
-                        questionChoices.push({
-                            value: question.name,
-                            text: question.title || question.name
-                        });
+                        questionChoices.push({ value: question.name, text: question.title || question.name });
                     }
                 });
-                
                 setSurveyQuestions(questionChoices);
             } catch (error) {
-                console.error("Error loading survey questions:", error);
+                console.error('Error loading survey questions:', error);
             }
         }
-    }, [formData.questions, formData.eventID]);
+    }, [formData?.questions, formData?.id]);
     
     const loadTags = async () => {
         try {
@@ -324,10 +329,7 @@ export default function EditEventTailwind() {
             
             if (eventSnap.exists()) {
                 const eventData = eventSnap.data();
-                setFormData({
-                    ...eventData,
-                    tags: eventData.tags || []
-                });
+                setFormData({ ...eventData, tags: eventData.tags || [] });
                 
                 // Set UI toggle states based on loaded data
                 setEnablePreRegistration(!!eventData.preRegDate || !!eventData.confirmationEmail || !!eventData.reminderEmail);
@@ -360,91 +362,109 @@ export default function EditEventTailwind() {
     
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!formData) return;
         setSaving(true);
-        
         try {
-            // Validate required fields
-            if (!formData.eventID || !formData.name || !formData.startDate || !formData.endDate) {
+            if (!formData.id || !formData.name || !formData.startDate || !formData.endDate) {
                 alert('Please fill in all required fields');
                 setSaving(false);
                 return;
             }
-            
-            // Validate dates
             const start = moment(formData.startDate);
             const end = moment(formData.endDate);
             if (end.isBefore(start)) {
-                alert('End date must be after start date');
+                alert('Event End must not be before Event Start');
                 setSaving(false);
                 return;
             }
-            
-            // Build event data with email configurations
-            const eventData: ExpanseEvent = {
-                ...formData,
-                // Clear surveyType if both fordEventID and lincolnEventID are empty
-                surveyType: (!formData.fordEventID && !formData.lincolnEventID) ? null : formData.surveyType,
-            };
-            
-            // Handle pre-registration vs thank you email toggle
+            const eventData: any = { ...formData } as ExpanseEvent & Record<string, any>;
+            eventData.surveyType = ((formData.fordEventID || formData.lincolnEventID) && formData.surveyType) ? formData.surveyType : null;
+            eventData.tags = formData.tags || [];
             if (enablePreRegistration) {
                 eventData.thankYouEmail = null;
-                // Keep preRegDate, confirmationEmail, reminderEmail as they are in formData
+                if (formData.confirmationEmail?.template) {
+                    const confirmationEmail: any = { template: formData.confirmationEmail.template };
+                    if (formData.confirmationEmail.customData !== undefined) confirmationEmail.customData = formData.confirmationEmail.customData;
+                    eventData.confirmationEmail = confirmationEmail;
+                } else {
+                    eventData.confirmationEmail = null;
+                }
+                if (formData.reminderEmail?.template) {
+                    const reminderEmail: any = {
+                        template: formData.reminderEmail.template,
+                        daysBefore: formData.reminderEmail.daysBefore,
+                        sendHour: formData.reminderEmail.sendHour,
+                    };
+                    if (formData.reminderEmail.customData !== undefined) reminderEmail.customData = formData.reminderEmail.customData;
+                    eventData.reminderEmail = reminderEmail;
+                } else {
+                    eventData.reminderEmail = null;
+                }
             } else {
                 eventData.preRegDate = null;
                 eventData.confirmationEmail = null;
                 eventData.reminderEmail = null;
-                
                 if (sendThankYouEmail && formData.thankYouEmail?.template) {
-                    eventData.thankYouEmail = {
+                    const thankYouEmail: any = {
                         template: formData.thankYouEmail.template,
                         sendNow: thankYouEmailTiming === 'immediate',
                         sendNowAfterDays: thankYouEmailTiming === 'daysAfter' ? thankYouEmailDaysAfter : undefined,
                     };
+                    if (formData.thankYouEmail.customData !== undefined) thankYouEmail.customData = formData.thankYouEmail.customData;
+                    if (thankYouEmail.sendNow) {
+                        delete thankYouEmail.sendNowAfterDays; delete thankYouEmail.daysAfter; delete thankYouEmail.sendHour;
+                    } else if (thankYouEmail.sendNowAfterDays !== undefined) {
+                        delete thankYouEmail.sendNow; delete thankYouEmail.daysAfter; delete thankYouEmail.sendHour;
+                    } else {
+                        delete thankYouEmail.sendNow; delete thankYouEmail.daysAfter; delete thankYouEmail.sendHour;
+                    }
+                    eventData.thankYouEmail = thankYouEmail;
                 } else {
                     eventData.thankYouEmail = null;
                 }
             }
-            
-            // Handle auto-checkout
-            if (!enableAutoCheckOut) {
+            if (enableAutoCheckOut && formData.autoCheckOut?.minutesAfter && formData.autoCheckOut.postEventId) {
+                eventData.autoCheckOut = {
+                    minutesAfter: parseInt(String(formData.autoCheckOut.minutesAfter), 10),
+                    postEventId: formData.autoCheckOut.postEventId,
+                };
+            } else {
                 eventData.autoCheckOut = null;
             }
-            
-            // Convert checkInDisplay matrix back to object format
+            if (formData.checkOutEmail?.template) {
+                eventData.checkOutEmail = { template: formData.checkOutEmail.template };
+            } else {
+                eventData.checkOutEmail = null;
+            }
             if (checkInDisplayMatrix.length > 0) {
                 const checkInDisplay: Record<string, string> = {};
-                checkInDisplayMatrix.forEach(item => {
-                    if (item.questionId && item.displayName) {
-                        checkInDisplay[item.questionId] = item.displayName;
-                    }
-                });
+                checkInDisplayMatrix.forEach((item) => { if (item.questionId && item.displayName) { checkInDisplay[item.questionId] = item.displayName; } });
                 eventData.checkInDisplay = checkInDisplay;
             } else {
                 eventData.checkInDisplay = null;
             }
-            
-            const eventRef = doc(db, 'events', eventData.eventID).withConverter(EEventConverter);
-            
-            if (eventID === 'new') {
-                // Check if ID already exists
-                const existingEvent = await getDoc(eventRef);
-                if (existingEvent.exists()) {
-                    alert('An event with this ID already exists');
-                    setSaving(false);
-                    return;
-                }
-                await setDoc(eventRef, eventData);
-            } else {
-                await updateDoc(eventRef, EEventConverter.toFirestore(eventData));
+            const finalId = formData.id;
+            if (!finalId || finalId === 'new') {
+                alert('Please provide a unique Event ID');
+                setSaving(false);
+                return;
             }
-            
-            navigate('/admin');
+            const eventRef = doc(db, 'events', finalId).withConverter(EEventConverter);
+            if (eventID === 'new') {
+                const existingEvent = await getDoc(eventRef);
+                if (existingEvent.exists()) { alert('An event with this ID already exists'); setSaving(false); return; }
+                eventData.questions = "{}"; eventData.theme = "{}";
+                await setDoc(eventRef, EEventConverter.toFirestore(eventData as ExpanseEvent));
+            } else {
+                await updateDoc(eventRef, EEventConverter.toFirestore(eventData as ExpanseEvent));
+            }
+            if (afterSaveGoEditSurvey) navigate(`/admin/survey/${finalId}`); else navigate('/admin');
         } catch (error) {
             console.error('Error saving event:', error);
             alert('Error saving event. Please try again.');
         } finally {
             setSaving(false);
+            setAfterSaveGoEditSurvey(false);
         }
     };
     
@@ -469,7 +489,7 @@ export default function EditEventTailwind() {
     }
     
     return (
-        <form onSubmit={handleSubmit} className="divide-y divide-gray-900/10">
+        <form onSubmit={handleSubmit} className="divide-y divide-gray-900/10" data-testid="admin-edit-event-container">
             {/* Basic Information Section */}
             <div className="grid grid-cols-1 gap-x-8 gap-y-8 py-10 md:grid-cols-3">
                 <div className="px-4 sm:px-0">
@@ -493,14 +513,15 @@ export default function EditEventTailwind() {
                                         id="eventID"
                                         required
                                         disabled={eventID !== 'new'}
-                                        value={formData.eventID}
-                                        onChange={(e) => setFormData({ ...formData, eventID: e.target.value })}
+                                        value={eventID === 'new' ? ((formData?.id === 'new' ? '' : (formData?.id || ''))) : (formData?.id || '')}
+                                        onChange={(e) => setFormData({ ...formData, id: e.target.value })}
                                         className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#257180] sm:text-sm/6 disabled:bg-gray-50 disabled:text-gray-500"
-                                        autoComplete="off"
+                                        
+                                        data-testid="admin-edit-event-form-id-input"
                                     />
                                 </div>
                                 <p className="text-xs text-gray-500 mt-1">
-                                    The Event ID also serves as the URL {window.location.origin}/s/{formData.eventID || '{id}'}
+                                    The Event ID also serves as the URL {window.location.origin}/s/{(formData?.id && formData.id !== 'new') ? formData.id : '{id}'}
                                 </p>
                             </div>
 
@@ -517,6 +538,7 @@ export default function EditEventTailwind() {
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                         className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#257180] sm:text-sm/6"
+                                        data-testid="admin-edit-event-form-name-input"
                                     />
                                 </div>
                             </div>
@@ -534,6 +556,7 @@ export default function EditEventTailwind() {
                                         value={moment(formData.startDate).format('YYYY-MM-DD')}
                                         onChange={(e) => setFormData({ ...formData, startDate: new Date(e.target.value) })}
                                         className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#257180] sm:text-sm/6"
+                                        data-testid="admin-edit-event-form-start-date-input"
                                     />
                                 </div>
                             </div>
@@ -551,6 +574,7 @@ export default function EditEventTailwind() {
                                         value={moment(formData.endDate).format('YYYY-MM-DD')}
                                         onChange={(e) => setFormData({ ...formData, endDate: new Date(e.target.value) })}
                                         className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#257180] sm:text-sm/6"
+                                        data-testid="admin-edit-event-form-end-date-input"
                                     />
                                 </div>
                             </div>
@@ -563,8 +587,9 @@ export default function EditEventTailwind() {
                                     <select
                                         id="brand"
                                         value={formData.brand || 'Other'}
-                                        onChange={(e) => setFormData({ ...formData, brand: e.target.value || 'Other' })}
+                                        onChange={(e) => setFormData({ ...formData, brand: (e.target.value || 'Other') as 'Ford' | 'Lincoln' | 'Other' })}
                                         className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-[#257180] sm:text-sm/6"
+                                        data-testid="admin-edit-event-form-brand-select"
                                     >
                                         <option value="Other">Other (Default)</option>
                                         <option value="Ford">Ford</option>
@@ -575,12 +600,13 @@ export default function EditEventTailwind() {
 
                             <div className="col-span-full">
                                 <label htmlFor="tags" className="block text-sm/6 font-medium text-gray-900">
-                                    Tags
+                                    Event Access Tags
                                 </label>
+                                <p className="text-xs text-gray-500 mt-1">Select tags to control which users can access this event. Only users with at least one matching tag will see this event.</p>
                                 <div className="mt-2">
                                     <TagCombobox
                                         availableTags={availableTags}
-                                        selectedTags={formData.tags}
+                                        selectedTags={formData.tags || []}
                                         onChange={(tags) => setFormData({ ...formData, tags })}
                                     />
                                 </div>
@@ -616,8 +642,8 @@ export default function EditEventTailwind() {
                                                     type="text"
                                         autoComplete="off"
                                                     id="fordEventID"
-                                                    value={formData.fordEventID || ''}
-                                                    onChange={(e) => setFormData({ ...formData, fordEventID: e.target.value || null })}
+                                                    value={formData.fordEventID !== undefined ? String(formData.fordEventID) : ''}
+                                                    onChange={(e) => setFormData({ ...formData, fordEventID: e.target.value ? parseInt(e.target.value, 10) : undefined })}
                                                     className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#257180] sm:text-sm/6"
                                                 />
                                             </div>
@@ -636,7 +662,7 @@ export default function EditEventTailwind() {
                                         autoComplete="off"
                                                     id="surveyType"
                                                     value={formData.surveyType || ''}
-                                                    onChange={(e) => setFormData({ ...formData, surveyType: e.target.value || null })}
+                                                    onChange={(e) => setFormData({ ...formData, surveyType: (e.target.value || undefined) as ExpanseEvent['surveyType'] })}
                                                     className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#257180] sm:text-sm/6"
                                                 />
                                             </div>
@@ -726,8 +752,8 @@ export default function EditEventTailwind() {
                                                     type="text"
                                         autoComplete="off"
                                                     id="lincolnEventID"
-                                                    value={formData.lincolnEventID || ''}
-                                                    onChange={(e) => setFormData({ ...formData, lincolnEventID: e.target.value || null })}
+                                                    value={formData.lincolnEventID !== undefined ? String(formData.lincolnEventID) : ''}
+                                                    onChange={(e) => setFormData({ ...formData, lincolnEventID: e.target.value ? parseInt(e.target.value, 10) : undefined })}
                                                     className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#257180] sm:text-sm/6"
                                                 />
                                             </div>
@@ -746,7 +772,7 @@ export default function EditEventTailwind() {
                                         autoComplete="off"
                                                     id="lincolnSurveyType"
                                                     value={formData.surveyType || ''}
-                                                    onChange={(e) => setFormData({ ...formData, surveyType: e.target.value || null })}
+                                                    onChange={(e) => setFormData({ ...formData, surveyType: (e.target.value || undefined) as ExpanseEvent['surveyType'] })}
                                                     className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#257180] sm:text-sm/6"
                                                 />
                                             </div>
@@ -846,9 +872,9 @@ export default function EditEventTailwind() {
                                 <PreEventCombobox
                                     label="Pre-Event Expanse ID"
                                     value={formData._preEventID || ''}
-                                    onChange={(value) => setFormData({ ...formData, _preEventID: value || null })}
+                                    onChange={(value) => setFormData({ ...formData, _preEventID: value || undefined })}
                                     startDate={formData.startDate}
-                                    currentEventId={eventID === 'new' ? null : eventID}
+                                    currentEventId={formData.id === 'new' ? null : formData.id}
                                 />
                                 <p className="text-xs text-gray-500 mt-1">
                                     The Expanse ID of the pre-event
@@ -1216,7 +1242,7 @@ export default function EditEventTailwind() {
             </div>
 
             {/* Check-In Display Configuration */}
-            {formData.eventID !== 'new' && (
+            {formData.id !== 'new' && (
                 <div className="grid grid-cols-1 gap-x-8 gap-y-8 py-10 md:grid-cols-3">
                     <div className="px-4 sm:px-0">
                         <h2 className="text-base/7 font-semibold text-gray-900">Check-In Display Configuration</h2>
@@ -1332,6 +1358,9 @@ export default function EditEventTailwind() {
                                             className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#257180] sm:text-sm/6"
                                         />
                                     </div>
+                                    {formData.limit_reached_message && (
+                                        <div className="mt-3 p-3 border border-gray-200 rounded bg-gray-50" id="markdown-preview" dangerouslySetInnerHTML={{ __html: (new Showdown.Converter()).makeHtml(formData.limit_reached_message) }} />
+                                    )}
                                 </div>
                             )}
 
@@ -1340,18 +1369,26 @@ export default function EditEventTailwind() {
                                     Thank You Message
                                 </label>
                                 <p className="text-xs text-gray-500 mt-1">
-                                    Message shown after survey completion
+                                    Message shown after survey completion (supports Markdown). You can use variables from survey data with {'{{variable_name}}'} syntax.
+                                    <br />
+                                    Example: {'"Thank you {{first_name}}! Visit: ford.com/more?id={{device_survey_guid}}"'}
                                 </p>
                                 <div className="mt-2">
                                     <textarea
                                         id="thanks"
                                         rows={3}
                                         value={formData.thanks || ''}
-                                        onChange={(e) => setFormData({ ...formData, thanks: e.target.value || null })}
+                                        onChange={(e) => setFormData({ ...formData, thanks: e.target.value || undefined })}
                                         placeholder="Thank you for completing the survey!"
                                         className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#257180] sm:text-sm/6"
                                     />
                                 </div>
+                                {formData.thanks && (
+                                    <div className="mt-3 p-3 border border-gray-200 rounded bg-gray-50" id="markdown-preview-thanks">
+                                        <p className="text-xs text-gray-500 mb-2">Preview (variables shown as placeholders):</p>
+                                        <div dangerouslySetInnerHTML={{ __html: markdownConverter.makeHtml(formData.thanks) }} />
+                                    </div>
+                                )}
                             </div>
 
                             <div className="col-span-full">
@@ -1406,8 +1443,18 @@ export default function EditEventTailwind() {
                     type="submit"
                     disabled={saving}
                     className="rounded-md bg-[#257180] px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-[#1a4d57] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#257180] disabled:opacity-50 disabled:cursor-not-allowed"
+                    data-testid="admin-edit-event-form-save-button"
                 >
                     {saving ? 'Saving...' : 'Save'}
+                </button>
+                <button
+                    type="button"
+                    disabled={saving}
+                    onClick={() => { setAfterSaveGoEditSurvey(true); const form = document.querySelector('form'); (form as HTMLFormElement)?.requestSubmit(); }}
+                    className="rounded-md bg-[#4b5563] px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-[#374151] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4b5563] disabled:opacity-50 disabled:cursor-not-allowed"
+                    data-testid="admin-edit-event-form-save-and-edit-survey-button"
+                >
+                    {saving ? 'Saving...' : 'Save and Edit Survey'}
                 </button>
             </div>
         </form>

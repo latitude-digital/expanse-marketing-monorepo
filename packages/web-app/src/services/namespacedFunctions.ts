@@ -21,11 +21,12 @@ export function callFunction<T = any, R = any>(functionName: string): (data?: T)
 
 // Export pre-configured namespaced functions for convenience
 export const setCloudFrontCookies = callFunction('setCloudFrontCookies');
+// Loosen input typing to support legacy eventId/bypass callers
 export const checkSurveyLimit = callFunction<
-  { surveyId: string; deviceId?: string },
+  { surveyId?: string; eventId?: string; deviceId?: string; bypass?: string },
   { canSubmit: boolean; responseCount: number; maxResponses: number; remaining: number }
 >('checkSurveyLimit');
 export const validateSurveyLimit = callFunction<
-  { surveyId: string; deviceId?: string; responseData: any },
+  { surveyId?: string; eventId?: string; deviceId?: string; responseData?: any; bypass?: string },
   { success: boolean; responseId: string; message: string }
 >('validateSurveyLimit');

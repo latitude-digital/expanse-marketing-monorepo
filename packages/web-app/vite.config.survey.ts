@@ -40,7 +40,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
-      '@expanse/shared': path.resolve(__dirname, '../shared/src'),
+      '@meridian-event-tech/shared': path.resolve(__dirname, '../shared/src'),
     },
   },
   

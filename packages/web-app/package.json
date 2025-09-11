@@ -1,9 +1,9 @@
 {
-  "name": "@expanse/web-app",
+  "name": "@meridian-event-tech/web-app",
   "version": "1.0.1756848973",
   "private": true,
   "dependencies": {
-    "@expanse/shared": "workspace:*",
+    "@meridian-event-tech/shared": "workspace:*",
     "@headlessui/react": "^2.2.7",
     "@heroicons/react": "^2.2.0",
     "@internationalized/date": "^3.8.2",

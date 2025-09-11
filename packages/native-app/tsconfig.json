@@ -31,10 +31,10 @@
       "@/*": [
         "./src/*"
       ],
-      "@expanse/shared": [
+      "@meridian-event-tech/shared": [
         "../shared/dist/index"
       ],
-      "@expanse/shared/*": [
+      "@meridian-event-tech/shared/*": [
         "../shared/dist/*"
       ]
     }

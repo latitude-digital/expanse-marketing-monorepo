@@ -31,6 +31,7 @@ import Survey from './screens/Survey';
 import Thanks from './screens/Thanks';
 import Stats from './screens/Stats';
 import Dashboard from './screens/Dashboard';
+import LincolnCharityEvents from './screens/LincolnCharityEvents';
 
 // Admin components
 import AdminLayout from './components/AdminLayout';
@@ -79,6 +80,7 @@ root.render(
           <Route path="forgot-password" element={<ForgotPassword />} />
           <Route path="reset-password" element={<ResetPassword />} />
           <Route path="ford/:eventID" element={<Experiential />} />
+          <Route path="lincoln-charity/:tagId" element={<LincolnCharityEvents />} />
           <Route path="s/:eventID/" element={<Survey />} />
           <Route path="s/:eventID/in/login" element={<Login />} />
           <Route path="s/:eventID/in" element={<ProtectedRoute><EventAccessRoute><CheckIn /></EventAccessRoute></ProtectedRoute>} />

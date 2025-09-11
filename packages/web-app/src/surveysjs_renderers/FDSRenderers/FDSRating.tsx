@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
 import { QuestionRatingModel } from "survey-core";
-import { StyledButton } from "@ui/ford-ui-components/src/v2/button/Button";
-import { StyledSelectDropdown as SelectDropdown } from "@ui/ford-ui-components/src/v2/selectDropdown/SelectDropdown";
+import { StyledButton, StyledSelectDropdown as SelectDropdown } from "@ui/ford-ui-components";
 import { useQuestionValidation, renderLabel, renderDescription, getOptionalText, FDSQuestionWrapper } from "./FDSShared";
 
 // Custom hook for responsive behavior

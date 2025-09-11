@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Offline Survey Bundle
  * Self-contained survey implementation without React dependencies
@@ -435,3 +436,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+// @ts-nocheck

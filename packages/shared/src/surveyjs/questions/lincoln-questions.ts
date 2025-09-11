@@ -14,7 +14,7 @@ export const lincolnQuestions: QuestionConfig[] = [
         name: '_ffs',
         type: 'text',
         default: 'voi',  // Maps to voi field in Lincoln API
-        visible: false,
+        visible: true,
       },
       {
         name: 'onlyInclude',
@@ -43,7 +43,7 @@ export const lincolnQuestions: QuestionConfig[] = [
         name: '_ffs',
         type: 'text',
         default: 'vehiclesDriven',  // Maps to vehiclesDriven field
-        visible: false,
+        visible: true,
       },
       {
         name: 'onlyInclude',
@@ -71,7 +71,7 @@ export const lincolnQuestions: QuestionConfig[] = [
         name: '_ffs',
         type: 'text',
         default: 'emailOptIn',  // Maps to emailOptIn field
-        visible: false,
+        visible: true,
       },
     ],
   },
@@ -84,7 +84,7 @@ export const lincolnQuestions: QuestionConfig[] = [
         name: '_ffs',
         type: 'text',
         default: 'impression',  // Maps to impression field
-        visible: false,
+        visible: true,
       },
     ],
   },
@@ -97,7 +97,7 @@ export const lincolnQuestions: QuestionConfig[] = [
         name: '_ffs',
         type: 'text',
         default: 'impression_post',  // Maps to impression_post field
-        visible: false,
+        visible: true,
       },
     ],
   },
@@ -110,7 +110,7 @@ export const lincolnQuestions: QuestionConfig[] = [
         name: '_ffs',
         type: 'text',
         default: 'how_likely_recommend',  // Maps to how_likely_recommend field
-        visible: false,
+        visible: true,
       },
     ],
   },
@@ -123,7 +123,7 @@ export const lincolnQuestions: QuestionConfig[] = [
         name: '_ffs',
         type: 'text',
         default: 'how_likely_recommend_post',  // Maps to how_likely_recommend_post field
-        visible: false,
+        visible: true,
       },
     ],
   },
@@ -136,7 +136,7 @@ export const lincolnQuestions: QuestionConfig[] = [
         name: '_ffs',
         type: 'text',
         default: 'how_likely_purchasing',  // Maps to how_likely_purchasing field
-        visible: false,
+        visible: true,
       },
     ],
   },
@@ -149,7 +149,7 @@ export const lincolnQuestions: QuestionConfig[] = [
         name: '_ffs',
         type: 'text',
         default: 'how_likely_purchasing_post',  // Maps to how_likely_purchasing_post field
-        visible: false,
+        visible: true,
       },
     ],
   },

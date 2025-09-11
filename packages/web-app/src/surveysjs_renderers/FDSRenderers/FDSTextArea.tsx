@@ -1,7 +1,7 @@
 import React from "react";
 import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
 import { QuestionCommentModel } from "survey-core";
-import { TextArea } from "@ui/ford-ui-components/src/v2/textarea/textarea";
+import { TextArea } from "@ui/ford-ui-components";
 import { useQuestionValidation, renderLabel, renderDescription, getOptionalText } from "./FDSShared";
 
 export class FDSTextAreaRenderer extends SurveyQuestionElementBase {

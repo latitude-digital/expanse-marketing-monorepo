@@ -1,5 +1,5 @@
 import firestore from '@react-native-firebase/firestore';
-import { ExpanseEvent } from '@expanse/shared/types';
+import { MeridianEvent as ExpanseEvent } from '@meridian-event-tech/shared/types';
 
 // Connect to emulator in development
 const initializeFirestore = () => {

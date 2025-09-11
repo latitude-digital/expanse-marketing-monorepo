@@ -143,11 +143,6 @@ function TagCombobox({
                                     type="button"
                                     onClick={() => removeTag(tagId)}
                                     className="group relative -mr-1 size-3.5 rounded-xs"
-                                    style={{ 
-                                        ':hover': {
-                                            backgroundColor: getLighterTint(tag.color, 0.2)
-                                        }
-                                    }}
                                     onMouseEnter={(e) => {
                                         e.currentTarget.style.backgroundColor = getLighterTint(tag.color, 0.2);
                                     }}

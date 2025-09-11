@@ -7,8 +7,8 @@ import { mapToFordPayload } from '../mappers/ford';
 import { mapToLincolnPayload } from '../mappers/lincoln';
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
-import { ExpanseEvent } from '../types/expanse';
-import { SurveyData } from '../types/survey';
+import { MeridianEvent } from '../types/meridian-event';
+import { MeridianSurveyData as SurveyData } from '../types/core';
 import { 
   getCurrentEnvironment,
   normalizeBrand,
@@ -34,7 +34,7 @@ export interface UploadResult {
  * @param surveyModel - Optional SurveyJS Model instance (can be recreated from event.surveyJSModel if not provided)
  */
 export async function uploadSurveyToAPI(
-  event: ExpanseEvent,
+  event: MeridianEvent,
   surveyData: SurveyData,
   surveyModel?: Model
 ): Promise<UploadResult> {
@@ -115,7 +115,7 @@ export async function uploadSurveyToAPI(
 async function uploadToFordAPI(
   surveyModel: Model,
   surveyData: SurveyData,
-  event: ExpanseEvent
+  event: MeridianEvent
 ): Promise<UploadResult> {
   console.log('[Ford Upload] Starting Ford API submission process');
   console.log('[Ford Upload] Event ID:', event.fordEventID);
@@ -186,7 +186,7 @@ async function uploadToFordAPI(
 async function uploadToLincolnAPI(
   surveyModel: Model,
   surveyData: SurveyData,
-  event: ExpanseEvent
+  event: MeridianEvent
 ): Promise<UploadResult> {
   console.log('[Lincoln Upload] Starting Lincoln API submission process');
   console.log('[Lincoln Upload] Event ID:', event.lincolnEventID);
@@ -280,4 +280,3 @@ async function uploadToLincolnAPI(
 
   return { success: true };
 }
-

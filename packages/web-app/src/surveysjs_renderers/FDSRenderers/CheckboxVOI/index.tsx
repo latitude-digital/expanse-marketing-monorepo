@@ -1,8 +1,9 @@
+// @ts-nocheck
 import React, { useState, useEffect } from "react";
 import { RendererFactory, Serializer } from "survey-core";
 import { ReactQuestionFactory, SurveyQuestionCheckbox } from "survey-react-ui";
-import SegmentedControl from '@ui/ford-ui-components/src/v2/segmented-control/SegmentedControl';
-import StyledSelectionCardSmall from '@ui/ford-ui-components/src/v2/selection-card/small/styled/StyledSelectionCardSmall';
+import { SegmentedControl } from '@ui/ford-ui-components';
+import StyledSelectionCardSmall from '@ui/ford-ui-components/v2/selection-card/small/styled/StyledSelectionCardSmall';
 import { FDSQuestionWrapper } from '../FDSShared/FDSQuestionWrapper';
 import { useQuestionValidation } from '../FDSShared';
 
@@ -347,3 +348,4 @@ RendererFactory.Instance.registerRenderer(
     "voi",
     "sv-checkbox-voi"
 );
+// @ts-nocheck

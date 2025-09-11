@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography } from "@ui/ford-ui-components/src/v2/typography/Typography";
+import { Typography } from "@ui/ford-ui-components";
 import { renderLabel, renderDescription, processMarkdown, getOptionalText } from './utils';
 import { FDSErrorDisplay } from './FDSErrorDisplay';
 import { FDSRequiredIndicator } from './FDSRequiredIndicator';

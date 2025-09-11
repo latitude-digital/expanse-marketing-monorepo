@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import type { ExpanseEvent, Brand } from '@expanse/shared/types';
+import type { MeridianEvent as ExpanseEvent, Brand } from '@meridian-event-tech/shared/types';
 
 interface EventCardProps {
   event: ExpanseEvent;

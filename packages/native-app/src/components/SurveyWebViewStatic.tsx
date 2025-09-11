@@ -4,7 +4,7 @@ import { WebView } from 'react-native-webview';
 import StaticServer from '@dr.pogodin/react-native-static-server';
 import RNFS from '@dr.pogodin/react-native-fs';
 import { Asset } from 'expo-asset';
-import { Brand } from '@expanse/shared';
+import { Brand } from '@meridian-event-tech/shared';
 
 interface SurveyWebViewStaticProps {
   surveyJson: any;

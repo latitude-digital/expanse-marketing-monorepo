@@ -16,6 +16,8 @@ export const FORD_BASE_URLS: Record<Environment, string> = {
 export const FORD_ENDPOINTS = {
   SURVEY_UPLOAD_V10: '/microsite/v1/survey/upload/v10',
   SURVEY_UPLOAD_V11: '/microsite/v1/survey/upload/v11',
+  EVENTS_CHECK: '/microsite/v1/events/check/v2',
+  EVENTS_QR: '/microsite/v1/events/qr',
 } as const;
 
 // Ford API Authentication Token

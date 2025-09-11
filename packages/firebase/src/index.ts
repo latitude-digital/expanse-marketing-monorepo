@@ -6,6 +6,7 @@ import {
   validateSurveyLimitImpl,
   getLionsFollowupsImpl
 } from "./functions";
+import { getLincolnCharityEventsImpl } from "./functions/getLincolnCharityEvents";
 import {
   getSurveyImpl,
   saveSurveyImpl,
@@ -45,7 +46,7 @@ import {
 } from "./user-management-functions";
 
 // Re-export shared utilities from shared package
-export { uploadSurveyToAPI, type UploadResult } from "@expanse/shared";
+export { uploadSurveyToAPI, type UploadResult } from "@meridian-event-tech/shared";
 
 // Initialize Firebase Admin SDK with emulator support
 let app: admin.app.App;
@@ -79,6 +80,9 @@ const validateSurveyLimitProd = validateSurveyLimitImpl(app, "(default)");
 
 const getLionsFollowupsStaging = getLionsFollowupsImpl(app, "staging");
 const getLionsFollowupsProd = getLionsFollowupsImpl(app, "(default)");
+
+const getLincolnCharityEventsStaging = getLincolnCharityEventsImpl(app, "staging");
+const getLincolnCharityEventsProd = getLincolnCharityEventsImpl(app, "(default)");
 
 // Functions from survey-functions.ts
 const getSurveyStaging = getSurveyImpl(app, "staging");
@@ -133,6 +137,7 @@ export const staging = {
   checkSurveyLimit: checkSurveyLimitStaging,
   validateSurveyLimit: validateSurveyLimitStaging,
   getLionsFollowups: getLionsFollowupsStaging,
+  getLincolnCharityEvents: getLincolnCharityEventsStaging,
   getSurvey: getSurveyStaging,
   saveSurvey: saveSurveyStaging,
   validateEmail,
@@ -166,6 +171,7 @@ export const prod = {
   checkSurveyLimit: checkSurveyLimitProd,
   validateSurveyLimit: validateSurveyLimitProd,
   getLionsFollowups: getLionsFollowupsProd,
+  getLincolnCharityEvents: getLincolnCharityEventsProd,
   getSurvey: getSurveyProd,
   saveSurvey: saveSurveyProd,
   validateEmail,

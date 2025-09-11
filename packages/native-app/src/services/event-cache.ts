@@ -1,6 +1,6 @@
 import { DatabaseService } from './database';
 import { DatabaseOperations } from './database-operations';
-import type { ExpanseEvent } from '@expanse/shared/types';
+import type { MeridianEvent as ExpanseEvent } from '@meridian-event-tech/shared/types';
 
 export class EventCacheService {
   private dbService: DatabaseService;

@@ -3,37 +3,19 @@
  * This file consolidates all shared type definitions to eliminate duplication
  */
 
-import { Model, Question } from 'survey-core';
-
-// Re-export SurveyJS types directly - don't recreate them
+// Use SurveyJS types by re-export; don't recreate
 export type { Model as SurveyJSModel, Question as SurveyJSQuestion } from 'survey-core';
 
 /**
  * Survey Event - Consolidated from web-app and shared packages
  */
-export interface SurveyEvent {
-  name: string;
-  brand?: string;
-  fordEventID?: string;
-  lincolnEventID?: string;
-  disabled?: string;
-  _preEventID?: string;
-  survey_count_limit?: number;
-  limit_reached_message?: string;
-  surveyType?: string;
-  questions?: string;  // Legacy field - to be migrated to surveyJSModel
-  surveyJSModel?: any;  // SurveyJS model definition (dynamic structure)
-  theme?: string;  // Legacy field
-  surveyJSTheme?: any;  // New theme format
-  showHeader?: boolean;
-  showLanguageChooser?: boolean;
-}
+// SurveyEvent removed in favor of MeridianEvent
 
 /**
  * Survey Data - Core fields that exist regardless of survey definition
  * Everything else comes from the dynamic survey form
  */
-export interface SurveyData {
+export interface MeridianSurveyData {
   // Core identification fields (always present)
   device_survey_guid?: string | null;
   event_id?: string;
@@ -64,18 +46,12 @@ export interface SurveyData {
   _sms?: unknown;
   _exported?: unknown;
   
-  // PostTD specific field
-  pre_drive_survey_guid?: string | null;
-  
   // All other fields are dynamic based on survey definition
   // This includes first_name, last_name, email, phone, voi, etc.
   // which are commonly used but not guaranteed to exist
   [key: string]: unknown;
 }
 
-/**
- * Custom survey data - completely flexible container
- */
 export type CustomSurveyData = Record<string, unknown>;
 
 /**
@@ -94,7 +70,7 @@ export interface PreSurvey {
  */
 export interface GetSurveyResponse {
   success: boolean;
-  event: SurveyEvent;
+  event: unknown;
   preSurvey?: PreSurvey;
   message?: string;
 }
@@ -139,12 +115,7 @@ export interface UploadResponse {
 /**
  * Email template structure
  */
-export interface EmailTemplate {
-  templateId?: string;
-  subject?: string;
-  body?: string;
-  variables?: Record<string, string>;
-}
+// EmailTemplate removed from survey data domain; use string IDs where needed
 
 /**
  * Email validation result from SparkPost
@@ -168,51 +139,22 @@ export interface EmailValidationResponse {
  * This is used internally to map survey questions to Ford/Lincoln API fields
  * Survey questions have an _ffs property that maps to these fields
  */
-export interface FFSData {
-  signature?: string | null;
-  minor_signature?: string | null;
-  address1?: string | null;
-  address2?: string | null;
-  city?: string | null;
-  state?: string | null;
-  zip_code?: string | null;
-  country_code?: string | null;
-  voi?: string[];  // Array of vehicle IDs
-  email_opt_in?: number;
-  age_bracket?: string | null;
-  [key: string]: string | string[] | number | null | undefined;
-}
+// Remove duplicated/guessed FFSData; mappers handle dynamic mapping
 
 /**
  * Opt-in data structure
  */
-export interface OptIn {
-  type: 'email' | 'sms' | 'phone' | 'mail';
-  value: boolean;
-  timestamp?: Date;
-  source?: string;
-}
+// Remove guessed OptIn type
 
 /**
  * Address data from survey
  */
-export interface AddressData {
-  address1?: string | null;
-  address2?: string | null;
-  city?: string | null;
-  state?: string | null;
-  zip_code?: string | null;
-  country?: string | null;
-}
+// Remove unused AddressData
 
 /**
  * Waiver data structure
  */
-export interface WaiverData {
-  signature?: string;
-  minorsYesNo?: '0' | '1';
-  [key: string]: string | undefined;
-}
+// Remove unused WaiverData
 
 // Removed VehicleOfInterest interface - VOI is just string[] (array of vehicle IDs)
 

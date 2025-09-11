@@ -22,7 +22,7 @@ import { themeProvider } from './src/utils/theme-provider';
 import { offlineDetector } from './src/utils/offline-detector';
 
 // Types
-import type { ExpanseEvent } from '@expanse/shared/types';
+import type { MeridianEvent as ExpanseEvent } from '@meridian-event-tech/shared/types';
 import type { SurveyCompletionData } from './src/components/SurveyWebView';
 
 export type RootStackParamList = {

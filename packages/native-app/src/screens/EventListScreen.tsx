@@ -13,7 +13,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { router } from 'expo-router';
-import type { ExpanseEvent, Brand } from '@expanse/shared/types';
+import type { MeridianEvent as ExpanseEvent, Brand } from '@meridian-event-tech/shared/types';
 import Icon from '../components/Icon';
 
 export type EventFilter = 'today' | 'upcoming' | 'past' | 'all';

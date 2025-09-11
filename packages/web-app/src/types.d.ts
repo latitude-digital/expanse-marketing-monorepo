@@ -32,26 +32,26 @@ type ExpanseEvent = {
   brand?: 'Ford' | 'Lincoln' | 'Other';
   fordEventID?: number;
   lincolnEventID?: number;
-  surveyType?: "basic" | "preTD" | "postTD";
-  _preEventID?: string;
+  surveyType?: "basic" | "preTD" | "postTD" | null;
+  _preEventID?: string | null;
   checkInDisplay?: Record<string, string>;
-  confirmationEmail?: EmailDefinition;
+  confirmationEmail?: EmailDefinition | null;
   disabled?: string;
-  preRegDate?: Date;
+  preRegDate?: Date | null;
   startDate: Date;
   endDate: Date;
   name: string;
   questions: ISurvey;  // Legacy JSON string field
   surveyJSModel?: ISurvey;  // New map field
-  reminderEmail?: EmailDefinition;
-  thankYouEmail?: EmailDefinition;
-  autoCheckOut?: AutoCheckOutDefinition;
-  checkOutEmail?: EmailDefinition;
+  reminderEmail?: EmailDefinition | null;
+  thankYouEmail?: EmailDefinition | null;
+  autoCheckOut?: AutoCheckOutDefinition | null;
+  checkOutEmail?: EmailDefinition | null;
   thanks?: string;
   theme: IExtendedTheme | ITheme;  // Legacy JSON string field
   surveyJSTheme?: IExtendedTheme | ITheme;  // New map field
-  survey_count_limit?: number;
-  limit_reached_message?: string;
+  survey_count_limit?: number | null;
+  limit_reached_message?: string | null;
   showLanguageChooser?: boolean;
   showHeader?: boolean;
   showFooter?: boolean;

@@ -8,21 +8,32 @@ import { IQuestionRegistrar, QuestionConfig, QuestionProperty } from '../types';
 
 export class FrontendRegistrar implements IQuestionRegistrar {
   registerQuestion(config: QuestionConfig): void {
+    // Extract _ffs property (if provided)
+    const ffsProperty = config.properties?.find(p => p.name === '_ffs');
+
     // Check if already registered
     if (ComponentCollection.Instance.getCustomQuestionByName(config.name)) {
       console.log(`[Frontend] Question type already registered: ${config.name}`);
+      // Ensure _ffs default and readOnly are applied even if type pre-registered elsewhere
+      if (ffsProperty) {
+        const prop = Serializer.findProperty(config.name, '_ffs');
+        if (prop) {
+          if (ffsProperty.default !== undefined) prop.default = ffsProperty.default;
+          prop.readOnly = true;
+          prop.visible = ffsProperty.visible !== undefined ? ffsProperty.visible : prop.visible;
+        }
+      }
       return;
     }
 
-    // Build the question JSON with defaults
+    // Build the question JSON - merge all defaultValues first, then override type
     const questionJSON: any = {
+      ...config.defaultValues,
       type: config.baseType,
       name: config.name,
-      ...config.defaultValues,
     };
-
+    
     // Apply _ffs if defined in properties
-    const ffsProperty = config.properties?.find(p => p.name === '_ffs');
     if (ffsProperty && ffsProperty.default) {
       questionJSON._ffs = ffsProperty.default;
     }
@@ -71,7 +82,22 @@ export class FrontendRegistrar implements IQuestionRegistrar {
       },
     });
 
-    console.log(`[Frontend] Registered question type: ${config.name}`);
+    // If this pre-defined question declares an _ffs default, make _ffs read-only for this type
+    if (ffsProperty) {
+      const prop = Serializer.findProperty(config.name, '_ffs');
+      if (prop) {
+        if (ffsProperty.default !== undefined) prop.default = ffsProperty.default;
+        prop.readOnly = true; // visible in property grid but not editable for this specific type
+        if (ffsProperty.visible !== undefined) prop.visible = ffsProperty.visible;
+      }
+    }
+
+    console.log(`[Frontend] Registered question type: ${config.name}`, {
+      baseType: config.baseType,
+      questionJSON: questionJSON,
+      hasChoices: !!questionJSON.choices,
+      renderAs: questionJSON.renderAs
+    });
   }
 
   registerProperty(questionType: string, property: QuestionProperty): void {

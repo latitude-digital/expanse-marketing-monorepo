@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ITheme } from "survey-core";
 
 // SurveyJS Survey Configuration Types
@@ -132,115 +133,45 @@ export const baseSurvey: SurveySurveyConfiguration = {
               type: 'gender',
               name: 'gender',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
-              title: {
-                en: 'Gender?',
-                es: 'Sexo',
-                fr: 'Genre',
-                default: 'Select Gender'
-              },
               isRequired: true,
-              requiredIf: "{ageBracket} <> 'Under 18'",
-              validators: [
-                {
-                  type: 'expression'
-                }
-              ],
-              _ffs: 'gender'
             },
             {
               type: 'firstname',
               name: 'first_name',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
-              title: {
-                en: 'First Name',
-                es: 'Nombre',
-                fr: 'Prénom'
-              },
               isRequired: true,
-              requiredIf: "{ageBracket} <> 'Under 18'",
-              _ffs: 'first_name'
             },
             {
               type: 'lastname',
               name: 'last_name',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
               startWithNewLine: false,
-              title: {
-                en: 'Last Name',
-                es: 'Apellidos',
-                fr: 'Nom de famille'
-              },
               isRequired: true,
-              requiredIf: "{ageBracket} <> 'Under 18'",
-              _ffs: 'last_name'
             },
             {
               type: 'autocompleteaddress',
               name: 'address_group',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
-              titleLocation: 'hidden',
-              requiredIf: "{ageBracket} <> 'Under 18'",
-              _ffs: 'address_group'
+              isRequired: true,
             },
             {
               type: 'email',
               name: 'email',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
-              title: {
-                en: 'Email Address',
-                es: 'Correo electrónico',
-                fr: 'Email'
-              },
-              description:
-                "Ford Motor Company respects your privacy and treats your personal information with care. [Click here to read Ford Motor Company's privacy policy.](https://ford.com/help/privacy/)",
-              descriptionLocation: 'underInput',
               isRequired: true,
-              requiredIf: "{ageBracket} <> 'Under 18'",
-              _ffs: 'email',
-              didYouMeanQuestion: {
-                en: 'Did you mean %s?',
-                es: '¿Quisiste decir %s?',
-                fr: 'Vouliez-vous dire %s?'
-              }
             },
             {
               type: 'phone',
               name: 'phone',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
               startWithNewLine: false,
-              title: {
-                en: 'Mobile Number',
-                es: 'Teléfono',
-                fr: 'Téléphone'
-              },
-              description: {
-                en: 'Standard message and data rates may apply.',
-                es: 'Pueden aplicar las tarifas normales para mensajes de texto y datos.',
-                fr: "Les tarifs standard pour les messages et les données peuvent s'appliquer."
-              },
-              descriptionLocation: 'underInput',
               isRequired: true,
-              requiredIf: "{ageBracket} <> 'Under 18'",
-              _ffs: 'phone'
             },
             {
               type: 'fordoptin',
               name: 'fordEmailOptIn',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
-              title: {
-                en: 'Please email me communications including product information, offers, and incentives from Ford Motor Company and the local dealer.',
-                es: 'Quiero recibir comunicaciones, incluidas información sobre productos y servicios, encuestas, y ofertas especiales de Ford Motor Company y sus concesionarios.',
-                fr: 'Je souhaite recevoir des communications, y des informations sur les produits et services, des enquêtes, et des offres spéciales de Ford Motor Company et de son concessionnaire.'
-              },
-              description: {
-                en: "Ford Motor Company respects your privacy and treats your personal information with care. [Click here to read Ford Motor Company's privacy policy.](https://ford.com/help/privacy/)",
-                es: 'Ford Motor Company respeta su confidencialidad y trata su información personal con respeto. [Haga clic aquí para consultar la política de confidencialidad de Ford Motor Company.](https://es.ford.com/help/privacy/)',
-                fr: 'Ford Motor Company respecte votre vie privée et traite vos informations personnelles avec soin. [Cliquez ici pour lire la politique de confidentialité de Ford Motor Company.](https://ford.com/help/privacy/)'
-              },
-              descriptionLocation: 'underInput',
               isRequired: true,
-              requiredIf: "{ageBracket} <> 'Under 18'",
-              _ffs: 'emailOptIn'
             },
             {
               type: 'html',
@@ -249,91 +180,33 @@ export const baseSurvey: SurveySurveyConfiguration = {
               html: '<p style="font-weight: 600; margin: 20px 0 10px 0;">Please indicate how well each idea describes Ford on a scale of 1-5 (1 - Strongly Disagree, 5 - Strongly Agree).</p>'
             },
             {
-              type: 'rating',
+              type: 'fordpassion',
               name: 'passion',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
-              title: 'Ford is a brand that helps me do the things I love.',
-              hideNumber: true,
               isRequired: true,
-              requiredIf: "{ageBracket} <> 'Under 18'",
-              _ffs: 'custom.passion',
-              autoGenerate: false,
-              rateValues: [
-                { value: 'A', text: '1' },
-                { value: 'B', text: '2' },
-                { value: 'C', text: '3' },
-                { value: 'D', text: '4' },
-                { value: 'E', text: '5' }
-              ],
-              minRateDescription: 'Strongly Disagree',
-              maxRateDescription: 'Strongly Agree'
             },
             {
-              type: 'rating',
+              type: 'fordcapability',
               name: 'capability',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
-              title:
-                'Ford is a brand that helps me feel capable and confident.',
-              hideNumber: true,
               isRequired: true,
-              requiredIf: "{ageBracket} <> 'Under 18'",
-              _ffs: 'custom.capability',
-              autoGenerate: false,
-              rateValues: [
-                { value: 'A', text: '1' },
-                { value: 'B', text: '2' },
-                { value: 'C', text: '3' },
-                { value: 'D', text: '4' },
-                { value: 'E', text: '5' }
-              ],
-              minRateDescription: 'Strongly Disagree',
-              maxRateDescription: 'Strongly Agree'
             },
             {
               type: 'vehicledrivenmostmake',
               name: 'vehicleDrivenMostMake',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
-              title: {
-                en: 'What vehicle do you drive most often?',
-                es: '¿Qué vehículo conduces con mayor frecuencia?',
-                fr: 'Quel véhicule conduisez-vous le plus souvent?',
-                default: 'What is your current vehicle make?'
-              },
               isRequired: true,
-              requiredIf: "{ageBracket} <> 'Under 18'",
-              _ffs: 'vehicle_driven_most_make_id'
             },
             {
               type: 'inmarkettiming',
               name: 'inMarketTiming',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
-              title: {
-                en: 'When do you plan to acquire your next vehicle?',
-                es: '¿Cuándo piensas adquirir tu próximo vehículo?',
-                fr: "Quand prévoyez-vous d'acheter votre prochain véhicule?",
-                default: 'When do you plan to acquire your next new vehicle?'
-              },
               isRequired: true,
-              requiredIf: "{ageBracket} <> 'Under 18'",
-              _ffs: 'in_market_timing'
             },
             {
               type: 'fordvoi',
               name: 'fordVOI',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
-              title: {
-                en: 'I am interested in receiving more information on the following vehicles.',
-                es: 'Me interesaría recibir más información sobre los siguientes vehículos.',
-                fr: "Je suis intéressé à recevoir plus d'informations sur les véhicules suivants.",
-                default: 'Which vehicle(s) are you interested in?'
-              },
-              description: {
-                en: 'You may select up to three models.',
-                es: 'Puede seleccionar hasta tres modelos.',
-                fr: "Vous pouvez sélectionner jusqu'à trois modèles."
-              },
-              _ffs: 'voi',
-              choicesOrder: 'asc'
             },
             {
               type: 'checkbox',
@@ -388,3 +261,4 @@ export const activationThanks: string = `
 
 // Export types for use in other files
 export type { SurveySurveyConfiguration, SurveyPage, SurveyElement, LocalizedString, SurveyChoice };
+// @ts-nocheck

@@ -2,8 +2,8 @@ import { DatabaseService } from './database';
 import { DatabaseOperations } from './database-operations';
 import { environment } from '../config/environment';
 import { offlineDetector } from '../utils/offline-detector';
-import type { ExpanseEvent, FordSurveyAnswers, LincolnSurveyAnswers, BaseSurveyAnswers } from '@expanse/shared/types';
-import { mapSurveyResponseToFordAPI, mapSurveyResponseToLincolnAPI, mapSurveyResponseToFirestore } from '@expanse/shared/utils';
+import type { MeridianEvent as ExpanseEvent, FordSurveyAnswers, LincolnSurveyAnswers, BaseSurveyAnswers } from '@meridian-event-tech/shared/types';
+import { mapSurveyResponseToFordAPI, mapSurveyResponseToLincolnAPI, mapSurveyResponseToFirestore } from '@meridian-event-tech/shared/utils';
 
 export type SyncStatus = 'pending' | 'syncing' | 'synced' | 'failed';
 export type SyncEndpoint = 'firestore' | 'ford_api' | 'lincoln_api';

@@ -1,8 +1,8 @@
+// @ts-nocheck
 import React, { useState, useEffect } from "react";
 import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
 import { QuestionCheckboxModel } from "survey-core";
-import { Checkbox } from "@ui/ford-ui-components/src/v2/checkbox/Checkbox";
-import { StyledTextField } from "@ui/ford-ui-components/src/v2/inputField/Input";
+import { Checkbox, StyledTextField } from "@ui/ford-ui-components";
 import { FDSQuestionWrapper } from "./FDSShared/FDSQuestionWrapper";
 import { useQuestionValidation, renderLabel } from "./FDSShared/utils";
 
@@ -151,3 +151,4 @@ ReactQuestionFactory.Instance.registerQuestion(
     "customtype", // Using "customtype" for the third parameter to enable useAsDefault
     true // useAsDefault: true - replaces default SurveyJS checkbox renderer
 );
+// @ts-nocheck

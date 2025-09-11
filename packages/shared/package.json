@@ -1,7 +1,7 @@
 {
-  "name": "@expanse/shared",
+  "name": "@meridian-event-tech/shared",
   "version": "1.0.0",
-  "description": "Shared TypeScript interfaces and utilities for Expanse native and web apps",
+  "description": "Shared TypeScript interfaces and utilities for Meridian native and web apps",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
   "types": "./lib/cjs/index.d.ts",
@@ -16,7 +16,8 @@
     "build": "npm run build:cjs && npm run build:esm",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:esm": "tsc -p tsconfig.esm.json",
-    "build:watch": "tsc --watch",
+    "build:watch": "bash -lc \"tsc -p tsconfig.cjs.json --watch & tsc -p tsconfig.esm.json --watch\"",
+    "clean:src-artifacts": "bash -lc \"find src -type f \\\\( -name '*.js' -o -name '*.d.ts' -o -name '*.js.map' \\\\) -delete\"",
     "clean": "rm -rf lib"
   },
   "files": [

@@ -1,7 +1,7 @@
 import { FordSurveyPayload, createDefaultFordPayload } from '../types/ford';
 import { Model } from 'survey-core';
-import { ExpanseEvent, ExpanseSurvey } from '../types/expanse';
-import { SurveyData, CustomSurveyData } from '../types/survey';
+import { MeridianEvent } from '../types/meridian-event';
+import { MeridianSurveyData as SurveyData, CustomSurveyData } from '../types/core';
 
 /**
  * Maps SurveyJS data and question FFS/custom fields to a Ford API-compliant payload.
@@ -9,7 +9,7 @@ import { SurveyData, CustomSurveyData } from '../types/survey';
  * @param surveyData The raw survey data object
  * @param event (optional) event data for event_id etc.
  */
-export function mapToFordPayload(survey: Model, surveyData: SurveyData, event?: ExpanseEvent): FordSurveyPayload {
+export function mapToFordPayload(survey: Model, surveyData: SurveyData, event?: MeridianEvent): FordSurveyPayload {
   console.log('[Ford Mapper DEBUG] Starting Ford payload mapping');
   console.log('[Ford Mapper DEBUG] Survey data keys:', Object.keys(surveyData));
   console.log('[Ford Mapper DEBUG] Survey data address_group:', (surveyData as Record<string, unknown>).address_group);
@@ -85,6 +85,15 @@ export function mapToFordPayload(survey: Model, surveyData: SurveyData, event?: 
           ffsData[ffsKey] = questionValue;
         } else {
           ffsData[ffsKey] = null;
+        }
+      } else if (ffsKey === 'vehiclesDriven') {
+        // Normalize to API field 'vehicles_driven' (snake_case)
+        if (typeof questionValue === 'string') {
+          (ffsData as any)['vehicles_driven'] = [questionValue];
+        } else if (Array.isArray(questionValue)) {
+          (ffsData as any)['vehicles_driven'] = questionValue as string[];
+        } else {
+          (ffsData as any)['vehicles_driven'] = null;
         }
       } else if (ffsKey === 'emailOptIn') {
         // Email opt-in should be a number (0 or 1)

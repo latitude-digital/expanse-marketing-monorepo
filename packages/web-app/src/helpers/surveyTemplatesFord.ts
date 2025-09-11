@@ -52,8 +52,8 @@ export const initCreatorFord = (creator: SurveyCreatorModel) => {
   initThemeFord(creator);
 
   const enLocale = editorLocalization.getLocale("en");
-  enLocale.toolboxCategories["__fordCategory"] = "Ford Questions";
-  enLocale.toolboxCategories["__0fmc"] = "FMC Questions";
+  enLocale.toolboxCategories["__02fordCategory"] = "Ford Questions";
+  enLocale.toolboxCategories["__01fmc"] = "FMC Questions";
 
   // Manually add Ford questions to the toolbox if they're not already there
   // This is needed because questions registered via the universal system after
@@ -68,7 +68,11 @@ export const initCreatorFord = (creator: SurveyCreatorModel) => {
     fordrecommendpost: { title: "Ford Recommend Post", icon: "icon-comments" },
     howlikelypurchasingford: { title: "How Likely Purchasing Ford", icon: "icon-scale-unbalanced" },
     howlikelypurchasingfordpost: { title: "How Likely Purchasing Ford Post", icon: "icon-scale-unbalanced-flip" },
-    sweepstakesOptIn: { title: "Sweepstakes Opt-In", icon: "icon-trophy" },
+    sweepstakesoptin: { title: "Sweepstakes Opt-In", icon: "icon-trophy" },
+    fordpassion: { title: "Ford Passion", icon: "icon-comments" },
+    fordpassionpost: { title: "Ford Passion Post", icon: "icon-comments" },
+    fordcapability: { title: "Ford Capability", icon: "icon-comments" },
+    fordcapabilitypost: { title: "Ford Capability Post", icon: "icon-comments" },
   };
 
   // First, ensure Ford questions exist in the toolbox
@@ -76,9 +80,9 @@ export const initCreatorFord = (creator: SurveyCreatorModel) => {
   const fordQuestions = Object.keys(fordQuestionConfig);
 
   // Check if Ford questions exist and assign them to the category
-  const categoriesToChange = [];
+  const categoriesToChange: Array<{ name: string; category: string }> = [];
   fordQuestions.forEach(questionName => {
-    let item = creator.toolbox.getItemByName(questionName);
+    let item = creator.toolbox.getItemByName(questionName) as any;
     if (!item) {
       // Question not in toolbox, manually add it
       // The questions are registered in ComponentCollection but not automatically added to toolbox
@@ -88,11 +92,21 @@ export const initCreatorFord = (creator: SurveyCreatorModel) => {
         title: config.title,
         iconName: config.icon,
         json: { type: questionName },
-        category: "__fordCategory"
+        category: "__02fordCategory"
       });
       console.log(`Manually added Ford question '${questionName}' to toolbox`);
     } else {
-      categoriesToChange.push({ name: questionName, category: "__fordCategory" });
+      // Ensure icon and title are correct for already-registered items
+      const config = fordQuestionConfig[questionName];
+      if (config) {
+        try {
+          item.iconName = config.icon;
+          item.title = config.title;
+        } catch (e) {
+          console.warn(`Failed to update toolbox item visuals for ${questionName}`, e);
+        }
+      }
+      categoriesToChange.push({ name: questionName, category: "__02fordCategory" });
     }
   });
 
@@ -101,7 +115,7 @@ export const initCreatorFord = (creator: SurveyCreatorModel) => {
   fmcQuestions.forEach(questionName => {
     const item = creator.toolbox.getItemByName(questionName);
     if (item) {
-      categoriesToChange.push({ name: questionName, category: "__0fmc" });
+      categoriesToChange.push({ name: questionName, category: "__01fmc" });
     }
   });
 
@@ -114,11 +128,11 @@ export const initCreatorFord = (creator: SurveyCreatorModel) => {
   // Apply Ford-specific category sorting - Personal Info first, then FMC, then Ford
   creator.toolbox.categories = creator.toolbox.categories.sort((a: any, b: any) => {
     const getPriority = (name: string) => {
-      if (name === "__0pii") return 1;  // Personal Information Questions
-      if (name === "__0fmc") return 2;  // FMC Questions
-      if (name === "__fordCategory") return 3;  // Ford Questions
-      if (name === "__lincolnCategory") return 4;  // Lincoln Questions (if present)
-      if (name === "__1wav") return 5;
+      if (name === "__00pii") return 1;  // Personal Information Questions
+      if (name === "__01fmc") return 2;  // FMC Questions
+      if (name === "__02fordCategory") return 3;  // Ford Questions
+      if (name === "__02lincolnCategory") return 4;  // Lincoln Questions (if present)
+      if (name === "__10wav") return 5;
       if (name.startsWith("__")) return 6;
       return 7;
     };
@@ -128,7 +142,7 @@ export const initCreatorFord = (creator: SurveyCreatorModel) => {
 
   // Open Ford Questions category by default
   creator.toolbox.collapseAllCategories();
-  creator.toolbox.expandCategory("__fordCategory");
+  creator.toolbox.expandCategory("__02fordCategory");
   creator.toolbox.updateTitles();
 };
 

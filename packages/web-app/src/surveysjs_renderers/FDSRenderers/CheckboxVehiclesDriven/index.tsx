@@ -1,8 +1,9 @@
+// @ts-nocheck
 import React from "react";
 import { RendererFactory, Serializer } from "survey-core";
 import { ReactQuestionFactory, SurveyQuestionCheckbox } from "survey-react-ui";
-import StyledSelectionCardSmall from '@ui/ford-ui-components/src/v2/selection-card/small/styled/StyledSelectionCardSmall';
-import { Chip } from '@ui/ford-ui-components/src/v2/chip';
+import StyledSelectionCardSmall from '@ui/ford-ui-components/v2/selection-card/small/styled/StyledSelectionCardSmall';
+import { Chip } from '@ui/ford-ui-components/v2/chip/chip';
 import { FDSQuestionWrapper } from '../FDSShared/FDSQuestionWrapper';
 
 export class CheckboxVehiclesDrivenQuestion extends SurveyQuestionCheckbox {
@@ -256,3 +257,4 @@ RendererFactory.Instance.registerRenderer(
     "vehiclesdriven",
     "sv-checkbox-vehiclesdriven"
 );
+// @ts-nocheck

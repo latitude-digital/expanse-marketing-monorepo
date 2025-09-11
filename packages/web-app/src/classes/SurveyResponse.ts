@@ -1,12 +1,12 @@
 import { UAParser } from "ua-parser-js";
-import { Timestamp } from "@firebase/firestore/lite";
+// Store JS Date values here; Firestore conversion happens at the boundary
 
 const parser = new UAParser(window.navigator.userAgent);
 
 export default class SurveyResponse {
     eventID: string;
-    startTime: Timestamp;
-    endTime?: Timestamp;
+    startTime: Date;
+    endTime?: Date;
     userID?: string;
     installationID: string;
     appName: string;
@@ -27,7 +27,7 @@ export default class SurveyResponse {
         const ua = parser.getResult();
 
         this.eventID = eventID;
-        this.startTime = Timestamp.now();
+        this.startTime = new Date();
         this.userID = userID;
         this.installationID = ua.ua;
         this.appName = process.env.REACT_APP_NAME!;
@@ -40,7 +40,7 @@ export default class SurveyResponse {
     }
 
     endSurvey():void {
-        this.endTime = Timestamp.now();
+        this.endTime = new Date();
     }
 
     toFirestore():Record<string, any> {

@@ -61,7 +61,9 @@ export default defineConfig(({ command, mode }) => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
-        '@ui/ford-ui-components': path.resolve(__dirname, '../ford-ui/packages/@ui/ford-ui-components'),
+        '@meridian-event-tech/shared': path.resolve(__dirname, '../shared/src'),
+        // Point directly to source to ensure Vite can resolve entry
+        '@ui/ford-ui-components': path.resolve(__dirname, '../ford-ui/packages/@ui/ford-ui-components/src'),
         '@ui/atoms': path.resolve(__dirname, '../ford-ui/packages/@ui/atoms/src/lib'),
         '@ui/icons': path.resolve(__dirname, '../ford-ui/packages/@ui/icons/src/lib'),
         '@common/helpers': path.resolve(__dirname, '../ford-ui/packages/@common/helpers/src/lib'),
@@ -81,7 +83,7 @@ export default defineConfig(({ command, mode }) => {
         'moment',
         'survey-core',
         'survey-react-ui',
-        '@expanse/shared'
+        '@meridian-event-tech/shared'
       ],
       exclude: [
         'firebase'

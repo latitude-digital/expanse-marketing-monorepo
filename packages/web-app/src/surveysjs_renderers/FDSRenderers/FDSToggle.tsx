@@ -1,7 +1,7 @@
 import React from "react";
 import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
 import { QuestionBooleanModel } from "survey-core";
-import { Toggle } from "@ui/ford-ui-components/src/v2/toggle/Toggle";
+import { Toggle } from "@ui/ford-ui-components";
 import { FDSQuestionWrapper } from "./FDSShared/FDSQuestionWrapper";
 import { useQuestionValidation } from "./FDSShared/utils";
 

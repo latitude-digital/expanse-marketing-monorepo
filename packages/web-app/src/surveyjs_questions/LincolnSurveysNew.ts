@@ -2,7 +2,7 @@
  * Lincoln questions registration using the new universal system
  */
 
-import { registerUniversalQuestions } from '@expanse/shared';
+import { registerUniversalQuestions } from '@meridian-event-tech/shared';
 import { ComponentCollection, Question } from 'survey-core';
 import { handleChoicesByUrl } from './choicesByUrlHelper';
 

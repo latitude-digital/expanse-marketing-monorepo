@@ -208,42 +208,34 @@ function DashboardScreen() {
             if (eventBrand === 'Ford') {
                 initCreatorFord(newCreator);
                 // Hide Lincoln category for Ford events
-                const lincolnCategory = newCreator.toolbox.categories.find((c: any) => c.name === '__lincolnCategory');
+                const lincolnCategory = newCreator.toolbox.categories.find((c: any) => c.name === '__02lincolnCategory');
                 if (lincolnCategory) {
-                    lincolnCategory.visible = false;
+                    (lincolnCategory as any).visible = false;
                 }
                 console.log('Ford creator settings applied, Lincoln category hidden');
             } else if (eventBrand === 'Lincoln') {
                 initCreatorLincoln(newCreator);
                 // Hide Ford category for Lincoln events
-                const fordCategory = newCreator.toolbox.categories.find((c: any) => c.name === '__fordCategory');
+                const fordCategory = newCreator.toolbox.categories.find((c: any) => c.name === '__02fordCategory');
                 if (fordCategory) {
-                    fordCategory.visible = false;
+                    (fordCategory as any).visible = false;
                 }
                 console.log('Lincoln creator settings applied, Ford category hidden');
             } else {
                 // For non-branded events, hide both Ford and Lincoln categories AND FMC category
-                const fordCategory = newCreator.toolbox.categories.find((c: any) => c.name === '__fordCategory');
-                const lincolnCategory = newCreator.toolbox.categories.find((c: any) => c.name === '__lincolnCategory');
-                const fmcCategory = newCreator.toolbox.categories.find((c: any) => c.name === '__0fmc');
-                if (fordCategory) {
-                    fordCategory.visible = false;
-                }
-                if (lincolnCategory) {
-                    lincolnCategory.visible = false;
-                }
-                if (fmcCategory) {
-                    fmcCategory.visible = false;
-                }
+                const fordCategory = newCreator.toolbox.categories.find((c: any) => c.name === '__02fordCategory');
+                const lincolnCategory = newCreator.toolbox.categories.find((c: any) => c.name === '__02lincolnCategory');
+                const fmcCategory = newCreator.toolbox.categories.find((c: any) => c.name === '__01fmc');
+                if (fordCategory) (fordCategory as any).visible = false;
+                if (lincolnCategory) (lincolnCategory as any).visible = false;
+                if (fmcCategory) (fmcCategory as any).visible = false;
                 console.log('Non-branded event: Ford, Lincoln, and FMC categories hidden');
                 
                 // Also hide individual FMC question items from the toolbox
                 const fmcQuestions = ['gender', 'agebracket', 'howlikelyacquire', 'inmarkettiming', 'vehicledrivenmostmake'];
                 fmcQuestions.forEach(questionName => {
-                    const item = newCreator.toolbox.getItemByName(questionName);
-                    if (item) {
-                        item.visible = false;
-                    }
+                    const item = newCreator.toolbox.getItemByName(questionName) as any;
+                    if (item) item.visible = false;
                 });
                 console.log('FMC question items hidden from toolbox');
             }
@@ -295,7 +287,7 @@ function DashboardScreen() {
             });
 
             // radioGroup
-            const radioRenderAsProp = Serializer.getProperty('radiogroup', 'renderAs');
+            const radioRenderAsProp: any = Serializer.getProperty('radiogroup', 'renderAs');
             radioRenderAsProp.visible = true;
             radioRenderAsProp.category = "general";
             radioRenderAsProp.setChoices(["default", "radiobuttongroup"]);
@@ -330,16 +322,72 @@ function DashboardScreen() {
                 surveyJSON.description = " ";
                 console.log('[Admin] Setting default description for header compatibility');
             }
-            
-            newCreator.JSON = surveyJSON;
+            // Remove any persisted choices that should come from choicesByUrl
+            const sanitizedForEditing = (function sanitize(json: any) {
+                if (!json) return json;
+                const cloned = JSON.parse(JSON.stringify(json));
+                const stripChoices = (elements?: any[]) => {
+                    if (!elements) return;
+                    elements.forEach((el) => {
+                        if (!el) return;
+                        const typesToStrip = new Set(['fordvoi','fordvehiclesdriven','lincolnvehiclesdriven','vehicledrivenmostmake']);
+                        if (typeof el.type === 'string' && typesToStrip.has(el.type)) {
+                            if (el.choices) delete el.choices;
+                        }
+                        if (el.elements) stripChoices(el.elements);
+                        if (el.questions) stripChoices(el.questions);
+                        if (el.panels) stripChoices(el.panels);
+                    });
+                };
+                if (cloned.pages) cloned.pages.forEach((p: any) => stripChoices(p.elements));
+                else if (cloned.elements) stripChoices(cloned.elements);
+                return cloned;
+            })(surveyJSON);
+
+            newCreator.JSON = sanitizedForEditing;
+
+            // Remove transient/editor-populated data before saving
+            const sanitizeSurveyJSON = (json: any) => {
+                if (!json) return json;
+                const cloned = JSON.parse(JSON.stringify(json));
+
+                const stripChoices = (elements?: any[]) => {
+                    if (!elements) return;
+                    elements.forEach((el) => {
+                        if (!el) return;
+                        // Custom types that must rely on choicesByUrl and should not persist choices
+                        const typesToStrip = new Set([
+                            'fordvoi',
+                            'fordvehiclesdriven',
+                            'lincolnvehiclesdriven',
+                            'vehicledrivenmostmake',
+                        ]);
+                        if (typeof el.type === 'string' && typesToStrip.has(el.type)) {
+                            if (el.choices) delete el.choices;
+                        }
+                        // Recurse into containers
+                        if (el.elements) stripChoices(el.elements);
+                        if (el.questions) stripChoices(el.questions);
+                        if (el.panels) stripChoices(el.panels);
+                    });
+                };
+
+                if (cloned.pages) cloned.pages.forEach((p: any) => stripChoices(p.elements));
+                else if (cloned.elements) stripChoices(cloned.elements);
+
+                return cloned;
+            };
 
             newCreator.saveSurveyFunc = (saveNo: number, callback: (saveNo: number, success: boolean) => void) => {
                 console.log("saving questions...")
                 const eventRef = doc(db, "events", eventID).withConverter(EEventConverter);
+
+                const sanitized = sanitizeSurveyJSON(newCreator.JSON);
+
                 updateDoc(eventRef, {
                     // Write to both old and new fields
-                    questions: JSON.stringify(newCreator.JSON),
-                    surveyJSModel: newCreator.JSON,
+                    questions: JSON.stringify(sanitized),
+                    surveyJSModel: sanitized,
                 }).then(() => {
                     console.log("saved!")
                     callback(saveNo, true);

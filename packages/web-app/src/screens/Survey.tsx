@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Model, SurveyError, FunctionFactory, ITheme } from "survey-core";
 import { Survey } from "survey-react-ui";
-import type { SurveyEvent, SurveyData, BookeoData, PreSurvey, GetSurveyResponse, SurveyLimitResult, UploadResponse } from '@expanse/shared';
+import type { MeridianEvent as SurveyEvent, MeridianSurveyData as SurveyData, BookeoData, PreSurvey, GetSurveyResponse, SurveyLimitResult, UploadResponse } from '@meridian-event-tech/shared';
 import { useNavigate, useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { SurveySkeleton } from '../components/LoadingStates';
 import * as Sentry from "@sentry/react";
@@ -26,14 +26,14 @@ console.log('Survey.tsx: CheckboxVehiclesDrivenQuestion loaded:', CheckboxVehicl
 // EmailTextInput removed - FDSTextRenderer handles all text inputs including email with proper required field support
 import "../surveysjs_renderers/FilePreview";
 
-import { StyledTextField } from "@ui/ford-ui-components/src/v2/inputField/Input";
+import { StyledTextField } from "@ui/ford-ui-components";
 
 import logo from '../assets/ford-signature.svg';
 import globeIcon from '../assets/icons/ford/globe.svg';
 import "survey-core/survey-core.min.css";
 import { prepareForSurvey, prepareSurveyOnQuestionAdded } from "../helpers/surveyTemplatesAll";
 import GlobalFooter from "../components/GlobalFooter";
-import { uploadSurveyToAPI } from '@expanse/shared';
+import { uploadSurveyToAPI } from '@meridian-event-tech/shared';
 import { getCustomContentLocales, getDefaultLocale } from '../helpers/surveyLocaleHelper';
 import { LanguageSelector, FordLanguageSelector } from '../components/LanguageSelector';
 
@@ -58,10 +58,7 @@ import { initializeFDSForBrand } from '../helpers/fdsInitializer';
 import { FordSurveyNavigation } from '../components/FordSurveyNavigation';
 import GlobalHeader from '../components/GlobalHeader';
 
-// TypeScript interfaces
-interface RouteParams {
-  eventID: string;
-}
+// Route params are strings from React Router
 
 // Types are now imported from @packages/shared/types
 
@@ -71,7 +68,8 @@ FunctionFactory.Instance.register("validateEmail", validateEmailForSurveyJS, tru
 
 const SurveyComponent: React.FC = () => {
   const navigate = useNavigate();
-  const params = useParams<RouteParams>();
+  const params = useParams();
+  const eventID = params.eventID;
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [user] = useAuthState(auth);
@@ -105,7 +103,7 @@ const SurveyComponent: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!params.eventID) return;
+    if (!eventID) return;
 
     // Check for preSurveyID from either location state or query parameter
     const preSurveyID = (location.state as any)?.preSurveyID || searchParams.get('pid');
@@ -113,37 +111,38 @@ const SurveyComponent: React.FC = () => {
     fetch(getApiUrl(ENDPOINTS.GET_SURVEY), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ eventID: params.eventID, preSurveyID }),
+      body: JSON.stringify({ eventID: eventID, preSurveyID }),
     }).then(response => {
       response.json().then(async (res: GetSurveyResponse) => {
         if (res.success) {
-          setThisEvent(res.event);
+          const event = res.event as any;
+          setThisEvent(event as SurveyEvent);
           if (res.preSurvey) {
             setThisPreSurvey(res.preSurvey);
           }
+          
+          document.title = event.name;
 
-          document.title = res.event.name;
-
-          if (res.event._preEventID && !preSurveyID) {
+          if (event._preEventID && !preSurveyID) {
             // this is a post-event survey, sign people out
             navigate('./out');
             return;
           }
           
           // Check survey limit if configured
-          if (res.event.survey_count_limit && res.event.survey_count_limit > 0) {
+          if (event.survey_count_limit && event.survey_count_limit > 0) {
             const bypass = searchParams.get('bp');
             // Use namespaced function for survey limit check
             
             try {
               const result = await checkSurveyLimitFn({ 
-                eventId: params.eventID,
-                bypass: bypass 
-              }) as SurveyLimitResult;
+                surveyId: eventID,
+                bypass: bypass || undefined
+              }) as unknown as SurveyLimitResult;
               
               if (result.data.limitReached) {
                 setLimitReached(true);
-                setLimitMessage(result.data.message || res.event.limit_reached_message || '');
+                setLimitMessage(result.data.message || event.limit_reached_message || '');
                 return;
               }
             } catch (error) {
@@ -153,10 +152,10 @@ const SurveyComponent: React.FC = () => {
           }
 
           // Use new map fields if available, otherwise parse JSON strings
-          const surveyJSON = res.event.surveyJSModel || 
-                            (res.event.questions ? JSON.parse(res.event.questions) : {});
-          const eventTheme = res.event.surveyJSTheme || 
-                            (res.event.theme ? JSON.parse(res.event.theme) : {"cssVariables": {}});
+          const surveyJSON = event.surveyJSModel || 
+                            (event.questions ? JSON.parse(event.questions) : {});
+          const eventTheme = event.surveyJSTheme || 
+                            (event.theme ? JSON.parse(event.theme) : {"cssVariables": {}});
 
           // Auto-fix missing headerView when theme has header configuration
           // BUT only if there's actual content to show (title or description)
@@ -186,15 +185,15 @@ const SurveyComponent: React.FC = () => {
           });
           
           // Check for ACTUAL content, not just truthy values (empty strings/spaces don't count)
-          const hasRealTitle = surveyJSON.title && surveyJSON.title.trim().length > 0;
-          const hasRealDescription = surveyJSON.description && surveyJSON.description.trim().length > 0;
+          const hasRealTitle = surveyJSON.title && String(surveyJSON.title).trim().length > 0;
+          const hasRealDescription = surveyJSON.description && String(surveyJSON.description).trim().length > 0;
           
           if (!hasRealTitle && !hasRealDescription && surveyJSON.headerView) {
             console.log('[Header Debug] Removing headerView since there is no real title or description content');
-            delete surveyJSON.headerView;
+            delete (surveyJSON as any).headerView;
             // Also clear the empty description to prevent header from rendering
-            delete surveyJSON.description;
-            delete surveyJSON.title;
+            delete (surveyJSON as any).description;
+            delete (surveyJSON as any).title;
           } else if (!hasRealTitle && !hasRealDescription && !surveyJSON.headerView) {
             console.log('[Header Debug] No title/description and no headerView - header should not render');
           }
@@ -206,11 +205,11 @@ const SurveyComponent: React.FC = () => {
           };
 
           // Preprocess isRequired to working validators BEFORE model creation
-          function preprocessRequiredValidation(surveyJSON) {
-            function processElements(elements) {
+          const preprocessRequiredValidation = (surveyJSON: any) => {
+            const processElements = (elements: any[]) => {
               if (!elements) return;
               
-              elements.forEach(element => {
+              elements.forEach((element: any) => {
                 // Handle questions with isRequired: true
                 if (element.type && element.isRequired === true) {
                   // Initialize validators array if it doesn't exist
@@ -219,7 +218,7 @@ const SurveyComponent: React.FC = () => {
                   }
                   
                   // Check if expression validator already exists
-                  const hasRequiredValidator = element.validators.some(v => 
+                  const hasRequiredValidator = element.validators.some((v: any) => 
                     v.type === 'expression' && v.expression?.includes('notempty')
                   );
                   
@@ -249,11 +248,11 @@ const SurveyComponent: React.FC = () => {
                   processElements(element.rows);
                 }
               });
-            }
+            };
             
             // Process all pages
             if (surveyJSON.pages && Array.isArray(surveyJSON.pages)) {
-              surveyJSON.pages.forEach(page => {
+              surveyJSON.pages.forEach((page: any) => {
                 if (page.elements && Array.isArray(page.elements)) {
                   processElements(page.elements);
                 }
@@ -265,19 +264,38 @@ const SurveyComponent: React.FC = () => {
             }
             
             return surveyJSON;
-          }
+          };
 
           // Apply the preprocessing
           preprocessRequiredValidation(defaultSurveyProperties);
 
-          if (res.event.disabled && !user) {
+          // Strip persisted 'choices' for custom question types that should load via choicesByUrl
+          const stripChoicesForCustomTypes = (root: any) => {
+            const typesToStrip = new Set(['fordvoi','fordvehiclesdriven','lincolnvehiclesdriven','vehicledrivenmostmake']);
+            const walk = (elements?: any[]) => {
+              if (!elements) return;
+              elements.forEach((el) => {
+                if (el && typeof el.type === 'string' && typesToStrip.has(el.type)) {
+                  if (el.choices) delete el.choices;
+                }
+                if (el?.elements) walk(el.elements);
+                if (el?.questions) walk(el.questions);
+                if (el?.panels) walk(el.panels);
+              });
+            };
+            if (root?.pages) root.pages.forEach((p: any) => walk(p.elements));
+            else if (root?.elements) walk(root.elements);
+          };
+          stripChoicesForCustomTypes(defaultSurveyProperties);
+
+          if (event.disabled && !user) {
             defaultSurveyProperties.showCompleteButton = false;
             defaultSurveyProperties.pages = [
               {
                 "elements": [
                   {
                     "type": "html",
-                    "html": `<h4>${res.event.disabled}</h4>`
+                    "html": `<h4>${event.disabled}</h4>`
                   }
                 ]
               }
@@ -285,10 +303,10 @@ const SurveyComponent: React.FC = () => {
           }
 
           // Initialize FDS conditionally based on event brand BEFORE creating survey model
-          const eventBrand = normalizeBrand(res.event.brand);
+          const eventBrand = normalizeBrand(event.brand);
           console.log(`Event brand detected: ${eventBrand}`);
-          
-          // Initialize FDS for Ford/Lincoln brands only - MUST happen before new Model()
+
+          // Initialize FDS and brand-specific question registries before creating Model()
           try {
             await initializeFDSForBrand(eventBrand);
           } catch (error) {
@@ -298,12 +316,19 @@ const SurveyComponent: React.FC = () => {
 
           const survey = new Model(defaultSurveyProperties);
           
+          // Set the thank you message from the event configuration if available
+          if (event.thanks) {
+            // Convert markdown to HTML
+            const thanksHtml = converter.makeHtml(event.thanks);
+            survey.completedHtml = thanksHtml;
+          }
+          
           // Completely disable the header view if there's no title or description
           if (!defaultSurveyProperties.title && !defaultSurveyProperties.description) {
             survey.showTitle = false;
             survey.showDescription = false;
             // Remove the header view entirely to prevent empty header from rendering
-            delete survey.headerView;
+            delete (survey as any).headerView;
             // Also ensure the header property is undefined
             survey.setPropertyValue("header", undefined);
           }
@@ -379,7 +404,7 @@ const SurveyComponent: React.FC = () => {
             if (!currentPage) return;
             
             // Count errors on current page
-            const currentErrorCount = currentPage.questions.reduce((count, q) => 
+            const currentErrorCount = currentPage.questions.reduce((count: number, q: any) => 
               count + (q.errors ? q.errors.length : 0), 0
             );
             
@@ -428,7 +453,7 @@ const SurveyComponent: React.FC = () => {
           });
           }
           
-          if (res.event.fordEventID || res.event.lincolnEventID) {
+          if (event.fordEventID || event.lincolnEventID) {
             survey.questionErrorLocation = "bottom";
           }
 
@@ -459,11 +484,11 @@ const SurveyComponent: React.FC = () => {
                 },
                 ...eventTheme,
               };
-              survey.applyTheme(updatedTheme);
+              survey.applyTheme(updatedTheme as any);
             } else {
               // Apply theme for Other brands without Ford/Lincoln specific overrides
               console.log('[Theme Debug] Applying custom theme for', eventBrand, 'brand');
-              survey.applyTheme(eventTheme);
+              survey.applyTheme(eventTheme as any);
             }
           } else if (eventBrand === 'Ford' || eventBrand === 'Lincoln') {
             // No theme specified for Ford/Lincoln - apply default Ford/Lincoln theme
@@ -487,7 +512,7 @@ const SurveyComponent: React.FC = () => {
                 "--sjs-font-size": "16px"
               }
             };
-            survey.applyTheme(defaultFordLincolnTheme);
+              survey.applyTheme(defaultFordLincolnTheme as any);
           }
 
           prepareForSurvey(survey, eventBrand);
@@ -714,7 +739,7 @@ const SurveyComponent: React.FC = () => {
           // Determine the best language to use
           const urlLang = searchParams.get('lang');
           const browserLang = window.navigator?.language;
-          const bestLang = determineLanguage(supportedLanguages, urlLang, browserLang);
+          const bestLang = determineLanguage(supportedLanguages, (urlLang || undefined), browserLang);
           
           console.log('Selected locale:', bestLang, 
                       'URL param:', urlLang, 
@@ -809,10 +834,10 @@ const SurveyComponent: React.FC = () => {
             const defaultValues: SurveyData = {
               'start_time': new Date(),
               'survey_date': new Date(),
-              'event_id': res.event.fordEventID || res.event.lincolnEventID || params.eventID,
+              'event_id': event.fordEventID || event.lincolnEventID || eventID,
               'app_version': 'surveyjs_2.0',
               'abandoned': 0,
-              '_utm': extractUTM(),
+              '_utm': extractUTM() as unknown as Record<string, string>,
               '_referrer': (window as any).frames?.top?.document?.referrer,
               '_language': window.navigator?.language,
               'device_id': window.navigator?.userAgent,
@@ -822,7 +847,7 @@ const SurveyComponent: React.FC = () => {
             };
 
             // For postTD surveys, also set pre-survey data as defaults
-            if (res.event.surveyType === 'postTD' && preSurveyID && res.preSurvey) {
+            if (event.surveyType === 'postTD' && preSurveyID && res.preSurvey) {
               console.log('[PostTD Defaults] Setting pre-survey data as defaults');
               defaultValues['pre_drive_survey_guid'] = res.preSurvey.device_survey_guid || null;
               defaultValues['first_name'] = res.preSurvey.first_name || null;
@@ -838,7 +863,7 @@ const SurveyComponent: React.FC = () => {
 
             // Log all default values
             console.log('=== Survey Default Values Set ===');
-            console.log('Event Type:', res.event.surveyType);
+            console.log('Event Type:', event.surveyType);
             console.log('PreSurveyID:', preSurveyID);
             console.log('Default Values:', defaultValues);
             
@@ -951,14 +976,15 @@ const SurveyComponent: React.FC = () => {
             }
             
             // Check survey limit before allowing submission
-            if (res.event.survey_count_limit && res.event.survey_count_limit > 0) {
+            if (event.survey_count_limit && event.survey_count_limit > 0) {
               const bypass = searchParams.get('bp');
               // Use namespaced function for survey validation
               
               try {
                 const result = await validateSurveyLimitFn({ 
-                  eventId: params.eventID,
-                  bypass: bypass 
+                  surveyId: eventID,
+                  responseData: sender.data,
+                  bypass: bypass || undefined
                 });
                 console.log('Survey limit validation passed:', result);
                 // If we get here, validation passed
@@ -968,7 +994,7 @@ const SurveyComponent: React.FC = () => {
                 options.allow = false;
                 
                 // Extract the limit reached message from the event config or use default
-                const limitReachedMessage = res.event.limit_reached_message || 
+                const limitReachedMessage = event.limit_reached_message || 
                   '## Survey Limit Reached\n\nThank you for your interest! We have reached the maximum number of responses for this survey.';
                 
                 // Convert markdown to HTML and display
@@ -984,8 +1010,25 @@ const SurveyComponent: React.FC = () => {
           survey.onComplete.add(async (sender: Model, options: any) => {
             console.log('=== Survey onComplete Started ===');
             console.log('onComplete options:', options);
-            const originalMesage = sender.completedHtml;
+            
+            // Function to interpolate variables in the thank you message
+            const interpolateVariables = (text: string, data: any): string => {
+              // Replace {{variable_name}} with actual values from survey data
+              return text.replace(/\{\{([^}]+)\}\}/g, (match, varName) => {
+                const value = data[varName.trim()];
+                return value !== undefined && value !== null ? String(value) : match;
+              });
+            };
+            
+            // Get the original message and interpolate variables if the event has a thanks message
+            let originalMesage = sender.completedHtml;
+            if (event.thanks) {
+              // Interpolate variables in the markdown, then convert to HTML
+              const interpolatedThanks = interpolateVariables(event.thanks, sender.data);
+              originalMesage = converter.makeHtml(interpolatedThanks);
+            }
             console.log('originalMesage', originalMesage);
+            
             sender.completedHtml = "<h3>Saving...</h3>";
             options.showDataSaving('Saving...');
 
@@ -1085,7 +1128,7 @@ const SurveyComponent: React.FC = () => {
             }
           });
 
-          prepareSurveyOnQuestionAdded(null, { survey });
+          prepareSurveyOnQuestionAdded({} as any, { survey } as any);
 
           setThisSurvey(survey);
         } else {

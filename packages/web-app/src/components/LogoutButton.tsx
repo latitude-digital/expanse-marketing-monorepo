@@ -20,7 +20,7 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
   children 
 }) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { currentUser } = useAuth();
 
   const handleLogout = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -28,7 +28,7 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
   };
 
   // Don't render if user is not logged in
-  if (!user) {
+  if (!currentUser) {
     return null;
   }
 
