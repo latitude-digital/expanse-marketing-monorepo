@@ -1023,9 +1023,6 @@ const SurveyComponent: React.FC = () => {
           survey.onComplete.add(async (sender: Model, options: any) => {
             console.log('=== Survey onComplete Started ===');
             console.log('onComplete options:', options);
-            
-            sender.completedHtml = "<h3>Saving...</h3>";
-            options.showDataSaving('Saving...');
 
             let surveyData: SurveyData = sender.data;
             console.log('[onComplete] Initial survey data:', JSON.stringify(surveyData, null, 2));
@@ -1060,6 +1057,10 @@ const SurveyComponent: React.FC = () => {
               originalMesage = converter.makeHtml(interpolatedThanks);
             }
             console.log('originalMesage', originalMesage);
+            
+            // NOW show the saving message after we've captured the original
+            sender.completedHtml = "<h3>Saving...</h3>";
+            options.showDataSaving('Saving...');
             
             // For postTD surveys, set pre_drive_survey_guid and copy user info from pre-survey
             console.log('[PostTD Debug] Event surveyType:', thisEvent?.surveyType);
@@ -1128,8 +1129,10 @@ const SurveyComponent: React.FC = () => {
 
               // Firebase function will handle upload to Ford/Lincoln APIs via surveyTrigger
 
+              // Show success and restore the original completion message
               options.showDataSavingSuccess();
               sender.completedHtml = originalMesage;
+              
               if ((location.state as any)?.preSurveyID) {
                 setTimeout(() => {
                   navigate('./out');

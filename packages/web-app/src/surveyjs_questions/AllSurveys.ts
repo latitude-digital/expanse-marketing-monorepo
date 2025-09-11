@@ -1204,6 +1204,8 @@ const globalInit = () => {
       }
     },
     onLoaded(question: Question) {
+      // Set the _ffs property for proper API mapping
+      question.setPropertyValue("_ffs", "signature");
       this.updateMarkdown(question);
     },
     onPropertyChanged(question: Question, propertyName: string, newValue: any) {
@@ -1331,6 +1333,8 @@ const globalInit = () => {
       }
     },
     onLoaded(question: Question) {
+      // Set the _ffs property for proper API mapping
+      question.setPropertyValue("_ffs", "minor_signature");
       this.updateMarkdown(question);
     },
     onPropertyChanged(question: Question, propertyName: string, newValue: any) {

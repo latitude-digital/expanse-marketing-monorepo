@@ -31,8 +31,8 @@ export function mapToFordPayload(survey: Model, surveyData: SurveyData, event?: 
       hasValue: questionValue !== undefined && questionValue !== null
     });
     
-    // Handle waiver fields by their question names
-    if (questionName === 'adultWaiver' && questionValue) {
+    // Handle waiver fields by their question names (lowercase as defined in AllSurveys.ts)
+    if (questionName === 'adultwaiver' && questionValue) {
       // Safely extract the signature string
       if (typeof questionValue === 'object' && questionValue !== null && 'signature' in questionValue) {
         const sig = (questionValue as Record<string, unknown>).signature;
@@ -40,7 +40,7 @@ export function mapToFordPayload(survey: Model, surveyData: SurveyData, event?: 
       } else {
         ffsData['signature'] = null;
       }
-    } else if (questionName === 'minorWaiver' && questionValue) {
+    } else if (questionName === 'minorwaiver' && questionValue) {
       // For minors, only set signature if minorsYesNo is '1' (yes)
       if (typeof questionValue === 'object' && questionValue !== null) {
         const minorWaiverData = questionValue as Record<string, unknown>;
