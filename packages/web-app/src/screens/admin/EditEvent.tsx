@@ -580,6 +580,24 @@ function DashboardScreen() {
                             "descriptionLocation": "underInput",
                             "defaultValue": true
                         },
+                        // Thank You Message Panel
+                        {
+                            "type": "panel",
+                            "name": "thanksPanel",
+                            "title": "Thank You Message",
+                            "description": "Customize the message shown to users after completing the survey. Supports variable interpolation using {{variable_name}} syntax.",
+                            "elements": [
+                                {
+                                    "type": "comment",
+                                    "name": "thanks",
+                                    "title": "Thank You Message",
+                                    "description": "Message shown after survey completion. Supports markdown formatting and variable interpolation (e.g., {{device_survey_guid}}).",
+                                    "descriptionLocation": "underTitle",
+                                    "rows": 8,
+                                    "placeholder": "Thank you for completing our survey!\n\nYour response ID is: {{device_survey_guid}}"
+                                }
+                            ]
+                        },
                         // Tags Panel
                         {
                             "type": "panel",

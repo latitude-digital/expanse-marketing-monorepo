@@ -1016,24 +1016,6 @@ const SurveyComponent: React.FC = () => {
             console.log('=== Survey onComplete Started ===');
             console.log('onComplete options:', options);
             
-            // Function to interpolate variables in the thank you message
-            const interpolateVariables = (text: string, data: any): string => {
-              // Replace {{variable_name}} with actual values from survey data
-              return text.replace(/\{\{([^}]+)\}\}/g, (match, varName) => {
-                const value = data[varName.trim()];
-                return value !== undefined && value !== null ? String(value) : match;
-              });
-            };
-            
-            // Get the original message and interpolate variables if the event has a thanks message
-            let originalMesage = sender.completedHtml;
-            if (event.thanks) {
-              // Interpolate variables in the markdown, then convert to HTML
-              const interpolatedThanks = interpolateVariables(event.thanks, sender.data);
-              originalMesage = converter.makeHtml(interpolatedThanks);
-            }
-            console.log('originalMesage', originalMesage);
-            
             sender.completedHtml = "<h3>Saving...</h3>";
             options.showDataSaving('Saving...');
 
@@ -1051,6 +1033,25 @@ const SurveyComponent: React.FC = () => {
             surveyData['_exported'] = null;
             surveyData['end_time'] = new Date();
             surveyData['device_survey_guid'] = uuidv4(); // Use same GUID for both APIs
+            
+            // Function to interpolate variables in the thank you message
+            const interpolateVariables = (text: string, data: any): string => {
+              // Replace {{variable_name}} with actual values from survey data
+              return text.replace(/\{\{([^}]+)\}\}/g, (match, varName) => {
+                const value = data[varName.trim()];
+                return value !== undefined && value !== null ? String(value) : match;
+              });
+            };
+            
+            // Get the original message and interpolate variables if the event has a thanks message
+            let originalMesage = sender.completedHtml;
+            if (event.thanks) {
+              // Interpolate variables in the markdown, then convert to HTML
+              // Use surveyData which now includes device_survey_guid
+              const interpolatedThanks = interpolateVariables(event.thanks, surveyData);
+              originalMesage = converter.makeHtml(interpolatedThanks);
+            }
+            console.log('originalMesage', originalMesage);
             
             // For postTD surveys, set pre_drive_survey_guid and copy user info from pre-survey
             console.log('[PostTD Debug] Event surveyType:', thisEvent?.surveyType);

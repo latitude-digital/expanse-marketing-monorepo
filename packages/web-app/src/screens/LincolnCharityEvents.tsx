@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { httpsCallable } from 'firebase/functions';
 import functions from '../services/functions';
 import moment from 'moment';
+import GlobalHeader from '../components/GlobalHeader';
 
 interface ExpanseEvent {
     id: string;
@@ -70,16 +71,7 @@ export default function LincolnCharityEvents() {
     if (loading) {
         return (
             <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-                {/* Lincoln Header */}
-                <div className="bg-black">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                        <img 
-                            src="https://cdn.expansemarketing.com/lincoln/lincoln-logo-white.svg" 
-                            alt="Lincoln" 
-                            className="h-12"
-                        />
-                    </div>
-                </div>
+                <GlobalHeader brand="Lincoln" />
                 
                 <div className="flex justify-center items-center h-96">
                     <div className="text-center">
@@ -96,16 +88,7 @@ export default function LincolnCharityEvents() {
     if (error) {
         return (
             <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-                {/* Lincoln Header */}
-                <div className="bg-black">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                        <img 
-                            src="https://cdn.expansemarketing.com/lincoln/lincoln-logo-white.svg" 
-                            alt="Lincoln" 
-                            className="h-12"
-                        />
-                    </div>
-                </div>
+                <GlobalHeader brand="Lincoln" />
                 
                 <div className="flex justify-center items-center h-96">
                     <div className="text-center">
@@ -125,16 +108,7 @@ export default function LincolnCharityEvents() {
     if (events.length === 0) {
         return (
             <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-                {/* Lincoln Header */}
-                <div className="bg-black">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                        <img 
-                            src="https://cdn.expansemarketing.com/lincoln/lincoln-logo-white.svg" 
-                            alt="Lincoln" 
-                            className="h-12"
-                        />
-                    </div>
-                </div>
+                <GlobalHeader brand="Lincoln" />
                 
                 <div className="flex justify-center items-center h-96">
                     <div className="text-center">
@@ -153,16 +127,7 @@ export default function LincolnCharityEvents() {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-            {/* Lincoln Header */}
-            <div className="bg-black">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                    <img 
-                        src="https://cdn.expansemarketing.com/lincoln/lincoln-logo-white.svg" 
-                        alt="Lincoln" 
-                        className="h-12"
-                    />
-                </div>
-            </div>
+            <GlobalHeader brand="Lincoln" />
 
             {/* Main Content */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
