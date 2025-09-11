@@ -36,6 +36,7 @@ async function loadFDSRenderers(): Promise<void> {
     const { FDSTextAreaRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSTextArea');
     const { FDSToggleRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSToggle');
     const { FDSRatingRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSRating');
+    const { FDSPanelRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSPanel');
 
     console.log('FDS renderers loaded successfully');
     FDSRenderersLoaded = true;

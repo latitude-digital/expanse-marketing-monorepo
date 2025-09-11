@@ -67,7 +67,7 @@ export const getSurveyImpl = (app: admin.app.App, database: string = "(default)"
         ) {
           res.status(403).json({
             success: false,
-            error: "Event has not started yet"
+            error: "This event has not yet started. Please check back when the event begins."
           });
           return;
         }
@@ -84,7 +84,7 @@ export const getSurveyImpl = (app: admin.app.App, database: string = "(default)"
         ) {
           res.status(403).json({
             success: false,
-            error: "Event has ended"
+            error: "This event has ended. Thank you for your interest!"
           });
           return;
         }
@@ -200,7 +200,7 @@ export const saveSurveyImpl = (app: admin.app.App, database: string = "(default)
       ) {
         res.status(403).send({
           success: false,
-          message: "Event has not started yet",
+          message: "This event has not yet started. Please check back when the event begins.",
         });
         return;
       }
@@ -217,7 +217,7 @@ export const saveSurveyImpl = (app: admin.app.App, database: string = "(default)
       ) {
         res.status(403).send({
           success: false,
-          message: "Event has ended",
+          message: "This event has ended. Thank you for your interest!",
         });
         return;
       }

@@ -26,9 +26,8 @@ export class FrontendRegistrar implements IQuestionRegistrar {
       return;
     }
 
-    // Build the question JSON - merge all defaultValues first, then override type
+    // Build the question JSON - for panel questions with elementsJSON, handle specially
     const questionJSON: any = {
-      ...config.defaultValues,
       type: config.baseType,
       name: config.name,
     };
@@ -38,14 +37,27 @@ export class FrontendRegistrar implements IQuestionRegistrar {
       questionJSON._ffs = ffsProperty.default;
     }
 
-    // Register the question type
-    ComponentCollection.Instance.add({
+    // Build the ComponentCollection configuration
+    const componentConfig: any = {
       name: config.name,
       title: config.title || config.name,
       iconName: config.icon,
       showInToolbox: true,
       inheritBaseProps: true,
       questionJSON,
+    };
+
+    // For panel questions with elementsJSON, add it at the root level
+    if (config.baseType === 'panel' && config.defaultValues?.elementsJSON) {
+      componentConfig.elementsJSON = config.defaultValues.elementsJSON;
+    } else if (config.defaultValues) {
+      // For non-panel questions, merge defaultValues into questionJSON
+      Object.assign(questionJSON, config.defaultValues);
+    }
+
+    // Register the question type
+    ComponentCollection.Instance.add({
+      ...componentConfig,
       onInit: () => {
         // Register custom properties
         if (config.properties) {

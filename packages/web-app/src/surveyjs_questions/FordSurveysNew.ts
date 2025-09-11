@@ -2,7 +2,7 @@
  * Ford questions registration using the new universal system
  */
 
-import { fordQuestions } from '@meridian-event-tech/shared';
+import { fordQuestions, registerUniversalQuestions } from '@meridian-event-tech/shared';
 import { ComponentCollection, Question, Serializer } from 'survey-core';
 import { handleChoicesByUrl } from './choicesByUrlHelper';
 
@@ -21,7 +21,10 @@ export const fordInit = () => {
 
   console.log('Initializing Ford questions using universal registration...');
   
-  // Register Ford questions directly using our own ComponentCollection
+  // Use the universal registration system to register ALL questions (Ford + shared)
+  registerUniversalQuestions('ford', 'frontend');
+  
+  // Register Ford questions directly using our own ComponentCollection (legacy fallback)
   registerFordQuestions();
 
   // Add frontend-specific behaviors for VOI and vehicles driven questions

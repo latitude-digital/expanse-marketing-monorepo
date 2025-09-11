@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.scss';
 import './styles/grid-layout.css';
+import './styles/survey-scroll-fix.css';
 import reportWebVitals from './reportWebVitals';
 
 import {

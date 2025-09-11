@@ -73,10 +73,12 @@ const FDSCheckboxComponent: React.FC<{ question: QuestionCheckboxModel }> = ({ q
             <div data-testid={`fds-checkbox-${question.name}`}>
                 {question.visibleChoices.map((choice: any, index: number) => {
                     const isChecked = currentValues.includes(choice.value);
-                    const choiceLabel = renderLabel(choice.text || choice.value);
+                    // Handle multilingual text objects from SurveyJS
+                    const choiceText = typeof choice.text === 'object' ? choice.locText : choice.text;
+                    const choiceLabel = renderLabel(choiceText || choice.value);
                     
                     return (
-                        <div key={choice.value || index} style={{ marginBottom: '0.5rem' }}>
+                        <div key={choice.value || index} style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <Checkbox
                                 isSelected={isChecked}
                                 onChange={(isSelected) => handleCheckboxChange(choice, isSelected)}
@@ -85,13 +87,18 @@ const FDSCheckboxComponent: React.FC<{ question: QuestionCheckboxModel }> = ({ q
                                 name={`${question.name}-${choice.value}`}
                                 value={choice.value}
                                 data-testid={`fds-checkbox-${question.name}-${choice.value}`}
-                                aria-label={choice.text || choice.value}
+                                aria-label={choiceText || choice.value}
                                 onBlur={() => {
                                     question.validate();
                                 }}
+                            />
+                            <label 
+                                htmlFor={`${question.name}-${choice.value}`}
+                                style={{ cursor: question.isReadOnly ? 'default' : 'pointer', userSelect: 'none' }}
+                                onClick={() => !question.isReadOnly && handleCheckboxChange(choice, !isChecked)}
                             >
                                 {choiceLabel}
-                            </Checkbox>
+                            </label>
                         </div>
                     );
                 })}

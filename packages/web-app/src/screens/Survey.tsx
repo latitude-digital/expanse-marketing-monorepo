@@ -31,7 +31,6 @@ import { StyledTextField } from "@ui/ford-ui-components";
 import logo from '../assets/ford-signature.svg';
 import globeIcon from '../assets/icons/ford/globe.svg';
 import "survey-core/survey-core.min.css";
-import "../styles/survey-scroll-fix.css";
 import { prepareForSurvey, prepareSurveyOnQuestionAdded } from "../helpers/surveyTemplatesAll";
 import GlobalFooter from "../components/GlobalFooter";
 import { uploadSurveyToAPI } from '@meridian-event-tech/shared';
@@ -102,6 +101,15 @@ const SurveyComponent: React.FC = () => {
   const handleSurveyStarting = (sender: Model, options: any): void => {
     console.log('handleSurveyStarting', options);
   };
+
+  // Add class to body when component mounts, remove when unmounting
+  useEffect(() => {
+    document.body.classList.add('survey-taking-mode');
+    
+    return () => {
+      document.body.classList.remove('survey-taking-mode');
+    };
+  }, []);
 
   useEffect(() => {
     if (!eventID) return;
