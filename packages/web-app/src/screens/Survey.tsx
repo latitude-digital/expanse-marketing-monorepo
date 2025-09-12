@@ -374,6 +374,112 @@ const SurveyComponent: React.FC = () => {
             survey.questionErrorLocation = "bottom";
           }
 
+          // Configure validation scrolling behavior
+          survey.autoFocusFirstError = true;
+          
+          // Cancel default scrolling since FDS renderers don't preserve SurveyJS element IDs
+          survey.onScrollingElementToTop.add((sender: Model, options: any) => {
+            options.cancel = true;
+          });
+          
+          // Add page change validation with scrolling
+          if (survey.onCurrentPageChanging) {
+            survey.onCurrentPageChanging.add((sender: Model, options: any) => {
+              if (options.isNextPage && !sender.currentPage?.validate(true, true)) {
+                console.log('[Page Change] Validation failed, preventing page change and scrolling to error');
+                
+                setTimeout(() => {
+                  const errorSelectors = [
+                    '.fds-question-error', // FDS brands
+                    '.sv-question--has-error', // SurveyJS error containers
+                    '.sd-question__erbox:not(:empty)', // SurveyJS v2 errors
+                    '.sv-string-viewer--error', // SurveyJS error text
+                    '.sv_q_erbox:not(:empty)' // SurveyJS v1 errors
+                  ];
+                  
+                  const errorElements = document.querySelectorAll(errorSelectors.join(', '));
+                  if (errorElements.length > 0) {
+                    const firstError = errorElements[0];
+                    const rect = firstError.getBoundingClientRect();
+                    const scrollY = window.pageYOffset + rect.top - 100;
+                    
+                    console.log('[Page Change] Scrolling to error at position:', scrollY);
+                    window.scrollTo({ top: scrollY, behavior: 'smooth' });
+                    
+                    const questionElement = firstError.closest('.sd-question, .sv_q, .sv_qstn, [data-name]');
+                    if (questionElement) {
+                      const firstInput = questionElement.querySelector('input:not([type="hidden"]):not([type="button"]):not([type="submit"]), textarea, select') as HTMLElement;
+                      if (firstInput) {
+                        setTimeout(() => {
+                          firstInput.focus();
+                        }, 300);
+                      }
+                    }
+                  }
+                }, 100);
+                
+                options.allow = false;
+              }
+            });
+          }
+          
+          // Track error count changes and auto-scroll to first error
+          let lastErrorCount = 0;
+          if (survey.onValidatedErrorsChanged) {
+            survey.onValidatedErrorsChanged.add((sender: Model) => {
+              const currentPage = sender.currentPage;
+              if (!currentPage) return;
+              
+              const currentErrorCount = currentPage.questions.reduce((count: number, q: any) => 
+                count + (q.errors ? q.errors.length : 0), 0
+              );
+              
+              if (currentErrorCount > lastErrorCount && currentErrorCount > 0) {
+                console.log('[Validation Scroll] Errors detected, scrolling to first error');
+                
+                setTimeout(() => {
+                  const errorSelectors = [
+                    '.fds-question-error', // FDS brands
+                    '.sv-question--has-error', // SurveyJS error containers
+                    '.sd-question__erbox:not(:empty)', // SurveyJS v2 errors
+                    '.sv-string-viewer--error', // SurveyJS error text
+                    '.sv_q_erbox:not(:empty)' // SurveyJS v1 errors
+                  ];
+                  
+                  const errorElements = document.querySelectorAll(errorSelectors.join(', '));
+                  if (errorElements.length > 0) {
+                    const firstError = errorElements[0];
+                    const rect = firstError.getBoundingClientRect();
+                    
+                    // Only scroll if error is not in viewport
+                    if (rect.top < 0 || rect.bottom > window.innerHeight) {
+                      const scrollY = window.pageYOffset + rect.top - 100;
+                      console.log('[Validation Scroll] Scrolling to:', scrollY);
+                      window.scrollTo({ top: scrollY, behavior: 'smooth' });
+                      
+                      const questionElement = firstError.closest('.sd-question, .sv_q, .sv_qstn');
+                      if (questionElement) {
+                        const firstInput = questionElement.querySelector('input:not([type="hidden"]):not([type="button"]):not([type="submit"]), textarea, select') as HTMLElement;
+                        if (firstInput) {
+                          setTimeout(() => {
+                            firstInput.focus();
+                          }, 300);
+                        }
+                      }
+                    }
+                  }
+                }, 100);
+              }
+              
+              lastErrorCount = currentErrorCount;
+            });
+          }
+          
+          // Reset scroll position when page changes successfully
+          survey.onCurrentPageChanged.add(() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          });
+
           // Hide built-in navigation buttons for Ford/Lincoln brands to use custom navigation
           const shouldUseCustomNavigation = eventBrand === 'Ford' || eventBrand === 'Lincoln';
           console.log('[Navigation Debug] eventBrand:', eventBrand, 'shouldUseCustomNavigation:', shouldUseCustomNavigation);
@@ -751,6 +857,54 @@ const SurveyComponent: React.FC = () => {
 
           survey.onCompleting.add(async (sender: Model, options: any) => {
             console.log('=== Survey onCompleting Started ===');
+            
+            // First, run validation to show errors
+            const isValid = sender.validate(true, true);
+            console.log('[Survey onCompleting] Validation result:', isValid);
+            
+            if (!isValid) {
+              // Validation failed - scroll to first error
+              console.log('[Survey onCompleting] Validation failed, scrolling to first error');
+              
+              setTimeout(() => {
+                const errorSelectors = [
+                  '.fds-question-error', // FDS brands
+                  '.sv-question--has-error', // SurveyJS error containers
+                  '.sd-question__erbox:not(:empty)', // SurveyJS v2 errors
+                  '.sv-string-viewer--error', // SurveyJS error text
+                  '.sv_q_erbox:not(:empty)', // SurveyJS v1 errors
+                  '[data-name] .sd-question__erbox:not(:empty)' // More specific selector
+                ];
+                
+                const errorElements = document.querySelectorAll(errorSelectors.join(', '));
+                console.log('[Survey onCompleting] Found error elements:', errorElements.length);
+                
+                if (errorElements.length > 0) {
+                  const firstError = errorElements[0];
+                  const rect = firstError.getBoundingClientRect();
+                  const scrollY = window.pageYOffset + rect.top - 100;
+                  
+                  console.log('[Survey onCompleting] Scrolling to position:', scrollY);
+                  window.scrollTo({ top: scrollY, behavior: 'smooth' });
+                  
+                  // Try to focus the first input in the question with error
+                  const questionElement = firstError.closest('.sd-question, .sv_q, .sv_qstn, [data-name]');
+                  if (questionElement) {
+                    const firstInput = questionElement.querySelector('input:not([type="hidden"]):not([type="button"]):not([type="submit"]), textarea, select') as HTMLElement;
+                    if (firstInput) {
+                      setTimeout(() => {
+                        console.log('[Survey onCompleting] Focusing input:', firstInput);
+                        firstInput.focus();
+                      }, 300);
+                    }
+                  }
+                }
+              }, 100);
+              
+              // Prevent completion since validation failed
+              options.allow = false;
+              return;
+            }
             
             // Check survey limit before allowing submission
             if (res.event.survey_count_limit && res.event.survey_count_limit > 0) {

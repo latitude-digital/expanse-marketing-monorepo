@@ -468,6 +468,11 @@ ${minorWaiverText}
                         survey.setValue("optins", optins || []);
 
                         let surveyData: SurveyData = sender.data;
+                        surveyData.customData = {
+                            ...surveyData.customData,
+                            passion: surveyData.passion || undefined,
+                            capability: surveyData.capability || undefined,
+                        };
                         surveyData["optins"] = survey.getValue("optins") || null;
                         surveyData["signature"] = survey.getValue("signature") || null;
                         surveyData["minor_signature"] = survey.getValue("minor_signature") || null;
