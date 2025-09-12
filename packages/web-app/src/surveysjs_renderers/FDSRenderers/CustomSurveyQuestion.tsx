@@ -16,11 +16,13 @@ interface CustomSurveyQuestionProps {
  */
 export class CustomSurveyQuestion extends React.Component<CustomSurveyQuestionProps> {
   private rootRef = React.createRef<HTMLDivElement>();
+  private errorObserver: MutationObserver | null = null;
 
   componentDidMount() {
     const { element } = this.props;
     if (this.rootRef.current && element) {
       element.setWrapperElement(this.rootRef.current);
+      this.setupErrorHandling();
     }
   }
 
@@ -28,6 +30,10 @@ export class CustomSurveyQuestion extends React.Component<CustomSurveyQuestionPr
     const { element } = this.props;
     if (element) {
       element.setWrapperElement(undefined);
+    }
+    if (this.errorObserver) {
+      this.errorObserver.disconnect();
+      this.errorObserver = null;
     }
   }
 
@@ -38,8 +44,95 @@ export class CustomSurveyQuestion extends React.Component<CustomSurveyQuestionPr
       }
       if (this.props.element && this.rootRef.current) {
         this.props.element.setWrapperElement(this.rootRef.current);
+        this.setupErrorHandling();
       }
     }
+    
+    // Check if errors changed and handle accordingly
+    const prevErrors = prevProps.element?.errors || [];
+    const currentErrors = this.props.element?.errors || [];
+    if (prevErrors.length !== currentErrors.length) {
+      this.handleErrorsChanged();
+    }
+  }
+
+  setupErrorHandling() {
+    const { element } = this.props;
+    if (!element) return;
+
+    // Listen for error changes on the question
+    element.registerFunctionOnPropertyValueChanged("errors", () => {
+      this.handleErrorsChanged();
+    });
+  }
+
+  handleErrorsChanged() {
+    const { element } = this.props;
+    if (!element || !this.rootRef.current) return;
+
+    // Use requestAnimationFrame to wait for React to render the error
+    requestAnimationFrame(() => {
+      const hasErrors = element.errors && element.errors.length > 0;
+      
+      if (hasErrors) {
+        // Add a marker class that SurveyJS can detect
+        this.rootRef.current?.classList.add('sv-question--has-error');
+        
+        // If this is the first error on the page, trigger scroll and focus
+        if (this.isFirstErrorOnPage()) {
+          this.scrollToAndFocus();
+        }
+      } else {
+        // Remove error marker
+        this.rootRef.current?.classList.remove('sv-question--has-error');
+      }
+    });
+  }
+
+  isFirstErrorOnPage() {
+    const { element, survey } = this.props;
+    if (!survey || !element) return false;
+
+    const currentPage = survey.currentPage;
+    if (!currentPage) return false;
+
+    // Get all questions with errors on current page
+    const questionsWithErrors = currentPage.questions.filter((q: Question) => 
+      q.errors && q.errors.length > 0
+    );
+
+    // Check if this is the first question with errors
+    return questionsWithErrors[0] === element;
+  }
+
+  scrollToAndFocus() {
+    if (!this.rootRef.current) return;
+
+    // Use setTimeout to ensure DOM is fully updated
+    setTimeout(() => {
+      // Scroll to the element
+      const rect = this.rootRef.current!.getBoundingClientRect();
+      const scrollY = window.pageYOffset + rect.top - 100; // 100px offset from top
+      
+      window.scrollTo({
+        top: scrollY,
+        behavior: 'smooth'
+      });
+
+      // Focus the first input if it's a text input
+      const { element } = this.props;
+      if (element && (element.getType() === 'text' || 
+                     element.getType() === 'comment' || 
+                     element.getType() === 'multipletext')) {
+        const input = this.rootRef.current!.querySelector('input, textarea') as HTMLElement;
+        if (input) {
+          // Delay focus slightly to ensure scroll completes
+          setTimeout(() => {
+            input.focus();
+          }, 300);
+        }
+      }
+    }, 100);
   }
 
   render() {
