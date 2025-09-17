@@ -138,13 +138,26 @@ export default function AdminEvents() {
     const searchedEvents = events.filter(event => {
         if (!searchTerm) return true;
         const searchLower = searchTerm.toLowerCase();
+
+        const valueMatchesSearch = (value: unknown) => {
+            if (value === undefined || value === null) {
+                return false;
+            }
+
+            if (typeof value === 'string' || typeof value === 'number') {
+                return String(value).toLowerCase().includes(searchLower);
+            }
+
+            return false;
+        };
+
         return (
-            event.name?.toLowerCase().includes(searchLower) ||
-            event.subdomain?.toLowerCase().includes(searchLower) ||
-            event.agency?.toLowerCase().includes(searchLower) ||
-            event.tags?.some(tag => tag.toLowerCase().includes(searchLower)) ||
-            event.fordEventID?.toLowerCase().includes(searchLower) ||
-            event.lincolnEventID?.toLowerCase().includes(searchLower)
+            valueMatchesSearch(event.name) ||
+            valueMatchesSearch(event.subdomain) ||
+            valueMatchesSearch(event.agency) ||
+            event.tags?.some(tag => valueMatchesSearch(tag)) ||
+            valueMatchesSearch(event.fordEventID) ||
+            valueMatchesSearch(event.lincolnEventID)
         );
     });
 
