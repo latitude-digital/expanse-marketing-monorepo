@@ -155,45 +155,45 @@ const buildChoicesMap = (survey: Model): Map<string, Map<any, string>> => {
   
   allQuestions.forEach(question => {
     const questionChoices = new Map<any, string>();
-    
-    // Check if question has choices
-    if ('choices' in question && Array.isArray((question as any).choices)) {
-      const choices = (question as any).choices;
-      choices.forEach((choice: any) => {
+    const choiceSource: any = (question as any).contentQuestion || question;
+
+    const registerChoice = (value: any, text: string) => {
+      if (value === undefined || value === null) {
+        return;
+      }
+      questionChoices.set(value, text);
+      questionChoices.set(String(value), text);
+    };
+
+    // Check if choice source has explicit choices
+    if (Array.isArray(choiceSource?.choices)) {
+      choiceSource.choices.forEach((choice: any) => {
         if (typeof choice === 'string') {
-          // Simple string choice
-          questionChoices.set(choice, choice);
+          registerChoice(choice, choice);
         } else if (choice && typeof choice === 'object') {
-          // Object with value and text
           const value = choice.value !== undefined ? choice.value : choice;
-          const text = choice.text || choice.value || String(value);
-          questionChoices.set(value, text);
-          // Also map string version of the value for safety
-          questionChoices.set(String(value), text);
+          const text = choice.text || choice.title || choice.name || String(value);
+          registerChoice(value, text);
         }
       });
     }
-    
-    // Also check for choicesByUrl (for dynamic choices like vehicles)
-    if ('choicesByUrl' in question && (question as any).choicesByUrl) {
-      // For choicesByUrl, we'll need to handle this differently
-      // The choices might be loaded dynamically
-      const visibleChoices = (question as any).visibleChoices;
-      if (visibleChoices && Array.isArray(visibleChoices)) {
+
+    // Handle dynamic choices loaded via choicesByUrl
+    if (choiceSource?.choicesByUrl || choiceSource?.visibleChoices) {
+      const visibleChoices = choiceSource.visibleChoices;
+      if (Array.isArray(visibleChoices) && visibleChoices.length > 0) {
         visibleChoices.forEach((choice: any) => {
           if (typeof choice === 'string') {
-            questionChoices.set(choice, choice);
+            registerChoice(choice, choice);
           } else if (choice && typeof choice === 'object') {
-            const value = choice.value !== undefined ? choice.value : choice.id;
-            const text = choice.text || choice.name || String(value);
-            questionChoices.set(value, text);
-            // Also map string version of the value
-            questionChoices.set(String(value), text);
+            const value = choice.value !== undefined ? choice.value : (choice.id ?? choice.name);
+            const text = choice.text || choice.title || choice.name || String(value);
+            registerChoice(value, text);
           }
         });
       }
     }
-    
+
     if (questionChoices.size > 0) {
       choicesMap.set(question.name, questionChoices);
     }
@@ -704,8 +704,17 @@ const convertQuestionsToColumns = (
           if (surveyModel && params.colDef.field) {
             const question = surveyModel.getQuestionByName(params.colDef.field);
             if (question) {
+              const displayQuestion: any = (question as any).contentQuestion || question;
               // Handle arrays - use smart array formatting instead of SurveyJS displayValue
               if (Array.isArray(params.value)) {
+                // Try to map through choices if available on display question
+                if (Array.isArray(displayQuestion?.choices) && displayQuestion.choices.length > 0) {
+                  const mappedValues = params.value.map((val: any) => {
+                    const match = displayQuestion.choices.find((choice: any) => choice.value === val || String(choice.value) === String(val));
+                    return match ? (match.text || match.title || match.name || match.value) : val;
+                  });
+                  return formatArrayValue(mappedValues);
+                }
                 return formatArrayValue(params.value);
               }
               // For objects, use our formatter instead of SurveyJS displayValue
@@ -716,10 +725,10 @@ const convertQuestionsToColumns = (
 
 
               // Handle single values
-              const originalValue = question.value;
-              question.value = params.value;
-              const displayValue = question.displayValue;
-              question.value = originalValue;
+              const originalValue = displayQuestion.value;
+              displayQuestion.value = params.value;
+              const displayValue = displayQuestion.displayValue;
+              displayQuestion.value = originalValue;
               return displayValue || params.value;
             }
           }
