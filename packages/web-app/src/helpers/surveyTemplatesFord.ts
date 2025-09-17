@@ -245,4 +245,29 @@ export const prepareCreatorOnQuestionAddedFord = (
     });
   }
 
+  if (options.question.getType() === "sweepstakesoptin") {
+    console.log("sweepstakesoptin question added");
+    options.question._ffs = "custom.sweepstakes_opt_in";
+  }
+
+  if (options.question.getType() === "fordpassion") {
+    console.log("fordpassion question added");
+    options.question._ffs = "custom.passion";
+  }
+
+  if (options.question.getType() === "fordcapability") {
+    console.log("fordcapability question added");
+    options.question._ffs = "custom.capability";
+  }
+
+  if (options.question.getType() === "fordpassionpost") {
+    console.log("fordpassionpost question added");
+    options.question._ffs = "custom.passion_post";
+  }
+
+  if (options.question.getType() === "fordcapabilitypost") {
+    console.log("fordcapabilitypost question added");
+    options.question._ffs = "custom.capability_post";
+  }
+
 };
