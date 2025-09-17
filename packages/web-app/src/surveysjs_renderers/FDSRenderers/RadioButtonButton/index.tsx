@@ -59,6 +59,11 @@ export class RadioGroupRowQuestion extends SurveyQuestionRadiogroup {
 
     renderElement(): JSX.Element {
         const question = this.question;
+        const isFDSBrand = this.isFDSBrand();
+
+        if (!isFDSBrand) {
+            return SurveyQuestionRadiogroup.prototype.renderElement.call(this);
+        }
 
         const compositeParent = (question as any).parent as any;
         const parentTitle = compositeParent?.title || compositeParent?.fullTitle;
@@ -128,20 +133,37 @@ export class RadioGroupRowQuestion extends SurveyQuestionRadiogroup {
     }
 
     getBody(cssClasses: any) {
-        // This method is overridden by renderElement
+        if (!this.isFDSBrand()) {
+            return SurveyQuestionRadiogroup.prototype.getBody.call(this, cssClasses);
+        }
+
+        // This method is overridden by renderElement for FDS brands
         return this.renderElement();
     }
 
     // Override to prevent double title rendering
     renderTitle() {
-        return null;
+        if (this.isFDSBrand()) {
+            return null;
+        }
+
+        return super.renderTitle();
     }
 
     // Override to prevent double description rendering
     renderDescription() {
-        return null;
+        if (this.isFDSBrand()) {
+            return null;
+        }
+
+        return super.renderDescription();
     }
 
+
+    private isFDSBrand(): boolean {
+        const survey: any = this.question?.survey;
+        return !!survey?.__isFDSBrand;
+    }
 }
 
 const clearButtonItem = Serializer.getProperty("radiogroup", "showClearButton");

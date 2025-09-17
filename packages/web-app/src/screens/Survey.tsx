@@ -313,6 +313,7 @@ const SurveyComponent: React.FC = () => {
 
           // Initialize FDS conditionally based on event brand BEFORE creating survey model
           const eventBrand = normalizeBrand(event.brand);
+          const isFDSBrand = shouldLoadFDS(eventBrand);
           console.log(`Event brand detected: ${eventBrand}`);
 
           // Initialize FDS and brand-specific question registries before creating Model()
@@ -324,6 +325,8 @@ const SurveyComponent: React.FC = () => {
           }
 
           const survey = new Model(defaultSurveyProperties);
+          (survey as any).__eventBrand = eventBrand;
+          (survey as any).__isFDSBrand = isFDSBrand;
 
           // IMPORTANT: Don't clear invisible field values - needed for composite panels
           // This ensures hidden fields like country in address autocomplete panels are saved
