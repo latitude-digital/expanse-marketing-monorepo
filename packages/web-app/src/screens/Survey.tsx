@@ -324,7 +324,11 @@ const SurveyComponent: React.FC = () => {
           }
 
           const survey = new Model(defaultSurveyProperties);
-          
+
+          // IMPORTANT: Don't clear invisible field values - needed for composite panels
+          // This ensures hidden fields like country in address autocomplete panels are saved
+          survey.clearInvisibleValues = false;
+
           // Set the thank you message from the event configuration if available
           if (event.thanks) {
             // Convert markdown to HTML
@@ -622,8 +626,15 @@ const SurveyComponent: React.FC = () => {
 
                 // Define the upload function with retry logic
                 const performUpload = async (): Promise<string> => {
+                  // Determine the correct Cloud Run URL based on the Firebase project
+                  const firebaseProjectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || 'latitude-lead-system';
+                  const isStaging = firebaseProjectId === 'latitude-leads-staging';
+                  const uploadFunctionUrl = isStaging
+                    ? 'https://generaterespondentuploadurl-dm2b2pxfcq-uc.a.run.app'
+                    : 'https://prod-generaterespondentuploadurl-erqibiidsa-uc.a.run.app';
+
                   // Get upload URL from Firebase function (no auth required for respondents)
-                  const uploadResponse = await fetch('https://generaterespondentuploadurl-erqibiidsa-uc.a.run.app', {
+                  const uploadResponse = await fetch(uploadFunctionUrl, {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json'

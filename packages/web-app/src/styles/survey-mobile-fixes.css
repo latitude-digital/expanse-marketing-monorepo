@@ -1,0 +1,68 @@
+/**
+ * Survey Mobile Text Wrapping Fixes
+ * Ensures proper text wrapping on mobile devices for all survey brands,
+ * especially for non-FDS brands that might be affected by SurveyJS defaults
+ */
+
+/* Fix text wrapping for survey question descriptions on mobile */
+@media screen and (max-width: 640px) {
+  /* Fix for all SurveyJS string viewers on mobile */
+  .sv-string-viewer {
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+
+  /* Ensure multiline viewers also wrap properly */
+  .sv-string-viewer--multiline {
+    white-space: normal !important;
+    display: block !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+
+  /* Fix title containers to allow proper wrapping */
+  .sv-title-actions__title {
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+
+  /* Ensure question descriptions wrap properly */
+  .sv-question__description,
+  .sd-question__description {
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    display: block !important;
+  }
+
+  /* Fix for any FDS question descriptions that might interfere */
+  .fds-question-description {
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+
+  /* Fix for FDS question labels that are set to nowrap */
+  .fds-question-label {
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+}
+
+/* Additional mobile-specific fixes for narrow screens */
+@media screen and (max-width: 414px) {
+  /* iPhone SE and similar small devices */
+  .sv-string-viewer,
+  .sv-string-viewer--multiline,
+  .sv-title-actions__title,
+  .sv-question__title,
+  .sd-question__title {
+    hyphens: auto !important;
+    -webkit-hyphens: auto !important;
+    -moz-hyphens: auto !important;
+    -ms-hyphens: auto !important;
+  }
+}

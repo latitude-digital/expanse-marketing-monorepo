@@ -428,7 +428,6 @@ const globalInit = () => {
         },
         visible: false,
         isRequired: false,
-        valueName: "country",
       },
     ],
   } as ICustomQuestionTypeConfiguration);
@@ -603,7 +602,6 @@ const globalInit = () => {
         },
         visible: false,
         isRequired: false,
-        valueName: "country",
       },
     ],
   } as ICustomQuestionTypeConfiguration);
@@ -780,7 +778,6 @@ const globalInit = () => {
         },
         visible: false,
         isRequired: false,
-        valueName: "country",
       },
     ],
   } as ICustomQuestionTypeConfiguration);
@@ -955,7 +952,6 @@ const globalInit = () => {
         },
         visible: false,
         isRequired: false,
-        valueName: "country",
       },
     ],
   } as ICustomQuestionTypeConfiguration);

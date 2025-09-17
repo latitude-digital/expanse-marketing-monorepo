@@ -91,6 +91,16 @@ export class RadioGroupRowQuestion extends SurveyQuestionRadiogroup {
         return this.renderElement();
     }
 
+    // Override to prevent double title rendering
+    renderTitle() {
+        return null;
+    }
+
+    // Override to prevent double description rendering
+    renderDescription() {
+        return null;
+    }
+
 }
 
 const clearButtonItem = Serializer.getProperty("radiogroup", "showClearButton");

@@ -432,7 +432,14 @@ function DashboardScreen() {
                         return;
                     }
 
-                    const uploadResponse = await fetch('https://generatecreatoruploadurl-erqibiidsa-uc.a.run.app', {
+                    // Determine the correct Cloud Run URL based on the Firebase project
+                    const firebaseProjectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || 'latitude-lead-system';
+                    const isStaging = firebaseProjectId === 'latitude-leads-staging';
+                    const uploadFunctionUrl = isStaging
+                        ? 'https://generatecreatoruploadurl-dm2b2pxfcq-uc.a.run.app'
+                        : 'https://prod-generatecreatoruploadurl-erqibiidsa-uc.a.run.app';
+
+                    const uploadResponse = await fetch(uploadFunctionUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

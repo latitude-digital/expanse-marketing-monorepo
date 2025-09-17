@@ -82,8 +82,8 @@ esac
 if $DEPLOY_WEB; then
     # Step 1: Clean previous build artifacts
     echo -e "${YELLOW}🧹 Cleaning previous build artifacts${NC}"
-    rm -rf packages/web-app/dist packages/web-app/build
-    rm -rf packages/shared/lib packages/shared/dist
+    rm -rf packages/web-app/dist packages/web-app/build 2>/dev/null || true
+    rm -rf packages/shared/lib packages/shared/dist 2>/dev/null || true
     echo -e "${GREEN}✅ Build artifacts cleaned${NC}"
 
     # Step 2: Update version in package.json
