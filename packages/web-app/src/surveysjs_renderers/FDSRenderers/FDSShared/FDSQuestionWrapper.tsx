@@ -1,6 +1,6 @@
 import React from 'react';
 import { Typography } from "@ui/ford-ui-components";
-import { renderLabel, renderDescription, processMarkdown, getOptionalText } from './utils';
+import { renderLabel, renderDescription, processMarkdown, getOptionalText, renderQuestionDescription } from './utils';
 import { FDSErrorDisplay } from './FDSErrorDisplay';
 import { FDSRequiredIndicator } from './FDSRequiredIndicator';
 
@@ -70,26 +70,7 @@ export const FDSQuestionWrapper: React.FC<FDSQuestionWrapperProps> = ({
       {/* Question Description (optional) - Only show if titleLocation is not "hidden" and positioned above form control when descriptionLocation is not "underInput" */}
       {!isTitleHidden && description && showDescriptionAbove && (
         <div className="fds-question-description" style={{ marginBottom: '12px' }}>
-          {(() => {
-            const processedDescription = processMarkdown(description);
-            const hasHtml = processedDescription.includes('<');
-            
-            if (hasHtml) {
-              // For HTML content, use Typography component wrapper to ensure font inheritance
-              return (
-                <Typography variant="body2" color="subtle">
-                  <span dangerouslySetInnerHTML={{ __html: processedDescription }} />
-                </Typography>
-              );
-            } else {
-              // For plain text, use Typography component to match built-in Ford UI descriptions
-              return (
-                <Typography variant="body2" color="subtle">
-                  {processedDescription}
-                </Typography>
-              );
-            }
-          })()}
+          {renderQuestionDescription(description, question)}
         </div>
       )}
 
@@ -101,26 +82,7 @@ export const FDSQuestionWrapper: React.FC<FDSQuestionWrapperProps> = ({
       {/* Question Description (optional) - Only show if titleLocation is not "hidden" and positioned below form control when descriptionLocation is "underInput" */}
       {!isTitleHidden && description && !showDescriptionAbove && (
         <div className="fds-question-description" style={{ marginTop: '12px' }}>
-          {(() => {
-            const processedDescription = processMarkdown(description);
-            const hasHtml = processedDescription.includes('<');
-            
-            if (hasHtml) {
-              // For HTML content, use Typography component wrapper to ensure font inheritance
-              return (
-                <Typography variant="body2" color="subtle">
-                  <span dangerouslySetInnerHTML={{ __html: processedDescription }} />
-                </Typography>
-              );
-            } else {
-              // For plain text, use Typography component to match built-in Ford UI descriptions
-              return (
-                <Typography variant="body2" color="subtle">
-                  {processedDescription}
-                </Typography>
-              );
-            }
-          })()}
+          {renderQuestionDescription(description, question)}
         </div>
       )}
 

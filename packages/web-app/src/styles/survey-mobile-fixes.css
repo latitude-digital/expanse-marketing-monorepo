@@ -4,6 +4,15 @@
  * especially for non-FDS brands that might be affected by SurveyJS defaults
  */
 
+/* Global tweaks for FDS survey descriptions */
+.fds-question-description {
+  display: block;
+}
+
+.fds-question-description a {
+  text-decoration: underline;
+}
+
 /* Fix text wrapping for survey question descriptions on mobile */
 @media screen and (max-width: 640px) {
   /* Fix for all SurveyJS string viewers on mobile */
