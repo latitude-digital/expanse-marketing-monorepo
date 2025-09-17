@@ -634,7 +634,7 @@ const SurveyComponent: React.FC = () => {
                   const isStaging = firebaseProjectId === 'latitude-leads-staging';
                   const uploadFunctionUrl = isStaging
                     ? 'https://generaterespondentuploadurl-dm2b2pxfcq-uc.a.run.app'
-                    : 'https://prod-generaterespondentuploadurl-erqibiidsa-uc.a.run.app';
+                    : 'https://generaterespondentuploadurl-erqibiidsa-uc.a.run.app';
 
                   // Get upload URL from Firebase function (no auth required for respondents)
                   const uploadResponse = await fetch(uploadFunctionUrl, {

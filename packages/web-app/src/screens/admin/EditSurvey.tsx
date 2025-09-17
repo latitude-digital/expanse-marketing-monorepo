@@ -437,7 +437,7 @@ function DashboardScreen() {
                     const isStaging = firebaseProjectId === 'latitude-leads-staging';
                     const uploadFunctionUrl = isStaging
                         ? 'https://generatecreatoruploadurl-dm2b2pxfcq-uc.a.run.app'
-                        : 'https://prod-generatecreatoruploadurl-erqibiidsa-uc.a.run.app';
+                        : 'https://generatecreatoruploadurl-erqibiidsa-uc.a.run.app';
 
                     const uploadResponse = await fetch(uploadFunctionUrl, {
                         method: 'POST',
