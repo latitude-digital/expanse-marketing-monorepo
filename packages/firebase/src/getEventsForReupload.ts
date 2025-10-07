@@ -33,7 +33,7 @@ export const getFordLincolnEventsImpl = (app: admin.app.App, database: string = 
 
       const events = await Promise.all(snapshot.docs.map(async (doc: QueryDocumentSnapshot) => {
         const data = doc.data();
-        
+
         // Get survey count for this event - check the surveys subcollection
         const surveysSnapshot = await db
           .collection('events')
@@ -41,7 +41,7 @@ export const getFordLincolnEventsImpl = (app: admin.app.App, database: string = 
           .collection('surveys')
           .select() // Only get document IDs, not full data
           .get();
-        
+
         return {
           id: doc.id,
           name: data.name,
@@ -58,7 +58,13 @@ export const getFordLincolnEventsImpl = (app: admin.app.App, database: string = 
         };
       }));
 
-      return { success: true, events };
+      // Filter to only include events with the required event IDs
+      const validEvents = events.filter(event =>
+        (event.brand === 'Ford' && event.fordEventID) ||
+        (event.brand === 'Lincoln' && event.lincolnEventID)
+      );
+
+      return { success: true, events: validEvents };
     } catch (error) {
       console.error('Error fetching Ford/Lincoln events:', error);
       throw new Error(error instanceof Error ? error.message : 'Failed to fetch events');

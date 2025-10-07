@@ -197,7 +197,7 @@ const SurveyComponent: React.FC = () => {
 
                     // Conditionally use DerbySurvey baseSurvey if ffs_ford_campaign is 700397
                     let surveyJSON: any;
-                    
+
                     if (retCustomData.tailgateURL) {
                         surveyJSON = derbyBaseSurvey;
                     } else {
@@ -205,9 +205,92 @@ const SurveyComponent: React.FC = () => {
                     }
 
                     surveyJSON.title = res.data.event_name;
-                    
+
                     // Set responsive width mode
                     surveyJSON.widthMode = "responsive";
+
+                    // Preprocess isRequired to working validators BEFORE model creation
+                    const preprocessRequiredValidation = (surveyJSON: any) => {
+                        const processElements = (elements: any[]) => {
+                            if (!elements) return;
+
+                            elements.forEach((element: any) => {
+                                // Handle questions with isRequired: true
+                                if (element.type && element.isRequired === true) {
+                                    // Initialize validators array if it doesn't exist
+                                    if (!element.validators) {
+                                        element.validators = [];
+                                    }
+
+                                    // Check if expression validator already exists
+                                    const hasRequiredValidator = element.validators.some((v: any) =>
+                                        v.type === 'expression' && v.expression?.includes('notempty')
+                                    );
+
+                                    if (!hasRequiredValidator) {
+                                        // Add expression validator for required field
+                                        element.validators.push({
+                                            type: "expression",
+                                            expression: "{self} notempty",
+                                            text: element.requiredErrorText || "This field is required"
+                                        });
+                                    }
+
+                                    console.log(`[Survey Preprocess] Added required validator to question: ${element.name}`);
+                                }
+
+                                // Recursively process nested elements (panels, etc.)
+                                if (element.elements && Array.isArray(element.elements)) {
+                                    processElements(element.elements);
+                                }
+
+                                // Handle matrix-type questions
+                                if (element.columns) {
+                                    processElements(element.columns);
+                                }
+                                if (element.rows) {
+                                    processElements(element.rows);
+                                }
+                            });
+                        };
+
+                        // Process all pages
+                        if (surveyJSON.pages && Array.isArray(surveyJSON.pages)) {
+                            surveyJSON.pages.forEach((page: any) => {
+                                if (page.elements && Array.isArray(page.elements)) {
+                                    processElements(page.elements);
+                                }
+                                // Handle page-level panels
+                                if (page.panels) {
+                                    processElements(page.panels);
+                                }
+                            });
+                        }
+
+                        return surveyJSON;
+                    };
+
+                    // Apply the preprocessing
+                    preprocessRequiredValidation(surveyJSON);
+
+                    // Strip persisted 'choices' for custom question types that should load via choicesByUrl
+                    const stripChoicesForCustomTypes = (root: any) => {
+                        const typesToStrip = new Set(['fordvoi','fordvehiclesdriven','lincolnvehiclesdriven','vehicledrivenmostmake']);
+                        const walk = (elements?: any[]) => {
+                            if (!elements) return;
+                            elements.forEach((el) => {
+                                if (el && typeof el.type === 'string' && typesToStrip.has(el.type)) {
+                                    if (el.choices) delete el.choices;
+                                }
+                                if (el?.elements) walk(el.elements);
+                                if (el?.questions) walk(el.questions);
+                                if (el?.panels) walk(el.panels);
+                            });
+                        };
+                        if (root?.pages) root.pages.forEach((p: any) => walk(p.elements));
+                        else if (root?.elements) walk(root.elements);
+                    };
+                    stripChoicesForCustomTypes(surveyJSON);
 
                     // if there are opt-ins, add them
                     if (res.data.opt_in_data?.length) {
@@ -384,11 +467,137 @@ ${minorWaiverText}
                     }
 
                     const survey = new Model(surveyJSON);
-                    
+
+                    // Mark survey as Ford brand for FDS renderers (Ford is always FDS brand for Experiential)
+                    (survey as any).__eventBrand = 'Ford';
+                    (survey as any).__isFDSBrand = true;
+
+                    // IMPORTANT: Don't clear invisible field values - needed for composite panels
+                    // This ensures hidden fields like country in address autocomplete panels are saved
+                    survey.clearInvisibleValues = false;
+
                     // Set Ford theme settings (panelless appearance)
                     survey.questionErrorLocation = "bottom";
                     survey.showNavigationButtons = false; // Hide built-in navigation for custom Ford navigation
-                    
+
+                    // Configure validation scrolling behavior
+                    survey.autoFocusFirstError = true; // This should scroll to first error on validation
+
+                    // Since FDS renderers don't preserve SurveyJS element IDs, we need to handle scrolling differently
+                    // The onScrollingElementToTop event fires but can't find elements, so we'll use our custom approach
+                    survey.onScrollingElementToTop.add((sender: Model, options: any) => {
+                        // Cancel the default scrolling since it won't work with FDS renderers
+                        options.cancel = true;
+                        // Use our custom scrolling logic in onCompleting instead
+                    });
+
+                    // Add a more direct approach - watch for errors after any validation
+                    if (survey.onCurrentPageChanging) {
+                        survey.onCurrentPageChanging.add((sender: Model, options: any) => {
+                            // If moving forward and current page has errors, scroll to first error
+                            if (options.isNextPage && !sender.currentPage?.validate(true, true)) {
+                                console.log('[Page Change] Validation failed, preventing page change and scrolling to error');
+
+                                // Allow time for errors to render, then scroll
+                                setTimeout(() => {
+                                    const errorSelectors = [
+                                        '.fds-question-error', // FDS brands
+                                        '.sv-question--has-error', // SurveyJS error containers
+                                        '.sd-question__erbox:not(:empty)', // SurveyJS v2 errors
+                                        '.sv-string-viewer--error', // SurveyJS error text
+                                        '.sv_q_erbox:not(:empty)' // SurveyJS v1 errors
+                                    ];
+
+                                    const errorElements = document.querySelectorAll(errorSelectors.join(', '));
+                                    if (errorElements.length > 0) {
+                                        const firstError = errorElements[0];
+                                        const rect = firstError.getBoundingClientRect();
+                                        const scrollY = window.pageYOffset + rect.top - 100;
+
+                                        console.log('[Page Change] Scrolling to error at position:', scrollY);
+                                        window.scrollTo({ top: scrollY, behavior: 'smooth' });
+
+                                        // Try to focus input
+                                        const questionElement = firstError.closest('.sd-question, .sv_q, .sv_qstn, [data-name]');
+                                        if (questionElement) {
+                                            const firstInput = questionElement.querySelector('input:not([type="hidden"]):not([type="button"]):not([type="submit"]), textarea, select') as HTMLElement;
+                                            if (firstInput) {
+                                                setTimeout(() => {
+                                                    firstInput.focus();
+                                                }, 300);
+                                            }
+                                        }
+                                    }
+                                }, 100);
+
+                                options.allow = false; // Prevent page change if validation fails
+                            }
+                        });
+                    }
+
+                    survey.onCurrentPageChanged.add(() => {
+                        // Reset scroll position when page changes successfully
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    });
+
+                    // Intercept validation errors to ensure scrolling happens
+                    let lastErrorCount = 0;
+                    if (survey.onValidatedErrorsChanged) {
+                        survey.onValidatedErrorsChanged.add((sender: Model) => {
+                            const currentPage = sender.currentPage;
+                            if (!currentPage) return;
+
+                            // Count errors on current page
+                            const currentErrorCount = currentPage.questions.reduce((count: number, q: any) =>
+                                count + (q.errors ? q.errors.length : 0), 0
+                            );
+
+                            // If errors increased (validation just happened), scroll to first error
+                            if (currentErrorCount > lastErrorCount && currentErrorCount > 0) {
+                                console.log('[Validation Scroll] Errors detected, scrolling to first error');
+
+                                // Let React render the errors, then scroll
+                                setTimeout(() => {
+                                    // For FDS brands, look for FDS error elements
+                                    // For non-FDS brands, look for standard SurveyJS error elements
+                                    const errorSelectors = [
+                                        '.fds-question-error', // FDS brands
+                                        '.sv-question--has-error', // SurveyJS error containers
+                                        '.sd-question__erbox:not(:empty)', // SurveyJS v2 errors
+                                        '.sv-string-viewer--error', // SurveyJS error text
+                                        '.sv_q_erbox:not(:empty)' // SurveyJS v1 errors (fallback)
+                                    ];
+
+                                    const errorElements = document.querySelectorAll(errorSelectors.join(', '));
+                                    if (errorElements.length > 0) {
+                                        const firstError = errorElements[0];
+                                        const rect = firstError.getBoundingClientRect();
+
+                                        // Only scroll if error is not in viewport
+                                        if (rect.top < 0 || rect.bottom > window.innerHeight) {
+                                            const scrollY = window.pageYOffset + rect.top - 100;
+                                            console.log('[Validation Scroll] Scrolling to:', scrollY);
+                                            window.scrollTo({ top: scrollY, behavior: 'smooth' });
+
+                                            // For non-FDS brands, also try to focus the first input
+                                            const questionElement = firstError.closest('.sd-question, .sv_q, .sv_qstn');
+                                            if (questionElement) {
+                                                const firstInput = questionElement.querySelector('input:not([type="hidden"]):not([type="button"]):not([type="submit"]), textarea, select') as HTMLElement;
+                                                if (firstInput) {
+                                                    setTimeout(() => {
+                                                        firstInput.focus();
+                                                    }, 300);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }, 100);
+                            }
+
+                            lastErrorCount = currentErrorCount;
+                        });
+                    }
+
                     let themeOverride: SurveyCore.ITheme = {};
                     if (retCustomData.tailgateURL) {
                         console.log('[Experiential.tsx] Using Derby theme override for tailgate URL', derbyThemeOverride);
@@ -413,7 +622,8 @@ ${minorWaiverText}
                     };
                     survey.applyTheme(fordTheme);
                     console.log('[Experiential.tsx] fordTheme', fordTheme);
-                    
+
+                    // Call prepareForSurvey AFTER theme application (matching Survey.tsx pattern)
                     prepareForSurvey(survey, 'Ford');
 
                     survey.onAfterRenderSurvey.add((sender: Model) => {
@@ -446,6 +656,63 @@ ${minorWaiverText}
                         
                         console.log('survey started', sender.getValue('device_survey_guid'));
                         console.log('Default values set:', defaultValues);
+                    });
+
+                    survey.onCompleting.add(async (sender: Model, options: any) => {
+                        console.log('=== Survey onCompleting Started ===');
+
+                        // First, run validation to show errors
+                        const isValid = sender.validate(true, true);
+                        console.log('[Survey onCompleting] Validation result:', isValid);
+
+                        if (!isValid) {
+                            // Validation failed - scroll to first error
+                            console.log('[Survey onCompleting] Validation failed, scrolling to first error');
+
+                            // Allow time for errors to render
+                            setTimeout(() => {
+                                // Find first error element based on brand
+                                const errorSelectors = [
+                                    '.fds-question-error', // FDS brands
+                                    '.sv-question--has-error', // SurveyJS error containers
+                                    '.sd-question__erbox:not(:empty)', // SurveyJS v2 errors
+                                    '.sv-string-viewer--error', // SurveyJS error text
+                                    '.sv_q_erbox:not(:empty)', // SurveyJS v1 errors
+                                    '[data-name] .sd-question__erbox:not(:empty)' // More specific selector
+                                ];
+
+                                const errorElements = document.querySelectorAll(errorSelectors.join(', '));
+                                console.log('[Survey onCompleting] Found error elements:', errorElements.length);
+
+                                if (errorElements.length > 0) {
+                                    const firstError = errorElements[0];
+                                    const rect = firstError.getBoundingClientRect();
+                                    const scrollY = window.pageYOffset + rect.top - 100;
+
+                                    console.log('[Survey onCompleting] Scrolling to position:', scrollY);
+                                    window.scrollTo({ top: scrollY, behavior: 'smooth' });
+
+                                    // Try to focus the first input in the question with error
+                                    const questionElement = firstError.closest('.sd-question, .sv_q, .sv_qstn, [data-name]');
+                                    if (questionElement) {
+                                        const firstInput = questionElement.querySelector('input:not([type="hidden"]):not([type="button"]):not([type="submit"]), textarea, select') as HTMLElement;
+                                        if (firstInput) {
+                                            setTimeout(() => {
+                                                console.log('[Survey onCompleting] Focusing input:', firstInput);
+                                                firstInput.focus();
+                                            }, 300);
+                                        }
+                                    }
+                                }
+                            }, 100);
+
+                            // Prevent completion since validation failed
+                            options.allow = false;
+                            return;
+                        }
+
+                        // Validation passed, allow completion
+                        options.allow = true;
                     });
 
                     survey.onComplete.add((sender: Model, options: any) => {
@@ -531,7 +798,7 @@ ${minorWaiverText}
                         // save survey (v10 only, using FordSurvey)
                         const fordSurvey = mapToFordPayload(survey, surveyData, retEvent as any);
                         // IMPORTANT: fordSurvey should override surveyData to ensure _ffs mapped fields are included
-                        const mergedSurveyData = { ...surveyData, ...fordSurvey };
+                        const mergedSurveyData = { ...surveyData, ...fordSurvey, event_id: retEvent.event_id };
 
                         fetch(getApiUrl(ENDPOINTS.SURVEY_UPLOAD_V10), {
                             method: 'POST',
