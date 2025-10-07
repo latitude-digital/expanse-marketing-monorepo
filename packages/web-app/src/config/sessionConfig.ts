@@ -46,5 +46,5 @@ export function isDisabledRoute(pathname: string): boolean {
 }
 
 export function getDisabledRoutes(): string[] {
-  return SESSION_CONFIG.DISABLED_ROUTES;
+  return [...SESSION_CONFIG.DISABLED_ROUTES];
 }

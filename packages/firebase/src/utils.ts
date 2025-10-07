@@ -79,13 +79,10 @@ export async function getFunctionUrl(name: string, location = "us-central1"): Pr
   }
   const projectId = await auth.getProjectId();
   
-  // Determine environment and namespace the function name
-  const environment = process.env.LATITUDE_ENV || "production";
-  const namespacedName = environment === "production" ? `prod-${name}` : `staging-${name}`;
-  
+  // Functions are deployed without environment prefixes, use the base name
   const url =
     "https://cloudfunctions.googleapis.com/v2beta/" +
-    `projects/${projectId}/locations/${location}/functions/${namespacedName}`;
+    `projects/${projectId}/locations/${location}/functions/${name}`;
 
   const client = await auth.getClient();
   const res = await client.request({url});

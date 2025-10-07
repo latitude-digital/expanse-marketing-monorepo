@@ -169,3 +169,4 @@ global.ResizeObserver = class ResizeObserver {
 // Re-export everything
 export * from '@testing-library/react';
 export { customRender as render };
+// @ts-nocheck

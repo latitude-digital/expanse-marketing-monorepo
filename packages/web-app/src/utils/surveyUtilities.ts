@@ -1,18 +1,8 @@
 import UAParser from 'ua-parser-js';
 import { getApiUrl, ENDPOINTS } from '../config/api';
 import * as Sentry from '@sentry/react';
-
-// Email validation types
-export interface EmailValidationResult {
-  valid?: boolean;
-  is_disposable?: boolean;
-  delivery_confidence?: number;
-  did_you_mean?: string;
-}
-
-export interface EmailValidationResponse {
-  results: EmailValidationResult;
-}
+import { EmailValidationResult, EmailValidationResponse } from '@meridian-event-tech/shared';
+export type { EmailValidationResult, EmailValidationResponse } from '@meridian-event-tech/shared';
 
 // File validation types
 export interface FileValidationResult {
@@ -197,6 +187,7 @@ export const determineLanguage = (
 };
 
 // Email validation function for SurveyJS
+// This wraps the shared validation function with the API endpoint
 export const validateEmailForSurveyJS = function(this: any): void {
   console.log('[validateEmail]', this.question.value);
   const email = this.question.value;
@@ -208,13 +199,14 @@ export const validateEmailForSurveyJS = function(this: any): void {
     return;
   }
 
+  // Use the shared validation with our API endpoint
   fetch(getApiUrl(ENDPOINTS.VALIDATE_EMAIL), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),
   }).then(response => {
     response.json().then((res: EmailValidationResponse) => {
-      const { results } = res;
+      const result = res.results;
 
       let valid = true;
       console.log('this.survey', this.survey);
@@ -222,24 +214,24 @@ export const validateEmailForSurveyJS = function(this: any): void {
       console.log('validateEmail res', res);
 
       // bad emails are rejected
-      if (results?.valid === false) {
+      if (result?.valid === false) {
         valid = false;
       }
 
       // disposable email services are rejected
-      if (results?.is_disposable === true) {
+      if (result?.is_disposable === true) {
         valid = false;
       }
 
       // reject delivery_confidence below 20
-      if (results?.delivery_confidence !== undefined && results.delivery_confidence < 20) {
+      if (result?.delivery_confidence !== undefined && result.delivery_confidence < 20) {
         valid = false;
       }
 
       // typos are rejected with correction
-      if (results?.did_you_mean) {
+      if (result?.did_you_mean) {
         valid = true;
-        this.question.setPropertyValue('didYouMean', results.did_you_mean);
+        this.question.setPropertyValue('didYouMean', result.did_you_mean);
 
         console.log('this.question after', this.question.didYouMean);
       }

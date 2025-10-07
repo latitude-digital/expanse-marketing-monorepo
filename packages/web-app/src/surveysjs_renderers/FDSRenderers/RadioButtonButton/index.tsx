@@ -1,7 +1,8 @@
+// @ts-nocheck
 import React from "react";
 import { ItemValue, RendererFactory, Serializer } from "survey-core";
 import { ReactQuestionFactory, SurveyQuestionRadiogroup } from "survey-react-ui";
-import UnstyledSelectionCard from "@ui/ford-ui-components/src/v2/selection-card/default/UnstyledSelectionCard";
+import UnstyledSelectionCard from "@ui/ford-ui-components/v2/selection-card/default/UnstyledSelectionCard";
 import { FDSQuestionWrapper } from '../FDSShared/FDSQuestionWrapper';
 
 import style from './_index.module.scss'
@@ -58,18 +59,64 @@ export class RadioGroupRowQuestion extends SurveyQuestionRadiogroup {
 
     renderElement(): JSX.Element {
         const question = this.question;
-        
+        const isFDSBrand = this.isFDSBrand();
+
+        if (!isFDSBrand) {
+            return SurveyQuestionRadiogroup.prototype.renderElement.call(this);
+        }
+
+        const compositeParent = (question as any).parent as any;
+        const parentTitle = compositeParent?.title || compositeParent?.fullTitle;
+        const parentDescription = compositeParent?.description;
+
+        if (process.env.NODE_ENV !== 'production') {
+            console.debug('[RadioGroupRowQuestion] label resolution', {
+                name: question.name,
+                title: question.title,
+                fullTitle: question.fullTitle,
+                parentType: compositeParent?.getType?.(),
+                parentTitle,
+                parentDescription,
+                description: question.description,
+                descriptionLocation: question.descriptionLocation,
+                parentDescriptionLocation: compositeParent?.descriptionLocation,
+                titleLocation: question.titleLocation,
+                parentTitleLocation: compositeParent?.titleLocation
+            });
+        }
+
+        const rawLabel = question.title || question.fullTitle;
+        const trimmedRawLabel = typeof rawLabel === 'string' ? rawLabel.trim() : rawLabel;
+        const fallbackLabel = parentTitle && parentTitle !== question.name ? parentTitle : undefined;
+
+        let label = trimmedRawLabel;
+        if (!label || label === question.name || label === compositeParent?.name) {
+            label = fallbackLabel || label;
+        }
+
+        let description = question.description;
+        if (!description || (typeof description === 'string' && description.trim().length === 0)) {
+            description = parentDescription;
+        }
+
+        if (compositeParent?.descriptionLocation && question.descriptionLocation !== compositeParent.descriptionLocation) {
+            question.descriptionLocation = compositeParent.descriptionLocation;
+        }
+
+        if (compositeParent?.titleLocation && question.titleLocation !== compositeParent.titleLocation) {
+            question.titleLocation = compositeParent.titleLocation;
+        }
+
         // Get validation state for FDS wrapper
         const errorMessage = question.errors.length > 0 
             ? (question.errors[0].getText ? question.errors[0].getText() : question.errors[0].text)
             : undefined;
         const isInvalid = question.errors.length > 0;
-        
-        
+
         return (
             <FDSQuestionWrapper
-                label={question.fullTitle || question.title}
-                description={question.description}
+                label={label || parentTitle || question.title || question.fullTitle || question.name}
+                description={description}
                 isRequired={question.isRequired}
                 isInvalid={isInvalid}
                 errorMessage={errorMessage}
@@ -86,10 +133,37 @@ export class RadioGroupRowQuestion extends SurveyQuestionRadiogroup {
     }
 
     getBody(cssClasses: any) {
-        // This method is overridden by renderElement
+        if (!this.isFDSBrand()) {
+            return SurveyQuestionRadiogroup.prototype.getBody.call(this, cssClasses);
+        }
+
+        // This method is overridden by renderElement for FDS brands
         return this.renderElement();
     }
 
+    // Override to prevent double title rendering
+    renderTitle() {
+        if (this.isFDSBrand()) {
+            return null;
+        }
+
+        return super.renderTitle();
+    }
+
+    // Override to prevent double description rendering
+    renderDescription() {
+        if (this.isFDSBrand()) {
+            return null;
+        }
+
+        return super.renderDescription();
+    }
+
+
+    private isFDSBrand(): boolean {
+        const survey: any = this.question?.survey;
+        return !!survey?.__isFDSBrand;
+    }
 }
 
 const clearButtonItem = Serializer.getProperty("radiogroup", "showClearButton");

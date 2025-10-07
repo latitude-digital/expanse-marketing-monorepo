@@ -35,10 +35,19 @@ const converter = new Showdown.Converter({
 
 registerIcons([
   "person-circle-question",
-  "person-circle-question",
+  "user",
   "house-circle-check",
+  "mailbox-flag-up",
   "at",
   "phone",
+  "mobile-retro",
+  "signature",
+  "calendar-circle-user",
+  "cash-register",
+  "scale-unbalanced",
+  "scale-unbalanced-flip",
+  "trophy",
+  "envelopes-bulk",
   // Ford/Lincoln icons
   "cars",
   "thumbs-up",
@@ -50,6 +59,8 @@ registerIcons([
   "calendar-clock",
   "pen-field",
   "car-garage",
+  "road-circle-check",
+  "comments",
 ]);
 
 export const initSurvey = () => {
@@ -108,30 +119,30 @@ export const initCreator = (creator: SurveyCreatorModel) => {
   }
 
   const enLocale = editorLocalization.getLocale("en");
-  enLocale.toolboxCategories["__0pii"] = "Personal Information Questions";
-  enLocale.toolboxCategories["__0fmc"] = "FMC Questions";
-  enLocale.toolboxCategories["__1wav"] = "Waivers";
-  enLocale.toolboxCategories["__fordCategory"] = "Ford Questions";
-  enLocale.toolboxCategories["__lincolnCategory"] = "Lincoln Questions";
+  enLocale.toolboxCategories["__00pii"] = "Personal Information Questions";
+  enLocale.toolboxCategories["__01fmc"] = "FMC Questions";
+  enLocale.toolboxCategories["__10wav"] = "Waivers";
+  enLocale.toolboxCategories["__02fordCategory"] = "Ford Questions";
+  enLocale.toolboxCategories["__02lincolnCategory"] = "Lincoln Questions";
 
   creator.toolbox.changeCategories([
     { name: "markdown", category: "misc"},
     { name: "optin", category: "choice" },
-    { name: "autocompleteaddress", category: "__0pii" },
-    { name: "autocompleteaddress2", category: "__0pii" },
-    { name: "autocompleteaddresscan", category: "__0pii" },
-    { name: "autocompleteaddressall", category: "__0pii" },
-    { name: "firstname", category: "__0pii" },
-    { name: "lastname", category: "__0pii" },
-    { name: "email", category: "__0pii" },
-    { name: "phone", category: "__0pii" },
-    { name: "adultwaiver", category: "__1wav" },
-    { name: "minorwaiver", category: "__1wav" },
-    { name: "gender", category: "__0fmc" },
-    { name: "agebracket", category: "__0fmc" },
-    { name: "howlikelyacquire", category: "__0fmc" },
-    { name: "inmarkettiming", category: "__0fmc" },
-    { name: "vehicledrivenmostmake", category: "__0fmc" },
+    { name: "autocompleteaddress", category: "__00pii" },
+    { name: "autocompleteaddress2", category: "__00pii" },
+    { name: "autocompleteaddresscan", category: "__00pii" },
+    { name: "autocompleteaddressall", category: "__00pii" },
+    { name: "firstname", category: "__00pii" },
+    { name: "lastname", category: "__00pii" },
+    { name: "email", category: "__00pii" },
+    { name: "phone", category: "__00pii" },
+    { name: "adultwaiver", category: "__10wav" },
+    { name: "minorwaiver", category: "__10wav" },
+    { name: "gender", category: "__01fmc" },
+    { name: "agebracket", category: "__01fmc" },
+    { name: "howlikelyacquire", category: "__01fmc" },
+    { name: "inmarkettiming", category: "__01fmc" },
+    { name: "vehicledrivenmostmake", category: "__01fmc" },
     // Note: Ford and Lincoln questions are now assigned dynamically 
     // in their respective brand-specific template files
   ]);
@@ -169,7 +180,7 @@ export const initCreator = (creator: SurveyCreatorModel) => {
 
   // open just the first category
   creator.toolbox.collapseAllCategories();
-  creator.toolbox.expandCategory("__0pii");
+  creator.toolbox.expandCategory("__00pii");
   creator.toolbox.updateTitles();
 };
 
@@ -208,7 +219,7 @@ export const prepareSurveyOnQuestionAdded = (
   // Function to initialize Google Places on an address input
   const initializeGooglePlaces = (inputElement: HTMLInputElement, survey: any) => {
     // Determine country restrictions based on survey questions
-    let countryRestrictions = { country: ["us"] }; // Default to US
+    let countryRestrictions: { country: string[] | null } = { country: ["us"] }; // Default to US
     const allQuestions = survey.getAllQuestions();
     
     const parentQuestion = allQuestions.find((q: any) => 
@@ -220,7 +231,7 @@ export const prepareSurveyOnQuestionAdded = (
       if (parentQuestion.getType() === "autocompleteaddresscan") {
         countryRestrictions = { country: ["ca"] };
       } else if (parentQuestion.getType() === "autocompleteaddressall") {
-        countryRestrictions = {}; // No restrictions
+        countryRestrictions = { country: null }; // No restrictions
       }
     } else {
       // Fallback check - look for Canadian address indicators in the DOM

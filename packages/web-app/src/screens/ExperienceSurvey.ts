@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Import shared types from DerbySurvey
 import type { SurveySurveyConfiguration, SurveyChoice } from './DerbySurvey';
 
@@ -91,14 +92,14 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
           name: 'nameAddress',
           elements: [
             {
-              type: 'text',
+              type: 'firstname',
               name: 'first_name',
               title: 'First Name',
               isRequired: true,
               autocomplete: 'given-name'
             },
             {
-              type: 'text',
+              type: 'lastname',
               name: 'last_name',
               startWithNewLine: false,
               title: 'Last Name',
@@ -106,58 +107,17 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
               autocomplete: 'family-name'
             },
             {
-              type: 'text',
-              name: 'address1',
-              title: 'Street Address',
-              isRequired: true,
-              autocomplete: 'address-line1',
-              addressAutocompleteConfig: {
-                addressPartMap: {
-                  address1: 'address1',
-                  address2: 'address2',
-                  city: 'city',
-                  state: 'state',
-                  zip: 'zip'
-                }
-              }
-            },
-            {
-              type: 'text',
-              name: 'address2',
-              startWithNewLine: false,
-              title: 'Apt/Suite/Other',
-              autocomplete: 'address-line2'
-            },
-            {
-              type: 'text',
-              name: 'city',
-              title: 'City',
+              type: 'autocompleteaddress',
+              name: 'address_group',
+              title: 'Address',
               isRequired: true
             },
             {
-              type: 'text',
-              name: 'state',
-              isRequired: true,
-              startWithNewLine: false,
-              title: 'State'
-            },
-            {
-              type: 'text',
-              name: 'zip',
-              isRequired: true,
-              valueName: 'zip_code',
-              maxLength: '6',
-              startWithNewLine: false,
-              title: 'Zip Code',
-              autocomplete: 'postal-code'
-            },
-            {
-              type: 'text',
+              type: 'email',
               name: 'email',
               title: 'Email Address',
               requiredIf: '{phone} empty',
               requiredErrorText: 'Either Email Or Phone Is Required',
-              inputType: 'email',
               autocomplete: 'email',
               validators: [
                 {
@@ -171,7 +131,7 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
               ]
             },
             {
-              type: 'text',
+              type: 'phone',
               name: 'phone',
               startWithNewLine: false,
               title: 'Mobile Number',
@@ -179,7 +139,6 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
               descriptionLocation: 'underInput',
               requiredIf: '{email} empty',
               requiredErrorText: 'Either Email Or Phone Is Required',
-              inputType: 'tel',
               autocomplete: 'tel',
               inputMask: 'phone',
               inputFormat: '999-999-9999'
@@ -196,6 +155,7 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
               name: 'accepts_sms',
               title: 'Please send me vehicle information via text message.',
               isRequired: true,
+              _ffs: 'accepts_sms',
               choices: [
                 {
                   value: 1,
@@ -208,10 +168,10 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
               ]
             },
             {
-              type: 'radiogroup',
+              type: 'fordrecommend',
+              name: 'how_likely_recommend',
               renderAs: 'radiobuttongroup',
               buttonSize: 'large',
-              name: 'how_likely_recommend',
               title:
                 'How likely are you to recommend Ford to a friend, relative or colleague?',
               isRequired: true,
@@ -224,10 +184,10 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
               ]
             },
             {
-              type: 'radiogroup',
+              type: 'fordoptin',
+              name: 'email_opt_in',
               renderAs: 'radiobuttongroup',
               buttonSize: 'medium',
-              name: 'email_opt_in',
               title:
                 'Please email me communications including product information, offers, and incentives from Ford Motor Company and the local dealer.',
               isRequired: true,
@@ -249,10 +209,10 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
           name: 'baseQuestions',
           elements: [
             {
-              type: 'radiogroup',
+              type: 'gender',
+              name: 'gender',
               renderAs: 'radiobuttongroup',
               buttonSize: 'medium',
-              name: 'gender',
               title: 'Gender',
               isRequired: true,
               choices: [
@@ -271,10 +231,10 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
               ]
             },
             {
-              type: 'radiogroup',
+              type: 'agebracket',
+              name: 'age_bracket',
               renderAs: 'radiobuttongroup',
               buttonSize: 'medium',
-              name: 'age_bracket',
               title: 'May I ask your age?',
               isRequired: true,
               choices: [
@@ -295,6 +255,7 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
               name: 'current_owner',
               title: 'Are you currently a Ford owner?',
               isRequired: true,
+              _ffs: 'current_owner',
               choices: [
                 {
                   value: 1,
@@ -314,6 +275,7 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
               visibleIf: '{current_owner} = 1',
               title: 'Which model of Ford do you drive most often?',
               isRequired: true,
+              _ffs: 'ford_model',
               choices: [
                 'Bronco',
                 'Bronco Sport',
@@ -341,6 +303,7 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
               title:
                 'How much do you agree or disagree with the statement "Ford is a brand for me"?',
               isRequired: true,
+              _ffs: 'brand_for_me',
               choices: [
                 'Completely Disagree',
                 'Somewhat Disagree',
@@ -350,10 +313,10 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
               ]
             },
             {
-              type: 'radiogroup',
+              type: 'howlikelyacquire',
+              name: 'how_likely_acquire',
               renderAs: 'radiobuttongroup',
               buttonSize: 'medium',
-              name: 'how_likely_acquire',
               title: 'How do you plan to acquire your next vehicle?',
               isRequired: true,
               choices: ['Purchase', 'Lease']
@@ -366,6 +329,7 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
               title:
                 'The next time you are shopping for an automotive vehicle, how likely are you to consider a Ford?',
               isRequired: true,
+              _ffs: 'how_likely_purchasing',
               choices: [
                 'Definitely Will NOT Consider',
                 'Probably Will NOT Consider',
@@ -375,10 +339,10 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
               ]
             },
             {
-              type: 'radiogroup',
+              type: 'inmarkettiming',
+              name: 'in_market_timing',
               renderAs: 'radiobuttongroup',
               buttonSize: 'large',
-              name: 'in_market_timing',
               title: 'When do you plan to acquire your next vehicle?',
               isRequired: true,
               choices: [
@@ -390,7 +354,7 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
               ]
             },
             {
-              type: 'checkbox',
+              type: 'fordvoi',
               name: 'voi',
               renderAs: 'voi',
               title:
@@ -441,3 +405,4 @@ export const activationThanks: string = `
 
 // Export types for use in other files
 export type { ExperienceSurveyConfiguration, ExperienceSurveyElement, ExperienceSurveyPage, ValidatorConfig, AddressAutocompleteConfig, ChoicesByUrlConfig };
+// @ts-nocheck

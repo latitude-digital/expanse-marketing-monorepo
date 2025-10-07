@@ -7,6 +7,7 @@ export { FDSTagboxRenderer } from './FDSTagbox';
 export { FDSTextAreaRenderer } from './FDSTextArea';
 export { FDSToggleRenderer } from './FDSToggle';
 export { FDSRatingRenderer } from './FDSRating';
+export { FDSPanelRenderer } from './FDSPanel';
 
 // Export shared utilities
 export * from './FDSShared';

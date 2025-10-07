@@ -1,5 +1,6 @@
 import React from 'react';
 import { surveyLocalization } from 'survey-core';
+import { Typography } from "@ui/ford-ui-components";
 import Showdown from 'showdown';
 
 // Create Showdown converter with same config as web-app
@@ -56,4 +57,22 @@ export const renderDescription = (description: string): React.ReactNode => {
     if (!description) return undefined;
     const processedDescription = processMarkdown(description);
     return processedDescription.includes('<') ? <HtmlContent html={processedDescription} /> : processedDescription;
+};
+
+export const renderQuestionDescription = (description?: string, question?: any): React.ReactNode => {
+    if (!description) return null;
+
+    const processedDescription = processMarkdown(description);
+    const hasHtml = processedDescription.includes('<');
+
+    return (
+        <Typography
+            displayStyle="caption-semibold"
+            displayColor="text-onlight-subtle"
+            displayBox="block"
+            className="mt-1"
+        >
+            {hasHtml ? <span className="fds-question-description__html" dangerouslySetInnerHTML={{ __html: processedDescription }} /> : processedDescription}
+        </Typography>
+    );
 };

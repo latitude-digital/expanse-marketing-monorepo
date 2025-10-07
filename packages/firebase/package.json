@@ -1,15 +1,14 @@
 {
-  "name": "@expanse/firebase",
+  "name": "@meridian-event-tech/firebase",
   "version": "1.0.0",
   "description": "Expanse Marketing Firebase Functions",
   "main": "lib/index.js",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "serve": "pnpm run build && firebase emulators:start --only functions",
-    "shell": "firebase functions:shell",
+    "serve": "firebase use dev && pnpm run build && firebase emulators:start --only functions",
+    "shell": "firebase use dev && firebase functions:shell",
     "start": "pnpm run shell",
-    "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
     "test": "jest"
   },
@@ -17,6 +16,7 @@
     "node": "20"
   },
   "dependencies": {
+    "@meridian-event-tech/shared": "workspace:*",
     "@aws-sdk/client-s3": "^3.864.0",
     "@aws-sdk/cloudfront-signer": "^3.862.0",
     "@aws-sdk/s3-presigned-post": "^3.864.0",
@@ -29,13 +29,16 @@
     "google-auth-library": "^10.2.1",
     "moment-timezone": "^0.5.45",
     "sqids": "^0.3.0",
-    "survey-core": "^2.3.1"
+    "survey-core": "^2.3.1",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/axios": "^0.14.4",
     "@types/cors": "^2.8.19",
     "@types/jest": "^29.5.5",
+    "@types/uuid": "^9.0.7",
     "firebase-functions-test": "^3.4.1",
+    "firebase-pnpm-workspaces": "^1.0.1",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
     "typescript": "^5.2.2"

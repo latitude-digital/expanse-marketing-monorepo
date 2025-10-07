@@ -2,6 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.scss';
 import './styles/grid-layout.css';
+import './styles/survey-scroll-fix.css';
+import './styles/survey-mobile-fixes.css';
 import reportWebVitals from './reportWebVitals';
 
 import {
@@ -13,11 +15,13 @@ import {
 // Auth provider
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import EventAccessRoute from './components/auth/EventAccessRoute';
 import SessionProvider from './components/auth/SessionProvider';
 
 // screens
 import App from './App';
 import Home from './screens/Home';
+import UserHome from './screens/UserHome';
 import Experiential from './screens/Experiential';
 import CheckIn from './screens/CheckIn';
 import CheckOut from './screens/CheckOut';
@@ -29,16 +33,17 @@ import Survey from './screens/Survey';
 import Thanks from './screens/Thanks';
 import Stats from './screens/Stats';
 import Dashboard from './screens/Dashboard';
-import Charts from './screens/Charts';
+import LincolnCharityEvents from './screens/LincolnCharityEvents';
 
-import FDSDemo from './screens/FDS_Demo';
-const FDSSurveyDemo = React.lazy(() => import('./screens/FDSSurveyDemo'));
-
-import BroncoQuiz from './screens/BroncoQuiz';
-
-import Admin from './screens/admin/index';
+// Admin components
+import AdminLayout from './components/AdminLayout';
+import AdminEvents from './screens/admin/AdminEvents';
+import AdminTags from './screens/admin/AdminTags';
+import AdminUsers from './screens/admin/AdminUsers';
 import EditEvent from './screens/admin/EditEvent';
+import EditEventTailwind from './screens/admin/EditEventTailwind';
 import EditSurvey from './screens/admin/EditSurvey';
+import ReUpload from './screens/admin/ReUpload';
 
 console.log('window._env_ at runtime:', window._env_);
 
@@ -68,13 +73,8 @@ root.render(
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<App />}>
-          <Route path="demo" element={<FDSDemo />} />
-          <Route path="fds-survey-demo" element={
-            <React.Suspense fallback={<div>Loading FDS Demo...</div>}>
-              <FDSSurveyDemo />
-            </React.Suspense>
-          } />
           <Route index element={<Home />} />
+          <Route path="home" element={<ProtectedRoute><UserHome /></ProtectedRoute>} />
           <Route path="login" element={<Login />} />
           <Route path="welcome" element={<Login />} />
           <Route path="auth" element={<Login />} />
@@ -82,29 +82,31 @@ root.render(
           <Route path="forgot-password" element={<ForgotPassword />} />
           <Route path="reset-password" element={<ResetPassword />} />
           <Route path="ford/:eventID" element={<Experiential />} />
+          <Route path="lincoln-charity/:tagId" element={<LincolnCharityEvents />} />
           <Route path="s/:eventID/" element={<Survey />} />
           <Route path="s/:eventID/in/login" element={<Login />} />
-          <Route path="s/:eventID/in" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
+          <Route path="s/:eventID/in" element={<ProtectedRoute><EventAccessRoute><CheckIn /></EventAccessRoute></ProtectedRoute>} />
           <Route path="s/:eventID/out/login" element={<Login />} />
-          <Route path="s/:eventID/out" element={<ProtectedRoute><CheckOut /></ProtectedRoute>} />
+          <Route path="s/:eventID/out" element={<ProtectedRoute><EventAccessRoute><CheckOut /></EventAccessRoute></ProtectedRoute>} />
           <Route path="s/:eventID/p/:preSurveyID" element={<Survey />} />
-          <Route path="s/:eventID/stats" element={<ProtectedRoute><Stats /></ProtectedRoute>} />
+          <Route path="s/:eventID/stats" element={<ProtectedRoute><EventAccessRoute><Stats /></EventAccessRoute></ProtectedRoute>} />
           <Route path="s/:eventID/stats/login" element={<Login />} />
-          <Route path="s/:eventID/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="s/:eventID/dashboard" element={<ProtectedRoute><EventAccessRoute><Dashboard /></EventAccessRoute></ProtectedRoute>} />
           <Route path="s/:eventID/dashboard/login" element={<Login />} />
-          <Route path="s/:eventID/charts" element={<ProtectedRoute><Charts /></ProtectedRoute>} />
-          <Route path="s/:eventID/charts/login" element={<Login />} />
           <Route path="thanks" element={<Thanks />} />
 
-          <Route path="bronco/" element={<BroncoQuiz />} />
-
-          <Route path="admin" element={<ProtectedRoute requireAdmin={true}><Admin /></ProtectedRoute>} />
-          <Route path="admin/event/:eventID" element={<ProtectedRoute requireAdmin={true}><EditEvent /></ProtectedRoute>} />
-          <Route path="admin/event/:eventID/survey" element={<ProtectedRoute requireAdmin={true}><EditSurvey /></ProtectedRoute>} />
+          <Route path="admin" element={<AdminLayout />}>
+            <Route index element={<AdminEvents />} />
+            <Route path="tags" element={<AdminTags />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="event/:eventID" element={<EditEvent />} />
+            <Route path="event/new" element={<EditEvent />} />
+            <Route path="survey/:eventID" element={<EditSurvey />} />
+            <Route path="reupload" element={<ReUpload />} />
+          </Route>
           
           <Route path="admin/login" element={<Login />} />
-          <Route path="admin/event/:eventID/login" element={<Login />} />
-          <Route path="admin/event/:eventID/survey/login" element={<Login />} />
+          <Route path="admin/*/login" element={<Login />} />
         </Route>
       </Routes>
     </BrowserRouter>

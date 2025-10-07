@@ -17,7 +17,8 @@ function Home() {
 
   return (
     <div className="Home">
-        <h1>Loading</h1>
+        <h1>Nobody's supposed to be here.</h1>
+        <p>- Debroah Cox</p>
       <Outlet />
     </div>
   );

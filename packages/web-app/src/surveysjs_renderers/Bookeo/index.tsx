@@ -1,13 +1,13 @@
 import { ElementFactory, Question, Serializer, settings } from "survey-core";
 import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
 
-import { Calendar, CalendarCell } from '@progress/kendo-react-dateinputs';
+import Calendar from '../../components/Calendar';
+import Button from '../../components/Button';
 import moment from 'moment-timezone';
 import { createElement } from "react";
 import { uniq } from 'lodash';
 
-import style from './_index.module.scss'
-import { Button } from "@progress/kendo-react-buttons";
+import style from './_index.module.scss';
 
 const CUSTOM_TYPE = 'bookeo';
 
@@ -346,28 +346,29 @@ export class SurveyBookeoQuestion extends SurveyQuestionElementBase {
                                 <Calendar
                                     id={this.question.inputId}
                                     value={this.state.selectedDate}
-                                    onChange={(event) => {
+                                    onChange={(date) => {
                                         this.setState({ selectedDate: undefined }, () => {
-                                            this.setSelectedDate(event.value);
+                                            this.setSelectedDate(date);
                                         });
                                     }}
-                                    cell={this.customCalendarCell}
-                                    // className={style.calendar}
+                                    isDateAvailable={(date) => {
+                                        const compareDate = moment(date).format('YYYY-MM-DD');
+                                        return this.state.availableDays.includes(compareDate);
+                                    }}
                                     focusedDate={moment(this.state.availableDays ? this.state.availableDays[0] : this.state.today).toDate()}
                                     min={moment(this.state.availableDays ? this.state.availableDays[0] : this.state.today).toDate()}
                                     max={moment(this.state.availableDays ? this.state.availableDays[this.state.availableDays.length - 1] : this.state.endTime).toDate()}
-                                // onKeyPress={(e) => onEnterKey(e, 'experienceTime')}
                                 />
                             </div>
                             <div className={style.booking_button_container}>
                                 {this.state.daySlots.map((slot: any) => (
                                     <Button
                                         key={slot.eventId}
-                                        className={style.booking_container_buttons}
-                                        themeColor={this.state.slot?.eventId === slot.eventId ? "primary" : undefined}
+                                        variant={this.state.slot?.eventId === slot.eventId ? "primary" : "secondary"}
                                         onClick={() => {
                                             this.setSelectedSlot(slot);
                                         }}
+                                        className={style.booking_container_buttons}
                                     >
                                         {moment.parseZone(slot.startTime).tz(this.timeZone).format('h:mm a')}
                                     </Button>
@@ -380,23 +381,6 @@ export class SurveyBookeoQuestion extends SurveyQuestionElementBase {
             </>
         )
     }
-
-    customCalendarCell = (props: any) => {
-        let style: React.CSSProperties = { opacity: '.7' };
-        let newProps = { ...props };
-        const compareDate = moment(props.value).format('YYYY-MM-DD');
-        if (this.state.availableDays.includes(compareDate)) {
-            style = {
-                border: '1px solid white',
-                color: 'var(--kendo-color-on-tertiary)',
-                fontWeight: 'bold',
-                backgroundColor: 'var(--kendo-color-tertiary)'
-            };
-        } else {
-            newProps.isDisabled = true;
-        }
-        return <CalendarCell {...newProps} style={style} />;
-    };
 }
 
 ReactQuestionFactory.Instance.registerQuestion(CUSTOM_TYPE, (props) => {

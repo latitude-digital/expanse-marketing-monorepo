@@ -1,0 +1,85 @@
+/**
+ * Survey Scroll Fix
+ * Fixes nested scrolling issue where SurveyJS creates internal scrollable containers
+ * instead of allowing the survey to expand naturally and make the page taller.
+ * ONLY applied when body has class "survey-taking-mode"
+ */
+
+/* Fix Lincoln theme scrolling */
+body.survey-taking-mode .lincoln_light,
+body.survey-taking-mode .lincoln_dark {
+  /* Remove fixed height and overflow that creates internal scrollbars */
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  overflow-y: visible !important;
+}
+
+/* Fix Ford theme scrolling */
+body.survey-taking-mode .ford_light,
+body.survey-taking-mode .ford_dark {
+  /* Remove fixed height and overflow that creates internal scrollbars */
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  overflow-y: visible !important;
+}
+
+/* Fix SurveyJS internal scroll containers */
+body.survey-taking-mode .sv-scroll__scroller,
+body.survey-taking-mode .sv-scroll__scroller.sv-drag-target-skipped {
+  /* Allow natural expansion instead of internal scrolling */
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  overflow-y: visible !important;
+}
+
+/* Hide SurveyJS scrollbar elements */
+body.survey-taking-mode .sv-scroll__scrollbar {
+  display: none !important;
+}
+
+/* Ensure survey container expands naturally */
+body.survey-taking-mode .sv-container-modern {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Fix for any generic survey containers that might have height constraints */
+body.survey-taking-mode .sv_main,
+body.survey-taking-mode .sv-root-modern,
+body.survey-taking-mode .sd-root-modern {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Ensure the survey body expands properly */
+body.survey-taking-mode .sv-body {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Fix for the main survey wrapper */
+body.survey-taking-mode #fd-nxt {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Fix for the overall survey component */
+body.survey-taking-mode .gdux-ford {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Ensure page-level containers allow natural expansion */
+body.survey-taking-mode .app,
+body.survey-taking-mode .layout-base {
+  height: auto !important;
+  min-height: 100vh;
+}

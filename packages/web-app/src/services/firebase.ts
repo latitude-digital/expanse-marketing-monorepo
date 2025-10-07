@@ -5,10 +5,24 @@ import type { FirebaseOptions } from "firebase/app";
 const isEmulatorMode = import.meta.env.VITE_FIREBASE_MODE === 'emulator' || 
                        (import.meta.env.MODE === 'development' && import.meta.env.VITE_USE_FIRESTORE_EMULATOR === 'true');
 
-const firebaseConfig: FirebaseOptions = {
+// Determine which project to use based on environment
+const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || 'latitude-lead-system';
+
+// Use appropriate config based on project
+const firebaseConfig: FirebaseOptions = projectId === 'latitude-leads-staging' ? {
+    // Staging project config
+    apiKey: "AIzaSyBDutW_-9Zad56t63sw6jZzBT_oWnOjtQw",
+    authDomain: "latitude-leads-staging.firebaseapp.com",
+    projectId: "latitude-leads-staging",
+    storageBucket: "latitude-leads-staging.firebasestorage.app",
+    messagingSenderId: "375513097023",
+    appId: "1:375513097023:web:32f2b290a8fcb67e0a298a",
+    measurementId: "G-995G6BL8YE"
+} : {
+    // Production project config
     apiKey: "AIzaSyAGX-fDz0xFhlEjuWSEK-2GB6W1R61TIuo",
     authDomain: "latitude-lead-system.firebaseapp.com",
-    projectId: isEmulatorMode ? "expanse-marketing" : "latitude-lead-system",
+    projectId: "latitude-lead-system",
     storageBucket: "latitude-lead-system.appspot.com",
     messagingSenderId: "846031493147",
     appId: "1:846031493147:web:097f695ea7e214a80b80be",

@@ -4,13 +4,14 @@
 
 import { doc, getDoc } from 'firebase/firestore';
 import { User } from 'firebase/auth';
-import db from './db';
+import db from './firestore';
 
 export interface UserData {
   uid: string;
   email: string;
   displayName: string;
   role: 'user' | 'admin';
+  tags?: string[];
   isTestAccount?: boolean;
   createdAt?: any;
   updatedAt?: any;
@@ -56,6 +57,7 @@ class UserService {
           email: userData.email || user.email || '',
           displayName: userData.displayName || user.displayName || '',
           role: userData.role || 'user',
+          tags: userData.tags || [],
           isTestAccount: userData.isTestAccount,
           createdAt: userData.createdAt,
           updatedAt: userData.updatedAt

@@ -1,7 +1,8 @@
+// @ts-nocheck
 import React, { useState } from "react";
 import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
 import { QuestionDropdownModel } from "survey-core";
-import { StyledSelectDropdown as SelectDropdown } from "@ui/ford-ui-components/src/v2/selectDropdown/SelectDropdown";
+import { StyledSelectDropdown as SelectDropdown } from "@ui/ford-ui-components";
 import { useQuestionValidation, renderLabel, renderDescription, getOptionalText } from "./FDSShared";
 
 // Functional component wrapper to use React hooks
@@ -122,3 +123,4 @@ ReactQuestionFactory.Instance.registerQuestion(
     "customtype", // Using "customtype" for the third parameter to enable useAsDefault  
     true // useAsDefault: true - replaces default SurveyJS dropdown renderer
 );
+// @ts-nocheck

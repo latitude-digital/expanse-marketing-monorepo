@@ -145,7 +145,7 @@ const globalInit = () => {
   ComponentCollection.Instance.add({
     name: "firstname",
     title: "First Name",
-    iconName: "icon-person-circle-question",
+    iconName: "icon-user",
     showInToolbox: true,
     inheritBaseProps: ["isRequired", "description", "visible", "enable"],
     onInit: () => {
@@ -207,7 +207,7 @@ const globalInit = () => {
   ComponentCollection.Instance.add({
     name: "lastname",
     title: "Last Name",
-    iconName: "icon-person-circle-question",
+    iconName: "icon-user",
     showInToolbox: true,
     inheritBaseProps: ["isRequired", "description", "visible", "enable"],
     onInit: () => {
@@ -270,7 +270,7 @@ const globalInit = () => {
   ComponentCollection.Instance.add({
     name: "autocompleteaddress",
     title: "Autocomplete Address (US)",
-    iconName: "icon-house-circle-check",
+    iconName: "icon-mailbox-flag-up",
     showInToolbox: true,
     onInit: () => {
       setPropertyReadOnly("autocompleteaddress", "name");
@@ -428,7 +428,6 @@ const globalInit = () => {
         },
         visible: false,
         isRequired: false,
-        valueName: "country",
       },
     ],
   } as ICustomQuestionTypeConfiguration);
@@ -445,7 +444,7 @@ const globalInit = () => {
   ComponentCollection.Instance.add({
     name: "autocompleteaddress2",
     title: "Autocomplete Address Zip Only (US)",
-    iconName: "icon-house-circle-check",
+    iconName: "icon-mailbox-flag-up",
     showInToolbox: true,
     onInit: () => {
       setPropertyReadOnly("autocompleteaddress2", "name");
@@ -603,7 +602,6 @@ const globalInit = () => {
         },
         visible: false,
         isRequired: false,
-        valueName: "country",
       },
     ],
   } as ICustomQuestionTypeConfiguration);
@@ -620,7 +618,7 @@ const globalInit = () => {
   ComponentCollection.Instance.add({
     name: "autocompleteaddresscan",
     title: "Autocomplete Address (CAN)",
-    iconName: "icon-house-circle-check",
+    iconName: "icon-mailbox-flag-up",
     showInToolbox: true,
     onInit: () => {
       setPropertyReadOnly("autocompleteaddresscan", "name");
@@ -780,7 +778,6 @@ const globalInit = () => {
         },
         visible: false,
         isRequired: false,
-        valueName: "country",
       },
     ],
   } as ICustomQuestionTypeConfiguration);
@@ -797,7 +794,7 @@ const globalInit = () => {
   ComponentCollection.Instance.add({
     name: "autocompleteaddressall",
     title: "Autocomplete Address (ALL)",
-    iconName: "icon-house-circle-check",
+    iconName: "icon-mailbox-flag-up",
     showInToolbox: true,
     onInit: () => {
       setPropertyReadOnly("autocompleteaddressall", "name");
@@ -955,7 +952,6 @@ const globalInit = () => {
         },
         visible: false,
         isRequired: false,
-        valueName: "country",
       },
     ],
   } as ICustomQuestionTypeConfiguration);
@@ -1031,7 +1027,7 @@ const globalInit = () => {
   ComponentCollection.Instance.add({
     name: "phone",
     title: "Phone Number",
-    iconName: "icon-phone",
+    iconName: "icon-mobile-retro",
     showInToolbox: true,
     inheritBaseProps: ["isRequired", "description", "visible", "enable"],
     onInit: () => {
@@ -1146,7 +1142,7 @@ const globalInit = () => {
   ComponentCollection.Instance.add({
     name: "adultwaiver",
     title: "Adult Waiver",
-    iconName: "icon-pen-field",
+    iconName: "icon-signature",
     showInToolbox: true,
     inheritBaseProps: true,
     onInit: () => {
@@ -1204,6 +1200,8 @@ const globalInit = () => {
       }
     },
     onLoaded(question: Question) {
+      // Set the _ffs property for proper API mapping
+      question.setPropertyValue("_ffs", "signature");
       this.updateMarkdown(question);
     },
     onPropertyChanged(question: Question, propertyName: string, newValue: any) {
@@ -1231,7 +1229,7 @@ const globalInit = () => {
   ComponentCollection.Instance.add({
     name: "minorwaiver",
     title: "Minor Waiver",
-    iconName: "icon-pen-field",
+    iconName: "icon-signature",
     showInToolbox: true,
     inheritBaseProps: true,
     onInit: () => {
@@ -1331,6 +1329,8 @@ const globalInit = () => {
       }
     },
     onLoaded(question: Question) {
+      // Set the _ffs property for proper API mapping
+      question.setPropertyValue("_ffs", "minor_signature");
       this.updateMarkdown(question);
     },
     onPropertyChanged(question: Question, propertyName: string, newValue: any) {

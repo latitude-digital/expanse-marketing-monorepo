@@ -3,13 +3,24 @@ node_modules/
 .pnpm-debug.log*
 
 # Environment files
+.env
 .env.local
 .env.*.local
+.env.dev
+.env.staging
+.env.prod
+.env.production
+.env.development
+# Keep example files
+!.env.example
+!.env.*.example
 
 # Build outputs
 dist/
 build/
 .next/
+packages/shared/lib/
+packages/shared/dist/
 
 # Runtime data
 pids
@@ -39,9 +50,6 @@ lerna-debug.log*
 # Yarn files (using pnpm instead)
 yarn.lock
 .yarn-integrity
-
-# dotenv environment variables file
-.env
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -84,6 +92,11 @@ yarn.lock
 ehthumbs.db
 Thumbs.db
 
+# Expo
+packages/native-app/.expo/
+packages/native-app/ios/
+packages/native-app/android/
+
 # Firebase
 .firebase/
 firebase-debug.log
@@ -99,6 +112,9 @@ test-results/
 playwright-report/
 playwright/.cache/
 
+# Claude local configuration
+CLAUDE.local.md
+
 # Reference libraries (for development reference only)
 /survey-library
 # Claude Code IDE generated directories
@@ -111,3 +127,6 @@ playwright/.cache/
 # Test credentials (never commit real credentials)
 **/test-credentials.json
 test-credentials.json
+packages/firebase/.firebase-pnpm-workspaces
+packages/firebase/.env.latitude-lead-system
+packages/firebase/.env.latitude-leads-staging

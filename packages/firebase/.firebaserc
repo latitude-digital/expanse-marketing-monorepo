@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "expanse-marketing"
+    "staging": "latitude-leads-staging",
+    "prod": "latitude-lead-system"
   }
 }

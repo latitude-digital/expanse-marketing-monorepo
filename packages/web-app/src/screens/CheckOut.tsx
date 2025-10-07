@@ -3,22 +3,17 @@ import { useNavigate, useLocation, useParams } from "react-router-dom";
 import auth from '../services/auth';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
-import db from '../services/db';
+import db from '../services/firestore';
 import { ensureCloudFrontAccess } from '../services/cloudFrontAuth';
 import * as Sentry from "@sentry/react";
 import { CollectionReference, Query, DocumentData, DocumentReference, FirestoreDataConverter, collection, query, where, orderBy, updateDoc, Timestamp } from 'firebase/firestore';
 import { getApiUrl, ENDPOINTS } from '../config/api';
 
 import JSONPretty from 'react-json-pretty';
-import {
-  ListView,
-  ListViewItemProps,
-} from "@progress/kendo-react-listview";
-import { Avatar } from "@progress/kendo-react-layout";
-import { SvgIcon } from "@progress/kendo-react-common";
-import { userIcon } from "@progress/kendo-svg-icons";
-import { Button, ButtonGroup } from "@progress/kendo-react-buttons";
-import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
+import Button, { ButtonGroup } from "../components/Button";
+import Dialog from "../components/Dialog";
+import Avatar from "../components/Avatar";
+import { LoadingMessage } from "../components/LoadingStates";
 import { QRCodeCanvas } from 'qrcode.react';
 
 import _ from 'lodash';
@@ -186,10 +181,9 @@ function CheckOutScreen() {
     }
   }, [userLoading, checkOutMode, surveysRef]);
 
-  const CheckOutRenderer = (props: ListViewItemProps) => {
+  const CheckOutItem = ({ user, index }: { user: CheckUser; index: number }) => {
     const [dialogVisible, setDialogVisible] = useState(false);
-    const [isCheckedOut, setIsCheckedOut] = useState(!!props.dataItem._checkedOut);
-    const user: CheckUser = props.dataItem;
+    const [isCheckedOut, setIsCheckedOut] = useState(!!user._checkedOut);
     const event = thisEvent;
 
     const performCheckOut = () => {
@@ -242,37 +236,38 @@ function CheckOutScreen() {
 
     return (
       <div
-        className="k-listview-item row p-2 border-bottom align-middle"
-        style={{ margin: 0, display: "flex", backgroundColor: props.index! % 2 ? "#ccc" : "#fff" }}
+        className={`flex items-center p-4 border-b ${index % 2 ? 'bg-gray-50' : 'bg-white'}`}
       >
-        <div style={{ flex: 1 }}>
-          <Avatar type="icon" themeColor="primary">
-            <SvgIcon icon={userIcon} />
-          </Avatar>
+        <div className="mr-4">
+          <Avatar color="primary" size="md" />
         </div>
-        <div style={{ flex: 6 }}>
-          <h2
-            style={{ fontSize: 14, color: "#454545", marginBottom: 0 }}
-            className="text-uppercase"
-          >
+        <div className="flex-1 min-w-0">
+          <h3 className="text-sm font-medium text-gray-900 uppercase">
             {user.first_name} {user.last_name}
-          </h2>
-          <div style={{ fontSize: 12, color: "#a0a0a0" }}>{user.email} {user.phone} {user._checkedOut && <>Checked Out: {user._checkedOut?.toLocaleDateString()} {user._checkedOut?.toLocaleTimeString()}</>}</div>
+          </h3>
+          <div className="text-xs text-gray-500 truncate">
+            {user.email} {user.phone}
+            {user._checkedOut && (
+              <span className="ml-2">
+                Checked Out: {user._checkedOut?.toLocaleDateString()} {user._checkedOut?.toLocaleTimeString()}
+              </span>
+            )}
+          </div>
         </div>
-        <div style={{ flex: 2 }}>
+        <div className="flex items-center space-x-2">
           {
             checkOutMode ?
-              <Button themeColor="primary" onClick={() => setDialogVisible(true)}>Check Out</Button>
+              <Button variant="primary" onClick={() => setDialogVisible(true)}>Check Out</Button>
               :
               user._used ?
-                <Button themeColor="primary" disabled>Already Completed Survey</Button>
+                <Button variant="primary" disabled>Already Completed Survey</Button>
                 :
                 <>
-                  <Button themeColor="primary" onClick={() => {
+                  <Button variant="primary" onClick={() => {
                     setQRModalUser(user);
                     setActiveQRModal(user.id);
                   }}>Show QR</Button>
-                  <Button themeColor="base" onClick={() => {
+                  <Button variant="secondary" onClick={() => {
                     updateDoc(user.ref, {
                       _checkedOut: null,
                     }).then(() => {
@@ -283,20 +278,26 @@ function CheckOutScreen() {
                       Sentry.captureException(err);
                     });
                   }
-                  } style={{ marginLeft: '10px' }}>Undo Check Out</Button>
+                  }>Undo Check Out</Button>
                 </>
           }
         </div>
         {dialogVisible &&
-          <Dialog title="Check Out Person?" onClose={() => setDialogVisible(false)}>
+          <Dialog 
+            open={dialogVisible}
+            title="Check Out Person?" 
+            onClose={() => setDialogVisible(false)}
+            actions={
+              <>
+                <Button variant="primary" onClick={handleCheckOutAndShowQR}>Check Out & Display QR</Button>
+                <Button variant="secondary" onClick={() => {
+                  setDialogVisible(false);
+                }}>Cancel</Button>
+              </>
+            }
+          >
             <p>{user.first_name} {user.last_name}</p>
             <JSONPretty id="json-pretty" data={JSON.stringify(user.otherAnswers)}></JSONPretty>
-            <DialogActionsBar>
-              <Button themeColor="warning" onClick={() => {
-                setDialogVisible(false);
-              }}>Cancel</Button>
-              <Button themeColor="success" onClick={handleCheckOutAndShowQR}>Check Out & Display QR</Button>
-            </DialogActionsBar>
           </Dialog>
         }
       </div>
@@ -307,28 +308,49 @@ function CheckOutScreen() {
     <>
       <h1 className="text-center my-3 title">Check Out {(thisEvent && <> - {thisEvent?.name}</>)}</h1>
 
-      {(userLoading || !thisEvent) && <><br /><br /><p>Loading...</p></>}
+      {(userLoading || !thisEvent) && (
+        <LoadingMessage 
+          message="Loading check-out data" 
+          subMessage="Fetching event and participant information..."
+        />
+      )}
 
       {
         surveys &&
-        <div style={{ marginTop: '3em' }}>
+        <div className="mt-12">
           <ButtonGroup>
-            <Button themeColor={checkOutMode ? "primary" : "base"} onClick={() => setCheckOutMode(true)}>Check Out</Button>
-            <Button themeColor={!checkOutMode ? "primary" : "base"} onClick={() => setCheckOutMode(false)}>View Checked Out</Button>
+            <Button variant={checkOutMode ? "primary" : "secondary"} onClick={() => setCheckOutMode(true)}>Check Out</Button>
+            <Button variant={!checkOutMode ? "primary" : "secondary"} onClick={() => setCheckOutMode(false)}>View Checked Out</Button>
           </ButtonGroup>
-          <ListView
-            data={surveys}
-            item={CheckOutRenderer}
-            style={{ width: "100%", marginTop: '1em' }}
-          />
+          <div className="mt-4 bg-white shadow overflow-hidden sm:rounded-md">
+            {surveys.map((user, index) => (
+              <CheckOutItem key={(user as any).id} user={user as any} index={index} />
+            ))}
+          </div>
         </div>
       }
       
       {activeQRModal && qrModalUser && (
-        <Dialog title="Post-Event Survey" onClose={() => {
-          setActiveQRModal(null);
-          setQRModalUser(null);
-        }} width={400}>
+        <Dialog 
+          open={true}
+          title="Post-Event Survey" 
+          onClose={() => {
+            setActiveQRModal(null);
+            setQRModalUser(null);
+          }}
+          size="md"
+          actions={
+            <>
+              <Button variant="primary" onClick={() => {
+                navigate(`/s/${params.eventID}?pid=${qrModalUser.id}`);
+              }}>Go to Survey</Button>
+              <Button variant="secondary" onClick={() => {
+                setActiveQRModal(null);
+                setQRModalUser(null);
+              }}>Close</Button>
+            </>
+          }
+        >
           <div style={{ textAlign: 'center', padding: '20px' }}>
             <h3>{qrModalUser.first_name} {qrModalUser.last_name}</h3>
             <p style={{ marginBottom: '20px' }}>Scan the QR code to complete the post-event survey</p>
@@ -344,15 +366,6 @@ function CheckOutScreen() {
               {`${window.location.origin}/s/${params.eventID}?pid=${qrModalUser.id}`}
             </p>
           </div>
-          <DialogActionsBar>
-            <Button themeColor="base" onClick={() => {
-              setActiveQRModal(null);
-              setQRModalUser(null);
-            }}>Close</Button>
-            <Button themeColor="primary" onClick={() => {
-              navigate(`/s/${params.eventID}?pid=${qrModalUser.id}`);
-            }}>Go to Survey</Button>
-          </DialogActionsBar>
         </Dialog>
       )}
     </>

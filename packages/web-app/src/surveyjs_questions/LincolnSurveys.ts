@@ -52,9 +52,8 @@ const lincolnInit = () => {
    * Lincoln Vehicle of Interest (VOI) Question
    * 
    * @description Multi-select checkbox for Lincoln vehicles the customer is interested in
-   * @_ffs "voi" - Maps to voi field in Lincoln API
+   * @_ffs "voi" - Maps to `voi` array in Lincoln v13 upload payload (no separate endpoint)
    * @see /src/helpers/surveyTemplatesLincoln.ts - Where _ffs value and other properties are configured
-   * @api_endpoint LINCOLN_VEHICLES_INTERESTED - Sends selected vehicle_ids to separate endpoint
    * @max_selections 3 vehicles
    */
   // Register lincolnvoi if it doesn't exist
@@ -101,6 +100,18 @@ const lincolnInit = () => {
         // Use shared utility to handle choicesByUrl for custom question types
         handleChoicesByUrl(question, "LincolnSurveys");
         
+        // Sync isRequired and validators from parent to child for custom questions
+        const child = question.contentQuestion;
+        if (child) {
+          // Always sync isRequired from parent to child
+          if (question.isRequired) {
+            child.isRequired = true;
+          }
+          // Also sync validators if present
+          if (question.validators?.length > 0) {
+            child.validators = [...(child.validators || []), ...question.validators];
+          }
+        }
       },
       onPropertyChanged(question: Question, propertyName: string, newValue: any) {
         if (propertyName === "onlyInclude") {
@@ -127,16 +138,13 @@ const lincolnInit = () => {
    */
   // Register lincolnoptin if it doesn't exist
   if (!ComponentCollection.Instance.getCustomQuestionByName("lincolnoptin")) {
+    console.log('Registering Lincoln optin question type...');
     ComponentCollection.Instance.add({
       name: "lincolnoptin",
       title: "Lincoln Opt-In",
       iconName: "icon-thumbs-up",
       showInToolbox: true,
       inheritBaseProps: true,
-      onInit: () => {
-        setPropertyReadOnly("lincolnoptin", "name");
-        setPropertyReadOnly("lincolnoptin", "_ffs");
-      },
       questionJSON: {
         type: "radiogroup",
         title: {
@@ -150,30 +158,32 @@ const lincolnInit = () => {
           fr: "Lincoln respecte votre vie privée et traite vos informations personnelles avec soin. [Cliquez ici pour lire la politique de confidentialité de Lincoln.](https://lincoln.com/help/privacy/)",
         },
         descriptionLocation: "underInput",
-        renderAs: "radiobuttongroup",
-        buttonSize: "medium",
-        name: "email_opt_in",
         isRequired: true,
+        renderAs: "radiobuttongroup",
         choices: [
           {
             value: 1,
-            text: {
-              en: "Yes",
-              es: "Sí",
-              fr: "Oui",
-            },
+            text: "Yes",
           },
           {
             value: 0,
-            text: {
-              en: "No",
-              es: "No",
-              fr: "Non",
-            },
+            text: "No",
           },
         ],
       },
       onLoaded(question: Question) {
+        // Sync isRequired and validators from parent to child for custom questions
+        const child = question.contentQuestion;
+        if (child) {
+          // Always sync isRequired from parent to child
+          if (question.isRequired) {
+            child.isRequired = true;
+          }
+          // Also sync validators if present
+          if (question.validators?.length > 0) {
+            child.validators = [...(child.validators || []), ...question.validators];
+          }
+        }
       },
     } as ICustomQuestionTypeConfiguration);
   }
@@ -210,11 +220,17 @@ const lincolnInit = () => {
         maxRateDescription: "Excellent",
       },
       onLoaded(question: Question) {
-        // Sync validators from parent to child for custom questions
+        // Sync isRequired and validators from parent to child for custom questions
         const child = question.contentQuestion;
-        if (child && question.validators?.length > 0) {
-          child.validators = [...(child.validators || []), ...question.validators];
-          child.isRequired = true;
+        if (child) {
+          // Always sync isRequired from parent to child
+          if (question.isRequired) {
+            child.isRequired = true;
+          }
+          // Also sync validators if present
+          if (question.validators?.length > 0) {
+            child.validators = [...(child.validators || []), ...question.validators];
+          }
         }
       },
     } as ICustomQuestionTypeConfiguration);
@@ -252,11 +268,17 @@ const lincolnInit = () => {
         maxRateDescription: "Excellent",
       },
       onLoaded(question: Question) {
-        // Sync validators from parent to child for custom questions
+        // Sync isRequired and validators from parent to child for custom questions
         const child = question.contentQuestion;
-        if (child && question.validators?.length > 0) {
-          child.validators = [...(child.validators || []), ...question.validators];
-          child.isRequired = true;
+        if (child) {
+          // Always sync isRequired from parent to child
+          if (question.isRequired) {
+            child.isRequired = true;
+          }
+          // Also sync validators if present
+          if (question.validators?.length > 0) {
+            child.validators = [...(child.validators || []), ...question.validators];
+          }
         }
       },
     } as ICustomQuestionTypeConfiguration);
@@ -266,8 +288,7 @@ const lincolnInit = () => {
    * Lincoln Vehicles Driven Question
    * 
    * @description Multi-select checkbox for Lincoln vehicles actually test driven at event
-   * @_ffs "vehiclesDriven" - Maps to vehiclesDriven field, sends to LINCOLN_VEHICLES_DRIVEN endpoint
-   * @api_endpoint LINCOLN_VEHICLES_DRIVEN - Sends vehicle_ids with order_driven sequence
+   * @_ffs "vehiclesDriven" - Mapped by mappers to `vehicles_driven` array in v13 payload (no separate endpoint)
    * @order_driven Tracks sequence in which vehicles were driven (1st, 2nd, 3rd, etc.)
    * @note Different from "vehicle driven most often" survey question - this is for event test drives
    */
@@ -316,11 +337,17 @@ const lincolnInit = () => {
         // Use shared utility to handle choicesByUrl for custom question types
         handleChoicesByUrl(question, "LincolnSurveys");
         
-        // Sync validators from parent to child for custom questions
+        // Sync isRequired and validators from parent to child for custom questions
         const child = question.contentQuestion;
-        if (child && question.validators?.length > 0) {
-          child.validators = [...(child.validators || []), ...question.validators];
-          child.isRequired = true;
+        if (child) {
+          // Always sync isRequired from parent to child
+          if (question.isRequired) {
+            child.isRequired = true;
+          }
+          // Also sync validators if present
+          if (question.validators?.length > 0) {
+            child.validators = [...(child.validators || []), ...question.validators];
+          }
         }
       },
       onPropertyChanged(question: Question, propertyName: string, newValue: any) {
@@ -362,6 +389,18 @@ const lincolnInit = () => {
         setPropertyReadOnly("lincolnrecommend", "_ffs");
       },
       onLoaded(question: Question) {
+        // Sync isRequired and validators from parent to child for custom questions
+        const child = question.contentQuestion;
+        if (child) {
+          // Always sync isRequired from parent to child
+          if (question.isRequired) {
+            child.isRequired = true;
+          }
+          // Also sync validators if present
+          if (question.validators?.length > 0) {
+            child.validators = [...(child.validators || []), ...question.validators];
+          }
+        }
       },
       questionJSON: {
         type: "radiogroup",
@@ -439,11 +478,17 @@ const lincolnInit = () => {
         setPropertyReadOnly("lincolnpurchaseconsideration", "_ffs");
       },
       onLoaded(question: Question) {
-        // Sync validators from parent to child for custom questions
+        // Sync isRequired and validators from parent to child for custom questions
         const child = question.contentQuestion;
-        if (child && question.validators?.length > 0) {
-          child.validators = [...(child.validators || []), ...question.validators];
-          child.isRequired = true;
+        if (child) {
+          // Always sync isRequired from parent to child
+          if (question.isRequired) {
+            child.isRequired = true;
+          }
+          // Also sync validators if present
+          if (question.validators?.length > 0) {
+            child.validators = [...(child.validators || []), ...question.validators];
+          }
         }
       },
       questionJSON: {
@@ -531,11 +576,17 @@ const lincolnInit = () => {
         setPropertyReadOnly("lincolnpurchaseconsiderationpost", "_ffs");
       },
       onLoaded(question: Question) {
-        // Sync validators from parent to child for custom questions
+        // Sync isRequired and validators from parent to child for custom questions
         const child = question.contentQuestion;
-        if (child && question.validators?.length > 0) {
-          child.validators = [...(child.validators || []), ...question.validators];
-          child.isRequired = true;
+        if (child) {
+          // Always sync isRequired from parent to child
+          if (question.isRequired) {
+            child.isRequired = true;
+          }
+          // Also sync validators if present
+          if (question.validators?.length > 0) {
+            child.validators = [...(child.validators || []), ...question.validators];
+          }
         }
       },
       questionJSON: {
@@ -623,11 +674,17 @@ const lincolnInit = () => {
         setPropertyReadOnly("lincolnrecommendpost", "_ffs");
       },
       onLoaded(question: Question) {
-        // Fix isRequired inheritance from JSON - this is called AFTER question is created from JSON
-        const jsonDef = question.toJSON();
-        if (jsonDef.isRequired && !question.isRequired) {
-          question.isRequired = jsonDef.isRequired;
-          console.log(`[LincolnSurveys DEBUG] Fixed isRequired inheritance for lincolnrecommendpost ${question.name}: ${question.isRequired}`);
+        // Sync isRequired and validators from parent to child for custom questions
+        const child = question.contentQuestion;
+        if (child) {
+          // Always sync isRequired from parent to child
+          if (question.isRequired) {
+            child.isRequired = true;
+          }
+          // Also sync validators if present
+          if (question.validators?.length > 0) {
+            child.validators = [...(child.validators || []), ...question.validators];
+          }
         }
       },
       questionJSON: {

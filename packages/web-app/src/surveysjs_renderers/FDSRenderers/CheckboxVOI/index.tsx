@@ -1,8 +1,9 @@
+// @ts-nocheck
 import React, { useState, useEffect } from "react";
 import { RendererFactory, Serializer } from "survey-core";
 import { ReactQuestionFactory, SurveyQuestionCheckbox } from "survey-react-ui";
-import SegmentedControl from '@ui/ford-ui-components/src/v2/segmented-control/SegmentedControl';
-import StyledSelectionCardSmall from '@ui/ford-ui-components/src/v2/selection-card/small/styled/StyledSelectionCardSmall';
+import { SegmentedControl } from '@ui/ford-ui-components';
+import StyledSelectionCardSmall from '@ui/ford-ui-components/v2/selection-card/small/styled/StyledSelectionCardSmall';
 import { FDSQuestionWrapper } from '../FDSShared/FDSQuestionWrapper';
 import { useQuestionValidation } from '../FDSShared';
 
@@ -153,7 +154,8 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
             const isInvalid = this.question.errors?.length > 0;
             
             // Use the actual isRequired property from the question
-            const isActuallyRequired = this.question.isRequired;
+            // Check both the parent question and the content question for isRequired
+            const isActuallyRequired = this.question.isRequired || this.question.contentQuestion?.isRequired;
 
             return (
                 <FDSQuestionWrapper
@@ -346,3 +348,4 @@ RendererFactory.Instance.registerRenderer(
     "voi",
     "sv-checkbox-voi"
 );
+// @ts-nocheck

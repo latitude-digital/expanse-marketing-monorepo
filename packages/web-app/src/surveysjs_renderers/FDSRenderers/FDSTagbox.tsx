@@ -1,8 +1,8 @@
+// @ts-nocheck
 import React, { useState, useRef, useEffect } from "react";
 import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
 import { QuestionTagboxModel } from "survey-core";
-import { StyledSelectDropdown as SelectDropdown } from "@ui/ford-ui-components/src/v2/selectDropdown/SelectDropdown";
-import { StyledButton } from "@ui/ford-ui-components/src/v2/button/Button";
+import { StyledSelectDropdown as SelectDropdown, StyledButton } from "@ui/ford-ui-components";
 import { useQuestionValidation, renderLabel, renderDescription, getOptionalText, FDSQuestionWrapper } from "./FDSShared";
 
 // Functional component wrapper to use React hooks
@@ -236,3 +236,4 @@ ReactQuestionFactory.Instance.registerQuestion(
     "customtype", // Using "customtype" for the third parameter to enable useAsDefault
     true // useAsDefault: true - replaces default SurveyJS tagbox renderer
 );
+// @ts-nocheck

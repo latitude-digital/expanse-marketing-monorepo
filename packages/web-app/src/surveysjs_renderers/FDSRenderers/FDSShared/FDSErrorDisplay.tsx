@@ -1,5 +1,5 @@
 import React from 'react';
-import Icon from "@ui/ford-ui-components/src/v2/icon/Icon";
+import { Icon } from "@ui/ford-ui-components";
 
 interface FDSErrorDisplayProps {
   message: string;

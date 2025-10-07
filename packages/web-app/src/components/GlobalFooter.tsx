@@ -77,7 +77,7 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
     return [
       { text: '© 2025 Ford Motor Company', url: 'https://www.ford.com' },
       { text: 'Privacy Notice', url: 'https://www.ford.com/help/privacy/' },
-      { text: 'Your Privacy Choices', url: 'https://www.ford.com/help/privacy/your-privacy-choices/' },
+      { text: 'Your Privacy Choices', url: 'https://www.ford.com/help/privacy/ccpa/' },
       { text: 'Interest Based Ads', url: 'https://www.ford.com/help/privacy/#interest' },
     ];
   };

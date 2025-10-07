@@ -1,8 +1,8 @@
+// @ts-nocheck
 import React, { useState, useEffect } from "react";
 import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
 import { QuestionRadiogroupModel } from "survey-core";
-import { RadioButtonGroup } from "@ui/ford-ui-components/src/v2/radio/RadioButtonGroup";
-import { StyledTextField } from "@ui/ford-ui-components/src/v2/inputField/Input";
+import { RadioButtonGroup, StyledTextField } from "@ui/ford-ui-components";
 import { FDSQuestionWrapper } from "./FDSShared/FDSQuestionWrapper";
 import { useQuestionValidation, renderLabel, renderDescription, getOptionalText } from "./FDSShared";
 
@@ -128,3 +128,4 @@ ReactQuestionFactory.Instance.registerQuestion(
     "customtype", // Using "customtype" for the third parameter to enable useAsDefault
     true // useAsDefault: true - replaces default SurveyJS radio renderer
 );
+// @ts-nocheck

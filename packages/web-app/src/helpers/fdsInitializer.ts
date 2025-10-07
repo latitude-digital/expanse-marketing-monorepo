@@ -4,10 +4,17 @@
  */
 
 import { ReactQuestionFactory } from 'survey-react-ui';
-import { AllSurveys, FordSurveys, LincolnSurveys, FMCSurveys } from '../surveyjs_questions';
+import { AllSurveys, FMCSurveys } from '../surveyjs_questions';
+import FordSurveysNew from '../surveyjs_questions/FordSurveysNew';
+import LincolnSurveys from '../surveyjs_questions/LincolnSurveys';
 
 // FDS Renderer imports - conditionally loaded
 let FDSRenderersLoaded = false;
+
+// Export a function to check if FDS renderers are loaded
+export function areFDSRenderersLoaded(): boolean {
+  return FDSRenderersLoaded;
+}
 
 /**
  * Loads FDS renderers and registers them with useAsDefault: true
@@ -29,9 +36,7 @@ async function loadFDSRenderers(): Promise<void> {
     const { FDSTextAreaRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSTextArea');
     const { FDSToggleRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSToggle');
     const { FDSRatingRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSRating');
-    
-    // Import custom survey question renderer
-    await import('../surveysjs_renderers/FDSRenderers/CustomSurveyQuestion');
+    const { FDSPanelRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSPanel');
 
     console.log('FDS renderers loaded successfully');
     FDSRenderersLoaded = true;
@@ -58,15 +63,15 @@ export async function initializeFDSForBrand(brand: string): Promise<void> {
       await loadFDSRenderers();
 
 
-      // Initialize brand-specific questions
+      // Initialize brand-specific questions using new universal system
       if (brand === 'Ford') {
         FMCSurveys.fmcInit();
-        FordSurveys.fordInit();
-        console.log('FMC and Ford-specific questions initialized');
+        FordSurveysNew.fordInit();
+        console.log('FMC and Ford-specific questions initialized using universal system');
       } else if (brand === 'Lincoln') {
         FMCSurveys.fmcInit();
         LincolnSurveys.lincolnInit();
-        console.log('FMC and Lincoln-specific questions initialized');
+        console.log('FMC and Lincoln-specific questions initialized using universal system');
       }
 
       console.log(`FDS initialization complete for ${brand}`);
@@ -77,6 +82,16 @@ export async function initializeFDSForBrand(brand: string): Promise<void> {
     }
   } else {
     console.log(`No FDS loading for brand: ${brand} - using universal questions only`);
+  }
+
+  // Load and conditionally register CustomSurveyQuestion based on brand
+  try {
+    const customSurveyQuestionModule = await import('../surveysjs_renderers/FDSRenderers/CustomSurveyQuestion');
+    // Call the registration function which will check if FDS is loaded
+    customSurveyQuestionModule.registerCustomSurveyQuestion();
+  } catch (error) {
+    console.error('Failed to load CustomSurveyQuestion:', error);
+    // Non-critical error - continue without enhanced scroll-to-error
   }
 }
 

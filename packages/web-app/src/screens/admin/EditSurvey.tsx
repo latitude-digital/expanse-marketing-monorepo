@@ -6,7 +6,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 
 import auth from '../../services/auth';
 import app from '../../services/firebase';
-import db from '../../services/db';
+import db from '../../services/firestore';
 
 import { QuestionRadiogroupModel, Serializer } from "survey-core";
 import { SurveyCreatorComponent, SurveyCreator } from "survey-creator-react";
@@ -20,7 +20,6 @@ import { ICreatorOptions } from 'survey-creator-core';
 
 import 'survey-core/survey-core.css';
 import 'survey-creator-core/survey-creator-core.css';
-import "../Surveys.css";
 import "./admin.css";
 import './EditSurvey.css';
 
@@ -29,7 +28,9 @@ import { initCreatorFord, prepareCreatorOnQuestionAddedFord } from '../../helper
 import { initCreatorLincoln, prepareCreatorOnQuestionAddedLincoln } from '../../helpers/surveyTemplatesLincoln';
 import { shouldLoadFDS, getBrandTheme, normalizeBrand } from '../../utils/brandUtils';
 import { initializeFDSForBrand } from '../../helpers/fdsInitializer';
-import { AllSurveys, FordSurveys, LincolnSurveys } from '../../surveyjs_questions';
+import { AllSurveys, FMCSurveys } from '../../surveyjs_questions';
+import FordSurveysNew from '../../surveyjs_questions/FordSurveysNew';
+import LincolnSurveys from '../../surveyjs_questions/LincolnSurveys';
 
 // Register SurveyJS themes for theme editor functionality
 registerSurveyTheme(SurveyTheme); // Add predefined Form Library UI themes
@@ -119,16 +120,22 @@ function DashboardScreen() {
             console.log(`Survey Creator - Event brand detected: ${eventBrand}`);
             
             try {
-                // Initialize FDS for Ford/Lincoln events, otherwise use basic SurveyJS
-                if (shouldLoadFDS(eventBrand)) {
+                // Always initialize basic SurveyJS and universal questions
+                initSurvey();
+                AllSurveys.globalInit();
+                
+                // Initialize brand-specific components
+                if (eventBrand === 'Ford') {
                     await initializeFDSForBrand(eventBrand);
-                    console.log(`FDS initialized for ${eventBrand} event`);
+                    // The FDS initializer already calls FMCSurveys.fmcInit() and FordSurveysNew.fordInit()
+                    console.log(`FDS and Ford-specific questions initialized for ${eventBrand} event`);
+                } else if (eventBrand === 'Lincoln') {
+                    await initializeFDSForBrand(eventBrand);
+                    // The FDS initializer already calls FMCSurveys.fmcInit() and LincolnSurveys.lincolnInit()
+                    console.log(`FDS and Lincoln-specific questions initialized for ${eventBrand} event`);
                 } else {
-                    // For non-branded events, initialize basic SurveyJS with universal questions only
-                    initSurvey(); // Basic SurveyJS initialization
-                    AllSurveys.globalInit(); // Initialize universal questions (firstname, lastname, email, etc.)
-                    
-                    console.log('Basic SurveyJS and universal questions initialized for non-branded event');
+                    // For non-branded events, only universal questions are initialized
+                    console.log('Basic SurveyJS with universal questions initialized for non-branded event');
                 }
             } catch (error) {
                 console.error('Failed to initialize survey system:', error);
@@ -196,14 +203,41 @@ function DashboardScreen() {
             // Initialize creator with base settings
             initCreator(newCreator);
             
-            // Apply brand-specific creator settings
+            // Apply brand-specific creator settings and hide irrelevant categories
             const eventBrand = normalizeBrand(thisEvent?.brand);
             if (eventBrand === 'Ford') {
                 initCreatorFord(newCreator);
-                console.log('Ford creator settings applied');
+                // Hide Lincoln category for Ford events
+                const lincolnCategory = newCreator.toolbox.categories.find((c: any) => c.name === '__02lincolnCategory');
+                if (lincolnCategory) {
+                    (lincolnCategory as any).visible = false;
+                }
+                console.log('Ford creator settings applied, Lincoln category hidden');
             } else if (eventBrand === 'Lincoln') {
                 initCreatorLincoln(newCreator);
-                console.log('Lincoln creator settings applied');
+                // Hide Ford category for Lincoln events
+                const fordCategory = newCreator.toolbox.categories.find((c: any) => c.name === '__02fordCategory');
+                if (fordCategory) {
+                    (fordCategory as any).visible = false;
+                }
+                console.log('Lincoln creator settings applied, Ford category hidden');
+            } else {
+                // For non-branded events, hide both Ford and Lincoln categories AND FMC category
+                const fordCategory = newCreator.toolbox.categories.find((c: any) => c.name === '__02fordCategory');
+                const lincolnCategory = newCreator.toolbox.categories.find((c: any) => c.name === '__02lincolnCategory');
+                const fmcCategory = newCreator.toolbox.categories.find((c: any) => c.name === '__01fmc');
+                if (fordCategory) (fordCategory as any).visible = false;
+                if (lincolnCategory) (lincolnCategory as any).visible = false;
+                if (fmcCategory) (fmcCategory as any).visible = false;
+                console.log('Non-branded event: Ford, Lincoln, and FMC categories hidden');
+                
+                // Also hide individual FMC question items from the toolbox
+                const fmcQuestions = ['gender', 'agebracket', 'howlikelyacquire', 'inmarkettiming', 'vehicledrivenmostmake'];
+                fmcQuestions.forEach(questionName => {
+                    const item = newCreator.toolbox.getItemByName(questionName) as any;
+                    if (item) item.visible = false;
+                });
+                console.log('FMC question items hidden from toolbox');
             }
 
             newCreator.onSurveyInstanceCreated.add((creator, options) => {
@@ -253,7 +287,7 @@ function DashboardScreen() {
             });
 
             // radioGroup
-            const radioRenderAsProp = Serializer.getProperty('radiogroup', 'renderAs');
+            const radioRenderAsProp: any = Serializer.getProperty('radiogroup', 'renderAs');
             radioRenderAsProp.visible = true;
             radioRenderAsProp.category = "general";
             radioRenderAsProp.setChoices(["default", "radiobuttongroup"]);
@@ -288,16 +322,72 @@ function DashboardScreen() {
                 surveyJSON.description = " ";
                 console.log('[Admin] Setting default description for header compatibility');
             }
-            
-            newCreator.JSON = surveyJSON;
+            // Remove any persisted choices that should come from choicesByUrl
+            const sanitizedForEditing = (function sanitize(json: any) {
+                if (!json) return json;
+                const cloned = JSON.parse(JSON.stringify(json));
+                const stripChoices = (elements?: any[]) => {
+                    if (!elements) return;
+                    elements.forEach((el) => {
+                        if (!el) return;
+                        const typesToStrip = new Set(['fordvoi','fordvehiclesdriven','lincolnvehiclesdriven','vehicledrivenmostmake']);
+                        if (typeof el.type === 'string' && typesToStrip.has(el.type)) {
+                            if (el.choices) delete el.choices;
+                        }
+                        if (el.elements) stripChoices(el.elements);
+                        if (el.questions) stripChoices(el.questions);
+                        if (el.panels) stripChoices(el.panels);
+                    });
+                };
+                if (cloned.pages) cloned.pages.forEach((p: any) => stripChoices(p.elements));
+                else if (cloned.elements) stripChoices(cloned.elements);
+                return cloned;
+            })(surveyJSON);
+
+            newCreator.JSON = sanitizedForEditing;
+
+            // Remove transient/editor-populated data before saving
+            const sanitizeSurveyJSON = (json: any) => {
+                if (!json) return json;
+                const cloned = JSON.parse(JSON.stringify(json));
+
+                const stripChoices = (elements?: any[]) => {
+                    if (!elements) return;
+                    elements.forEach((el) => {
+                        if (!el) return;
+                        // Custom types that must rely on choicesByUrl and should not persist choices
+                        const typesToStrip = new Set([
+                            'fordvoi',
+                            'fordvehiclesdriven',
+                            'lincolnvehiclesdriven',
+                            'vehicledrivenmostmake',
+                        ]);
+                        if (typeof el.type === 'string' && typesToStrip.has(el.type)) {
+                            if (el.choices) delete el.choices;
+                        }
+                        // Recurse into containers
+                        if (el.elements) stripChoices(el.elements);
+                        if (el.questions) stripChoices(el.questions);
+                        if (el.panels) stripChoices(el.panels);
+                    });
+                };
+
+                if (cloned.pages) cloned.pages.forEach((p: any) => stripChoices(p.elements));
+                else if (cloned.elements) stripChoices(cloned.elements);
+
+                return cloned;
+            };
 
             newCreator.saveSurveyFunc = (saveNo: number, callback: (saveNo: number, success: boolean) => void) => {
                 console.log("saving questions...")
                 const eventRef = doc(db, "events", eventID).withConverter(EEventConverter);
+
+                const sanitized = sanitizeSurveyJSON(newCreator.JSON);
+
                 updateDoc(eventRef, {
                     // Write to both old and new fields
-                    questions: JSON.stringify(newCreator.JSON),
-                    surveyJSModel: newCreator.JSON,
+                    questions: JSON.stringify(sanitized),
+                    surveyJSModel: sanitized,
                 }).then(() => {
                     console.log("saved!")
                     callback(saveNo, true);
@@ -342,7 +432,14 @@ function DashboardScreen() {
                         return;
                     }
 
-                    const uploadResponse = await fetch('https://generatecreatoruploadurl-erqibiidsa-uc.a.run.app', {
+                    // Determine the correct Cloud Run URL based on the Firebase project
+                    const firebaseProjectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || 'latitude-lead-system';
+                    const isStaging = firebaseProjectId === 'latitude-leads-staging';
+                    const uploadFunctionUrl = isStaging
+                        ? 'https://generatecreatoruploadurl-dm2b2pxfcq-uc.a.run.app'
+                        : 'https://generatecreatoruploadurl-erqibiidsa-uc.a.run.app';
+
+                    const uploadResponse = await fetch(uploadFunctionUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -428,16 +525,16 @@ function DashboardScreen() {
     }, [initializationComplete, thisEvent, eventID]);
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-            <h1>Edit Event {thisEvent?.id}</h1>
+        <div className="flex flex-col h-full">
+            <h1 className="text-2xl font-bold mb-4">Edit Event {thisEvent?.id}</h1>
 
             {!initializationComplete ? (
                 <div style={{ padding: '20px', textAlign: 'center' }}>
                     Loading survey editor...
                 </div>
             ) : creator ? (
-                <div id="fd-nxt" className={getBrandTheme(thisEvent?.brand)} style={{ flex: 1 }}>
-                    <SurveyCreatorComponent creator={creator} style={{ flex: 1 }} />
+                <div id="fd-nxt" className={`${getBrandTheme(thisEvent?.brand)} flex-1 flex flex-col`}>
+                    <SurveyCreatorComponent creator={creator} />
                 </div>
             ) : (
                 <div style={{ padding: '20px', textAlign: 'center' }}>

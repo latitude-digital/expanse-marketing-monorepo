@@ -3,20 +3,11 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 // https://vitejs.dev/config/
-export default defineConfig(async ({ command, mode }) => {
+export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   
-  // Dynamically import the console forward plugin
-  let consoleForward = null
-  try {
-    const plugin = await import('vite-console-forward-plugin')
-    consoleForward = plugin.default()
-  } catch (error) {
-    console.log('Console forward plugin not available:', error.message)
-  }
-  
   return {
-    plugins: [react(), ...(consoleForward ? [consoleForward] : [])],
+    plugins: [react()],
     
     // Build configuration to match CRA output structure
     build: {
@@ -28,7 +19,6 @@ export default defineConfig(async ({ command, mode }) => {
           manualChunks: {
             vendor: ['react', 'react-dom', 'react-router-dom'],
             survey: ['survey-core', 'survey-react-ui', 'survey-analytics'],
-            kendo: ['@progress/kendo-react-buttons', '@progress/kendo-react-common', '@progress/kendo-react-inputs', '@progress/kendo-react-indicators'],
             firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/functions'],
             utils: ['lodash', 'moment', 'uuid']
           }
@@ -71,12 +61,15 @@ export default defineConfig(async ({ command, mode }) => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
-        '@ui/ford-ui-components': path.resolve(__dirname, '../ford-ui/packages/@ui/ford-ui-components'),
+        '@meridian-event-tech/shared': path.resolve(__dirname, '../shared/src'),
+        // Point directly to source to ensure Vite can resolve entry
+        '@ui/ford-ui-components': path.resolve(__dirname, '../ford-ui/packages/@ui/ford-ui-components/src'),
         '@ui/atoms': path.resolve(__dirname, '../ford-ui/packages/@ui/atoms/src/lib'),
         '@ui/icons': path.resolve(__dirname, '../ford-ui/packages/@ui/icons/src/lib'),
         '@common/helpers': path.resolve(__dirname, '../ford-ui/packages/@common/helpers/src/lib'),
         '@common/interfaces': path.resolve(__dirname, '../ford-ui/packages/@common/interfaces/src/lib'),
         '@common/utils': path.resolve(__dirname, '../ford-ui/packages/@common/utils/src/lib'),
+        '@fontawesome': path.resolve(__dirname, '../../fontawesome/svgs'),
         // Add any other aliases that were used in the original app
       }
     },
@@ -89,7 +82,8 @@ export default defineConfig(async ({ command, mode }) => {
         'lodash',
         'moment',
         'survey-core',
-        'survey-react-ui'
+        'survey-react-ui',
+        '@meridian-event-tech/shared'
       ],
       exclude: [
         'firebase'

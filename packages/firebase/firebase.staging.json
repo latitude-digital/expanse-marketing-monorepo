@@ -16,7 +16,7 @@
     }
   ],
   "firestore": {
-    "database": "staging",
+    "database": "(default)",
     "rules": "firestore.staging.rules",
     "indexes": "firestore.staging.indexes.json"
   },

@@ -13,10 +13,10 @@ export const initSurveyFMC = () => {
 
 export const initCreatorFMC = (creator: SurveyCreatorModel) => {
   const enLocale = editorLocalization.getLocale("en");
-  enLocale.toolboxCategories["__0fmcCagegory"] = "FMC Questions";
+  enLocale.toolboxCategories["__01fmcCagegory"] = "FMC Questions";
 
   creator.toolbox.changeCategories([
-    // { name: "fordvoi", category: "__0fmcCagegory" },
+    // { name: "fordvoi", category: "__01fmcCagegory" },
   ]);
 };
 

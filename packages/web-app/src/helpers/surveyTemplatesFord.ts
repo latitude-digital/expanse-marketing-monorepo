@@ -1,5 +1,6 @@
 import {
   surveyLocalization,
+  ComponentCollection,
 } from "survey-core";
 import {
   DefaultFonts,
@@ -10,7 +11,7 @@ import {
 import { registerIcons } from "./fontAwesomeIcons";
 
 import { initThemeFord } from "../themes/surveyJS/ford";
-import { FordSurveys } from "../surveyjs_questions";
+import FordSurveysNew from "../surveyjs_questions/FordSurveysNew";
 
 registerIcons([
   "cars",
@@ -23,13 +24,26 @@ registerIcons([
   "calendar-clock",
   "pen-field",
   "car-garage",
+  "road-circle-check",
+  "comments",
+  "signature",
+  "calendar-circle-user",
+  "cash-register",
+  "person-circle-question",
+  "user",
+  "mobile-retro",
+  "mailbox-flag-up",
+  "scale-unbalanced",
+  "scale-unbalanced-flip",
+  "trophy",
+  "envelopes-bulk",
 ]);
 
 export const initSurveyFord = () => {
   // surveyLocalization.supportedLocales = ["en", "es", "fr"];
 
-  // Initialize Ford-specific questions
-  FordSurveys.fordInit();
+  // Initialize Ford-specific questions using new universal system
+  FordSurveysNew.fordInit();
 
   DefaultFonts.unshift("FordF1");
 };
@@ -38,34 +52,87 @@ export const initCreatorFord = (creator: SurveyCreatorModel) => {
   initThemeFord(creator);
 
   const enLocale = editorLocalization.getLocale("en");
-  enLocale.toolboxCategories["__fordCategory"] = "Ford Questions";
-  enLocale.toolboxCategories["__0fmc"] = "FMC Questions";
+  enLocale.toolboxCategories["__02fordCategory"] = "Ford Questions";
+  enLocale.toolboxCategories["__01fmc"] = "FMC Questions";
 
-  creator.toolbox.changeCategories([
-    { name: "fordvoi", category: "__fordCategory" },
-    { name: "fordvehiclesdriven", category: "__fordCategory" },
-    { name: "fordoptin", category: "__fordCategory" },
-    { name: "fordrecommend", category: "__fordCategory" },
-    { name: "fordrecommendpost", category: "__fordCategory" },
-    { name: "howlikelypurchasingford", category: "__fordCategory" },
-    { name: "howlikelypurchasingfordpost", category: "__fordCategory" },
-    { name: "sweepstakesOptIn", category: "__fordCategory" },
-    // FMC questions
-    { name: "gender", category: "__0fmc" },
-    { name: "agebracket", category: "__0fmc" },
-    { name: "howlikelyacquire", category: "__0fmc" },
-    { name: "inmarkettiming", category: "__0fmc" },
-    { name: "vehicledrivenmostmake", category: "__0fmc" },
-  ]);
+  // Manually add Ford questions to the toolbox if they're not already there
+  // This is needed because questions registered via the universal system after
+  // Creator instantiation don't automatically appear in the toolbox
 
-  // Apply Ford-specific category sorting - Ford Questions first
+  // Map question names to proper titles and icons
+  const fordQuestionConfig: Record<string, { title: string; icon: string }> = {
+    fordvoi: { title: "Ford VOI", icon: "icon-cars" },
+    fordvehiclesdriven: { title: "Ford Vehicles Driven", icon: "icon-road-circle-check" },
+    fordoptin: { title: "Ford Opt-in", icon: "icon-envelopes-bulk" },
+    fordrecommend: { title: "Ford Recommend", icon: "icon-comments" },
+    fordrecommendpost: { title: "Ford Recommend Post", icon: "icon-comments" },
+    howlikelypurchasingford: { title: "How Likely Purchasing Ford", icon: "icon-scale-unbalanced" },
+    howlikelypurchasingfordpost: { title: "How Likely Purchasing Ford Post", icon: "icon-scale-unbalanced-flip" },
+    sweepstakesoptin: { title: "Sweepstakes Opt-In", icon: "icon-trophy" },
+    fordpassion: { title: "Ford Passion", icon: "icon-comments" },
+    fordpassionpost: { title: "Ford Passion Post", icon: "icon-comments" },
+    fordcapability: { title: "Ford Capability", icon: "icon-comments" },
+    fordcapabilitypost: { title: "Ford Capability Post", icon: "icon-comments" },
+  };
+
+  // First, ensure Ford questions exist in the toolbox
+  // The questions should already be registered via FordSurveysNew.fordInit()
+  const fordQuestions = Object.keys(fordQuestionConfig);
+
+  // Check if Ford questions exist and assign them to the category
+  const categoriesToChange: Array<{ name: string; category: string }> = [];
+  fordQuestions.forEach(questionName => {
+    let item = creator.toolbox.getItemByName(questionName) as any;
+    if (!item) {
+      // Question not in toolbox, manually add it
+      // The questions are registered in ComponentCollection but not automatically added to toolbox
+      const config = fordQuestionConfig[questionName];
+      creator.toolbox.addItem({
+        name: questionName,
+        title: config.title,
+        iconName: config.icon,
+        json: { type: questionName },
+        category: "__02fordCategory"
+      });
+      console.log(`Manually added Ford question '${questionName}' to toolbox`);
+    } else {
+      // Ensure icon and title are correct for already-registered items
+      const config = fordQuestionConfig[questionName];
+      if (config) {
+        try {
+          item.iconName = config.icon;
+          item.title = config.title;
+        } catch (e) {
+          console.warn(`Failed to update toolbox item visuals for ${questionName}`, e);
+        }
+      }
+      categoriesToChange.push({ name: questionName, category: "__02fordCategory" });
+    }
+  });
+
+  // Also reassign FMC questions to their category
+  const fmcQuestions = ["gender", "agebracket", "howlikelyacquire", "inmarkettiming", "vehicledrivenmostmake"];
+  fmcQuestions.forEach(questionName => {
+    const item = creator.toolbox.getItemByName(questionName);
+    if (item) {
+      categoriesToChange.push({ name: questionName, category: "__01fmc" });
+    }
+  });
+
+  if (categoriesToChange.length > 0) {
+    creator.toolbox.changeCategories(categoriesToChange);
+  } else {
+    console.error("No Ford questions found in toolbox to categorize!");
+  }
+
+  // Apply Ford-specific category sorting - Personal Info first, then FMC, then Ford
   creator.toolbox.categories = creator.toolbox.categories.sort((a: any, b: any) => {
     const getPriority = (name: string) => {
-      if (name === "__fordCategory") return 1;
-      if (name === "__lincolnCategory") return 2; 
-      if (name === "__0pii") return 3;
-      if (name === "__0fmc") return 4;
-      if (name === "__1wav") return 5;
+      if (name === "__00pii") return 1;  // Personal Information Questions
+      if (name === "__01fmc") return 2;  // FMC Questions
+      if (name === "__02fordCategory") return 3;  // Ford Questions
+      if (name === "__02lincolnCategory") return 4;  // Lincoln Questions (if present)
+      if (name === "__10wav") return 5;
       if (name.startsWith("__")) return 6;
       return 7;
     };
@@ -75,7 +142,7 @@ export const initCreatorFord = (creator: SurveyCreatorModel) => {
 
   // Open Ford Questions category by default
   creator.toolbox.collapseAllCategories();
-  creator.toolbox.expandCategory("__fordCategory");
+  creator.toolbox.expandCategory("__02fordCategory");
   creator.toolbox.updateTitles();
 };
 
@@ -176,6 +243,36 @@ export const prepareCreatorOnQuestionAddedFord = (
       es: "Basándose en su experiencia de hoy, ¿qué tan probable es que considere comprar un vehículo Ford?",
       fr: "Sur la base de votre expérience d'aujourd'hui, quelle est la probabilité que vous envisagiez d'acheter un véhicule Ford?",
     });
+  }
+
+  if (options.question.getType() === "sweepstakesoptin") {
+    console.log("sweepstakesoptin question added");
+    options.question.name = "sweepsOptIn";
+    options.question._ffs = "custom.sweepstakes_opt_in";
+  }
+
+  if (options.question.getType() === "fordpassion") {
+    console.log("fordpassion question added");
+    options.question.name = "passion";
+    options.question._ffs = "custom.passion";
+  }
+
+  if (options.question.getType() === "fordcapability") {
+    console.log("fordcapability question added");
+    options.question.name = "capability";
+    options.question._ffs = "custom.capability";
+  }
+
+  if (options.question.getType() === "fordpassionpost") {
+    console.log("fordpassionpost question added");
+    options.question.name = "passionPost";
+    options.question._ffs = "custom.passion_post";
+  }
+
+  if (options.question.getType() === "fordcapabilitypost") {
+    console.log("fordcapabilitypost question added");
+    options.question.name = "capabilityPost";
+    options.question._ffs = "custom.capability_post";
   }
 
 };

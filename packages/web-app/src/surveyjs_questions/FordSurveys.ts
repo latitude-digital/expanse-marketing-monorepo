@@ -50,8 +50,7 @@ const fordInit = () => {
    * Ford Vehicle of Interest (VOI) Question
    * 
    * @description Multi-select checkbox for Ford vehicles the customer is interested in
-   * @_ffs "voi" - Maps to voi field in Ford API
-   * @api_endpoint VEHICLES_INSERT - Sends selected vehicle_ids to Ford endpoint
+   * @_ffs "voi" - Maps to `voi` array in Ford v10 upload payload (no separate endpoint)
    * @max_selections 3 vehicles
    * @data_source https://cdn.latitudewebservices.com/vehicles/ford.json
    */
@@ -109,11 +108,17 @@ const fordInit = () => {
       // Use shared utility to handle choicesByUrl for custom question types
       handleChoicesByUrl(question, 'FordSurveys');
       
-      // Sync validators from parent to child for custom questions
+      // Sync isRequired and validators from parent to child for custom questions
       const child = question.contentQuestion;
-      if (child && question.validators?.length > 0) {
-        child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+      if (child) {
+        // Always sync isRequired from parent to child
+        if (question.isRequired) {
+          child.isRequired = true;
+        }
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
       }
     },
     onPropertyChanged(question: Question, propertyName: string, newValue: any) {
@@ -134,10 +139,8 @@ const fordInit = () => {
    * Ford Vehicles Driven Question
    * 
    * @description Multi-select checkbox for Ford vehicles actually test driven at event
-   * @_ffs "vehiclesDriven" - Maps to vehiclesDriven field
-   * @note Ford hasn't implemented the driven endpoint yet (unlike Lincoln)
+   * @_ffs "vehiclesDriven" - Mapped by mappers to `vehicles_driven` array in v10 payload (no separate endpoint)
    * @data_source https://cdn.latitudewebservices.com/vehicles/ford.json
-   * @future Will eventually send to Ford vehicles driven endpoint when implemented
    */
   // Register fordvehiclesdriven if it doesn't exist - NEW QUESTION TYPE
   if (!ComponentCollection.Instance.getCustomQuestionByName("fordvehiclesdriven")) {
@@ -180,11 +183,17 @@ const fordInit = () => {
         // Use shared utility to handle choicesByUrl for custom question types
         handleChoicesByUrl(question, 'FordSurveys');
         
-        // Sync validators from parent to child for custom questions
+        // Sync isRequired and validators from parent to child for custom questions
         const child = question.contentQuestion;
-        if (child && question.validators?.length > 0) {
-          child.validators = [...(child.validators || []), ...question.validators];
-          child.isRequired = true;
+        if (child) {
+          // Always sync isRequired from parent to child
+          if (question.isRequired) {
+            child.isRequired = true;
+          }
+          // Also sync validators if present
+          if (question.validators?.length > 0) {
+            child.validators = [...(child.validators || []), ...question.validators];
+          }
         }
       },
       onPropertyChanged(question: Question, propertyName: string, newValue: any) {
@@ -245,11 +254,17 @@ const fordInit = () => {
       ],
     },
     onLoaded(question: Question) {
-      // Sync validators from parent to child for custom questions
+      // Sync isRequired and validators from parent to child for custom questions
       const child = question.contentQuestion;
-      if (child && question.validators?.length > 0) {
-        child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+      if (child) {
+        // Always sync isRequired from parent to child
+        if (question.isRequired) {
+          child.isRequired = true;
+        }
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
       }
     },
   } as ICustomQuestionTypeConfiguration);
@@ -274,11 +289,17 @@ const fordInit = () => {
       setPropertyReadOnly("fordrecommend", "_ffs");
     },
     onLoaded(question: Question) {
-      // Sync validators from parent to child for custom questions
+      // Sync isRequired and validators from parent to child for custom questions
       const child = question.contentQuestion;
-      if (child && question.validators?.length > 0) {
-        child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+      if (child) {
+        // Always sync isRequired from parent to child
+        if (question.isRequired) {
+          child.isRequired = true;
+        }
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
       }
     },
     questionJSON: {
@@ -353,11 +374,17 @@ const fordInit = () => {
     showInToolbox: true,
     inheritBaseProps: true,
     onLoaded(question: Question) {
-      // Sync validators from parent to child for custom questions
+      // Sync isRequired and validators from parent to child for custom questions
       const child = question.contentQuestion;
-      if (child && question.validators?.length > 0) {
-        child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+      if (child) {
+        // Always sync isRequired from parent to child
+        if (question.isRequired) {
+          child.isRequired = true;
+        }
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
       }
     },
     questionJSON: {
@@ -436,11 +463,17 @@ const fordInit = () => {
       setPropertyReadOnly("fordrecommendpost", "_ffs");
     },
     onLoaded(question: Question) {
-      // Sync validators from parent to child for custom questions
+      // Sync isRequired and validators from parent to child for custom questions
       const child = question.contentQuestion;
-      if (child && question.validators?.length > 0) {
-        child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+      if (child) {
+        // Always sync isRequired from parent to child
+        if (question.isRequired) {
+          child.isRequired = true;
+        }
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
       }
     },
     questionJSON: {
@@ -512,11 +545,17 @@ const fordInit = () => {
     showInToolbox: true,
     inheritBaseProps: true,
     onLoaded(question: Question) {
-      // Sync validators from parent to child for custom questions
+      // Sync isRequired and validators from parent to child for custom questions
       const child = question.contentQuestion;
-      if (child && question.validators?.length > 0) {
-        child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+      if (child) {
+        // Always sync isRequired from parent to child
+        if (question.isRequired) {
+          child.isRequired = true;
+        }
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
       }
     },
     questionJSON: {
@@ -583,23 +622,29 @@ const fordInit = () => {
    * @age_restriction 18+ years old
    */
   ComponentCollection.Instance.add({
-    name: "sweepstakesOptIn",
+    name: "sweepstakesoptin",
     title: "Sweepstakes Opt-In",
     iconName: "icon-checkbox",
     showInToolbox: true,
     inheritBaseProps: true,
     onLoaded(question: Question) {
-      // Sync validators from parent to child for custom questions
+      // Sync isRequired and validators from parent to child for custom questions
       const child = question.contentQuestion;
-      if (child && question.validators?.length > 0) {
-        child.validators = [...(child.validators || []), ...question.validators];
-        child.isRequired = true;
+      if (child) {
+        // Always sync isRequired from parent to child
+        if (question.isRequired) {
+          child.isRequired = true;
+        }
+        // Also sync validators if present
+        if (question.validators?.length > 0) {
+          child.validators = [...(child.validators || []), ...question.validators];
+        }
       }
     },
     questionJSON: {
       type: "radiogroup",
       renderAs: "radiobuttongroup",
-      name: "sweepstakesOptIn",
+      name: "sweepstakesoptin",
       title: "Are you at least 18 years old and would you like to register win a 2025 Mets wrapped Bronco?",
       description: "NO PURCHASE NECESSARY TO ENTER OR WIN. TRAVEL NOT INCLUDED. Open to legal residents of New York: the five (5) Boroughs of New York City and residents of Nassau, Suffolk, Ulster, Orange, Rockland, Sullivan, Dutchess, Putnam, Westchester counties); New Jersey: residents of Sussex, Warren, Morris, Hunterdon, Somerset, Passaic, Bergen, Hudson, Essex, Union, Middlesex, Monmouth, Ocean counties; and Connecticut: residents of New Haven, Fairfield, Litchfield counties who are 18+ at time of entry. Enter by 11:59 PM ET on August 31, 2025. Odds of winning depend on number of eligible entries received. Void where prohibited. Restrictions apply: see Official Rules at [https://blueoval.events/2025_NY_Mets_Official_Rules](https://blueoval.events/2025_NY_Mets_Official_Rules) Sponsor: Tri-State and Upstate FDAF, INC.",
       descriptionLocation: "underInput",

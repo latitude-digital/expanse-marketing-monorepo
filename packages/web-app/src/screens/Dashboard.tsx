@@ -6,7 +6,7 @@ import auth from '../services/auth';
 
 import { useAuthState } from 'react-firebase-hooks/auth';
 import app from '../services/firebase';
-import db from '../services/db';
+import db from '../services/firestore';
 import { ensureCloudFrontAccess } from '../services/cloudFrontAuth';
 
 import { Model, Question, slk } from "survey-core";
@@ -15,8 +15,9 @@ import { ColDef, GridApi, GridReadyEvent, ModuleRegistry, AllCommunityModule } f
 
 // Import custom survey question definitions
 import AllSurveys from '../surveyjs_questions/AllSurveys';
-import FordSurveys from '../surveyjs_questions/FordSurveys';
-import LincolnSurveys from '../surveyjs_questions/LincolnSurveys';
+import FordSurveysNew from '../surveyjs_questions/FordSurveysNew';
+import LincolnSurveysNew from '../surveyjs_questions/LincolnSurveysNew';
+import FMCSurveys from '../surveyjs_questions/FMCSurveys';
 // Import AG Grid CSS
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-material.css';
@@ -34,22 +35,21 @@ slk(
   "NDBhNThlYzYtN2EwMy00ZTgxLWIyNGQtOGFkZWJkM2NlNjI3OzE9MjAyNi0wNy0xOSwyPTIwMjYtMDctMTksND0yMDI2LTA3LTE5"
 );
 
-// Initialize custom survey question definitions
+// Initialize only universal questions globally for the dashboard
+// Brand-specific questions should be initialized per-event based on brand
 AllSurveys.globalInit();
-FordSurveys.fordInit();
-LincolnSurveys.lincolnInit();
 
 // Helper function to intelligently format array values
 const formatArrayValue = (value: any): string => {
   if (!Array.isArray(value)) {
     return String(value);
   }
-  
+
   // Check if this is an array of single characters (likely from incorrectly split string)
-  const hasOnlyCharacters = value.every(item => 
+  const hasOnlyCharacters = value.every(item =>
     typeof item === 'string' && item.length === 1
   );
-  
+
   if (hasOnlyCharacters && value.length > 3) {
     // Likely a string that was incorrectly split into characters, rejoin without commas
     return value.join('');
@@ -59,8 +59,156 @@ const formatArrayValue = (value: any): string => {
   }
 };
 
+// Helper function to dynamically format object values
+const formatObjectValue = (obj: any, maxDepth: number = 2, currentDepth: number = 0): string => {
+  console.log('[formatObjectValue] Called with:', { obj, type: typeof obj, isNull: obj === null });
+  // Prevent infinite recursion
+  if (currentDepth >= maxDepth) {
+    return '[Complex Object]';
+  }
+
+  // Handle null/undefined
+  if (obj === null || obj === undefined) {
+    return '';
+  }
+
+  // Handle primitives
+  if (typeof obj !== 'object') {
+    return String(obj);
+  }
+
+  // Handle dates
+  if (obj instanceof Date) {
+    return obj.toLocaleString();
+  }
+
+  // Handle arrays
+  if (Array.isArray(obj)) {
+    return formatArrayValue(obj);
+  }
+
+  // Handle objects - extract meaningful fields
+  const keys = Object.keys(obj);
+
+  // Filter out internal/private fields (starting with _)
+  const publicKeys = keys.filter(k => !k.startsWith('_'));
+
+  // If no public keys, return indication
+  if (publicKeys.length === 0) {
+    return '[No displayable data]';
+  }
+
+  // Build display pairs for meaningful fields
+  const displayPairs: string[] = [];
+
+  for (const key of publicKeys) {
+    const value = obj[key];
+
+    // Skip null/undefined/empty values
+    if (value === null || value === undefined || value === '') {
+      continue;
+    }
+
+    // Handle special data types
+    if (typeof value === 'string') {
+      // Check if it's an image/data URL
+      if (value.startsWith('data:image') || (value.startsWith('http') && /\.(jpg|jpeg|png|gif|svg)$/i.test(value))) {
+        displayPairs.push(`${key}: [Image]`);
+      } else if (value.length > 100) {
+        // Long strings - truncate
+        displayPairs.push(`${key}: ${value.substring(0, 50)}...`);
+      } else {
+        displayPairs.push(`${key}: ${value}`);
+      }
+    } else if (typeof value === 'boolean') {
+      displayPairs.push(`${key}: ${value ? 'Yes' : 'No'}`);
+    } else if (typeof value === 'number') {
+      displayPairs.push(`${key}: ${value}`);
+    } else if (typeof value === 'object') {
+      // Recursively format nested objects (with increased depth)
+      const nestedValue = formatObjectValue(value, maxDepth, currentDepth + 1);
+      if (nestedValue && nestedValue !== '[No displayable data]') {
+        displayPairs.push(`${key}: ${nestedValue}`);
+      }
+    }
+
+    // Limit number of fields shown to prevent overwhelming display
+    if (displayPairs.length >= 5) {
+      const remainingCount = publicKeys.length - displayPairs.length;
+      if (remainingCount > 0) {
+        displayPairs.push(`... +${remainingCount} more`);
+      }
+      break;
+    }
+  }
+
+  // Return formatted pairs or indication of empty object
+  return displayPairs.length > 0 ? displayPairs.join(', ') : '[No displayable data]';
+};
+
+// Helper function to build a map of choice values to display text for all questions
+const buildChoicesMap = (survey: Model): Map<string, Map<any, string>> => {
+  const choicesMap = new Map<string, Map<any, string>>();
+  
+  // Get all questions from the survey
+  const allQuestions = survey.getAllQuestions();
+  
+  allQuestions.forEach(question => {
+    const questionChoices = new Map<any, string>();
+    const choiceSource: any = (question as any).contentQuestion || question;
+
+    const registerChoice = (value: any, text: string) => {
+      if (value === undefined || value === null) {
+        return;
+      }
+      questionChoices.set(value, text);
+      questionChoices.set(String(value), text);
+    };
+
+    // Check if choice source has explicit choices
+    if (Array.isArray(choiceSource?.choices)) {
+      choiceSource.choices.forEach((choice: any) => {
+        if (typeof choice === 'string') {
+          registerChoice(choice, choice);
+        } else if (choice && typeof choice === 'object') {
+          const value = choice.value !== undefined ? choice.value : choice;
+          const text = choice.text || choice.title || choice.name || String(value);
+          registerChoice(value, text);
+        }
+      });
+    }
+
+    // Handle dynamic choices loaded via choicesByUrl
+    if (choiceSource?.choicesByUrl || choiceSource?.visibleChoices) {
+      const visibleChoices = choiceSource.visibleChoices;
+      if (Array.isArray(visibleChoices) && visibleChoices.length > 0) {
+        visibleChoices.forEach((choice: any) => {
+          if (typeof choice === 'string') {
+            registerChoice(choice, choice);
+          } else if (choice && typeof choice === 'object') {
+            const value = choice.value !== undefined ? choice.value : (choice.id ?? choice.name);
+            const text = choice.text || choice.title || choice.name || String(value);
+            registerChoice(value, text);
+          }
+        });
+      }
+    }
+
+    if (questionChoices.size > 0) {
+      choicesMap.set(question.name, questionChoices);
+    }
+  });
+  
+  return choicesMap;
+};
+
 // Convert SurveyJS questions to AG Grid column definitions
-const convertQuestionsToColumns = (questions: Question[], showMetadata: boolean = false, surveyModel?: Model): ColDef[] => {
+const convertQuestionsToColumns = (
+  questions: Question[], 
+  showMetadata: boolean = false, 
+  surveyModel?: Model,
+  choicesMap?: Map<string, Map<any, string>>
+): ColDef[] => {
   console.log('=== convertQuestionsToColumns called ===');
   console.log('Input questions length:', questions.length);
   console.log('Questions details:', questions.map(q => ({ 
@@ -72,7 +220,7 @@ const convertQuestionsToColumns = (questions: Question[], showMetadata: boolean 
   })));
   
   const baseColumns: ColDef[] = [
-    { field: 'id', headerName: 'ID', hide: true, suppressColumnsToolPanel: true },
+    { field: 'id', headerName: 'ID', hide: !showMetadata, suppressColumnsToolPanel: !showMetadata },
     { 
       field: 'survey_date', 
       headerName: 'Survey Date', 
@@ -177,6 +325,15 @@ const convertQuestionsToColumns = (questions: Question[], showMetadata: boolean 
             if (params.value === null || params.value === undefined) {
               return '';
             }
+
+            // Check for "other" values with comments
+            const commentFieldName = `${params.colDef.field}-Comment`;
+            const commentValue = params.data[commentFieldName];
+            const rawValue = params.data[params.colDef.field];
+            if (rawValue === 'other' && commentValue) {
+              return commentValue;
+            }
+
             if (Array.isArray(params.value)) {
               return formatArrayValue(params.value);
             }
@@ -222,6 +379,15 @@ const convertQuestionsToColumns = (questions: Question[], showMetadata: boolean 
                 if (params.value === null || params.value === undefined) {
                   return '';
                 }
+
+                // Check for "other" values with comments
+                const commentFieldName = `${params.colDef.field}-Comment`;
+                const commentValue = params.data[commentFieldName];
+                const rawValue = params.data[params.colDef.field];
+                if (rawValue === 'other' && commentValue) {
+                  return commentValue;
+                }
+
                 if (Array.isArray(params.value)) {
                   return formatArrayValue(params.value);
                 }
@@ -264,6 +430,15 @@ const convertQuestionsToColumns = (questions: Question[], showMetadata: boolean 
               if (params.value === null || params.value === undefined) {
                 return '';
               }
+
+              // Check for "other" values with comments
+              const commentFieldName = `${params.colDef.field}-Comment`;
+              const commentValue = params.data[commentFieldName];
+              const rawValue = params.data[params.colDef.field];
+              if (rawValue === 'other' && commentValue) {
+                return commentValue;
+              }
+
               if (Array.isArray(params.value)) {
                 // Convert array to comma-delimited string
                 return params.value.map(v => String(v)).join(', ');
@@ -311,6 +486,15 @@ const convertQuestionsToColumns = (questions: Question[], showMetadata: boolean 
             if (params.value === null || params.value === undefined) {
               return '';
             }
+
+            // Check for "other" values with comments
+            const commentFieldName = `${params.colDef.field}-Comment`;
+            const commentValue = params.data[commentFieldName];
+            const rawValue = params.data[params.colDef.field];
+            if (rawValue === 'other' && commentValue) {
+              return commentValue;
+            }
+
             // For zip codes, ensure they're treated as strings and preserve leading zeros
             if ((field as any).isZipCode && params.value) {
               const zipStr = String(params.value);
@@ -338,6 +522,12 @@ const convertQuestionsToColumns = (questions: Question[], showMetadata: boolean 
     
     // Map SurveyJS question types to AG Grid filter types
     switch (q.getType()) {
+      case 'panel':
+        // Panel questions might contain waiver/signature data
+        filterType = 'agTextColumnFilter';
+        filterParams.filterOptions = ['contains', 'notContains', 'blank', 'notBlank'];
+        break;
+
       case 'text':
         // Check inputType for more specific types
         if (q.inputType === 'number' || q.inputType === 'tel') {
@@ -408,7 +598,7 @@ const convertQuestionsToColumns = (questions: Question[], showMetadata: boolean 
     
     // Determine if this is an image question
     const isImageQuestion = ['file', 'image', 'signaturepad'].includes(q.getType());
-    
+
     // Determine if this is a phone or email field
     const isPhoneQuestion = q.getType() === 'text' && (q.inputType === 'tel' || q.name.toLowerCase().includes('phone') || q.title?.toLowerCase().includes('phone'));
     const isEmailQuestion = q.getType() === 'text' && (q.inputType === 'email' || q.name.toLowerCase().includes('email') || q.title?.toLowerCase().includes('email'));
@@ -446,20 +636,29 @@ const convertQuestionsToColumns = (questions: Question[], showMetadata: boolean 
       } : {
         // Use SurveyJS to get display value for all non-special columns
         valueFormatter: (params) => {
+          // Check for "other" values with comments FIRST
+          const commentFieldName = `${params.colDef.field}-Comment`;
+          const commentValue = params.data[commentFieldName];
+          const rawValue = params.data[params.colDef.field];
+          if (rawValue === 'other' && commentValue) {
+            return commentValue;
+          }
+
+          // Debug: Log entry to valueFormatter
+          if (params.colDef.field === 'question1' || (typeof params.value === 'object' && params.value !== null && !Array.isArray(params.value))) {
+            console.log('[valueFormatter ENTRY] Field:', params.colDef.field, {
+              value: params.value,
+              valueType: typeof params.value,
+              isObject: typeof params.value === 'object' && params.value !== null,
+              isArray: Array.isArray(params.value),
+              valueKeys: typeof params.value === 'object' && params.value !== null ? Object.keys(params.value) : 'N/A'
+            });
+          }
+
           if (params.value === null || params.value === undefined) {
             return '';
           }
           
-          // Debug logging for vehicleOfInterest
-          if (params.colDef.field === 'vehicleOfInterest') {
-            console.log('vehicleOfInterest valueFormatter:', {
-              value: params.value,
-              type: typeof params.value,
-              isArray: Array.isArray(params.value),
-              length: params.value?.length,
-              firstFewItems: Array.isArray(params.value) ? params.value.slice(0, 5) : 'not array'
-            });
-          }
           
           
           // Check if this is a zip code field
@@ -481,34 +680,72 @@ const convertQuestionsToColumns = (questions: Question[], showMetadata: boolean 
             return zipStr;
           }
           
+          // Try to get the display value using choices map first
+          if (choicesMap && params.colDef.field) {
+            const questionChoices = choicesMap.get(params.colDef.field);
+            if (questionChoices) {
+              // Handle arrays - map each value to its display text
+              if (Array.isArray(params.value)) {
+                const displayValues = params.value.map(val => {
+                  const displayText = questionChoices.get(val) || questionChoices.get(String(val));
+                  return displayText || val;
+                });
+                return displayValues.join(', ');
+              }
+              // Handle single values
+              const displayText = questionChoices.get(params.value) || questionChoices.get(String(params.value));
+              if (displayText) {
+                return displayText;
+              }
+            }
+          }
+          
           // Try to get the display value from the survey model
           if (surveyModel && params.colDef.field) {
             const question = surveyModel.getQuestionByName(params.colDef.field);
             if (question) {
+              const displayQuestion: any = (question as any).contentQuestion || question;
               // Handle arrays - use smart array formatting instead of SurveyJS displayValue
               if (Array.isArray(params.value)) {
+                // Try to map through choices if available on display question
+                if (Array.isArray(displayQuestion?.choices) && displayQuestion.choices.length > 0) {
+                  const mappedValues = params.value.map((val: any) => {
+                    const match = displayQuestion.choices.find((choice: any) => choice.value === val || String(choice.value) === String(val));
+                    return match ? (match.text || match.title || match.name || match.value) : val;
+                  });
+                  return formatArrayValue(mappedValues);
+                }
                 return formatArrayValue(params.value);
               }
+              // For objects, use our formatter instead of SurveyJS displayValue
+              if (typeof params.value === 'object' && params.value !== null) {
+                console.log('[valueFormatter] Object in SurveyJS path, using formatObjectValue');
+                return formatObjectValue(params.value);
+              }
+
+
               // Handle single values
-              const originalValue = question.value;
-              question.value = params.value;
-              const displayValue = question.displayValue;
-              question.value = originalValue;
+              const originalValue = displayQuestion.value;
+              displayQuestion.value = params.value;
+              const displayValue = displayQuestion.displayValue;
+              displayQuestion.value = originalValue;
               return displayValue || params.value;
             }
           }
           
           // Fallback to default formatting
           if (Array.isArray(params.value)) {
-            return formatArrayValue(params.value);
+            const result = formatArrayValue(params.value);
+            console.log('[valueFormatter] Array formatted:', result);
+            return result;
           }
-          if (typeof params.value === 'object') {
-            try {
-              return JSON.stringify(params.value);
-            } catch (e) {
-              return '[Complex Object]';
-            }
+          if (typeof params.value === 'object' && params.value !== null) {
+            console.log('[valueFormatter] Object detected for field:', params.colDef.field, 'calling formatObjectValue');
+            const result = formatObjectValue(params.value);
+            console.log('[valueFormatter] Object formatted result:', result);
+            return result;
           }
+          console.log('[valueFormatter] Returning primitive value:', params.value);
           return params.value;
         }
       })
@@ -548,6 +785,7 @@ function DashboardScreen() {
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
   const [quickFilterText, setQuickFilterText] = useState<string>('');
   const [showMetadataFields, setShowMetadataFields] = useState<boolean>(false);
+  const [choicesMap, setChoicesMap] = useState<Map<string, Map<any, string>>>(new Map());
 
   useEffect(() => {
     console.error(userError);
@@ -606,13 +844,30 @@ function DashboardScreen() {
         setThisEvent(incomingEvent);
       }
 
+      // Initialize brand-specific questions based on event brand
+      const eventBrand = incomingEvent?.brand?.toLowerCase();
+      console.log('=== Event brand:', eventBrand);
+
+      // Initialize the appropriate brand-specific questions
+      if (eventBrand === 'ford') {
+        console.log('Initializing Ford-specific questions for dashboard');
+        FordSurveysNew.fordInit();
+      } else if (eventBrand === 'lincoln') {
+        console.log('Initializing Lincoln-specific questions for dashboard');
+        LincolnSurveysNew.lincolnInit();
+      } else if (eventBrand === 'fmc' || eventBrand === 'fleet') {
+        console.log('Initializing FMC-specific questions for dashboard');
+        FMCSurveys.fmcInit();
+      }
+      // AllSurveys.globalInit() is already called at the top of the file
+
       // Use new map field if available, otherwise parse JSON string
-      const surveyJSON = incomingEvent?.surveyJSModel || 
+      const surveyJSON = incomingEvent?.surveyJSModel ||
                         (incomingEvent?.questions ? JSON.parse(incomingEvent.questions) : {});
       console.log('=== Original Survey JSON ===');
       console.log('Pages:', surveyJSON.pages?.length);
       console.log('Original survey structure:', JSON.stringify(surveyJSON, null, 2));
-      
+
       // Check if surveyJSON has the expected structure
       if (!surveyJSON.pages || !Array.isArray(surveyJSON.pages) || surveyJSON.pages.length === 0) {
         console.error('Survey JSON is missing pages array or is empty!');
@@ -676,6 +931,15 @@ function DashboardScreen() {
 
       setThisSurvey(survey);
       
+      // Build the choices map for displaying pretty labels
+      const newChoicesMap = buildChoicesMap(survey);
+      setChoicesMap(newChoicesMap);
+      console.log('=== Choices map built ===', newChoicesMap);
+      
+      // Define non-question types that should be excluded from the dashboard
+      // These are display-only elements from the "Misc" category in SurveyJS
+      const nonQuestionTypes = ['html', 'markdown', 'image', 'expression'];
+      
       // Function to recursively get all questions from panels
       const getAllQuestionsFromPanel = (panel: any): any[] => {
         let questions: any[] = [];
@@ -685,8 +949,8 @@ function DashboardScreen() {
             if (element.type === 'panel') {
               // Recursively get questions from nested panels
               questions = questions.concat(getAllQuestionsFromPanel(element));
-            } else {
-              // This is a question, add it
+            } else if (!element.type || !nonQuestionTypes.includes(element.type)) {
+              // This is a question (not a display-only element), add it
               questions.push(element);
             }
           }
@@ -704,8 +968,8 @@ function DashboardScreen() {
               if (element.type === 'panel') {
                 // Get questions from panel
                 allQuestions = allQuestions.concat(getAllQuestionsFromPanel(element));
-              } else if (!element.type || element.type !== 'html') {
-                // This is a question (not an HTML element), add it
+              } else if (!element.type || !nonQuestionTypes.includes(element.type)) {
+                // This is a question (not a display-only element), add it
                 allQuestions.push(element);
               }
             }
@@ -719,6 +983,10 @@ function DashboardScreen() {
       const filteredQuestions = allQuestions.filter(q => {
         // Always exclude these metadata fields as they're handled separately
         if (metadataFieldsToAlwaysExclude.includes(q.name)) {
+          return false;
+        }
+        // Double-check that non-question types are excluded
+        if (q.type && nonQuestionTypes.includes(q.type)) {
           return false;
         }
         // If showMetadataFields is false, exclude fields starting with underscore
@@ -778,6 +1046,13 @@ function DashboardScreen() {
           });
         });
 
+        // Debug: Log raw answer data from Firestore
+        console.log('[Firestore Data] Raw answers:', answers.map(a => ({
+          id: a.id,
+          question1: a.question1,
+          question1Type: typeof a.question1,
+          allKeys: Object.keys(a).filter(k => k.includes('question'))
+        })));
         setAllAnswers(answers);
       });
     }).catch((error) => {
@@ -797,7 +1072,7 @@ function DashboardScreen() {
     if (!thisSurvey || !allAnswers) return;
 
     // Convert questions to AG Grid column definitions
-    let baseColumns = convertQuestionsToColumns(allQuestions || [], showMetadataFields, thisSurvey);
+    let baseColumns = convertQuestionsToColumns(allQuestions || [], showMetadataFields, thisSurvey, choicesMap);
     
     // If we have very few questions but have answer data, dynamically add columns
     // from the actual data fields (excluding system fields)
@@ -861,11 +1136,25 @@ function DashboardScreen() {
                 if (params.value === null || params.value === undefined) {
                   return '';
                 }
-                
+
+                // EARLY CHECK FOR "OTHER" VALUES - BEFORE ANY OTHER PROCESSING
+                // When user selects "other" option, Firestore stores:
+                // - fieldName: "other"
+                // - fieldName-Comment: "user's custom text"
+                const commentFieldName = `${params.colDef.field}-Comment`;
+                const commentValue = params.data[commentFieldName];
+                const rawValue = params.data[params.colDef.field];
+
+                // Check if raw value is "other" and there's a comment field
+                if (rawValue === 'other' && commentValue) {
+                  console.log(`Returning comment for ${params.colDef.field}: "${commentValue}" instead of "${params.value}"`);
+                  return commentValue;
+                }
+
                 // Check if this is a zip code field
                 const fieldNameLower = field.toLowerCase();
-                const isZipCodeField = fieldNameLower.includes('zip') || 
-                                      fieldNameLower.includes('postal') || 
+                const isZipCodeField = fieldNameLower.includes('zip') ||
+                                      fieldNameLower.includes('postal') ||
                                       fieldNameLower.includes('postcode');
                 
                 if (isZipCodeField && params.value) {
@@ -906,11 +1195,7 @@ function DashboardScreen() {
                   return formatArrayValue(params.value);
                 }
                 if (typeof params.value === 'object') {
-                  try {
-                    return JSON.stringify(params.value);
-                  } catch (e) {
-                    return '[Complex Object]';
-                  }
+                  return formatObjectValue(params.value);
                 }
                 return params.value;
               }
@@ -947,7 +1232,7 @@ function DashboardScreen() {
       setColumnDefs(baseColumns);
     }
 
-  }, [thisSurvey, allAnswers, allQuestions, showMetadataFields]);
+  }, [thisSurvey, allAnswers, allQuestions, showMetadataFields, choicesMap]);
 
   // Track if we've auto-sized columns on first data load
   const [hasAutoSized, setHasAutoSized] = useState(false);
