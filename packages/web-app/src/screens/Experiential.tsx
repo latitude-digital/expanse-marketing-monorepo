@@ -764,6 +764,12 @@ ${minorWaiverText}
                             surveyData['device_survey_guid'] = uuidv4();
                         }
                         
+                        surveyData.customData = {
+                            ...surveyData.customData,
+                            passion: surveyData.passion || undefined,
+                            capability: surveyData.capability || undefined,
+                        };
+                        
                         // Add specific fields
                         surveyData["optins"] = survey.getValue("optins") || null;
                         surveyData["signature"] = survey.getValue("signature") || null;
