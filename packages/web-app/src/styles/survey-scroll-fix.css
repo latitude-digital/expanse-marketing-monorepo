@@ -83,3 +83,30 @@ body.survey-taking-mode .layout-base {
   height: auto !important;
   min-height: 100vh;
 }
+
+/* Additional stronger rules to override SurveyJS defaults */
+body.survey-taking-mode #fd-nxt.ford_light,
+body.survey-taking-mode #fd-nxt.ford_dark,
+body.survey-taking-mode #fd-nxt.lincoln_light,
+body.survey-taking-mode #fd-nxt.lincoln_dark {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  overflow-y: visible !important;
+}
+
+/* Force SurveyJS scroll containers to expand naturally */
+body.survey-taking-mode .sv-scroll__scroller,
+body.survey-taking-mode div.sv-scroll__scroller {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  overflow-y: visible !important;
+}
+
+/* Hide SurveyJS scrollbar completely */
+body.survey-taking-mode .sv-scroll__scrollbar,
+body.survey-taking-mode div.sv-scroll__scrollbar {
+  display: none !important;
+  visibility: hidden !important;
+}
