@@ -132,18 +132,21 @@ export const baseSurvey: SurveySurveyConfiguration = {
             {
               type: 'gender',
               name: 'gender',
+              _ffs: 'gender',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
               isRequired: true,
             },
             {
               type: 'firstname',
               name: 'first_name',
+              _ffs: 'firstName',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
               isRequired: true,
             },
             {
               type: 'lastname',
               name: 'last_name',
+              _ffs: 'lastName',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
               startWithNewLine: false,
               isRequired: true,
@@ -151,18 +154,21 @@ export const baseSurvey: SurveySurveyConfiguration = {
             {
               type: 'autocompleteaddress',
               name: 'address_group',
+              _ffs: 'address_group',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
               isRequired: true,
             },
             {
               type: 'email',
               name: 'email',
+              _ffs: 'email',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
               isRequired: true,
             },
             {
               type: 'phone',
               name: 'phone',
+              _ffs: 'phone',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
               startWithNewLine: false,
               isRequired: true,
@@ -170,6 +176,7 @@ export const baseSurvey: SurveySurveyConfiguration = {
             {
               type: 'fordoptin',
               name: 'fordEmailOptIn',
+              _ffs: 'emailOptIn',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
               isRequired: true,
             },
@@ -182,30 +189,35 @@ export const baseSurvey: SurveySurveyConfiguration = {
             {
               type: 'fordpassion',
               name: 'passion',
+              _ffs: 'custom.passion',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
               isRequired: true,
             },
             {
               type: 'fordcapability',
               name: 'capability',
+              _ffs: 'custom.capability',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
               isRequired: true,
             },
             {
               type: 'vehicledrivenmostmake',
               name: 'vehicleDrivenMostMake',
+              _ffs: 'vehicle_driven_most_make_id',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
               isRequired: true,
             },
             {
               type: 'inmarkettiming',
               name: 'inMarketTiming',
+              _ffs: 'in_market_timing',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
               isRequired: true,
             },
             {
               type: 'fordvoi',
               name: 'fordVOI',
+              _ffs: 'voi',
               visibleIf: "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
             },
             {
