@@ -1,19 +1,36 @@
-import firestore from '@react-native-firebase/firestore';
+import {
+  getFirestore,
+  collection,
+  query,
+  orderBy,
+  getDocs,
+  onSnapshot,
+  connectFirestoreEmulator,
+} from '@react-native-firebase/firestore';
 import { MeridianEvent as ExpanseEvent } from '@meridian-event-tech/shared/types';
 
 // Connect to emulator in development
 const initializeFirestore = () => {
+  const db = getFirestore();
+
+  // Log Firebase project connection info
+  console.log('🔥 [FIRESTORE] Initialized Firestore');
+  console.log('🔥 [FIRESTORE] Firebase App Name:', db.app.name);
+  console.log('🔥 [FIRESTORE] Project ID:', db.app.options.projectId);
+  console.log('🔥 [FIRESTORE] Storage Bucket:', db.app.options.storageBucket);
+
   // Connect to emulator if in development
-  if (__DEV__) {
-    try {
-      // Use localhost for iOS simulator, 10.0.2.2 for Android emulator
-      const host = 'localhost';
-      firestore().useEmulator(host, 8080);
-      console.log('🔧 Connected to Firestore emulator at localhost:8080');
-    } catch (error) {
-      console.log('⚠️ Firestore emulator already connected');
-    }
-  }
+  // DISABLED: Uncomment to use local emulator
+  // if (__DEV__) {
+  //   try {
+  //     // Use localhost for iOS simulator, 10.0.2.2 for Android emulator
+  //     const host = 'localhost';
+  //     connectFirestoreEmulator(db, host, 8080);
+  //     console.log('🔧 Connected to Firestore emulator at localhost:8080');
+  //   } catch (error) {
+  //     console.log('⚠️ Firestore emulator already connected');
+  //   }
+  // }
 };
 
 // Initialize on import
@@ -23,10 +40,10 @@ export const eventsService = {
   // Get all events from Firestore
   getEvents: async (): Promise<ExpanseEvent[]> => {
     try {
-      const snapshot = await firestore()
-        .collection('events')
-        .orderBy('startDate', 'desc')
-        .get();
+      const db = getFirestore();
+      const eventsCol = collection(db, 'events');
+      const q = query(eventsCol, orderBy('startDate', 'desc'));
+      const snapshot = await getDocs(q);
 
       const events: ExpanseEvent[] = snapshot.docs.map(doc => {
         const data = doc.data();
@@ -68,11 +85,13 @@ export const eventsService = {
 
   // Listen for real-time updates
   onEventsChange: (callback: (events: ExpanseEvent[]) => void) => {
-    return firestore()
-      .collection('events')
-      .orderBy('startDate', 'desc')
-      .onSnapshot(
-        (snapshot) => {
+    const db = getFirestore();
+    const eventsCol = collection(db, 'events');
+    const q = query(eventsCol, orderBy('startDate', 'desc'));
+
+    return onSnapshot(
+      q,
+      (snapshot) => {
           const events: ExpanseEvent[] = snapshot.docs.map(doc => {
             const data = doc.data();
             return {
@@ -111,5 +130,3 @@ export const eventsService = {
       );
   }
 };
-
-export default firestore;

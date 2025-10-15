@@ -4,7 +4,6 @@ import {
   Text,
   FlatList,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
@@ -12,6 +11,7 @@ import {
   TextInput,
   Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import type { MeridianEvent as ExpanseEvent, Brand } from '@meridian-event-tech/shared/types';
 import Icon from '../components/Icon';
@@ -215,6 +215,10 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
         <TouchableOpacity
           style={styles.actionButton}
           onPress={() => handleSurveyPress(event)}
+          testID={`survey-button-${event.id}`}
+          accessible={true}
+          accessibilityLabel={`Survey button for ${event.name}`}
+          accessibilityRole="button"
         >
           <Icon name="table" size={16} color="#FFFFFF" />
           <Text style={styles.actionButtonText}>Survey</Text>

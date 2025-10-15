@@ -67,7 +67,6 @@ export default {
     },
     scheme: "meridian-events",
     plugins: [
-      "./plugins/withSurveyBundle",
       "expo-router",
       "@react-native-firebase/app",
       "@react-native-firebase/auth",
@@ -75,7 +74,8 @@ export default {
         "expo-build-properties",
         {
           ios: {
-            useFrameworks: "static"
+            useFrameworks: "static",
+            buildReactNativeFromSource: true
           }
         }
       ],

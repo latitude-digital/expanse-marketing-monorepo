@@ -1,19 +1,56 @@
-import auth from '@react-native-firebase/auth';
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  sendPasswordResetEmail,
+  onAuthStateChanged as firebaseOnAuthStateChanged,
+} from '@react-native-firebase/auth';
+import type { FirebaseAuthTypes } from '@react-native-firebase/auth';
+
+// Log Firebase Auth initialization
+const auth = getAuth();
+console.log('🔥 [AUTH INIT] Firebase Auth initialized on import');
+console.log('🔥 [AUTH INIT] Firebase App Name:', auth.app.name);
+console.log('🔥 [AUTH INIT] Project ID:', auth.app.options.projectId);
+console.log('🔥 [AUTH INIT] API Key:', auth.app.options.apiKey?.substring(0, 10) + '...');
 
 // Auth service functions
 export const authService = {
   signIn: async (email: string, password: string) => {
     try {
-      const userCredential = await auth().signInWithEmailAndPassword(email, password);
+      console.log('🔐 [AUTH] Starting sign in process...');
+      console.log('🔐 [AUTH] Email:', email);
+
+      const auth = getAuth();
+      console.log('🔐 [AUTH] Auth instance obtained');
+      console.log('🔐 [AUTH] Current user before sign in:', auth.currentUser?.uid || 'null');
+      console.log('🔐 [AUTH] Auth app name:', auth.app.name);
+      console.log('🔐 [AUTH] Auth app options:', JSON.stringify({
+        projectId: auth.app.options.projectId,
+        apiKey: auth.app.options.apiKey?.substring(0, 10) + '...',
+      }));
+
+      console.log('🔐 [AUTH] Attempting signInWithEmailAndPassword...');
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+      console.log('🔐 [AUTH] ✅ Sign in successful!');
+      console.log('🔐 [AUTH] User ID:', userCredential.user.uid);
+      console.log('🔐 [AUTH] User email:', userCredential.user.email);
+
       return userCredential;
     } catch (error: any) {
+      console.error('🔐 [AUTH] ❌ Sign in error caught');
+      console.error('🔐 [AUTH] Error code:', error.code);
+      console.error('🔐 [AUTH] Error message:', error.message);
+      console.error('🔐 [AUTH] Full error:', JSON.stringify(error, null, 2));
       throw transformAuthError(error);
     }
   },
 
   signOut: async () => {
     try {
-      await auth().signOut();
+      const auth = getAuth();
+      await firebaseSignOut(auth);
     } catch (error: any) {
       throw transformAuthError(error);
     }
@@ -21,18 +58,21 @@ export const authService = {
 
   sendPasswordReset: async (email: string) => {
     try {
-      await auth().sendPasswordResetEmail(email);
+      const auth = getAuth();
+      await sendPasswordResetEmail(auth, email);
     } catch (error: any) {
       throw transformAuthError(error);
     }
   },
 
   getCurrentUser: () => {
-    return auth().currentUser;
+    const auth = getAuth();
+    return auth.currentUser;
   },
 
-  onAuthStateChanged: (callback: (user: any) => void) => {
-    return auth().onAuthStateChanged(callback);
+  onAuthStateChanged: (callback: (user: FirebaseAuthTypes.User | null) => void) => {
+    const auth = getAuth();
+    return firebaseOnAuthStateChanged(auth, callback);
   }
 };
 

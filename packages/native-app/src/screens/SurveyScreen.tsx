@@ -3,15 +3,15 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   Alert,
   Modal,
   BackHandler,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import type { MeridianEvent as ExpanseEvent } from '@meridian-event-tech/shared/types';
-import SurveyWebViewSPA, { SurveyCompletionData } from '../components/SurveyWebViewSPA';
+import { OfflineSurveyWebView, SurveyCompletionData } from '../components/OfflineSurveyWebView';
 import { themeProvider } from '../utils/theme-provider';
 import { offlineDetector } from '../utils/offline-detector';
 import { DatabaseService } from '../services/database';
@@ -89,16 +89,16 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
    */
   const handleSurveyComplete = useCallback(async (data: SurveyCompletionData) => {
     setSurveyData(data);
-    
+
     try {
       // Store survey response in local database
       const dbService = DatabaseService.createEncrypted();
       const operations = await dbService.getOperations();
-      
+
       await operations.createSurveyResponse({
         id: `${data.eventId}_${Date.now()}`,
         event_id: data.eventId,
-        data: JSON.stringify(data.responses),
+        data: JSON.stringify(data.answers),
         sync_status: 'pending',
       });
 
@@ -114,7 +114,7 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
       setTimeout(() => {
         handleExitSurvey();
       }, 5000);
-      
+
     } catch (error) {
       console.error('Failed to save survey response:', error);
       Alert.alert(
@@ -222,6 +222,10 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
             <TouchableOpacity
               style={[styles.exitHeaderButton, { borderColor: brandColor }]}
               onPress={handleBackNavigation}
+              testID="survey-exit-button"
+              accessible={true}
+              accessibilityLabel="Exit survey"
+              accessibilityRole="button"
             >
               <Text style={[styles.exitHeaderButtonText, { color: brandColor }]}>
                 Exit
@@ -231,12 +235,11 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
         </View>
       </View>
 
-      {/* Survey WebView SPA */}
-      <SurveyWebViewSPA
+      {/* Survey WebView - Offline Bundle */}
+      <OfflineSurveyWebView
         event={displayEvent}
         onSurveyComplete={handleSurveyComplete}
         onSurveyError={handleSurveyError}
-        allowsBackForwardNavigationGestures={false}
         style={styles.webviewContainer}
       />
 
@@ -258,13 +261,21 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
               <TouchableOpacity
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={handleCancelExit}
+                testID="survey-continue-button"
+                accessible={true}
+                accessibilityLabel="Continue survey"
+                accessibilityRole="button"
               >
                 <Text style={styles.cancelButtonText}>Continue Survey</Text>
               </TouchableOpacity>
-              
+
               <TouchableOpacity
                 style={[styles.modalButton, styles.confirmButton, { backgroundColor: brandColor }]}
                 onPress={handleConfirmedExit}
+                testID="survey-confirm-exit-button"
+                accessible={true}
+                accessibilityLabel="Confirm exit survey"
+                accessibilityRole="button"
               >
                 <Text style={styles.confirmButtonText}>Exit Survey</Text>
               </TouchableOpacity>
@@ -293,7 +304,7 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
                   Duration: {getSurveyDuration()}
                 </Text>
                 <Text style={styles.completionStat}>
-                  Responses: {Object.keys(surveyData.responses).length}
+                  Responses: {Object.keys(surveyData.answers).length}
                 </Text>
               </View>
             )}

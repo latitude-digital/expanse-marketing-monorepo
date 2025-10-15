@@ -13,6 +13,7 @@
 
 import {
   ComponentCollection,
+  ElementFactory,
   ICustomQuestionTypeConfiguration,
   Question,
   Serializer,
@@ -987,9 +988,7 @@ const globalInit = () => {
       }
     },
     questionJSON: {
-      type: "emailtextinput",
-      // type: "text",
-      // renderAs: "emailtextinput",
+      type: "text",
       name: "email",
       title: {
         en: "Email Address",

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { authService } from '../services/firebase';
-import firestore from '@react-native-firebase/firestore';
+import { getFirestore, collection, doc, getDoc } from '@react-native-firebase/firestore';
 
 interface User {
   uid: string;
@@ -46,11 +46,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Fetch user document from Firestore to get tags
         let userTags: string[] = [];
         try {
-          const userDoc = await firestore()
-            .collection('users')
-            .doc(user.uid)
-            .get();
-          if (userDoc.exists) {
+          const db = getFirestore();
+          const userDocRef = doc(db, 'users', user.uid);
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
             const userData = userDoc.data();
             userTags = userData?.tags || [];
           }
@@ -75,34 +74,57 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const userCredential = await authService.signIn(email, password);
-    
-    // Get custom claims for admin status
-    const idTokenResult = await userCredential.user.getIdTokenResult();
-    const customClaims = idTokenResult.claims;
-    
-    // Fetch user document from Firestore to get tags
-    let userTags: string[] = [];
+    console.log('👤 [AuthContext] signIn called with email:', email);
+
     try {
-      const userDoc = await firestore()
-        .collection('users')
-        .doc(userCredential.user.uid)
-        .get();
-      if (userDoc.exists) {
-        const userData = userDoc.data();
-        userTags = userData?.tags || [];
+      console.log('👤 [AuthContext] Calling authService.signIn...');
+      const userCredential = await authService.signIn(email, password);
+      console.log('👤 [AuthContext] authService.signIn returned successfully');
+
+      // Get custom claims for admin status
+      console.log('👤 [AuthContext] Fetching ID token and custom claims...');
+      const idTokenResult = await userCredential.user.getIdTokenResult();
+      const customClaims = idTokenResult.claims;
+      console.log('👤 [AuthContext] Custom claims:', JSON.stringify({
+        admin: customClaims.admin,
+        // Add other claims if needed
+      }));
+
+      // Fetch user document from Firestore to get tags
+      let userTags: string[] = [];
+      try {
+        console.log('👤 [AuthContext] Fetching user document from Firestore...');
+        const db = getFirestore();
+        console.log('👤 [AuthContext] Firestore instance obtained');
+        const userDocRef = doc(db, 'users', userCredential.user.uid);
+        console.log('👤 [AuthContext] Fetching doc at path: users/' + userCredential.user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+          console.log('👤 [AuthContext] User document found');
+          const userData = userDoc.data();
+          userTags = userData?.tags || [];
+          console.log('👤 [AuthContext] User tags:', userTags);
+        } else {
+          console.log('👤 [AuthContext] ⚠️ User document does not exist in Firestore');
+        }
+      } catch (error) {
+        console.error('👤 [AuthContext] ❌ Error fetching user tags:', error);
       }
+
+      console.log('👤 [AuthContext] Setting current user...');
+      setCurrentUser({
+        uid: userCredential.user.uid,
+        email: userCredential.user.email,
+        displayName: userCredential.user.displayName,
+        isAdmin: customClaims.admin === true,
+        tags: userTags,
+      });
+      console.log('👤 [AuthContext] ✅ Sign in complete!');
     } catch (error) {
-      console.error('Error fetching user tags:', error);
+      console.error('👤 [AuthContext] ❌ Sign in failed:', error);
+      throw error;
     }
-    
-    setCurrentUser({
-      uid: userCredential.user.uid,
-      email: userCredential.user.email,
-      displayName: userCredential.user.displayName,
-      isAdmin: customClaims.admin === true,
-      tags: userTags,
-    });
   };
 
   const signOut = async () => {

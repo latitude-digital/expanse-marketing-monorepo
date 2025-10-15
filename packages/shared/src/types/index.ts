@@ -11,5 +11,8 @@ export * from './sparkpost';
 // Meridian event types
 export * from './meridian-event';
 
+// WebView bridge types (for React Native WebView communication)
+export * from './webview-bridge';
+
 // Re-export SurveyJS types for convenience
 export type { Model as SurveyModel, Question as SurveyQuestionBase } from 'survey-core';
