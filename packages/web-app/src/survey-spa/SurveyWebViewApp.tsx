@@ -8,6 +8,10 @@ import type { Brand } from '@meridian-event-tech/shared/types';
 
 // Import FDS initializer and survey preparation (same as Survey.tsx)
 import { initializeFDSForBrand } from '../helpers/fdsInitializer';
+import GlobalHeader from '../components/GlobalHeader';
+// import GlobalFooter from '../components/GlobalFooter';
+import { FordSurveyNavigation } from '../components/FordSurveyNavigation';
+import { getBrandTheme, normalizeBrand } from '../utils/brandUtils';
 import { prepareForSurvey } from '../helpers/surveyTemplatesAll';
 
 // Import all FDS renderer classes for explicit registration
@@ -161,6 +165,8 @@ function registerFDSRenderers(bridgeRef: React.MutableRefObject<NativeBridge | n
 export const SurveyWebViewApp: React.FC = () => {
   const [survey, setSurvey] = useState<Model | null>(null);
   const [config, setConfig] = useState<SurveyConfig | null>(null);
+  const [supportedLocales, setSupportedLocales] = useState<string[]>(['en']);
+  const [currentLocale, setCurrentLocale] = useState<string>('en');
   const bridgeRef = useRef<NativeBridge | null>(null);
   const converterRef = useRef<Showdown.Converter | null>(null);
 
@@ -197,6 +203,9 @@ export const SurveyWebViewApp: React.FC = () => {
     // Initialize localization
     initializeLocalization();
 
+    // Apply global styling class used by Ford/Lincoln survey CSS
+    document.body.classList.add('survey-taking-mode');
+
     // Send page loaded signal
     bridgeRef.current.log('Survey bundle loaded');
     bridgeRef.current.postMessage('PAGE_LOADED', {
@@ -204,6 +213,10 @@ export const SurveyWebViewApp: React.FC = () => {
       timestamp: new Date().toISOString(),
       brand: 'Other', // Placeholder until SURVEY_INIT provides actual brand
     });
+
+    return () => {
+      document.body.classList.remove('survey-taking-mode');
+    };
   }, []);
 
   /**
@@ -278,30 +291,95 @@ export const SurveyWebViewApp: React.FC = () => {
   }, []);
 
   /**
-   * Apply default theme for Ford/Lincoln brands
+   * Apply brand-specific theme, mirroring the web Survey screen behaviour
    */
-  const applyDefaultBrandTheme = useCallback(
-    (survey: Model, brandName: 'Ford' | 'Lincoln' | 'Other') => {
-      const theme = {
-        themeName: 'defaultV2',
-        colorPalette: 'light',
-        isPanelless: true,
-        cssVariables: {
-          '--sjs-general-backcolor': '#ffffff',
-          '--sjs-general-backcolor-dim': '#ffffff',
-          '--sjs-primary-backcolor':
-            brandName === 'Ford' ? '#003478' : brandName === 'Lincoln' ? '#000000' : '#257180',
-          '--sjs-primary-backcolor-light':
-            brandName === 'Ford' ? '#1e88e5' : brandName === 'Lincoln' ? '#757575' : '#257180',
-          '--sjs-primary-backcolor-dark':
-            brandName === 'Ford' ? '#003478' : brandName === 'Lincoln' ? '#000000' : '#257180',
-          '--sjs-corner-radius': '4px',
-          '--sjs-base-unit': '8px',
-          '--sjs-font-size': '16px',
-        },
-      };
+  const applyBrandTheme = useCallback(
+    (surveyToUpdate: Model, brandName: Brand, themeFromConfig?: any) => {
+      if (!surveyToUpdate) return;
 
-      survey.applyTheme(theme);
+      const isFordOrLincoln = brandName === 'Ford' || brandName === 'Lincoln';
+
+      if (themeFromConfig && themeFromConfig.cssVariables) {
+        if (isFordOrLincoln) {
+          const updatedTheme = {
+            themeName: 'default',
+            colorPalette: 'light',
+            isPanelless: true,
+            backgroundImage: '',
+            backgroundImageFit: 'cover',
+            backgroundImageAttachment: 'scroll',
+            backgroundOpacity: 1,
+            cssVariables: {
+              '--sjs-general-backcolor-dim': '#ffffff',
+              ...themeFromConfig.cssVariables,
+            },
+            ...themeFromConfig,
+          };
+          surveyToUpdate.applyTheme(updatedTheme as any);
+        } else {
+          surveyToUpdate.applyTheme(themeFromConfig as any);
+        }
+        return;
+      }
+
+      if (isFordOrLincoln) {
+        const defaultFordLincolnTheme = {
+          themeName: 'default',
+          colorPalette: 'light',
+          isPanelless: true,
+          backgroundImage: '',
+          backgroundImageFit: 'cover',
+          backgroundImageAttachment: 'scroll',
+          backgroundOpacity: 1,
+          cssVariables: {
+            '--sjs-general-backcolor': '#ffffff',
+            '--sjs-general-backcolor-dim': '#ffffff',
+            '--sjs-primary-backcolor': 'var(--colors-ford-fill-interactive)',
+            '--sjs-primary-backcolor-light': 'var(--colors-ford-fill-interactive)',
+            '--sjs-primary-backcolor-dark': 'var(--colors-ford-fill-interactive)',
+            '--sjs-corner-radius': '4px',
+            '--sjs-base-unit': '8px',
+            '--sjs-font-size': '16px',
+          },
+        };
+        surveyToUpdate.applyTheme(defaultFordLincolnTheme as any);
+      }
+    },
+    []
+  );
+
+  const prepareSurveyJsonAndTheme = useCallback(
+    (incomingSurveyJson: any, incomingTheme: any) => {
+      const surveyJSON = incomingSurveyJson
+        ? JSON.parse(JSON.stringify(incomingSurveyJson))
+        : {};
+      const theme = incomingTheme
+        ? JSON.parse(JSON.stringify(incomingTheme))
+        : undefined;
+
+      const eventTheme = theme || {};
+
+      if (eventTheme.header && !surveyJSON.headerView) {
+        const hasHeaderContent = surveyJSON.title || surveyJSON.description;
+        if (hasHeaderContent) {
+          surveyJSON.headerView = 'advanced';
+          if (!surveyJSON.description && surveyJSON.title) {
+            surveyJSON.description = ' ';
+          }
+        }
+      }
+
+      const hasRealTitle =
+        surveyJSON.title && String(surveyJSON.title).trim().length > 0;
+      const hasRealDescription =
+        surveyJSON.description &&
+        String(surveyJSON.description).trim().length > 0;
+
+      if (!hasRealTitle && !hasRealDescription && surveyJSON.headerView) {
+        delete surveyJSON.headerView;
+      }
+
+      return { surveyJSON, theme: eventTheme };
     },
     []
   );
@@ -356,6 +434,33 @@ export const SurveyWebViewApp: React.FC = () => {
    */
   useEffect(() => {
     if (!config) return;
+
+    const localeCandidates = new Set<string>();
+    if (config.locale) localeCandidates.add(config.locale);
+    if (config.surveyJSON?.locale) localeCandidates.add(config.surveyJSON.locale);
+    if (Array.isArray(config.surveyJSON?.supportedLocales)) {
+      config.surveyJSON.supportedLocales.forEach((loc: string) => {
+        if (typeof loc === 'string' && loc.trim().length > 0) {
+          localeCandidates.add(loc);
+        }
+      });
+    }
+    if (config.surveyJSON?.localization && typeof config.surveyJSON.localization === 'object') {
+      Object.keys(config.surveyJSON.localization).forEach((loc) => {
+        if (loc && loc.trim().length > 0) {
+          localeCandidates.add(loc);
+        }
+      });
+    }
+    if (localeCandidates.size === 0) {
+      localeCandidates.add('en');
+    }
+    const derivedLocales = Array.from(localeCandidates);
+    setSupportedLocales(derivedLocales);
+    setCurrentLocale(config.locale || derivedLocales[0] || 'en');
+
+    const { surveyJSON: preparedSurveyJSON, theme: preparedTheme } =
+      prepareSurveyJsonAndTheme(config.surveyJSON || {}, config.theme);
 
     // Use async function to handle await for initializeFDSForBrand
     const initializeSurvey = async () => {
@@ -440,14 +545,14 @@ export const SurveyWebViewApp: React.FC = () => {
       }
 
       // Preprocess required validation
-      preprocessRequiredValidation(config.surveyJSON);
+      preprocessRequiredValidation(preparedSurveyJSON);
 
       // Create survey model with detailed error handling
       let newSurvey: Model;
       try {
         bridgeRef.current?.log('Creating Model...');
         newSurvey = new Model(
-          config.surveyJSON || {
+          preparedSurveyJSON || {
             title: 'Survey',
             pages: [
               {
@@ -475,20 +580,16 @@ export const SurveyWebViewApp: React.FC = () => {
       // Don't clear invisible values (needed for composite questions)
       newSurvey.clearInvisibleValues = false;
 
+      // Apply theme
+      const brandForSurvey = normalizeBrand(config.brand) as Brand;
+      applyBrandTheme(newSurvey, brandForSurvey, preparedTheme);
+
+      if (brandForSurvey === 'Ford' || brandForSurvey === 'Lincoln') {
+        newSurvey.showNavigationButtons = false;
+      }
+
       // Prepare survey (same as Survey.tsx)
       prepareForSurvey(newSurvey, config.brand);
-
-      // Apply theme
-      if (config.theme) {
-        newSurvey.applyTheme(config.theme);
-      } else {
-        applyDefaultBrandTheme(newSurvey, config.brand);
-      }
-
-      // Set locale
-      if (config.locale) {
-        newSurvey.locale = config.locale;
-      }
 
       // Apply existing answers
       if (config.answers) {
@@ -573,6 +674,13 @@ export const SurveyWebViewApp: React.FC = () => {
       // Set default values
       setDefaultValues(newSurvey, config.eventId);
 
+      if (config.locale) {
+        newSurvey.locale = config.locale;
+      } else if (derivedLocales.length > 0) {
+        newSurvey.locale = derivedLocales[0];
+      }
+      setCurrentLocale(newSurvey.locale || config.locale || derivedLocales[0] || 'en');
+
       setSurvey(newSurvey);
 
       // Send ready signal
@@ -593,7 +701,26 @@ export const SurveyWebViewApp: React.FC = () => {
 
     // Call the async initialization function
     initializeSurvey();
-  }, [config, preprocessRequiredValidation, applyDefaultBrandTheme, setDefaultValues, saveProgress]);
+  }, [
+    config,
+    preprocessRequiredValidation,
+    applyBrandTheme,
+    prepareSurveyJsonAndTheme,
+    setDefaultValues,
+    saveProgress,
+  ]);
+
+  const handleLocaleChange = useCallback(
+    (locale: string) => {
+      if (!locale || !survey) return;
+      survey.locale = locale;
+      setCurrentLocale(locale);
+    },
+    [survey]
+  );
+
+  const normalizedBrand = normalizeBrand(config?.brand) as Brand;
+  const showBrandChrome = normalizedBrand === 'Ford' || normalizedBrand === 'Lincoln';
 
   if (!survey) {
     return (
@@ -603,24 +730,43 @@ export const SurveyWebViewApp: React.FC = () => {
     );
   }
 
-  // Get brand theme class for Ford/Lincoln styling
-  const getBrandTheme = (brandName: Brand): string => {
-    switch (brandName) {
-      case 'Ford':
-        return 'ford_light';
-      case 'Lincoln':
-        return 'lincoln_light';
-      default:
-        return 'unbranded';
-    }
-  };
-
   // Removed render-time logging to prevent infinite loop from postMessage triggering re-renders
 
   return (
-    <div className="gdux-ford">
-      <div id="fd-nxt" className={config ? getBrandTheme(config.brand) : 'unbranded'}>
-        <Survey model={survey} />
+    <div className="app">
+      <div className="layout-base">
+        <div className="gdux-ford">
+          {showBrandChrome && (
+            <GlobalHeader
+              brand={normalizedBrand as 'Ford' | 'Lincoln'}
+              showLanguageChooser={supportedLocales.length > 1}
+              supportedLocales={supportedLocales}
+              currentLocale={currentLocale}
+              onLanguageChange={handleLocaleChange}
+            />
+          )}
+
+          <div id="fd-nxt" className={getBrandTheme(normalizedBrand)}>
+            <Survey model={survey} />
+
+            {showBrandChrome && (
+              <FordSurveyNavigation survey={survey} brand={normalizedBrand} />
+            )}
+          </div>
+
+          {/* GlobalFooter temporarily disabled */}
+          {/*
+          {showBrandChrome && (
+            <GlobalFooter
+              brand={normalizedBrand as 'Ford' | 'Lincoln'}
+              supportedLanguages={supportedLocales}
+              currentLocale={currentLocale}
+              onLanguageChange={handleLocaleChange}
+              showLanguageSelector={normalizedBrand === 'Ford'}
+            />
+          )}
+          */}
+        </div>
       </div>
     </div>
   );

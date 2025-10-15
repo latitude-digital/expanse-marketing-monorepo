@@ -125,13 +125,6 @@ export default defineConfig({
   // Critical: Use relative paths for file:// protocol
   base: './',
 
-  // Disable PostCSS/Tailwind (not needed for survey bundles)
-  css: {
-    postcss: {
-      plugins: [],
-    },
-  },
-
   // Optimize dependencies
   optimizeDeps: {
     include: [

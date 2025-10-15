@@ -26,6 +26,11 @@ import '../styles/ford/ford.css';
 import '../styles/lincoln/lincoln-font-families.css';
 import '../styles/lincoln/lincoln.css';
 import '../styles/ford-text-colors.css';
+import '../styles/survey-scroll-fix.css';
+import '../styles/survey-mobile-fixes.css';
+import '../styles/ford-navigation.css';
+import '../App.scss';
+// import '../components/GlobalFooter.css';
 
 // Import FDS renderers statically for WebView bundle compatibility
 // vite-plugin-singlefile doesn't support dynamic imports, so we need to import them here
