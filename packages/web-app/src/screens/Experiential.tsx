@@ -7,7 +7,7 @@ import { useParams } from 'react-router-dom';
 import { SurveySkeleton } from '../components/LoadingStates';
 import * as Sentry from "@sentry/react";
 // import { Button } from '../../../ford-ui/packages/@ui/ford-ui-components/src/components/button'; // Commented out for TypeScript migration testing
-import { mapToFordPayload } from '@meridian-event-tech/shared';
+import { uploadSurveyToAPI } from '@meridian-event-tech/shared';
 import { baseSurvey, incentiveThanks, activationThanks } from "./ExperienceSurvey";
 import { baseSurvey as derbyBaseSurvey, themeOverride as derbyThemeOverride } from './DerbySurvey';
 import { prepareForSurvey, prepareSurveyOnQuestionAdded } from "../helpers/surveyTemplatesAll";
@@ -171,6 +171,15 @@ const SurveyComponent: React.FC = () => {
     const [thisError, setThisError] = useState<Error | null>(null);
     const [showActivationQRCode, setShowActivationQRCode] = useState<boolean>(false);
     const [deviceSurveyGuid, setDeviceSurveyGuid] = useState<string | undefined>();
+
+    // Add class to body when component mounts, remove when unmounting
+    useEffect(() => {
+        document.body.classList.add('survey-taking-mode');
+
+        return () => {
+            document.body.classList.remove('survey-taking-mode');
+        };
+    }, []);
 
     useEffect(() => {
         if (!params.eventID) return;
@@ -475,6 +484,18 @@ ${minorWaiverText}
                     // IMPORTANT: Don't clear invisible field values - needed for composite panels
                     // This ensures hidden fields like country in address autocomplete panels are saved
                     survey.clearInvisibleValues = false;
+
+                    // CRITICAL: Manually load choices for questions with choicesByUrl
+                    // This is needed because static JSON surveys don't trigger onLoaded handlers
+                    // which would normally call handleChoicesByUrl
+                    import('../surveyjs_questions/choicesByUrlHelper').then(({ handleChoicesByUrl }) => {
+                        survey.getAllQuestions().forEach((question: any) => {
+                            if (question.choicesByUrl) {
+                                console.log('[Experiential] Manually loading choices for:', question.name, question.choicesByUrl);
+                                handleChoicesByUrl(question, 'Experiential');
+                            }
+                        });
+                    });
 
                     // Set Ford theme settings (panelless appearance)
                     survey.questionErrorLocation = "bottom";
@@ -801,29 +822,25 @@ ${minorWaiverText}
                             };
                         }
 
-                        // save survey (v10 only, using FordSurvey)
-                        const fordSurvey = mapToFordPayload(survey, surveyData, retEvent as any);
-                        // IMPORTANT: fordSurvey should override surveyData to ensure _ffs mapped fields are included
-                        const mergedSurveyData = { ...surveyData, ...fordSurvey, event_id: retEvent.event_id };
-
-                        fetch(getApiUrl(ENDPOINTS.SURVEY_UPLOAD_V10), {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': '989ae554-08ca-4142-862c-0058407d2769',
+                        // Upload survey using the shared uploadSurveyToAPI function which handles _ffs mapping
+                        uploadSurveyToAPI(
+                            {
+                                id: retEvent.event_id,
+                                name: retEvent.event_name,
+                                brand: 'Ford',
+                                fordEventID: retEvent.event_id,
+                                surveyType: 'basic',
+                                surveyJSModel: surveyJSON, // Pass the survey model JSON for recreation if needed
+                                startDate: new Date(),
+                                endDate: new Date()
                             },
-                            body: JSON.stringify({
-                                surveyCollection: [mergedSurveyData]
-                            }),
-                        }).then((res) => {
-                            if (res.ok) {
-                                return res.json();
+                            surveyData,
+                            survey  // Pass the survey Model instance with properly registered _ffs properties
+                        ).then((uploadResult) => {
+                            if (!uploadResult.success) {
+                                throw new Error(uploadResult.error || 'Upload failed');
                             }
-
-                            Sentry.captureException(new Error(res.statusText));
-                            throw new Error(res.statusText);
-                        }).then(res => {
-                            console.log('saved to latitude', res);
+                            console.log('saved to Ford API via uploadSurveyToAPI', uploadResult);
 
                             const showQRCode = retEvent.microsite_incentives || retEvent.check_in_qr;
                             if (showQRCode) {
