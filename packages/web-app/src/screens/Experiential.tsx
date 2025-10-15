@@ -349,6 +349,7 @@ const SurveyComponent: React.FC = () => {
 
                         let waiverPage:any = {
                             "name": "pageWaiver",
+                            "visibleIf": "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
                             "elements": [
                                 {
                                     "type": "panel",
