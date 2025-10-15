@@ -4,7 +4,7 @@ import EventListScreen from '../src/screens/EventListScreen';
 import { eventsService } from '../src/services/firestore';
 import { useAuth } from '../src/contexts/AuthContext';
 import { Stack } from 'expo-router';
-import type { ExpanseEvent } from '@expanse/shared/types';
+import type { MeridianEvent as ExpanseEvent } from '@meridian-event-tech/shared/types';
 
 export default function EventListPage() {
   console.log('EventListPage rendering');

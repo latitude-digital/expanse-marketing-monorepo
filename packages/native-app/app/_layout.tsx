@@ -93,6 +93,12 @@ function AuthenticatedLayout() {
           headerShown: false
         }} 
       />
+      <Stack.Screen
+        name="scan/[id]"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 }

@@ -10,6 +10,7 @@ import {
   Linking,
   TextInput,
   Dimensions,
+  ScaledSize,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -48,8 +49,8 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
   const [screenData, setScreenData] = useState(Dimensions.get('window'));
 
   useEffect(() => {
-    const onChange = (result: {window: {width: number, height: number}}) => {
-      setScreenData(result.window);
+    const onChange = ({ window }: { window: ScaledSize; screen: ScaledSize }) => {
+      setScreenData(window);
     };
     const subscription = Dimensions.addEventListener('change', onChange);
     return () => subscription?.remove();
@@ -80,7 +81,7 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
       searchFilteredEvents = events.filter(event => 
         event.name?.toLowerCase().includes(searchLower) ||
         event.brand?.toLowerCase().includes(searchLower) ||
-        event.tags?.some(tag => tag.toLowerCase().includes(searchLower))
+        event.tags?.some((tag: string) => tag.toLowerCase().includes(searchLower))
       );
     }
 
@@ -90,7 +91,7 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
       // Non-admin users only see events with matching tags
       userFilteredEvents = searchFilteredEvents.filter(event => {
         if (!event.tags || !currentUser.tags) return false;
-        return event.tags.some(tag => currentUser.tags!.includes(tag));
+        return event.tags.some((tag: string) => currentUser.tags!.includes(tag));
       });
     }
 
@@ -176,6 +177,21 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
     }
   };
 
+  const handleScanPress = (event: ExpanseEvent) => {
+    if (onEventPress) {
+      onEventPress(event);
+      return;
+    }
+
+    router.push({
+      pathname: `/scan/[id]`,
+      params: {
+        id: event.id,
+        eventData: JSON.stringify(event),
+      },
+    });
+  };
+
   const handleCheckInPress = (event: ExpanseEvent) => {
     const url = `/s/${event.subdomain || event.id}/in`;
     Linking.openURL(url);
@@ -202,7 +218,7 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
         
         {currentUser?.isAdmin && event.tags && event.tags.length > 0 && (
           <View style={styles.tagsContainer}>
-            {event.tags.map((tag, index) => (
+            {event.tags.map((tag: string, index: number) => (
               <View key={index} style={styles.tagBadge}>
                 <Text style={styles.tagText}>{tag}</Text>
               </View>
@@ -212,6 +228,19 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
       </View>
       
       <View style={styles.eventFooter}>
+        {event.customConfig?.badgeScan && (
+          <TouchableOpacity
+            style={[styles.actionButton, styles.scanButton]}
+            onPress={() => handleScanPress(event)}
+            testID={`scan-button-${event.id}`}
+            accessible={true}
+            accessibilityLabel={`Scan badge for ${event.name}`}
+            accessibilityRole="button"
+          >
+            <Text style={styles.actionButtonText}>Scan</Text>
+          </TouchableOpacity>
+        )}
+
         <TouchableOpacity
           style={styles.actionButton}
           onPress={() => handleSurveyPress(event)}
@@ -495,6 +524,9 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 12,
     fontWeight: '600',
+  },
+  scanButton: {
+    backgroundColor: '#0A8754',
   },
   statusBadge: {
     paddingHorizontal: 8,

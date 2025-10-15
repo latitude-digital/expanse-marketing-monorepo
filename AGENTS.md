@@ -41,6 +41,7 @@
    cd packages/native-app
    npx expo run:ios --device "iPad (A16)"
    ```
+   - Do **not** use the `--dev-client` flag; stick with `npx expo run:ios` only
    - Also use `npx expo start` for Metro when appropriate
    - Simulator access available via MCP `mobile` tools
 

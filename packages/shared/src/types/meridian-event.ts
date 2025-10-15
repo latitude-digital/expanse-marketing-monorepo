@@ -27,6 +27,17 @@ export interface SurveyDefinition {
   [key: string]: any;
 }
 
+export interface MeridianBadgeScanConfig {
+  vendor: string;
+  config: Record<string, any>;
+}
+
+export interface MeridianCustomConfig {
+  badgeScan?: MeridianBadgeScanConfig;
+  activations?: string[];
+  [key: string]: any;
+}
+
 export interface MeridianEvent {
   id: string;
   name: string;
@@ -60,5 +71,5 @@ export interface MeridianEvent {
   thankYouEmail?: EmailDefinition;
   checkOutEmail?: EmailDefinition;
   autoCheckOut?: AutoCheckOutDefinition;
+  customConfig?: MeridianCustomConfig | null;
 }
-

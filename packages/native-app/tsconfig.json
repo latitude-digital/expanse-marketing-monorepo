@@ -32,10 +32,10 @@
         "./src/*"
       ],
       "@meridian-event-tech/shared": [
-        "../shared/dist/index"
+        "../shared/lib/esm/index"
       ],
       "@meridian-event-tech/shared/*": [
-        "../shared/dist/*"
+        "../shared/lib/esm/*"
       ]
     }
   },

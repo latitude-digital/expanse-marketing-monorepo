@@ -7,6 +7,7 @@ import {
   Alert,
   Modal,
   BackHandler,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
@@ -20,12 +21,22 @@ interface SurveyScreenProps {
   event?: ExpanseEvent;
   onSurveyComplete?: (data: SurveyCompletionData) => void;
   onSurveyAbandoned?: (event: ExpanseEvent) => void;
+  initialAnswers?: Record<string, any>;
+  scanMetadata?: {
+    value: string;
+    time: string;
+    response: any;
+  };
+  isPrefillLoading?: boolean;
 }
 
 const SurveyScreen: React.FC<SurveyScreenProps> = ({
   event,
   onSurveyComplete,
   onSurveyAbandoned,
+  initialAnswers,
+  scanMetadata,
+  isPrefillLoading = false,
 }) => {
   const navigation = useNavigation();
   const route = useRoute();
@@ -88,7 +99,24 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
    * Handle survey completion
    */
   const handleSurveyComplete = useCallback(async (data: SurveyCompletionData) => {
-    setSurveyData(data);
+    const enrichedAnswers = {
+      ...data.answers,
+      _eventId: data.eventId,
+      ...(scanMetadata
+        ? {
+            _scanValue: scanMetadata.value,
+            _scanTime: scanMetadata.time,
+            _scanResponse: scanMetadata.response,
+          }
+        : {}),
+    };
+
+    const enrichedData: SurveyCompletionData = {
+      ...data,
+      answers: enrichedAnswers,
+    };
+
+    setSurveyData(enrichedData);
 
     try {
       // Store survey response in local database
@@ -96,9 +124,9 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
       const operations = await dbService.getOperations();
 
       await operations.createSurveyResponse({
-        id: `${data.eventId}_${Date.now()}`,
-        event_id: data.eventId,
-        data: JSON.stringify(data.answers),
+        id: `${enrichedData.eventId}_${Date.now()}`,
+        event_id: enrichedData.eventId,
+        data: JSON.stringify(enrichedData.answers),
         sync_status: 'pending',
       });
 
@@ -107,7 +135,7 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
 
       // Call parent completion handler
       if (onSurveyComplete) {
-        onSurveyComplete(data);
+        onSurveyComplete(enrichedData);
       }
 
       // Auto-exit after 5 seconds for kiosk mode
@@ -125,7 +153,7 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
         ]
       );
     }
-  }, [onSurveyComplete]);
+  }, [onSurveyComplete, scanMetadata, handleExitSurvey]);
 
   /**
    * Handle survey error
@@ -236,12 +264,22 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
       </View>
 
       {/* Survey WebView - Offline Bundle */}
-      <OfflineSurveyWebView
-        event={displayEvent}
-        onSurveyComplete={handleSurveyComplete}
-        onSurveyError={handleSurveyError}
-        style={styles.webviewContainer}
-      />
+      <View style={styles.webviewWrapper}>
+        {isPrefillLoading ? (
+          <View style={styles.prefillLoader}>
+            <ActivityIndicator size="large" color={brandColor} />
+            <Text style={styles.prefillLoaderText}>Looking up badge...</Text>
+          </View>
+        ) : (
+          <OfflineSurveyWebView
+            event={displayEvent}
+            existingAnswers={initialAnswers}
+            onSurveyComplete={handleSurveyComplete}
+            onSurveyError={handleSurveyError}
+            style={styles.webviewContainer}
+          />
+        )}
+      </View>
 
       {/* Exit Confirmation Modal */}
       <Modal
@@ -380,8 +418,24 @@ const styles = StyleSheet.create({
     color: '#666666',
     fontWeight: '500',
   },
+  webviewWrapper: {
+    flex: 1,
+    position: 'relative',
+  },
   webviewContainer: {
     flex: 1,
+  },
+  prefillLoader: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  prefillLoaderText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#333333',
+    fontWeight: '600',
   },
   errorContainer: {
     flex: 1,

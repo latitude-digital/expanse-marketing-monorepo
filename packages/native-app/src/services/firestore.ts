@@ -47,6 +47,21 @@ export const eventsService = {
 
       const events: ExpanseEvent[] = snapshot.docs.map(doc => {
         const data = doc.data();
+        const customConfig = (() => {
+          const rawValue = data.customConfig;
+          if (rawValue === undefined || rawValue === null) {
+            return null;
+          }
+          if (typeof rawValue === 'string') {
+            try {
+              return JSON.parse(rawValue);
+            } catch (error) {
+              console.warn('[eventsService] Failed to parse customConfig JSON for event', doc.id, error);
+              return null;
+            }
+          }
+          return rawValue;
+        })();
         return {
           id: doc.id,
           name: data.name || '',
@@ -73,6 +88,7 @@ export const eventsService = {
           surveyJSModel: data.surveyJSModel || data.surveyJSON || data.questions || { pages: [] },
           theme: data.theme || data.surveyJSTheme || { cssVariables: {} },
           surveyJSTheme: data.surveyJSTheme || data.theme || { cssVariables: {} },
+          customConfig,
         };
       });
 
@@ -94,6 +110,21 @@ export const eventsService = {
       (snapshot) => {
           const events: ExpanseEvent[] = snapshot.docs.map(doc => {
             const data = doc.data();
+            const customConfig = (() => {
+              const rawValue = data.customConfig;
+              if (rawValue === undefined || rawValue === null) {
+                return null;
+              }
+              if (typeof rawValue === 'string') {
+                try {
+                  return JSON.parse(rawValue);
+                } catch (error) {
+                  console.warn('[eventsService] Failed to parse customConfig JSON for event', doc.id, error);
+                  return null;
+                }
+              }
+              return rawValue;
+            })();
             return {
               id: doc.id,
               name: data.name || '',
@@ -120,6 +151,7 @@ export const eventsService = {
               surveyJSModel: data.surveyJSModel || data.surveyJSON || data.questions || { pages: [] },
               theme: data.theme || data.surveyJSTheme || { cssVariables: {} },
               surveyJSTheme: data.surveyJSTheme || data.theme || { cssVariables: {} },
+              customConfig,
             };
           });
           callback(events);
