@@ -56,6 +56,7 @@ type ExpanseEvent = {
   showHeader?: boolean;
   showFooter?: boolean;
   tags?: string[];  // Tags for categorizing events
+  customConfig?: Record<string, any> | null;
 };
 
 // AUTH-009: CloudFront integration types

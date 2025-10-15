@@ -44,6 +44,7 @@ interface ExpanseEvent {
     };
     tags?: string[];
     surveyType?: string;
+    customConfig?: Record<string, any> | null;
 }
 
 const EventConverter: FirestoreDataConverter<ExpanseEvent> = {
