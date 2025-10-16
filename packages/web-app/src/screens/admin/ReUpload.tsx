@@ -191,29 +191,34 @@ const ReUpload: React.FC = () => {
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    pageSize: 50,
+    totalEvents: 0,
+    totalPages: 0
+  });
   const functions = getFunctions(firebaseApp);
 
   useEffect(() => {
     if (user) {
-      loadEvents();
+      loadEvents(currentPage);
     }
-  }, [user]);
+  }, [user, currentPage]);
 
-  const loadEvents = async () => {
+  const loadEvents = async (page: number = 1) => {
     try {
       setLoadingEvents(true);
       const getEvents = httpsCallable(functions, 'getFordLincolnEvents');
-      const result = await getEvents();
+      const result = await getEvents({ page, pageSize: 50 });
       const eventsData = (result.data as any).events || [];
-      
-      // Sort by last modified date (most recent first)
-      eventsData.sort((a: Event, b: Event) => {
-        const dateA = a.lastModified ? new Date(a.lastModified).getTime() : 0;
-        const dateB = b.lastModified ? new Date(b.lastModified).getTime() : 0;
-        return dateB - dateA;
-      });
-      
+      const paginationData = (result.data as any).pagination;
+
+      // Backend now handles sorting, so no need to sort here
       setEvents(eventsData);
+      if (paginationData) {
+        setPagination(paginationData);
+      }
     } catch (error) {
       console.error('Error loading events:', error);
     } finally {
@@ -230,7 +235,7 @@ const ReUpload: React.FC = () => {
     setModalOpen(false);
     setSelectedEvent(null);
     // Reload events to refresh survey counts
-    loadEvents();
+    loadEvents(currentPage);
   };
 
   if (loading) return <LoadingStates.Skeleton />;
@@ -325,6 +330,50 @@ const ReUpload: React.FC = () => {
                   ))}
                 </tbody>
               </table>
+
+              {/* Pagination Controls */}
+              {pagination.totalPages > 1 && (
+                <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                  <div className="text-sm text-gray-700">
+                    Showing page <span className="font-medium">{pagination.page}</span> of{' '}
+                    <span className="font-medium">{pagination.totalPages}</span> ({pagination.totalEvents} total events)
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      onClick={() => setCurrentPage(1)}
+                      variant="secondary"
+                      size="sm"
+                      disabled={currentPage === 1}
+                    >
+                      First
+                    </Button>
+                    <Button
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      variant="secondary"
+                      size="sm"
+                      disabled={currentPage === 1}
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      onClick={() => setCurrentPage(prev => Math.min(pagination.totalPages, prev + 1))}
+                      variant="secondary"
+                      size="sm"
+                      disabled={currentPage === pagination.totalPages}
+                    >
+                      Next
+                    </Button>
+                    <Button
+                      onClick={() => setCurrentPage(pagination.totalPages)}
+                      variant="secondary"
+                      size="sm"
+                      disabled={currentPage === pagination.totalPages}
+                    >
+                      Last
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -94,6 +94,7 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
             {
               type: 'firstname',
               name: 'first_name',
+              _ffs: 'firstName',
               title: 'First Name',
               isRequired: true,
               autocomplete: 'given-name'
@@ -101,6 +102,7 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
             {
               type: 'lastname',
               name: 'last_name',
+              _ffs: 'lastName',
               startWithNewLine: false,
               title: 'Last Name',
               isRequired: true,
@@ -109,12 +111,14 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
             {
               type: 'autocompleteaddress',
               name: 'address_group',
+              _ffs: 'address_group',
               title: 'Address',
               isRequired: true
             },
             {
               type: 'email',
               name: 'email',
+              _ffs: 'email',
               title: 'Email Address',
               requiredIf: '{phone} empty',
               requiredErrorText: 'Either Email Or Phone Is Required',
@@ -133,6 +137,7 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
             {
               type: 'phone',
               name: 'phone',
+              _ffs: 'phone',
               startWithNewLine: false,
               title: 'Mobile Number',
               description: 'Standard message and data rates may apply',
@@ -170,6 +175,7 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
             {
               type: 'fordrecommend',
               name: 'how_likely_recommend',
+              _ffs: 'how_likely_recommend',
               renderAs: 'radiobuttongroup',
               buttonSize: 'large',
               title:
@@ -186,6 +192,7 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
             {
               type: 'fordoptin',
               name: 'email_opt_in',
+              _ffs: 'emailOptIn',
               renderAs: 'radiobuttongroup',
               buttonSize: 'medium',
               title:
@@ -211,6 +218,7 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
             {
               type: 'gender',
               name: 'gender',
+              _ffs: 'gender',
               renderAs: 'radiobuttongroup',
               buttonSize: 'medium',
               title: 'Gender',
@@ -233,6 +241,7 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
             {
               type: 'agebracket',
               name: 'age_bracket',
+              _ffs: 'age_bracket',
               renderAs: 'radiobuttongroup',
               buttonSize: 'medium',
               title: 'May I ask your age?',
@@ -275,24 +284,24 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
               visibleIf: '{current_owner} = 1',
               title: 'Which model of Ford do you drive most often?',
               isRequired: true,
-              _ffs: 'ford_model',
+              _ffs: 'vehicle_driven_most_model_id',
               choices: [
-                'Bronco',
-                'Bronco Sport',
-                'Edge',
-                'Escape',
-                'Expedition',
-                'Explorer',
-                'F-150',
-                'F-150 Lightning',
-                'Ford GT',
-                'Maverick',
-                'Mustang',
-                'Mustang Mach-E',
-                'Ranger',
-                'Super Duty',
-                'Transit',
-                'Other'
+                { value: 3195, text: 'Bronco' },
+                { value: 4232, text: 'Bronco Sport' },
+                { value: 3323, text: 'Edge' },
+                { value: 3347, text: 'Escape' },
+                { value: 3357, text: 'Expedition' },
+                { value: 3358, text: 'Explorer' },
+                { value: 3364, text: 'F-150' },
+                { value: 3364, text: 'F-150 Lightning' },
+                { value: 3444, text: 'Ford GT' },
+                { value: 4222, text: 'Maverick' },
+                { value: 3586, text: 'Mustang' },
+                { value: 4210, text: 'Mustang Mach-E' },
+                { value: 3683, text: 'Ranger' },
+                { value: 3366, text: 'Super Duty' },
+                { value: 3845, text: 'Transit' },
+                { value: 4162, text: 'Other' }
               ]
             },
             {
@@ -315,6 +324,7 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
             {
               type: 'howlikelyacquire',
               name: 'how_likely_acquire',
+              _ffs: 'how_likely_acquire',
               renderAs: 'radiobuttongroup',
               buttonSize: 'medium',
               title: 'How do you plan to acquire your next vehicle?',
@@ -341,6 +351,7 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
             {
               type: 'inmarkettiming',
               name: 'in_market_timing',
+              _ffs: 'in_market_timing',
               renderAs: 'radiobuttongroup',
               buttonSize: 'large',
               title: 'When do you plan to acquire your next vehicle?',
@@ -356,6 +367,7 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
             {
               type: 'fordvoi',
               name: 'voi',
+              _ffs: 'voi',
               renderAs: 'voi',
               title:
                 'I am interested in learning more about the following Ford vehicles.',

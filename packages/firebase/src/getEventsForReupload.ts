@@ -9,7 +9,7 @@ import { getFirestoreDatabase } from './utils/getFirestoreDatabase';
 /**
  * Get Ford and Lincoln events with survey counts for re-upload
  */
-export const getFordLincolnEventsImpl = (app: admin.app.App, database: string = "(default)") => 
+export const getFordLincolnEventsImpl = (app: admin.app.App, database: string = "(default)") =>
   onCall({ cors: true }, async (request) => {
     try {
       // Check if user is authenticated and is an admin
@@ -22,13 +22,17 @@ export const getFordLincolnEventsImpl = (app: admin.app.App, database: string = 
         // In production, you should set admin custom claims on specific users
         console.warn('User accessing admin function without admin claim:', request.auth.uid);
       }
+
+      const { page = 1, pageSize = 50 } = request.data || {};
       const db = getFirestoreDatabase(app, database);
-      
+
       // Query events that have either fordEventID or lincolnEventID
       const eventsRef = db.collection('events');
+
+      // Get all Ford/Lincoln events (no orderBy to avoid requiring composite index)
+      // We'll handle pagination and sorting in-memory
       const snapshot = await eventsRef
         .where('brand', 'in', ['Ford', 'Lincoln'])
-        .limit(100)
         .get();
 
       const events = await Promise.all(snapshot.docs.map(async (doc: QueryDocumentSnapshot) => {
@@ -64,7 +68,28 @@ export const getFordLincolnEventsImpl = (app: admin.app.App, database: string = 
         (event.brand === 'Lincoln' && event.lincolnEventID)
       );
 
-      return { success: true, events: validEvents };
+      // Sort by last modified date (most recent first)
+      validEvents.sort((a, b) => {
+        const dateA = a.lastModified ? new Date(a.lastModified).getTime() : 0;
+        const dateB = b.lastModified ? new Date(b.lastModified).getTime() : 0;
+        return dateB - dateA;
+      });
+
+      // Apply pagination
+      const startIndex = (page - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedEvents = validEvents.slice(startIndex, endIndex);
+
+      return {
+        success: true,
+        events: paginatedEvents,
+        pagination: {
+          page,
+          pageSize,
+          totalEvents: validEvents.length,
+          totalPages: Math.ceil(validEvents.length / pageSize)
+        }
+      };
     } catch (error) {
       console.error('Error fetching Ford/Lincoln events:', error);
       throw new Error(error instanceof Error ? error.message : 'Failed to fetch events');

@@ -123,9 +123,13 @@ async function uploadToFordAPI(
   // Map survey data to Ford format
   const fordSurvey = mapToFordPayload(surveyModel, surveyData, event);
   console.log('[Ford Upload] Mapped survey data:', JSON.stringify(fordSurvey, null, 2));
-  
+
+  // Remove event_id from surveyData to prevent overwriting the correctly mapped Ford event ID
+  const { event_id: _, ...surveyDataWithoutEventId } = surveyData as Record<string, unknown>;
+
   // Merge fordSurvey with surveyData to ensure all expected fields are present
-  const mergedSurveyData: Record<string, unknown> = { ...fordSurvey, ...surveyData };
+  // IMPORTANT: surveyData comes last to preserve actual survey values, but we removed event_id above
+  const mergedSurveyData: Record<string, unknown> = { ...fordSurvey, ...surveyDataWithoutEventId };
   
   // Ensure microsite_email_template is present (even if null)
   if (!mergedSurveyData.microsite_email_template) {
@@ -194,10 +198,14 @@ async function uploadToLincolnAPI(
   // Map survey data to Lincoln format
   const lincolnSurvey = mapToLincolnPayload(surveyModel, surveyData, event);
   console.log('[Lincoln Upload] Mapped survey data:', JSON.stringify(lincolnSurvey, null, 2));
-  
+
+  // Remove event_id from surveyData to prevent overwriting the correctly mapped Lincoln event ID
+  const { event_id: _, ...surveyDataWithoutEventId } = surveyData as Record<string, unknown>;
+
   // Merge lincolnSurvey with surveyData to ensure all expected fields are present
+  // IMPORTANT: surveyData comes last to preserve actual survey values, but we removed event_id above
   // IMPORTANT: lincolnSurvey already has pre_drive_survey_guid set to null from createDefaultLincolnPayload()
-  const mergedLincolnSurveyData: Record<string, unknown> = { ...lincolnSurvey, ...surveyData };
+  const mergedLincolnSurveyData: Record<string, unknown> = { ...lincolnSurvey, ...surveyDataWithoutEventId };
   
   // Ensure microsite_email_template is present (even if null)
   if (!mergedLincolnSurveyData.microsite_email_template) {
