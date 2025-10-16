@@ -5,6 +5,9 @@ export default {
     name: IS_STAGING ? "Meridian Events (Staging)" : "Meridian Events",
     slug: "meridian-events",
     version: "1.0.0",
+    runtimeVersion: {
+      policy: "appVersion"
+    },
     icon: "./assets/icon.png",
     userInterfaceStyle: "light",
     splash: {
@@ -13,6 +16,7 @@ export default {
       backgroundColor: "#ffffff"
     },
     updates: {
+      url: "https://u.expo.dev/8c91d982-ab7b-48a5-81ef-6ef7c316b876",
       fallbackToCacheTimeout: 0
     },
     assetBundlePatterns: [
@@ -20,7 +24,7 @@ export default {
     ],
     ios: {
       supportsTablet: true,
-      bundleIdentifier: IS_STAGING ? "com.meridianeventtech.surveyjs.staging" : "com.meridianeventtech.surveyjs",
+      bundleIdentifier: IS_STAGING ? "com.meridianeventtech.app.staging" : "com.meridianeventtech.app",
       buildNumber: "1",
       icon: "./assets/icon.png",
       googleServicesFile: IS_STAGING ? "./GoogleService-Info-Staging.plist" : "./GoogleService-Info.plist",
@@ -68,6 +72,7 @@ export default {
     scheme: "meridian-events",
     plugins: [
       "expo-router",
+      "expo-updates",
       "@react-native-firebase/app",
       "@react-native-firebase/auth",
       [
@@ -119,7 +124,7 @@ export default {
         origin: false
       },
       eas: {
-        projectId: "your-project-id"
+        projectId: "8c91d982-ab7b-48a5-81ef-6ef7c316b876"
       },
       NODE_ENV: IS_STAGING ? "staging" : "production",
       EXPO_PUBLIC_API_URL: IS_STAGING ? "https://staging-api.meridianeventtech.com" : "https://api.meridianeventtech.com",

@@ -62,9 +62,9 @@ function AuthenticatedLayout() {
           }
         }} 
       />
-      <Stack.Screen 
-        name="index" 
-        options={{ 
+      <Stack.Screen
+        name="index"
+        options={{
           title: "Meridian Events",
           headerShown: true,
           headerTintColor: "#257180",
@@ -73,10 +73,10 @@ function AuthenticatedLayout() {
           },
           headerRight: () => (
             <TouchableOpacity onPress={handleSignOut} style={{ marginRight: 16 }}>
-              <Text style={{ color: '#257180', fontSize: 16, fontWeight: '600' }}>Sign Out</Text>
+              <Text style={{ color: '#007AFF', fontSize: 17, fontWeight: '400' }}>Sign Out</Text>
             </TouchableOpacity>
           ),
-        }} 
+        }}
       />
       <Stack.Screen 
         name="event/[id]" 

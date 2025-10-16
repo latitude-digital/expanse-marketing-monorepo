@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Text, ActivityIndicator, TouchableOpacity, Alert, Platform } from 'react-native';
 import { useNavigation } from 'expo-router';
 import EventListScreen from '../src/screens/EventListScreen';
 import { useAuth } from '../src/contexts/AuthContext';
@@ -9,9 +9,25 @@ import { AssetCacheService } from '../src/services/asset-cache';
 import { eventsService } from '../src/services/firestore';
 import { offlineDetector } from '../src/utils/offline-detector';
 
+// DEBUG: Expose offline toggle to global for testing
+(global as any).toggleOfflineMode = (forceOffline?: boolean) => {
+  offlineDetector.debugForceOffline = forceOffline ?? !offlineDetector.debugForceOffline;
+  console.log(
+    offlineDetector.debugForceOffline
+      ? '🔴 [DEBUG] Offline mode ENABLED - app will behave as if offline'
+      : '🟢 [DEBUG] Offline mode DISABLED - app will use real network'
+  );
+  return offlineDetector.debugForceOffline;
+};
+
 export default function EventListPage() {
   const navigation = useNavigation();
   const { currentUser } = useAuth();
+
+  // DEBUG: Log offline mode helper on mount
+  useEffect(() => {
+    console.log('💡 [DEBUG] To test offline mode, open debugger and run: toggleOfflineMode()');
+  }, []);
 
   const [events, setEvents] = useState<CachedMeridianEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,16 +64,39 @@ export default function EventListPage() {
 
   useEffect(() => {
     let isMounted = true;
+    let retryCount = 0;
+    const MAX_RETRIES = 20;
+    const RETRY_DELAY = 1000; // ms
 
-    AssetCacheService.getInstance()
-      .then((service) => {
-        if (isMounted) {
-          setAssetCache(service);
+    const initAssetCache = async () => {
+      while (isMounted && retryCount < MAX_RETRIES) {
+        try {
+          const service = await AssetCacheService.getInstance();
+          if (isMounted) {
+            console.log('[EventList] ✅ Asset cache initialized successfully');
+            setAssetCache(service);
+          }
+          return;
+        } catch (error: any) {
+          retryCount++;
+          if (error?.message?.includes('FileSystem directories unavailable')) {
+            // FileSystem not ready yet, retry after delay
+            console.log(`[EventList] ⏳ FileSystem not ready, retrying (${retryCount}/${MAX_RETRIES})...`);
+            await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+          } else {
+            // Different error, don't retry
+            console.error('[EventList] ❌ Asset cache initialization failed:', error);
+            return;
+          }
         }
-      })
-      .catch((error) => {
-        console.error('[EventList] Asset cache initialization failed:', error);
-      });
+      }
+
+      if (isMounted && retryCount >= MAX_RETRIES) {
+        console.error('[EventList] ❌ Asset cache initialization failed after', MAX_RETRIES, 'retries');
+      }
+    };
+
+    initAssetCache();
 
     return () => {
       isMounted = false;
@@ -157,6 +196,7 @@ export default function EventListPage() {
 
   const handleRefresh = useCallback(async () => {
     if (!dbReady || !assetCache) {
+      Alert.alert('Not Ready', 'Please wait for the app to finish initializing.', [{ text: 'OK' }]);
       return;
     }
 
@@ -164,6 +204,11 @@ export default function EventListPage() {
       console.log('[EventList] Refresh requested while offline, using cached events');
       const cached = await eventCache.getCachedEvents();
       setEvents(cached);
+      Alert.alert(
+        'Offline Mode',
+        `Loaded ${cached.length} cached event${cached.length !== 1 ? 's' : ''}.`,
+        [{ text: 'OK' }]
+      );
       return;
     }
 
@@ -172,28 +217,96 @@ export default function EventListPage() {
       const refreshed = await fetchAndCacheEvents();
       if (refreshed.length) {
         setEvents(refreshed);
+        Alert.alert(
+          'Events Refreshed',
+          `Successfully loaded ${refreshed.length} event${refreshed.length !== 1 ? 's' : ''}.`,
+          [{ text: 'OK' }]
+        );
       } else {
         const cached = await eventCache.getCachedEvents();
         setEvents(cached);
+        Alert.alert(
+          'Refresh Complete',
+          `No new events found. Showing ${cached.length} cached event${cached.length !== 1 ? 's' : ''}.`,
+          [{ text: 'OK' }]
+        );
       }
     } catch (error) {
       console.error('[EventList] Manual refresh failed:', error);
+      Alert.alert(
+        'Refresh Failed',
+        'Unable to refresh events. Please try again.',
+        [{ text: 'OK' }]
+      );
     } finally {
       setLoading(false);
     }
   }, [assetCache, dbReady, eventCache, fetchAndCacheEvents]);
+
+  const handleLongPressClearCache = useCallback(async () => {
+    console.log('[EventList] 🔔 Long press detected on Refresh Events button');
+
+    if (!assetCache) {
+      console.log('[EventList] ⚠️ Asset cache not initialized yet');
+      return;
+    }
+
+    try {
+      const stats = await assetCache.getCacheStats();
+      const sizeInMB = (stats.totalSize / (1024 * 1024)).toFixed(2);
+
+      Alert.alert(
+        'Clear Asset Cache',
+        `Clear all cached assets?\n\n${stats.assetCount} assets cached (${sizeInMB} MB)\n\nThis will delete all downloaded fonts, images, and other assets. They will be re-downloaded when needed.`,
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Clear Cache',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await assetCache.clearCache();
+                Alert.alert(
+                  'Cache Cleared',
+                  `Successfully cleared ${stats.assetCount} cached assets.`,
+                  [{ text: 'OK' }]
+                );
+              } catch (error) {
+                console.error('[EventList] Failed to clear cache:', error);
+                Alert.alert(
+                  'Error',
+                  'Failed to clear cache. Please try again.',
+                  [{ text: 'OK' }]
+                );
+              }
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      console.error('[EventList] Failed to get cache stats:', error);
+      Alert.alert(
+        'Error',
+        'Failed to retrieve cache information.',
+        [{ text: 'OK' }]
+      );
+    }
+  }, [assetCache]);
 
   useEffect(() => {
     navigation.setOptions({
       headerLeft: () => (
         <TouchableOpacity
           onPress={handleRefresh}
-          style={[
-            styles.headerRefreshButton,
-            loading && styles.headerRefreshButtonDisabled,
-          ]}
+          onLongPress={handleLongPressClearCache}
           disabled={loading}
+          activeOpacity={0.6}
+          style={{ marginLeft: 16 }}
           accessibilityRole="button"
+          accessibilityHint="Tap to refresh events, long press to clear asset cache"
         >
           <Text
             style={[
@@ -205,8 +318,11 @@ export default function EventListPage() {
           </Text>
         </TouchableOpacity>
       ),
+      headerLeftContainerStyle: {
+        paddingLeft: 0,
+      },
     });
-  }, [navigation, handleRefresh, loading]);
+  }, [navigation, handleRefresh, handleLongPressClearCache, loading]);
 
   if (loading) {
     return (
@@ -239,23 +355,13 @@ const styles = StyleSheet.create({
     color: '#666666',
     marginTop: 16,
   },
-  headerRefreshButton: {
-    marginLeft: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#257180',
-  },
-  headerRefreshButtonDisabled: {
-    borderColor: '#9EB1B7',
-  },
   headerRefreshText: {
-    color: '#257180',
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#007AFF', // iOS system blue
+    fontSize: 17, // iOS standard navigation button size
+    fontWeight: '400', // iOS standard weight for nav buttons
+    textAlign: 'center', // Center text within pill
   },
   headerRefreshTextDisabled: {
-    color: '#9EB1B7',
+    color: '#8E8E93', // iOS system gray
   },
 });

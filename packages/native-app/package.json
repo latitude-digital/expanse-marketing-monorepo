@@ -47,6 +47,7 @@
     "expo-splash-screen": "~31.0.10",
     "expo-sqlite": "~16.0.8",
     "expo-status-bar": "~3.0.8",
+    "expo-updates": "~29.0.12",
     "expo-web-browser": "~15.0.8",
     "jest-expo": "~54.0.12",
     "nativewind": "^4.1.23",
