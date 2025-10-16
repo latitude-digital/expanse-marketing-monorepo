@@ -2,6 +2,10 @@ import { DatabaseService } from './database';
 import { DatabaseOperations } from './database-operations';
 import type { MeridianEvent as ExpanseEvent } from '@meridian-event-tech/shared/types';
 
+export type CachedMeridianEvent = ExpanseEvent & {
+  assetMap?: Record<string, string>;
+};
+
 export class EventCacheService {
   private dbService: DatabaseService;
   private operations: DatabaseOperations | null = null;
@@ -17,7 +21,7 @@ export class EventCacheService {
     return this.operations;
   }
 
-  async cacheEvent(event: ExpanseEvent): Promise<void> {
+  async cacheEvent(event: CachedMeridianEvent): Promise<void> {
     const ops = await this.getOperations();
     await ops.createEvent({
       id: event.id,
@@ -27,7 +31,7 @@ export class EventCacheService {
     });
   }
 
-  async getCachedEvents(brand?: string): Promise<ExpanseEvent[]> {
+  async getCachedEvents(brand?: string): Promise<CachedMeridianEvent[]> {
     const ops = await this.getOperations();
     const cachedEvents = brand 
       ? await ops.getEventsByBrand(brand)
@@ -37,10 +41,10 @@ export class EventCacheService {
           )
         );
 
-    return cachedEvents.map(cached => JSON.parse(cached.config) as ExpanseEvent);
+    return cachedEvents.map((cached) => this.hydrateEvent(JSON.parse(cached.config)));
   }
 
-  async updateEventCache(eventId: string, event: ExpanseEvent): Promise<void> {
+  async updateEventCache(eventId: string, event: CachedMeridianEvent): Promise<void> {
     const ops = await this.getOperations();
     await ops.updateEvent(eventId, {
       config: JSON.stringify(event),
@@ -67,5 +71,39 @@ export class EventCacheService {
     
     const latestCache = (result[0] as any)?.latest || 0;
     return Date.now() - latestCache > maxAgeMs;
+  }
+
+  private hydrateEvent(raw: any): CachedMeridianEvent {
+    const event = raw as CachedMeridianEvent;
+
+    const toDate = (value: any): Date | undefined => {
+      if (!value) return undefined;
+      if (value instanceof Date) return value;
+      const parsed = new Date(value);
+      return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+    };
+
+    event.startDate = toDate(event.startDate) || new Date();
+    event.endDate = toDate(event.endDate) || new Date();
+
+    if (event.preRegDate) {
+      event.preRegDate = toDate(event.preRegDate);
+    }
+    if (event.surveyJSTheme && typeof event.surveyJSTheme === 'string') {
+      try {
+        event.surveyJSTheme = JSON.parse(event.surveyJSTheme);
+      } catch (error) {
+        // ignore invalid JSON, leave string representation
+      }
+    }
+    if (event.theme && typeof event.theme === 'string') {
+      try {
+        event.theme = JSON.parse(event.theme);
+      } catch (error) {
+        // ignore
+      }
+    }
+
+    return event;
   }
 }

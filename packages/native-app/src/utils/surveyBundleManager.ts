@@ -9,6 +9,9 @@
 import { Paths, File, Directory } from 'expo-file-system/next';
 import { Asset } from 'expo-asset';
 import * as Crypto from 'expo-crypto';
+import { AssetCacheService } from '../services/asset-cache';
+
+const UTF8_ENCODING = 'utf8' as const;
 
 const SURVEY_DIR_NAME = 'survey';
 const SURVEY_FILE_NAME = 'index.html';
@@ -74,11 +77,31 @@ export async function ensureSurveyBundle(): Promise<string> {
     }
 
     // Write HTML and hash if needed
-    if (needsWrite) {
+    let htmlForWrite = surveyHTML;
+    try {
+      const assetCache = await AssetCacheService.getInstance();
+      const { html: htmlWithCachedAssets } = await assetCache.prefetchAssetsFromHtml(surveyHTML);
+      htmlForWrite = htmlWithCachedAssets;
+    } catch (error) {
+      console.warn('[SurveyBundleManager] Failed to prefetch survey assets:', error);
+    }
+
+    let shouldWrite = needsWrite;
+
+    if (!shouldWrite) {
+      try {
+        const existingContent = await surveyFile.text();
+        shouldWrite = existingContent !== htmlForWrite;
+      } catch (error) {
+        shouldWrite = true;
+      }
+    }
+
+    if (shouldWrite) {
       console.log('[SurveyBundleManager] Writing survey HTML to filesystem as .html...');
 
-      await surveyFile.write(surveyHTML);
-      await hashFile.write(hash);
+      await surveyFile.write(htmlForWrite, { encoding: UTF8_ENCODING });
+      await hashFile.write(hash, { encoding: UTF8_ENCODING });
 
       console.log('[SurveyBundleManager] ✅ Survey bundle written to filesystem');
     }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,8 @@ import { OfflineSurveyWebView, SurveyCompletionData } from '../components/Offlin
 import { themeProvider } from '../utils/theme-provider';
 import { offlineDetector } from '../utils/offline-detector';
 import { DatabaseService } from '../services/database';
+import { replaceAssetUrlsInValue } from '../utils/asset-urls';
+import type { CachedMeridianEvent } from '../services/event-cache';
 
 interface SurveyScreenProps {
   event?: ExpanseEvent;
@@ -49,6 +51,40 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
   // Get event from route params if not provided via props
   const eventFromRoute = (route.params as any)?.event;
   const displayEvent = event || eventFromRoute;
+  const assetMap = useMemo(() => {
+    if (!displayEvent) {
+      return {};
+    }
+    const map = (displayEvent as CachedMeridianEvent | undefined)?.assetMap;
+    if (!map) {
+      return {};
+    }
+    return map;
+  }, [displayEvent]);
+
+  const preparedEvent = useMemo(() => {
+    if (!displayEvent) {
+      return undefined;
+    }
+
+    const entries = Object.entries(assetMap);
+    if (!entries.length) {
+      return displayEvent;
+    }
+
+    return {
+      ...displayEvent,
+      questions: replaceAssetUrlsInValue(displayEvent.questions, assetMap),
+      surveyJSON: replaceAssetUrlsInValue(displayEvent.surveyJSON, assetMap),
+      surveyJSModel: replaceAssetUrlsInValue(displayEvent.surveyJSModel, assetMap),
+      theme: replaceAssetUrlsInValue(displayEvent.theme, assetMap),
+      surveyJSTheme: replaceAssetUrlsInValue(displayEvent.surveyJSTheme, assetMap),
+      customConfig: replaceAssetUrlsInValue(displayEvent.customConfig, assetMap),
+      thanks: replaceAssetUrlsInValue(displayEvent.thanks, assetMap),
+    } as ExpanseEvent;
+  }, [displayEvent, assetMap]);
+
+  const surveyEvent = preparedEvent || displayEvent;
 
   useEffect(() => {
     // Subscribe to connectivity changes
@@ -61,10 +97,19 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
 
   useEffect(() => {
     // Set theme based on event brand
-    if (displayEvent?.brand) {
-      themeProvider.setTheme(displayEvent.brand);
+    if (surveyEvent?.brand) {
+      themeProvider.setTheme(surveyEvent.brand);
     }
-  }, [displayEvent?.brand]);
+  }, [surveyEvent?.brand]);
+
+  if (!surveyEvent) {
+    return (
+      <SafeAreaView style={styles.loadingFallback}>
+        <ActivityIndicator size="large" color="#257180" />
+        <Text style={styles.loadingFallbackText}>Preparing survey...</Text>
+      </SafeAreaView>
+    );
+  }
 
   /**
    * Handle hardware back button on Android and navigation back
@@ -94,6 +139,20 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
 
     setShowExitConfirm(true);
   }, [showCompletionScreen]);
+
+  /**
+   * Exit survey and return to previous screen
+   */
+  const handleExitSurvey = useCallback(() => {
+    setSurveyData(null);
+    setShowCompletionScreen(false);
+
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.navigate('EventList' as never);
+    }
+  }, [navigation]);
 
   /**
    * Handle survey completion
@@ -164,11 +223,11 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
       'Survey Error',
       `An error occurred while loading the survey: ${error.message}`,
       [
-        { text: 'Retry', onPress: () => (navigation as any).replace('Survey', { event: displayEvent }) },
+        { text: 'Retry', onPress: () => (navigation as any).replace('Survey', { event: surveyEvent }) },
         { text: 'Exit', onPress: handleExitSurvey }
       ]
     );
-  }, [displayEvent]);
+  }, [navigation, surveyEvent, handleExitSurvey]);
 
   /**
    * Handle confirmed exit
@@ -176,12 +235,12 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
   const handleConfirmedExit = useCallback(() => {
     setShowExitConfirm(false);
     
-    if (onSurveyAbandoned && displayEvent) {
-      onSurveyAbandoned(displayEvent);
+    if (onSurveyAbandoned && surveyEvent) {
+      onSurveyAbandoned(surveyEvent);
     }
     
     handleExitSurvey();
-  }, [displayEvent, onSurveyAbandoned]);
+  }, [surveyEvent, onSurveyAbandoned, handleExitSurvey]);
 
   /**
    * Handle cancel exit
@@ -189,22 +248,6 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
   const handleCancelExit = useCallback(() => {
     setShowExitConfirm(false);
   }, []);
-
-  /**
-   * Exit survey and return to previous screen
-   */
-  const handleExitSurvey = useCallback(() => {
-    // Clear any stored survey state to ensure privacy
-    setSurveyData(null);
-    setShowCompletionScreen(false);
-    
-    // Navigate back to event list or home
-    if (navigation.canGoBack()) {
-      navigation.goBack();
-    } else {
-      navigation.navigate('EventList' as never);
-    }
-  }, [navigation]);
 
   /**
    * Calculate survey duration
@@ -216,21 +259,7 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }, [surveyStartTime]);
 
-  if (!displayEvent) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorTitle}>Event Not Found</Text>
-          <Text style={styles.errorText}>Unable to load survey event.</Text>
-          <TouchableOpacity style={styles.exitButton} onPress={handleExitSurvey}>
-            <Text style={styles.exitButtonText}>Go Back</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  const brandColor = themeProvider.getBrandPrimaryColor(displayEvent.brand || 'Other');
+  const brandColor = themeProvider.getBrandPrimaryColor(surveyEvent?.brand || 'Other');
 
   return (
     <SafeAreaView style={styles.container}>
@@ -238,7 +267,7 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
       <View style={[styles.header, { borderBottomColor: brandColor }]}>
         <View style={styles.headerContent}>
           <Text style={styles.eventTitle} numberOfLines={1}>
-            {displayEvent.eventName || 'Survey'}
+            {surveyEvent?.eventName || surveyEvent?.name || 'Survey'}
           </Text>
           <View style={styles.headerActions}>
             <View style={styles.statusIndicator}>
@@ -272,7 +301,7 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
           </View>
         ) : (
           <OfflineSurveyWebView
-            event={displayEvent}
+            event={surveyEvent}
             existingAnswers={initialAnswers}
             onSurveyComplete={handleSurveyComplete}
             onSurveyError={handleSurveyError}
@@ -368,6 +397,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+  },
+  loadingFallback: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingFallbackText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#666666',
   },
   header: {
     backgroundColor: '#FFFFFF',

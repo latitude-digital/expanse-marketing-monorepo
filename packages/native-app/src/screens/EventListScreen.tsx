@@ -14,8 +14,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import type { MeridianEvent as ExpanseEvent, Brand } from '@meridian-event-tech/shared/types';
 import Icon from '../components/Icon';
+import type { CachedMeridianEvent } from '../services/event-cache';
 
 export type EventFilter = 'today' | 'upcoming' | 'past' | 'all';
 
@@ -28,11 +28,11 @@ interface User {
 }
 
 interface EventListScreenProps {
-  events?: ExpanseEvent[];
+  events?: CachedMeridianEvent[];
   loading?: boolean;
   currentUser?: User;
   onRefresh?: () => Promise<void>;
-  onEventPress?: (event: ExpanseEvent) => void;
+  onEventPress?: (event: CachedMeridianEvent) => void;
 }
 
 const EventListScreen: React.FC<EventListScreenProps> = ({
@@ -70,7 +70,7 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
     }
   }, [onRefresh]);
 
-  const filterEvents = useCallback((events: ExpanseEvent[], filter: EventFilter, searchTerm: string): ExpanseEvent[] => {
+  const filterEvents = useCallback((events: CachedMeridianEvent[], filter: EventFilter, searchTerm: string): CachedMeridianEvent[] => {
     const now = new Date();
     const nowTime = now.getTime();
 
@@ -121,7 +121,7 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
 
   const filteredEvents = filterEvents(events, filter, searchTerm);
 
-  const handleEventPress = useCallback((event: ExpanseEvent) => {
+  const handleEventPress = useCallback((event: CachedMeridianEvent) => {
     if (onEventPress) {
       onEventPress(event);
     } else {
@@ -130,7 +130,7 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
     }
   }, [onEventPress]);
 
-  const getBrandColor = (brand?: Brand): string => {
+  const getBrandColor = (brand?: string): string => {
     switch (brand?.toLowerCase()) {
       case 'ford': return '#257180';
       case 'lincoln': return '#8B1538';
@@ -138,7 +138,7 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
     }
   };
 
-  const getBrandDisplay = (event: ExpanseEvent) => {
+  const getBrandDisplay = (event: CachedMeridianEvent) => {
     // Simple brand normalization
     if (!event.brand) return 'Other';
     return event.brand;
@@ -162,7 +162,7 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
     </TouchableOpacity>
   );
 
-  const handleSurveyPress = (event: ExpanseEvent) => {
+  const handleSurveyPress = (event: CachedMeridianEvent) => {
     if (onEventPress) {
       onEventPress(event);
     } else {
@@ -177,7 +177,7 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
     }
   };
 
-  const handleScanPress = (event: ExpanseEvent) => {
+  const handleScanPress = (event: CachedMeridianEvent) => {
     if (onEventPress) {
       onEventPress(event);
       return;
@@ -192,17 +192,17 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
     });
   };
 
-  const handleCheckInPress = (event: ExpanseEvent) => {
+  const handleCheckInPress = (event: CachedMeridianEvent) => {
     const url = `/s/${event.subdomain || event.id}/in`;
     Linking.openURL(url);
   };
 
-  const handleCheckOutPress = (event: ExpanseEvent) => {
+  const handleCheckOutPress = (event: CachedMeridianEvent) => {
     const url = `/s/${event.subdomain || event.id}/out`;
     Linking.openURL(url);
   };
 
-  const renderEventItem = ({ item: event }: { item: ExpanseEvent }) => (
+  const renderEventItem = ({ item: event }: { item: CachedMeridianEvent }) => (
     <View style={styles.eventCard}>
       <View style={styles.eventContent}>
         <Text style={styles.eventTitle}>{event.name || 'Unnamed Event'}</Text>
