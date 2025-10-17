@@ -103,16 +103,8 @@ SurveyCore.setLicenseKey(
     "NDBhNThlYzYtN2EwMy00ZTgxLWIyNGQtOGFkZGJkM2NlNjI3OzE9MjAyNS0wMS0wNA=="
 );
 
-// fix the phone format
-const formatPhone = (value: string): string => {
-    if (value?.length !== 10) {
-        return value;
-    }
-    const areaCode = value.substring(0, 3);
-    const centralOfficeCode = value.substring(3, 6);
-    const lineNumber = value.substring(6, 10);
-    return `${areaCode}-${centralOfficeCode}-${lineNumber}`;
-};
+// Import phone utilities
+import { cleanPhoneNumber, isPhoneField, validateInternationalPhoneForSurveyJS } from '../utils/surveyUtilities';
 
 function validateEmail(this: any, params: any[]): void {
     const [email] = params as [string];
@@ -161,6 +153,7 @@ function validateEmail(this: any, params: any[]): void {
 }
 
 FunctionFactory.Instance.register("validateEmail", validateEmail, true);
+FunctionFactory.Instance.register("validateInternationalPhone", validateInternationalPhoneForSurveyJS, true);
 
 const SurveyComponent: React.FC = () => {
     const params = useParams<{ eventID: string }>();
@@ -751,7 +744,17 @@ ${minorWaiverText}
                         options.showDataSaving('Saving, please wait...');
                         survey.setValue('end_time', new Date());
 
-                        survey.setValue("phone", formatPhone(survey.getValue("phone")));
+                        // Clean phone numbers - remove all formatting characters
+                        survey.getAllQuestions().forEach((question: any) => {
+                            const questionName = question.name || '';
+                            const questionTitle = question.title || '';
+                            if (isPhoneField(questionName) || isPhoneField(questionTitle)) {
+                                const phoneValue = survey.getValue(question.name);
+                                if (phoneValue) {
+                                    survey.setValue(question.name, cleanPhoneNumber(phoneValue));
+                                }
+                            }
+                        });
 
                         const optInArray = res.data.optin_ids?.split(',') || [];
                         console.log('res.data.optin_ids', res.data.optin_ids);

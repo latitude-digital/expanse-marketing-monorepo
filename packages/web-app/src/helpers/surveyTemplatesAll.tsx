@@ -132,6 +132,7 @@ export const initCreator = (creator: SurveyCreatorModel) => {
     { name: "autocompleteaddress2", category: "__00pii" },
     { name: "autocompleteaddresscan", category: "__00pii" },
     { name: "autocompleteaddressall", category: "__00pii" },
+    { name: "autocompleteaddress-intl", category: "__00pii" },
     { name: "firstname", category: "__00pii" },
     { name: "lastname", category: "__00pii" },
     { name: "email", category: "__00pii" },
@@ -230,7 +231,7 @@ export const prepareSurveyOnQuestionAdded = (
     if (parentQuestion) {
       if (parentQuestion.getType() === "autocompleteaddresscan") {
         countryRestrictions = { country: ["ca"] };
-      } else if (parentQuestion.getType() === "autocompleteaddressall") {
+      } else if (parentQuestion.getType() === "autocompleteaddressall" || parentQuestion.getType() === "autocompleteaddress-intl") {
         countryRestrictions = { country: null }; // No restrictions
       }
     } else {
@@ -403,6 +404,13 @@ export const prepareCreatorOnQuestionAdded = (
 
   if (options.question.getType() === "autocompleteaddressall") {
     console.log("autocompleteaddressall question added");
+    options.question.name = "address_group";
+    options.question._ffs = "address_group";
+    options.question.titleLocation = "hidden";
+  }
+
+  if (options.question.getType() === "autocompleteaddress-intl") {
+    console.log("autocompleteaddress-intl question added");
     options.question.name = "address_group";
     options.question._ffs = "address_group";
     options.question.titleLocation = "hidden";

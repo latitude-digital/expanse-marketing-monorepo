@@ -3,7 +3,7 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { useAuth } from '../contexts/AuthContext';
-import { useRouter } from 'expo-router';
+import { useDebounceNavigation } from '../hooks/useDebounceNavigation';
 import MeridianLogo from '../../assets/meridian-logo.svg';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -26,8 +26,8 @@ interface LoginFormData {
 export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useAuth();
-  const router = useRouter();
-  
+  const { navigate } = useDebounceNavigation();
+
   const {
     control,
     handleSubmit,
@@ -49,10 +49,6 @@ export default function LoginScreen() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleForgotPassword = () => {
-    router.push('/forgot-password');
   };
 
   return (
@@ -152,15 +148,18 @@ export default function LoginScreen() {
 
             {/* Forgot Password Link with more spacing */}
             <View className="flex-row justify-end mb-6">
-              <TouchableOpacity onPress={handleForgotPassword} disabled={isLoading}>
+              <Pressable
+                disabled={isLoading}
+                onPress={() => navigate('/forgot-password')}
+              >
                 <Text className="text-sm font-semibold text-meridian-primary">
                   Forgot password?
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
 
             {/* Submit Button with more spacing */}
-            <TouchableOpacity
+            <Pressable
               className={`w-full py-3 rounded-lg ${
                 isLoading
                   ? 'bg-gray-300'
@@ -176,7 +175,7 @@ export default function LoginScreen() {
                   Sign In
                 </Text>
               )}
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </ScrollView>

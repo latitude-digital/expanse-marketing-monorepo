@@ -9,7 +9,8 @@
 import { Paths, File, Directory } from 'expo-file-system/next';
 import { Asset } from 'expo-asset';
 import * as Crypto from 'expo-crypto';
-import { AssetCacheService } from '../services/asset-cache';
+// COMMENTED OUT - Asset caching disabled
+// import { AssetCacheService } from '../services/asset-cache';
 
 const UTF8_ENCODING = 'utf8' as const;
 
@@ -77,6 +78,8 @@ export async function ensureSurveyBundle(): Promise<string> {
     }
 
     // Write HTML and hash if needed
+    // COMMENTED OUT - Asset caching disabled
+    /*
     let htmlForWrite = surveyHTML;
     try {
       const assetCache = await AssetCacheService.getInstance();
@@ -96,11 +99,12 @@ export async function ensureSurveyBundle(): Promise<string> {
         shouldWrite = true;
       }
     }
+    */
 
-    if (shouldWrite) {
+    if (needsWrite) {
       console.log('[SurveyBundleManager] Writing survey HTML to filesystem as .html...');
 
-      await surveyFile.write(htmlForWrite, { encoding: UTF8_ENCODING });
+      await surveyFile.write(surveyHTML, { encoding: UTF8_ENCODING });
       await hashFile.write(hash, { encoding: UTF8_ENCODING });
 
       console.log('[SurveyBundleManager] ✅ Survey bundle written to filesystem');

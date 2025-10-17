@@ -72,7 +72,7 @@ function AuthenticatedLayout() {
             backgroundColor: '#F8F9FA',
           },
           headerRight: () => (
-            <TouchableOpacity onPress={handleSignOut} style={{ marginRight: 16 }}>
+            <TouchableOpacity onPress={handleSignOut}>
               <Text style={{ color: '#007AFF', fontSize: 17, fontWeight: '400' }}>Sign Out</Text>
             </TouchableOpacity>
           ),

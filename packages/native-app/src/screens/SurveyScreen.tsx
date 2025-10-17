@@ -11,12 +11,15 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
+import { router, useLocalSearchParams } from 'expo-router';
 import type { MeridianEvent as ExpanseEvent } from '@meridian-event-tech/shared/types';
 import { OfflineSurveyWebView, SurveyCompletionData } from '../components/OfflineSurveyWebView';
 import { themeProvider } from '../utils/theme-provider';
 import { offlineDetector } from '../utils/offline-detector';
 import { DatabaseService } from '../services/database';
-import { replaceAssetUrlsInValue } from '../utils/asset-urls';
+import { surveySyncService } from '../services/survey-sync';
+// COMMENTED OUT - Asset caching disabled
+// import { replaceAssetUrlsInValue } from '../utils/asset-urls';
 import type { CachedMeridianEvent } from '../services/event-cache';
 
 interface SurveyScreenProps {
@@ -42,15 +45,22 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
 }) => {
   const navigation = useNavigation();
   const route = useRoute();
+  const params = useLocalSearchParams();
   const [showExitConfirm, setShowExitConfirm] = useState(false);
-  const [surveyStartTime] = useState(Date.now());
   const [isOnline, setIsOnline] = useState(offlineDetector.isOnline());
-  const [surveyData, setSurveyData] = useState<SurveyCompletionData | null>(null);
-  const [showCompletionScreen, setShowCompletionScreen] = useState(false);
+
+  // Extract route params for activation pre-fill
+  const preFillDataParam = params.preFillData as string | undefined;
+  const originalActivationPathParam = params.originalActivationPath as string | undefined;
+  const scanValueParam = params.scanValue as string | undefined;
+  const scanTimeParam = params.scanTime as string | undefined;
 
   // Get event from route params if not provided via props
   const eventFromRoute = (route.params as any)?.event;
   const displayEvent = event || eventFromRoute;
+
+  // COMMENTED OUT - Asset caching disabled
+  /*
   const assetMap = useMemo(() => {
     if (!displayEvent) {
       return {};
@@ -85,6 +95,52 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
   }, [displayEvent, assetMap]);
 
   const surveyEvent = preparedEvent || displayEvent;
+  */
+
+  const surveyEvent = displayEvent;
+
+  // Parse pre-fill data from activation survey if present
+  const preFillAnswers = useMemo(() => {
+    if (preFillDataParam && typeof preFillDataParam === 'string') {
+      try {
+        const parsed = JSON.parse(preFillDataParam);
+        console.log('[ACTIVATIONS] 🔄 Activation pre-fill data received');
+        console.log('[ACTIVATIONS] 📋 Number of fields being pre-filled:', Object.keys(parsed).length);
+        console.log('[ACTIVATIONS] 🔑 Pre-fill field keys:', Object.keys(parsed).join(', '));
+        if (originalActivationPathParam) {
+          console.log('[ACTIVATIONS] 📍 Original activation path:', originalActivationPathParam);
+        }
+        return parsed;
+      } catch (error) {
+        console.error('[ACTIVATIONS] ❌ Failed to parse preFillData:', error);
+        return null;
+      }
+    }
+    return null;
+  }, [preFillDataParam, originalActivationPathParam]);
+
+  // Merge pre-fill data with initial answers (initial answers take precedence)
+  const mergedInitialAnswers = useMemo(() => {
+    if (preFillAnswers && initialAnswers) {
+      return { ...preFillAnswers, ...initialAnswers };
+    }
+    return preFillAnswers || initialAnswers;
+  }, [preFillAnswers, initialAnswers]);
+
+  // Create scan metadata from route params if not provided via props
+  const effectiveScanMetadata = useMemo(() => {
+    if (scanMetadata) {
+      return scanMetadata;
+    }
+    if (scanValueParam && scanTimeParam) {
+      return {
+        value: scanValueParam,
+        time: scanTimeParam,
+        response: null,
+      };
+    }
+    return undefined;
+  }, [scanMetadata, scanValueParam, scanTimeParam]);
 
   useEffect(() => {
     // Subscribe to connectivity changes
@@ -101,6 +157,16 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
       themeProvider.setTheme(surveyEvent.brand);
     }
   }, [surveyEvent?.brand]);
+
+  useEffect(() => {
+    // Log activation pre-fill status
+    if (preFillAnswers && originalActivationPathParam) {
+      console.log('[ACTIVATIONS] ✨ Pre-filling survey with activation data');
+      console.log('[ACTIVATIONS] 📍 Original activation path:', originalActivationPathParam);
+      console.log('[ACTIVATIONS] 📋 Pre-fill answer count:', Object.keys(preFillAnswers).length);
+      console.log('[ACTIVATIONS] 🎯 Event ID:', surveyEvent?.id);
+    }
+  }, [preFillAnswers, originalActivationPathParam, surveyEvent?.id]);
 
   if (!surveyEvent) {
     return (
@@ -131,88 +197,115 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
    * Handle back navigation with confirmation
    */
   const handleBackNavigation = useCallback(() => {
-    if (showCompletionScreen) {
-      // Allow immediate exit after completion
-      handleExitSurvey();
-      return;
-    }
-
     setShowExitConfirm(true);
-  }, [showCompletionScreen]);
+  }, []);
 
   /**
-   * Exit survey and return to previous screen
+   * Exit survey and return to event splash screen
    */
   const handleExitSurvey = useCallback(() => {
-    setSurveyData(null);
-    setShowCompletionScreen(false);
-
-    if (navigation.canGoBack()) {
+    // Dismiss back to the event splash screen
+    if (surveyEvent?.id) {
+      router.dismissTo(`/event/${surveyEvent.id}`);
+    } else if (router.canGoBack()) {
+      router.back();
+    } else if (navigation.canGoBack()) {
       navigation.goBack();
     } else {
       navigation.navigate('EventList' as never);
     }
-  }, [navigation]);
+  }, [navigation, surveyEvent?.id]);
 
   /**
    * Handle survey completion
    */
   const handleSurveyComplete = useCallback(async (data: SurveyCompletionData) => {
+    console.log('[SurveyScreen] 📩 Received completion data from WebView');
+    console.log('[SurveyScreen] Answer keys received:', Object.keys(data.answers));
+    console.log('[SurveyScreen] data.answers.end_time:', data.answers.end_time);
+    console.log('[SurveyScreen] data.answers._checkedIn:', data.answers._checkedIn);
+    console.log('[SurveyScreen] data.answers._preSurveyID:', data.answers._preSurveyID);
+
+    // Enrich with native-only metadata (_eventId, scan data, and activation data)
+    // DO NOT override values from the WebView - it already set all the defaults
     const enrichedAnswers = {
       ...data.answers,
       _eventId: data.eventId,
-      ...(scanMetadata
+      ...(effectiveScanMetadata
         ? {
-            _scanValue: scanMetadata.value,
-            _scanTime: scanMetadata.time,
-            _scanResponse: scanMetadata.response,
+            _scanValue: effectiveScanMetadata.value,
+            _scanTime: effectiveScanMetadata.time,
+            _scanResponse: effectiveScanMetadata.response,
           }
         : {}),
+      // Include _originalActivation field if this is a linked activation survey
+      ...(originalActivationPathParam
+        ? { _originalActivation: originalActivationPathParam }
+        : {}),
     };
+
+    // Log activation survey submission
+    if (originalActivationPathParam) {
+      console.log('[ACTIVATIONS] 📤 Submitting activation survey');
+      console.log('[ACTIVATIONS] 📍 _originalActivation path being saved:', originalActivationPathParam);
+      console.log('[ACTIVATIONS] 🎯 Event ID being saved to:', data.eventId);
+      console.log('[ACTIVATIONS] 📋 Total answer fields in submission:', Object.keys(enrichedAnswers).length);
+    }
+
+    console.log('[SurveyScreen] 📦 Enriched answer keys:', Object.keys(enrichedAnswers));
+    console.log('[SurveyScreen] enrichedAnswers.end_time:', enrichedAnswers.end_time);
+    console.log('[SurveyScreen] enrichedAnswers._checkedIn:', enrichedAnswers._checkedIn);
 
     const enrichedData: SurveyCompletionData = {
       ...data,
       answers: enrichedAnswers,
     };
 
-    setSurveyData(enrichedData);
-
     try {
-      // Store survey response in local database
       const dbService = DatabaseService.createEncrypted();
       const operations = await dbService.getOperations();
 
+      // STEP 1: Save to Firestore using device_survey_guid as document ID
+      // This returns immediately, even offline, and uses the UUID from the survey data
+      console.log('[SurveyScreen] 💾 Saving survey to Firestore...');
+      const firestoreId = await surveySyncService.saveSurvey(enrichedData);
+      console.log('[SurveyScreen] ✅ Survey queued to Firestore with ID:', firestoreId);
+      console.log('[SurveyScreen] ℹ️  Using device_survey_guid as document ID for consistency');
+
+      // STEP 2: Save to local database with same device_survey_guid as ID
+      // This ensures the same UUID is used everywhere (Firestore, local DB)
       await operations.createSurveyResponse({
-        id: `${enrichedData.eventId}_${Date.now()}`,
+        id: firestoreId, // This is the device_survey_guid
         event_id: enrichedData.eventId,
         data: JSON.stringify(enrichedData.answers),
-        sync_status: 'pending',
+        sync_status: 'synced', // Already queued to Firestore
       });
 
-      // Show completion screen
-      setShowCompletionScreen(true);
+      console.log('[SurveyScreen] ✅ Survey backed up to local database with same ID');
 
-      // Call parent completion handler
+      // STEP 3: Call completion callback if provided
       if (onSurveyComplete) {
         onSurveyComplete(enrichedData);
       }
 
-      // Auto-exit after 5 seconds for kiosk mode
+      // STEP 4: Wait 5 seconds, then go back to event splash screen
+      console.log('[SurveyScreen] ✅ Survey complete, waiting 5 seconds before returning to event splash screen');
       setTimeout(() => {
+        console.log('[SurveyScreen] ⏰ 5 seconds elapsed, going back to event splash screen');
         handleExitSurvey();
       }, 5000);
 
     } catch (error) {
-      console.error('Failed to save survey response:', error);
+      console.error('[SurveyScreen] ❌ Failed to save survey:', error);
       Alert.alert(
         'Save Error',
-        'Survey completed but failed to save locally. Please try again.',
+        'Survey completed but failed to save. Please try again.',
         [
           { text: 'OK', onPress: handleExitSurvey }
         ]
       );
     }
-  }, [onSurveyComplete, scanMetadata, handleExitSurvey]);
+  }, [onSurveyComplete, effectiveScanMetadata, originalActivationPathParam, handleExitSurvey, surveyEvent?.id]);
 
   /**
    * Handle survey error
@@ -248,16 +341,6 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
   const handleCancelExit = useCallback(() => {
     setShowExitConfirm(false);
   }, []);
-
-  /**
-   * Calculate survey duration
-   */
-  const getSurveyDuration = useCallback((): string => {
-    const duration = Date.now() - surveyStartTime;
-    const minutes = Math.floor(duration / 60000);
-    const seconds = Math.floor((duration % 60000) / 1000);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  }, [surveyStartTime]);
 
   const brandColor = themeProvider.getBrandPrimaryColor(surveyEvent?.brand || 'Other');
 
@@ -302,7 +385,7 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
         ) : (
           <OfflineSurveyWebView
             event={surveyEvent}
-            existingAnswers={initialAnswers}
+            existingAnswers={mergedInitialAnswers}
             onSurveyComplete={handleSurveyComplete}
             onSurveyError={handleSurveyError}
             style={styles.webviewContainer}
@@ -351,44 +434,6 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
         </View>
       </Modal>
 
-      {/* Completion Screen Modal */}
-      <Modal
-        visible={showCompletionScreen}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={handleExitSurvey}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.completionModalContent}>
-            <Text style={styles.completionTitle}>Survey Complete!</Text>
-            <Text style={styles.completionText}>
-              Thank you for your participation. Your responses have been recorded.
-            </Text>
-            
-            {surveyData && (
-              <View style={styles.completionStats}>
-                <Text style={styles.completionStat}>
-                  Duration: {getSurveyDuration()}
-                </Text>
-                <Text style={styles.completionStat}>
-                  Responses: {Object.keys(surveyData.answers).length}
-                </Text>
-              </View>
-            )}
-            
-            <TouchableOpacity
-              style={[styles.completionButton, { backgroundColor: brandColor }]}
-              onPress={handleExitSurvey}
-            >
-              <Text style={styles.completionButtonText}>Continue</Text>
-            </TouchableOpacity>
-            
-            <Text style={styles.autoExitText}>
-              This screen will close automatically in a few seconds
-            </Text>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 };
@@ -565,57 +610,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
-  },
-  completionModalContent: {
-    backgroundColor: '#FFFFFF',
-    margin: 32,
-    padding: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  completionTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#28A745',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  completionText: {
-    fontSize: 16,
-    color: '#666666',
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 24,
-  },
-  completionStats: {
-    marginBottom: 24,
-    alignItems: 'center',
-  },
-  completionStat: {
-    fontSize: 14,
-    color: '#495057',
-    marginBottom: 4,
-  },
-  completionButton: {
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  completionButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  autoExitText: {
-    fontSize: 12,
-    color: '#999999',
-    textAlign: 'center',
   },
 });
 

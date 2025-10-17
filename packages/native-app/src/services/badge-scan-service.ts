@@ -72,6 +72,7 @@ const lookupPlusLead = async (
   config: Record<string, any>,
   timeoutMs: number
 ): Promise<BadgeScanLookupResult> => {
+  console.log('[BadgeScan] Looking up barcode:', scanValue);
   const licenseCode =
     config.license_code ||
     config.licenseCode ||
@@ -83,28 +84,31 @@ const lookupPlusLead = async (
   }
 
   const baseUrl = config.baseUrl || config.base_url || DEFAULT_PLUSLEAD_BASE_URL;
-  const endpoint = config.endpoint || `${baseUrl.replace(/\/$/, '')}/lookup`;
+  // PlusLead API uses /sdk/capture endpoint with GET method
+  const endpoint = config.endpoint || `${baseUrl.replace(/\/$/, '')}/sdk/capture`;
 
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
+  // Build query string parameters
+  const params = new URLSearchParams({
+    license_code: licenseCode,
+    barcode: scanValue,
+    ...(config.queryParams || {}),
+  });
+
+  const url = `${endpoint}?${params.toString()}`;
+
+  console.log('[BadgeScan] Calling PlusLead API:', url);
+
+  const headers: Record<string, string> = {};
 
   if (config.api_key || config.apiKey) {
     headers['X-API-Key'] = config.api_key || config.apiKey;
   }
 
-  const payload = {
-    license_code: licenseCode,
-    badge_value: scanValue,
-    ...(config.payloadOverrides || {}),
-  };
-
   const response = await createAbortableFetch(
-    endpoint,
+    url,
     {
-      method: 'POST',
+      method: 'GET',
       headers,
-      body: JSON.stringify(payload),
     },
     timeoutMs
   );
@@ -117,7 +121,69 @@ const lookupPlusLead = async (
   }
 
   const json = await response.json().catch(() => ({}));
-  const answers = flattenObject(json);
+  let answers = flattenObject(json);
+
+  // Apply dataMap if provided
+  if (config.dataMap && typeof config.dataMap === 'object') {
+    const mappedAnswers: Record<string, any> = {};
+    const errors: string[] = [];
+
+    for (const [apiKey, surveyKey] of Object.entries(config.dataMap)) {
+      try {
+        if (!apiKey || !surveyKey) {
+          console.warn('[BadgeScan] Skipping invalid mapping entry:', { apiKey, surveyKey });
+          continue;
+        }
+
+        if (answers[apiKey] === undefined) {
+          console.warn('[BadgeScan] Field not found in API response:', apiKey);
+          continue;
+        }
+
+        const value = answers[apiKey];
+
+        // Handle nested keys like "address_group.address1"
+        if (surveyKey.includes('.')) {
+          const parts = surveyKey.split('.');
+          let current = mappedAnswers;
+
+          for (let i = 0; i < parts.length - 1; i++) {
+            const part = parts[i];
+            if (!current[part]) {
+              current[part] = {};
+            }
+            // Ensure we're working with an object
+            if (typeof current[part] !== 'object' || current[part] === null) {
+              throw new Error(`Cannot set nested property on non-object at path: ${parts.slice(0, i + 1).join('.')}`);
+            }
+            current = current[part];
+          }
+
+          current[parts[parts.length - 1]] = value;
+        } else {
+          mappedAnswers[surveyKey as string] = value;
+        }
+      } catch (error) {
+        const errorMsg = `Failed to map ${apiKey} -> ${surveyKey}: ${error instanceof Error ? error.message : String(error)}`;
+        console.error('[BadgeScan]', errorMsg);
+        errors.push(errorMsg);
+        // Continue processing other mappings
+      }
+    }
+
+    if (errors.length > 0) {
+      console.warn('[BadgeScan] Mapping completed with errors:', errors);
+    }
+
+    console.log('[BadgeScan] Mapped answers:', JSON.stringify(mappedAnswers));
+    answers = mappedAnswers;
+  }
+
+  // Add metadata fields for tracking
+  answers._scanValue = scanValue;
+  answers._scanResponse = json;
+
+  console.log('[BadgeScan] Final answers with metadata:', JSON.stringify(answers));
 
   return {
     answers,

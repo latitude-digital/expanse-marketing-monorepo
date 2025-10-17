@@ -1,3 +1,5 @@
+// COMMENTED OUT - Asset caching disabled
+/*
 import * as FileSystem from 'expo-file-system';
 import * as Crypto from 'expo-crypto';
 import { offlineDetector } from '../utils/offline-detector';
@@ -457,3 +459,4 @@ export class AssetCacheService {
     return (await this.fileExists(metadata.fileUri)) ? metadata.fileUri : null;
   }
 }
+*/

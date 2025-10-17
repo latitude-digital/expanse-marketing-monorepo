@@ -91,8 +91,9 @@ export const OfflineSurveyWebView: React.FC<OfflineSurveyWebViewProps> = ({
   useEffect(() => {
     if (!webViewReady) return;
 
-    // Handle different survey JSON field names (questions, surveyJSON, surveyJSModel)
-    let surveyJSONRaw = event.questions || event.surveyJSON || event.surveyJSModel || { pages: [] };
+    // Handle different survey JSON field names (surveyJSModel, surveyJSON)
+    // IMPORTANT: Check surveyJSModel FIRST as it contains the latest survey definition
+    let surveyJSONRaw = event.surveyJSModel || event.surveyJSON || { pages: [] };
 
     // Parse if it's a string
     const surveyJSON = typeof surveyJSONRaw === 'string'
@@ -126,13 +127,6 @@ export const OfflineSurveyWebView: React.FC<OfflineSurveyWebViewProps> = ({
       payload: surveyConfig,
     });
 
-    console.log('[OfflineSurveyWebView] Initializing survey with config:', {
-      eventId: event.id,
-      brand,
-      hasQuestions: !!surveyJSON,
-      hasTheme: !!theme,
-    });
-
     // Small delay to ensure WebView is fully loaded
     setTimeout(() => {
       webViewRef.current?.injectJavaScript(`
@@ -150,21 +144,16 @@ export const OfflineSurveyWebView: React.FC<OfflineSurveyWebViewProps> = ({
       try {
         const message: WebViewToNativeMessage = JSON.parse(event.nativeEvent.data);
 
-        console.log('[OfflineSurveyWebView] Received message:', message.type);
-
         switch (message.type) {
           case 'PAGE_LOADED':
-            console.log('[OfflineSurveyWebView] WebView page loaded, brand:', message.payload.brand);
             setWebViewReady(true);
             setLoading(false);
             break;
 
           case 'SURVEY_READY':
-            console.log('[OfflineSurveyWebView] Survey ready:', message.payload);
             break;
 
           case 'SURVEY_COMPLETE':
-            console.log('[OfflineSurveyWebView] Survey completed');
             if (onSurveyComplete) {
               onSurveyComplete(message.payload);
             }
@@ -179,26 +168,21 @@ export const OfflineSurveyWebView: React.FC<OfflineSurveyWebViewProps> = ({
             break;
 
           case 'PAGE_CHANGED':
-            console.log('[OfflineSurveyWebView] Page changed:', message.payload.pageNo, '/', message.payload.totalPages);
             if (onPageChanged) {
               onPageChanged(message.payload.pageNo, message.payload.totalPages);
             }
             break;
 
           case 'VALUE_CHANGED':
-            console.log('[OfflineSurveyWebView] Value changed:', message.payload.name);
             break;
 
           case 'SAVE_PROGRESS':
-            console.log('[OfflineSurveyWebView] Saving progress');
             if (onProgressSave) {
               onProgressSave(message.payload);
             }
             break;
 
           case 'CONSOLE_LOG':
-            // Forward WebView console logs to native console
-            console.log('[WebView]', message.payload.message, message.payload.data || '');
             break;
 
           case 'JAVASCRIPT_ERROR':
@@ -206,7 +190,7 @@ export const OfflineSurveyWebView: React.FC<OfflineSurveyWebViewProps> = ({
             break;
 
           default:
-            console.log('[OfflineSurveyWebView] Unknown message type:', (message as any).type);
+            break;
         }
       } catch (err) {
         console.error('[OfflineSurveyWebView] Error parsing message:', err);
@@ -238,7 +222,6 @@ export const OfflineSurveyWebView: React.FC<OfflineSurveyWebViewProps> = ({
    * Handle WebView load start
    */
   const handleLoadStart = useCallback(() => {
-    console.log('[OfflineSurveyWebView] WebView load started');
     setLoading(true);
     setError(null);
   }, []);
@@ -247,7 +230,6 @@ export const OfflineSurveyWebView: React.FC<OfflineSurveyWebViewProps> = ({
    * Handle WebView load end
    */
   const handleLoadEnd = useCallback(() => {
-    console.log('[OfflineSurveyWebView] WebView load ended');
     // Don't set loading to false here - wait for PAGE_LOADED message
   }, []);
 
@@ -261,10 +243,6 @@ export const OfflineSurveyWebView: React.FC<OfflineSurveyWebViewProps> = ({
   }
 
   const brand = event.brand || 'Other';
-
-  // Component-level debug logs (run every render)
-  console.log('[OfflineSurveyWebView] Rendering WebView for brand:', brand);
-  console.log('[OfflineSurveyWebView] Survey file URL:', surveyFileUrl);
 
   return (
     <View style={[styles.container, style]}>

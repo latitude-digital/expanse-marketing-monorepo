@@ -5,6 +5,13 @@ import SurveyScreen from '../../src/screens/SurveyScreen';
 import type { MeridianEvent as ExpanseEvent } from '@meridian-event-tech/shared/types';
 import Toast from '../../src/components/Toast';
 import { badgeScanService } from '../../src/services/badge-scan-service';
+import { DatabaseService } from '../../src/services/database';
+import { EventCacheService } from '../../src/services/event-cache';
+
+// Create singleton instances for event cache
+const databaseService = DatabaseService.createEncrypted();
+const eventCacheService = new EventCacheService(databaseService);
+let dbInitialized = false;
 
 export default function SurveyPage() {
   const { id, eventData, scanValue, scanTime } = useLocalSearchParams<{
@@ -18,8 +25,84 @@ export default function SurveyPage() {
   const [scanMetadata, setScanMetadata] = useState<{ value: string; time: string; response: any } | null>(null);
   const [loadingScanLookup, setLoadingScanLookup] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [cachedEvent, setCachedEvent] = useState<ExpanseEvent | null>(null);
+  const [loadingEvent, setLoadingEvent] = useState(true);
+
+  // Initialize database and load event from cache
+  useEffect(() => {
+    let mounted = true;
+
+    const loadEventFromCache = async () => {
+      console.log('[SurveyPage] 🔍 Loading event from cache, id:', id);
+      try {
+        // Initialize database if not already done
+        if (!dbInitialized) {
+          console.log('[SurveyPage] 🔧 Initializing database...');
+          await databaseService.initialize();
+          dbInitialized = true;
+          console.log('[SurveyPage] ✅ Database initialized');
+        }
+
+        // Try to load event from cache using event ID
+        const cachedEvents = await eventCacheService.getCachedEvents();
+        console.log(`[SurveyPage] 📦 Got ${cachedEvents.length} cached events`);
+        const foundEvent = cachedEvents.find((e) => e.id === id);
+
+        if (mounted && foundEvent) {
+          console.log('[SurveyPage] ✅ Loaded event from cache:', id);
+
+          // Log surveyJSModel structure - look inside panel
+          if (foundEvent.surveyJSModel) {
+            const model = typeof foundEvent.surveyJSModel === 'string'
+              ? JSON.parse(foundEvent.surveyJSModel)
+              : foundEvent.surveyJSModel;
+
+            // Look for panel and log address field
+            const panel = model.pages?.[0]?.elements?.find((el: any) => el.type === 'panel');
+            if (panel?.elements) {
+              const addressField = panel.elements.find((el: any) =>
+                el.name === 'address_group' || el.type?.includes('address')
+              );
+              if (addressField) {
+                console.log(`[SurveyPage] 🎯 SURVEY WILL USE ADDRESS FIELD:`, JSON.stringify({
+                  type: addressField.type,
+                  name: addressField.name,
+                  _ffs: addressField._ffs
+                }));
+              }
+            }
+          }
+
+          setCachedEvent(foundEvent);
+        } else {
+          console.log('[SurveyPage] ⚠️ Event not found in cache, using route params');
+        }
+      } catch (error) {
+        console.warn('[SurveyPage] ❌ Failed to load event from cache:', error);
+      } finally {
+        if (mounted) {
+          setLoadingEvent(false);
+        }
+      }
+    };
+
+    loadEventFromCache();
+
+    return () => {
+      mounted = false;
+    };
+  }, [id]);
 
   const event: ExpanseEvent = useMemo(() => {
+    // Prefer cached event over route param
+    if (cachedEvent) {
+      console.log('[SurveyPage] 🎯 Using CACHED event:', cachedEvent.id);
+      return cachedEvent;
+    }
+
+    console.log('[SurveyPage] 📄 Using ROUTE PARAM event');
+
+    // Fall back to route param
     if (eventData) {
       try {
         const parsed = JSON.parse(eventData);
@@ -67,7 +150,7 @@ export default function SurveyPage() {
       questions: { pages: [] },
       theme: { cssVariables: {} },
     };
-  }, [eventData, id]);
+  }, [cachedEvent, eventData, id]);
 
   useEffect(() => {
     let cancelled = false;

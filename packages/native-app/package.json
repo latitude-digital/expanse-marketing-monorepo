@@ -7,6 +7,7 @@
     "start": "expo start",
     "start:dev": "expo start --dev-client",
     "android": "expo run:android",
+    "preios": "node scripts/build-survey.js",
     "ios": "expo run:ios",
     "web": "expo start --web",
     "prebuild": "node scripts/build-survey.js",

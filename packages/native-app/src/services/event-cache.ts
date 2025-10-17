@@ -3,7 +3,8 @@ import { DatabaseOperations } from './database-operations';
 import type { MeridianEvent as ExpanseEvent } from '@meridian-event-tech/shared/types';
 
 export type CachedMeridianEvent = ExpanseEvent & {
-  assetMap?: Record<string, string>;
+  // COMMENTED OUT - Asset caching disabled
+  // assetMap?: Record<string, string>;
 };
 
 export class EventCacheService {
@@ -33,10 +34,10 @@ export class EventCacheService {
 
   async getCachedEvents(brand?: string): Promise<CachedMeridianEvent[]> {
     const ops = await this.getOperations();
-    const cachedEvents = brand 
+    const cachedEvents = brand
       ? await ops.getEventsByBrand(brand)
-      : await ops.getEventsByBrand('Ford').then(ford => 
-          ops.getEventsByBrand('Lincoln').then(lincoln => 
+      : await ops.getEventsByBrand('Ford').then(ford =>
+          ops.getEventsByBrand('Lincoln').then(lincoln =>
             ops.getEventsByBrand('Other').then(other => [...ford, ...lincoln, ...other])
           )
         );

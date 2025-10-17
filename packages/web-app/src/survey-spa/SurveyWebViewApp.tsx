@@ -658,8 +658,22 @@ export const SurveyWebViewApp: React.FC = () => {
 
       // Completion handler
       newSurvey.onComplete.add((sender) => {
+        // Enrich survey data with tracking properties and end_time
+        const enrichedAnswers = {
+          ...sender.data,
+          end_time: new Date(),
+          _preSurveyID: sender.data._preSurveyID !== undefined ? sender.data._preSurveyID : null,
+          _checkedIn: sender.data._checkedIn !== undefined ? sender.data._checkedIn : null,
+          _checkedOut: sender.data._checkedOut !== undefined ? sender.data._checkedOut : null,
+          _claimed: sender.data._claimed !== undefined ? sender.data._claimed : null,
+          _used: sender.data._used !== undefined ? sender.data._used : null,
+          _email: sender.data._email !== undefined ? sender.data._email : null,
+          _sms: sender.data._sms !== undefined ? sender.data._sms : null,
+          _exported: sender.data._exported !== undefined ? sender.data._exported : null,
+        };
+
         const submission = {
-          answers: sender.data,
+          answers: enrichedAnswers,
           eventId: config.eventId,
           responseId: config.responseId,
           completedAt: new Date().toISOString(),
@@ -667,6 +681,9 @@ export const SurveyWebViewApp: React.FC = () => {
           device_survey_guid: sender.getValue('device_survey_guid') || uuidv4(),
         };
 
+        bridgeRef.current?.log('[onComplete] Submission data keys:', Object.keys(submission.answers));
+        bridgeRef.current?.log('[onComplete] end_time:', submission.answers.end_time);
+        bridgeRef.current?.log('[onComplete] _preSurveyID:', submission.answers._preSurveyID);
         bridgeRef.current?.postMessage('SURVEY_COMPLETE', submission);
         bridgeRef.current?.log('Survey completed', submission);
       });

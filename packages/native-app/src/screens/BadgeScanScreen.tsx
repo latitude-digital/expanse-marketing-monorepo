@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Animated,
   StyleSheet,
   Text,
@@ -13,6 +14,7 @@ import { useRouter } from 'expo-router';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import { Audio } from 'expo-av';
 import type { MeridianEvent } from '@meridian-event-tech/shared/types';
+import { surveysService, activationsService } from '../services/firestore';
 
 interface BadgeScanScreenProps {
   event: MeridianEvent;
@@ -123,7 +125,12 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
   }, [scanAnimation]);
 
   const goToSurvey = useCallback(
-    (options?: { scanValue?: string; scanTime?: string }) => {
+    (options?: {
+      scanValue?: string;
+      scanTime?: string;
+      preFillData?: string;
+      originalActivationPath?: string;
+    }) => {
       router.replace({
         pathname: `/survey/[id]`,
         params: {
@@ -131,6 +138,8 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
           eventData: JSON.stringify(event),
           ...(options?.scanValue ? { scanValue: options.scanValue } : {}),
           ...(options?.scanTime ? { scanTime: options.scanTime } : {}),
+          ...(options?.preFillData ? { preFillData: options.preFillData } : {}),
+          ...(options?.originalActivationPath ? { originalActivationPath: options.originalActivationPath } : {}),
         },
       });
     },
@@ -147,10 +156,89 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
         setIsProcessing(true);
         await playSuccessFeedback();
 
+        // Check if this badge has already completed a survey in Firestore
+        console.log('[BadgeScanScreen] Checking if badge has already completed a survey:', value);
+
+        try {
+          const existingSurvey = await surveysService.checkBadgeAlreadyScanned(value, event.id);
+
+          if (existingSurvey) {
+            console.log('[BadgeScanScreen] Badge has already completed a survey for this event');
+            console.log('[BadgeScanScreen] Existing survey path:', existingSurvey.path);
+            setIsProcessing(false);
+            Alert.alert(
+              'Survey Already Completed',
+              'This badge has already completed a survey for this event.',
+              [
+                {
+                  text: 'OK',
+                  onPress: () => {
+                    router.dismissTo(`/event/${event.id}`);
+                  },
+                },
+              ]
+            );
+            return;
+          }
+        } catch (firestoreError) {
+          console.warn('[BadgeScanScreen] Error checking Firestore for existing survey (offline?):', firestoreError);
+          // Continue anyway when offline - we'll handle duplicates on sync
+        }
+
+        // NEW: Check for activation surveys
+        let preFillData = null;
+        let originalActivationPath = null;
+
+        // Log event activation configuration
+        console.log('[ACTIVATIONS] Event:', event.name);
+        console.log('[ACTIVATIONS] Has activations configured:', !!(event.customConfig?.activations && event.customConfig.activations.length > 0));
+        if (event.customConfig?.activations && event.customConfig.activations.length > 0) {
+          console.log('[ACTIVATIONS] Number of activation event IDs:', event.customConfig.activations.length);
+          console.log('[ACTIVATIONS] Activation event IDs being queried:', JSON.stringify(event.customConfig.activations));
+        }
+
+        if (event.customConfig?.activations && event.customConfig.activations.length > 0) {
+          console.log('[ACTIVATIONS] Checking activation events for badge value:', value);
+
+          try {
+            const activationResult = await activationsService.findOriginalActivationSurvey(
+              value,
+              event.customConfig.activations
+            );
+
+            if (activationResult) {
+              console.log('[ACTIVATIONS] ✅ Found activation survey!');
+              console.log('[ACTIVATIONS] Original activation path:', activationResult.path);
+              console.log('[ACTIVATIONS] Event ID it came from:', activationResult.path.split('/')[1]);
+              console.log('[ACTIVATIONS] Number of answers in pre-fill data:', Object.keys(activationResult.data || {}).length);
+              console.log('[ACTIVATIONS] Pre-fill data keys:', JSON.stringify(Object.keys(activationResult.data || {})));
+              preFillData = activationResult.data;
+              originalActivationPath = activationResult.path;
+            } else {
+              console.log('[ACTIVATIONS] ❌ No activation survey found for badge value:', value);
+              console.log('[ACTIVATIONS] Proceeding as new survey without pre-fill data');
+            }
+          } catch (error) {
+            console.error('[ACTIVATIONS] ⚠️ Error checking activation surveys');
+            console.error('[ACTIVATIONS] Error type:', error instanceof Error ? error.name : typeof error);
+            console.error('[ACTIVATIONS] Error message:', error instanceof Error ? error.message : String(error));
+            console.error('[ACTIVATIONS] Full error details:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
+            // Continue as normal survey on error
+          }
+        } else {
+          console.log('[ACTIVATIONS] No activation events configured for this event, skipping activation check');
+        }
+
+        console.log('[BadgeScanScreen] Proceeding to survey...');
         const timestamp = new Date().toISOString();
 
         setTimeout(() => {
-          goToSurvey({ scanValue: value, scanTime: timestamp });
+          goToSurvey({
+            scanValue: value,
+            scanTime: timestamp,
+            preFillData: preFillData ? JSON.stringify(preFillData) : undefined,
+            originalActivationPath: originalActivationPath || undefined
+          });
         }, SCAN_ANIMATION_DURATION);
       } catch (error) {
         console.warn('[BadgeScanScreen] Error handling scan result', error);
@@ -158,7 +246,7 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
         setIsProcessing(false);
       }
     },
-    [goToSurvey, playSuccessFeedback]
+    [goToSurvey, playSuccessFeedback, event, router]
   );
 
   const handleBarcodeScanned = useCallback(
@@ -190,7 +278,11 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
       <Text style={styles.permissionText}>
         We need camera access to scan attendee badges. Please enable camera permissions in settings.
       </Text>
-      <TouchableOpacity style={styles.permissionButton} onPress={() => requestCameraPermission()}>
+      <TouchableOpacity
+        style={styles.permissionButton}
+        onPress={() => requestCameraPermission()}
+        testID="grant-permission-button"
+      >
         <Text style={styles.permissionButtonText}>Grant Permission</Text>
       </TouchableOpacity>
     </View>
@@ -202,7 +294,11 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
       <Text style={styles.permissionText}>
         This event does not have badge scanning configured. You can continue directly to the survey.
       </Text>
-      <TouchableOpacity style={styles.permissionButton} onPress={() => goToSurvey()}>
+      <TouchableOpacity
+        style={styles.permissionButton}
+        onPress={() => goToSurvey()}
+        testID="open-survey-button"
+      >
         <Text style={styles.permissionButtonText}>Open Survey</Text>
       </TouchableOpacity>
     </View>
@@ -220,11 +316,13 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
         autoCapitalize="none"
         autoCorrect={false}
         keyboardType="default"
+        testID="manual-badge-input"
       />
       <TouchableOpacity
         style={[styles.permissionButton, { marginTop: 12 }]}
         onPress={() => handleScanValue(manualValue.trim())}
         disabled={!manualValue || isProcessing}
+        testID="use-value-button"
       >
         <Text style={styles.permissionButtonText}>Use Value</Text>
       </TouchableOpacity>
@@ -254,6 +352,7 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
           onPress={() => router.back()}
           style={styles.headerButton}
           accessibilityLabel="Cancel scanning"
+          testID="cancel-button"
         >
           <Text style={styles.headerButtonText}>Cancel</Text>
         </TouchableOpacity>
@@ -262,6 +361,7 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
           onPress={() => goToSurvey()}
           style={styles.headerButton}
           accessibilityLabel="Skip scanning and open survey"
+          testID="skip-to-survey-button"
         >
           <Text style={styles.headerButtonText}>Survey</Text>
         </TouchableOpacity>
@@ -331,6 +431,7 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
               style={[styles.controlButton, flashMode === 'torch' && styles.controlButtonActive]}
               onPress={toggleFlash}
               accessibilityLabel="Toggle flash"
+              testID="toggle-flash-button"
             >
               <Text style={styles.controlButtonText}>{flashMode === 'torch' ? 'Flash Off' : 'Flash On'}</Text>
             </TouchableOpacity>
@@ -338,6 +439,7 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
               style={styles.controlButton}
               onPress={toggleCamera}
               accessibilityLabel="Switch camera"
+              testID="flip-camera-button"
             >
               <Text style={styles.controlButtonText}>Flip Camera</Text>
             </TouchableOpacity>

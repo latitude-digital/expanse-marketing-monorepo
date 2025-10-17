@@ -5,7 +5,8 @@ import EventListScreen from '../src/screens/EventListScreen';
 import { useAuth } from '../src/contexts/AuthContext';
 import { DatabaseService } from '../src/services/database';
 import { EventCacheService, CachedMeridianEvent } from '../src/services/event-cache';
-import { AssetCacheService } from '../src/services/asset-cache';
+// COMMENTED OUT - Asset caching disabled
+// import { AssetCacheService } from '../src/services/asset-cache';
 import { eventsService } from '../src/services/firestore';
 import { offlineDetector } from '../src/utils/offline-detector';
 
@@ -32,7 +33,8 @@ export default function EventListPage() {
   const [events, setEvents] = useState<CachedMeridianEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [dbReady, setDbReady] = useState(false);
-  const [assetCache, setAssetCache] = useState<AssetCacheService | null>(null);
+  // COMMENTED OUT - Asset caching disabled
+  // const [assetCache, setAssetCache] = useState<AssetCacheService | null>(null);
 
   const [databaseService] = useState(() => DatabaseService.createEncrypted());
   const [eventCache] = useState(() => new EventCacheService(databaseService));
@@ -62,6 +64,8 @@ export default function EventListPage() {
     };
   }, [databaseService]);
 
+  // COMMENTED OUT - Asset caching disabled
+  /*
   useEffect(() => {
     let isMounted = true;
     let retryCount = 0;
@@ -102,18 +106,53 @@ export default function EventListPage() {
       isMounted = false;
     };
   }, []);
+  */
 
   const fetchAndCacheEvents = useCallback(async () => {
+    // COMMENTED OUT - Asset caching disabled
+    /*
     if (!assetCache) {
       return [];
     }
+    */
 
     try {
+      console.log('[EventList] 🔥 Fetching events from Firestore...');
       const firestoreEvents = await eventsService.getEvents();
+      console.log(`[EventList] 📥 Received ${firestoreEvents.length} events from Firestore`);
+
+      // Log first event's surveyJSModel from Firestore
+      if (firestoreEvents.length > 0) {
+        const firstEvent = firestoreEvents[0];
+        console.log(`[EventList] 🔥 Firestore event ${firstEvent.id} surveyJSModel type:`, firstEvent.surveyJSModel ? typeof firstEvent.surveyJSModel : 'undefined');
+        if (firstEvent.surveyJSModel) {
+          const model = typeof firstEvent.surveyJSModel === 'string'
+            ? JSON.parse(firstEvent.surveyJSModel)
+            : firstEvent.surveyJSModel;
+
+          // Look for panel and log address field
+          const panel = model.pages?.[0]?.elements?.find((el: any) => el.type === 'panel');
+          if (panel?.elements) {
+            const addressField = panel.elements.find((el: any) =>
+              el.name === 'address_group' || el.type?.includes('address')
+            );
+            if (addressField) {
+              console.log(`[EventList] 🔥 FIRESTORE ADDRESS FIELD:`, JSON.stringify({
+                type: addressField.type,
+                name: addressField.name,
+                _ffs: addressField._ffs
+              }));
+            }
+          }
+        }
+      }
+
       const processed: CachedMeridianEvent[] = [];
 
       for (const event of firestoreEvents) {
         try {
+          // COMMENTED OUT - Asset caching disabled
+          /*
           const assetMap = await assetCache.prefetchAssetsForEvent(event);
           const eventWithAssets: CachedMeridianEvent = {
             ...event,
@@ -121,8 +160,14 @@ export default function EventListPage() {
           };
           await eventCache.cacheEvent(eventWithAssets);
           processed.push(eventWithAssets);
+          */
+          const eventWithoutAssets: CachedMeridianEvent = {
+            ...event,
+          };
+          await eventCache.cacheEvent(eventWithoutAssets);
+          processed.push(eventWithoutAssets);
         } catch (eventError) {
-          console.error('[EventList] Failed to cache assets for event:', event.id, eventError);
+          console.error('[EventList] ❌ Failed to cache event:', event.id, eventError);
           const fallbackEvent: CachedMeridianEvent = {
             ...event,
           };
@@ -131,15 +176,18 @@ export default function EventListPage() {
         }
       }
 
+      console.log(`[EventList] ✅ Processed and cached ${processed.length} events`);
       return processed;
     } catch (error) {
-      console.error('[EventList] Failed to fetch events from Firestore:', error);
+      console.error('[EventList] ❌ Failed to fetch events from Firestore:', error);
       return [];
     }
-  }, [assetCache, eventCache]);
+  }, [eventCache]);
 
   const loadEvents = useCallback(async () => {
-    if (!dbReady || !assetCache) {
+    // COMMENTED OUT - Asset caching disabled
+    // if (!dbReady || !assetCache) {
+    if (!dbReady) {
       return;
     }
 
@@ -162,18 +210,22 @@ export default function EventListPage() {
     } finally {
       setLoading(false);
     }
-  }, [assetCache, dbReady, eventCache, fetchAndCacheEvents]);
+  }, [dbReady, eventCache, fetchAndCacheEvents]);
 
   useEffect(() => {
-    if (!dbReady || !assetCache) {
+    // COMMENTED OUT - Asset caching disabled
+    // if (!dbReady || !assetCache) {
+    if (!dbReady) {
       return;
     }
 
     loadEvents();
-  }, [dbReady, assetCache, loadEvents]);
+  }, [dbReady, loadEvents]);
 
   useEffect(() => {
-    if (!dbReady || !assetCache) {
+    // COMMENTED OUT - Asset caching disabled
+    // if (!dbReady || !assetCache) {
+    if (!dbReady) {
       return;
     }
 
@@ -192,16 +244,20 @@ export default function EventListPage() {
     });
 
     return unsubscribe;
-  }, [dbReady, assetCache, fetchAndCacheEvents]);
+  }, [dbReady, fetchAndCacheEvents]);
 
   const handleRefresh = useCallback(async () => {
-    if (!dbReady || !assetCache) {
+    console.log('[EventList] 🔄 Refresh Events button pressed');
+    // COMMENTED OUT - Asset caching disabled
+    // if (!dbReady || !assetCache) {
+    if (!dbReady) {
+      console.log('[EventList] ❌ Database not ready');
       Alert.alert('Not Ready', 'Please wait for the app to finish initializing.', [{ text: 'OK' }]);
       return;
     }
 
     if (!offlineDetector.isOnline()) {
-      console.log('[EventList] Refresh requested while offline, using cached events');
+      console.log('[EventList] ⚠️ Refresh requested while offline, using cached events');
       const cached = await eventCache.getCachedEvents();
       setEvents(cached);
       Alert.alert(
@@ -212,9 +268,24 @@ export default function EventListPage() {
       return;
     }
 
+    console.log('[EventList] 🌐 Online - fetching events from Firestore');
     setLoading(true);
     try {
       const refreshed = await fetchAndCacheEvents();
+      console.log(`[EventList] ✅ Fetched ${refreshed.length} events from Firestore`);
+
+      if (refreshed.length > 0) {
+        // Log first event's surveyJSModel to verify what we got from Firestore
+        const firstEvent = refreshed[0];
+        console.log(`[EventList] 📊 First event (${firstEvent.id}) surveyJSModel type:`, firstEvent.surveyJSModel ? typeof firstEvent.surveyJSModel : 'undefined');
+        if (firstEvent.surveyJSModel) {
+          const model = typeof firstEvent.surveyJSModel === 'string'
+            ? JSON.parse(firstEvent.surveyJSModel)
+            : firstEvent.surveyJSModel;
+          console.log('[EventList] 📋 First event surveyJSModel pages:', JSON.stringify(model.pages?.[0]?.elements?.slice(0, 3)));
+        }
+      }
+
       if (refreshed.length) {
         setEvents(refreshed);
         Alert.alert(
@@ -232,7 +303,7 @@ export default function EventListPage() {
         );
       }
     } catch (error) {
-      console.error('[EventList] Manual refresh failed:', error);
+      console.error('[EventList] ❌ Manual refresh failed:', error);
       Alert.alert(
         'Refresh Failed',
         'Unable to refresh events. Please try again.',
@@ -241,8 +312,10 @@ export default function EventListPage() {
     } finally {
       setLoading(false);
     }
-  }, [assetCache, dbReady, eventCache, fetchAndCacheEvents]);
+  }, [dbReady, eventCache, fetchAndCacheEvents]);
 
+  // COMMENTED OUT - Asset caching disabled
+  /*
   const handleLongPressClearCache = useCallback(async () => {
     console.log('[EventList] 🔔 Long press detected on Refresh Events button');
 
@@ -295,18 +368,21 @@ export default function EventListPage() {
       );
     }
   }, [assetCache]);
+  */
 
   useEffect(() => {
     navigation.setOptions({
       headerLeft: () => (
         <TouchableOpacity
           onPress={handleRefresh}
-          onLongPress={handleLongPressClearCache}
+          // COMMENTED OUT - Asset caching disabled
+          // onLongPress={handleLongPressClearCache}
           disabled={loading}
           activeOpacity={0.6}
-          style={{ marginLeft: 16 }}
           accessibilityRole="button"
-          accessibilityHint="Tap to refresh events, long press to clear asset cache"
+          // COMMENTED OUT - Asset caching disabled
+          // accessibilityHint="Tap to refresh events, long press to clear asset cache"
+          accessibilityHint="Tap to refresh events"
         >
           <Text
             style={[
@@ -322,7 +398,7 @@ export default function EventListPage() {
         paddingLeft: 0,
       },
     });
-  }, [navigation, handleRefresh, handleLongPressClearCache, loading]);
+  }, [navigation, handleRefresh, loading]);
 
   if (loading) {
     return (

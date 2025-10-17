@@ -1,3 +1,5 @@
+// COMMENTED OUT - Asset caching disabled
+/*
 const ASSET_EXTENSIONS = new Set([
   'png',
   'jpg',
@@ -147,3 +149,4 @@ export function replaceAssetUrlsInValue(value: any, assetMap: Record<string, str
 
   return value;
 }
+*/
