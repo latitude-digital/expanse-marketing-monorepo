@@ -11,7 +11,7 @@ on:
 
 jobs:
   build-deploy:
-    runs-on: [self-hosted, macOS, ARM64]
+    runs-on: macos-26
     environment: staging
     defaults:
       run:
@@ -61,11 +61,11 @@ jobs:
           echo "BUILD_VERSION=${BUILD_DATE_CODE}.${{ github.run_number }}" >> $GITHUB_ENV
           echo "APP_VARIANT=staging" >> $GITHUB_ENV
 
-      - name: Setup environment
-        run: |
-          source ~/.zprofile
-          source ~/.zshrc
-          nvm install
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
 
       - name: Verify environment
         run: |
@@ -89,8 +89,6 @@ jobs:
 
       - name: Build and deploy iOS
         run: |
-          source ~/.zprofile
-          source ~/.zshrc
           export BUILD_NUMBER=${{ github.run_number }}
           export APP_VARIANT=staging
           bundle exec fastlane ios staging

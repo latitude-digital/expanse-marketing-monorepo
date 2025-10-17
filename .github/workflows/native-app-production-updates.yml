@@ -13,7 +13,7 @@ on:
 
 jobs:
   eas-update:
-    runs-on: [self-hosted, macOS, ARM64]
+    runs-on: macos-26
     environment: production
     defaults:
       run:
@@ -29,11 +29,11 @@ jobs:
           echo "BUILD_DATE_CODE=${BUILD_DATE_CODE}"
           echo "BUILD_VERSION=${BUILD_DATE_CODE}.${{ github.run_number }}" >> $GITHUB_ENV
 
-      - name: Setup environment
-        run: |
-          source ~/.zprofile
-          source ~/.zshrc
-          nvm install
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
 
       - name: Verify environment
         run: |
@@ -46,8 +46,6 @@ jobs:
 
       - name: Publish EAS Update
         run: |
-          source ~/.zprofile
-          source ~/.zshrc
           export BUILD_NUMBER=${{ github.run_number }}
           bundle exec fastlane ios production_updates
         env:
