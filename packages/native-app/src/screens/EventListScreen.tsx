@@ -4,17 +4,19 @@ import {
   Text,
   FlatList,
   StyleSheet,
-  SafeAreaView,
-  TouchableOpacity,
+  Pressable,
   RefreshControl,
   ActivityIndicator,
   Linking,
   TextInput,
   Dimensions,
+  ScaledSize,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import type { MeridianEvent as ExpanseEvent, Brand } from '@meridian-event-tech/shared/types';
 import Icon from '../components/Icon';
+import type { CachedMeridianEvent } from '../services/event-cache';
+import { useDebounceNavigation } from '../hooks/useDebounceNavigation';
 
 export type EventFilter = 'today' | 'upcoming' | 'past' | 'all';
 
@@ -27,11 +29,11 @@ interface User {
 }
 
 interface EventListScreenProps {
-  events?: ExpanseEvent[];
+  events?: CachedMeridianEvent[];
   loading?: boolean;
   currentUser?: User;
   onRefresh?: () => Promise<void>;
-  onEventPress?: (event: ExpanseEvent) => void;
+  onEventPress?: (event: CachedMeridianEvent) => void;
 }
 
 const EventListScreen: React.FC<EventListScreenProps> = ({
@@ -46,10 +48,11 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
   const [refreshing, setRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [screenData, setScreenData] = useState(Dimensions.get('window'));
+  const { navigate } = useDebounceNavigation();
 
   useEffect(() => {
-    const onChange = (result: {window: {width: number, height: number}}) => {
-      setScreenData(result.window);
+    const onChange = ({ window }: { window: ScaledSize; screen: ScaledSize }) => {
+      setScreenData(window);
     };
     const subscription = Dimensions.addEventListener('change', onChange);
     return () => subscription?.remove();
@@ -69,7 +72,7 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
     }
   }, [onRefresh]);
 
-  const filterEvents = useCallback((events: ExpanseEvent[], filter: EventFilter, searchTerm: string): ExpanseEvent[] => {
+  const filterEvents = useCallback((events: CachedMeridianEvent[], filter: EventFilter, searchTerm: string): CachedMeridianEvent[] => {
     const now = new Date();
     const nowTime = now.getTime();
 
@@ -80,7 +83,7 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
       searchFilteredEvents = events.filter(event => 
         event.name?.toLowerCase().includes(searchLower) ||
         event.brand?.toLowerCase().includes(searchLower) ||
-        event.tags?.some(tag => tag.toLowerCase().includes(searchLower))
+        event.tags?.some((tag: string) => tag.toLowerCase().includes(searchLower))
       );
     }
 
@@ -90,7 +93,7 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
       // Non-admin users only see events with matching tags
       userFilteredEvents = searchFilteredEvents.filter(event => {
         if (!event.tags || !currentUser.tags) return false;
-        return event.tags.some(tag => currentUser.tags!.includes(tag));
+        return event.tags.some((tag: string) => currentUser.tags!.includes(tag));
       });
     }
 
@@ -120,16 +123,7 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
 
   const filteredEvents = filterEvents(events, filter, searchTerm);
 
-  const handleEventPress = useCallback((event: ExpanseEvent) => {
-    if (onEventPress) {
-      onEventPress(event);
-    } else {
-      // Default navigation behavior using Expo Router
-      router.push(`/event/${event.id}`);
-    }
-  }, [onEventPress]);
-
-  const getBrandColor = (brand?: Brand): string => {
+  const getBrandColor = (brand?: string): string => {
     switch (brand?.toLowerCase()) {
       case 'ford': return '#257180';
       case 'lincoln': return '#8B1538';
@@ -137,14 +131,14 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
     }
   };
 
-  const getBrandDisplay = (event: ExpanseEvent) => {
+  const getBrandDisplay = (event: CachedMeridianEvent) => {
     // Simple brand normalization
     if (!event.brand) return 'Other';
     return event.brand;
   };
 
   const renderFilterButton = (filterType: EventFilter, title: string) => (
-    <TouchableOpacity
+    <Pressable
       key={filterType}
       style={[
         styles.filterButton,
@@ -158,35 +152,20 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
       ]}>
         {title}
       </Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 
-  const handleSurveyPress = (event: ExpanseEvent) => {
-    if (onEventPress) {
-      onEventPress(event);
-    } else {
-      // Navigate directly to survey screen with full event data
-      router.push({
-        pathname: `/survey/[id]`,
-        params: { 
-          id: event.id,
-          eventData: JSON.stringify(event) // Pass the entire event as JSON
-        }
-      });
-    }
-  };
-
-  const handleCheckInPress = (event: ExpanseEvent) => {
+  const handleCheckInPress = (event: CachedMeridianEvent) => {
     const url = `/s/${event.subdomain || event.id}/in`;
     Linking.openURL(url);
   };
 
-  const handleCheckOutPress = (event: ExpanseEvent) => {
+  const handleCheckOutPress = (event: CachedMeridianEvent) => {
     const url = `/s/${event.subdomain || event.id}/out`;
     Linking.openURL(url);
   };
 
-  const renderEventItem = ({ item: event }: { item: ExpanseEvent }) => (
+  const renderEventItem = ({ item: event }: { item: CachedMeridianEvent }) => (
     <View style={styles.eventCard}>
       <View style={styles.eventContent}>
         <Text style={styles.eventTitle}>{event.name || 'Unnamed Event'}</Text>
@@ -202,7 +181,7 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
         
         {currentUser?.isAdmin && event.tags && event.tags.length > 0 && (
           <View style={styles.tagsContainer}>
-            {event.tags.map((tag, index) => (
+            {event.tags.map((tag: string, index: number) => (
               <View key={index} style={styles.tagBadge}>
                 <Text style={styles.tagText}>{tag}</Text>
               </View>
@@ -212,32 +191,84 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
       </View>
       
       <View style={styles.eventFooter}>
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => handleSurveyPress(event)}
-        >
-          <Icon name="table" size={16} color="#FFFFFF" />
-          <Text style={styles.actionButtonText}>Survey</Text>
-        </TouchableOpacity>
-        
+        {event.customConfig?.badgeScan ? (
+          onEventPress ? (
+            <Pressable
+              style={[styles.actionButton, styles.startButton]}
+              onPress={() => onEventPress(event)}
+              testID={`start-button-${event.id}`}
+              accessible={true}
+              accessibilityLabel={`Start ${event.name}`}
+              accessibilityRole="button"
+            >
+              <Icon name="arrow-right" size={20} color="#FFFFFF" />
+              <Text style={styles.actionButtonText}>Start</Text>
+            </Pressable>
+          ) : (
+            <Pressable
+              style={[styles.actionButton, styles.startButton]}
+              onPress={() => navigate(`/event/${event.id}`)}
+              testID={`start-button-${event.id}`}
+              accessible={true}
+              accessibilityLabel={`Start ${event.name}`}
+              accessibilityRole="button"
+            >
+              <Icon name="arrow-right" size={20} color="#FFFFFF" />
+              <Text style={styles.actionButtonText}>Start</Text>
+            </Pressable>
+          )
+        ) : (
+          onEventPress ? (
+            <Pressable
+              style={styles.actionButton}
+              onPress={() => onEventPress(event)}
+              testID={`survey-button-${event.id}`}
+              accessible={true}
+              accessibilityLabel={`Survey button for ${event.name}`}
+              accessibilityRole="button"
+            >
+              <Icon name="clipboard-list-check" size={20} color="#FFFFFF" />
+              <Text style={styles.actionButtonText}>Survey</Text>
+            </Pressable>
+          ) : (
+            <Pressable
+              style={styles.actionButton}
+              onPress={() => navigate({
+                pathname: '/survey/[id]',
+                params: {
+                  id: event.id,
+                  eventData: JSON.stringify(event)
+                }
+              })}
+              testID={`survey-button-${event.id}`}
+              accessible={true}
+              accessibilityLabel={`Survey button for ${event.name}`}
+              accessibilityRole="button"
+            >
+              <Icon name="clipboard-list-check" size={20} color="#FFFFFF" />
+              <Text style={styles.actionButtonText}>Survey</Text>
+            </Pressable>
+          )
+        )}
+
         {(event.preRegDate || event.surveyType === 'preTD') && (
-          <TouchableOpacity
+          <Pressable
             style={styles.actionButton}
             onPress={() => handleCheckInPress(event)}
           >
-            <Icon name="arrows-down-to-people" size={16} color="#FFFFFF" />
+            <Icon name="person-circle-check" size={20} color="#FFFFFF" />
             <Text style={styles.actionButtonText}>Check-In</Text>
-          </TouchableOpacity>
+          </Pressable>
         )}
-        
+
         {event._preEventID && (
-          <TouchableOpacity
+          <Pressable
             style={styles.actionButton}
             onPress={() => handleCheckOutPress(event)}
           >
-            <Icon name="person-to-door" size={16} color="#FFFFFF" />
+            <Icon name="person-walking-arrow-right" size={20} color="#FFFFFF" />
             <Text style={styles.actionButtonText}>Check Out</Text>
-          </TouchableOpacity>
+          </Pressable>
         )}
       </View>
     </View>
@@ -253,21 +284,25 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
         {filter === 'all' && 'No events available'}
       </Text>
       {onRefresh && (
-        <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
+        <Pressable style={styles.refreshButton} onPress={handleRefresh}>
           <Text style={styles.refreshButtonText}>Refresh</Text>
-        </TouchableOpacity>
+        </Pressable>
       )}
-      <TouchableOpacity 
-        style={[styles.refreshButton, { marginLeft: 10, backgroundColor: '#FF6F00' }]} 
-        onPress={() => router.push('/survey-test')}
+      <Pressable
+        style={[styles.refreshButton, { marginLeft: 10, backgroundColor: '#FF6F00' }]}
+        onPress={() => navigate('/survey-test')}
+        testID="test-survey-button"
+        accessible={true}
+        accessibilityLabel="Test Survey"
+        accessibilityRole="button"
       >
         <Text style={styles.refreshButtonText}>Test Survey</Text>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['right', 'bottom', 'left']}>
       {/* Search Bar and Tabs - stacked on mobile, side by side on tablet */}
       {isTablet && currentUser?.isAdmin ? (
         // Tablet layout: side by side
@@ -478,19 +513,26 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     backgroundColor: '#257180',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderRadius: 6,
     marginRight: 8,
     marginBottom: 4,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 10,
+    minHeight: 40,
   },
   actionButtonText: {
     color: '#ffffff',
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
+  },
+  scanButton: {
+    backgroundColor: '#0A8754',
+  },
+  startButton: {
+    backgroundColor: '#0A8754',
   },
   statusBadge: {
     paddingHorizontal: 8,

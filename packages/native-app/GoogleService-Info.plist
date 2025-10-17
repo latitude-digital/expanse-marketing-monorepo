@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>846031493147-mk5jvedvuuu4909f7jlqa9d52hg2ptjc.apps.googleusercontent.com</string>
+	<string>846031493147-1vr6mf13rdn1q4iuqg6qbefsaqh8m0i3.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.846031493147-mk5jvedvuuu4909f7jlqa9d52hg2ptjc</string>
+	<string>com.googleusercontent.apps.846031493147-1vr6mf13rdn1q4iuqg6qbefsaqh8m0i3</string>
 	<key>API_KEY</key>
 	<string>AIzaSyBJRhrwVic72-LZhrZ5UwEfwlvrhsIF4uo</string>
 	<key>GCM_SENDER_ID</key>
@@ -13,7 +13,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.meridianeventtech.surveyjs</string>
+	<string>com.meridianeventtech.app</string>
 	<key>PROJECT_ID</key>
 	<string>latitude-lead-system</string>
 	<key>STORAGE_BUCKET</key>
@@ -29,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:846031493147:ios:bafa056872f873800b80be</string>
+	<string>1:846031493147:ios:37c4705fa494bcc70b80be</string>
 </dict>
 </plist>

@@ -26,8 +26,22 @@ async function loadFDSRenderers(): Promise<void> {
     return;
   }
 
+  // Check if renderers were loaded statically (for WebView bundle compatibility)
+  // vite-plugin-singlefile doesn't support dynamic imports, so WebView bundles
+  // import renderers statically and set this flag
+  console.log('Checking for statically loaded renderers...', {
+    hasWindow: typeof window !== 'undefined',
+    flagValue: typeof window !== 'undefined' ? (window as any).__FDS_RENDERERS_LOADED : undefined
+  });
+
+  if (typeof window !== 'undefined' && (window as any).__FDS_RENDERERS_LOADED) {
+    console.log('FDS renderers loaded statically (WebView bundle)');
+    FDSRenderersLoaded = true;
+    return;
+  }
+
   try {
-    // Dynamically import FDS renderers
+    // Dynamically import FDS renderers (for web app)
     const { FDSTextRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSText');
     const { FDSRadioRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSRadio');
     const { FDSCheckboxRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSCheckbox');

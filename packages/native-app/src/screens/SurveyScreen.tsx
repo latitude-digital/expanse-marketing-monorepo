@@ -1,43 +1,146 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   Alert,
   Modal,
   BackHandler,
+  ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
+import { router, useLocalSearchParams } from 'expo-router';
 import type { MeridianEvent as ExpanseEvent } from '@meridian-event-tech/shared/types';
-import SurveyWebViewSPA, { SurveyCompletionData } from '../components/SurveyWebViewSPA';
+import { OfflineSurveyWebView, SurveyCompletionData } from '../components/OfflineSurveyWebView';
 import { themeProvider } from '../utils/theme-provider';
 import { offlineDetector } from '../utils/offline-detector';
 import { DatabaseService } from '../services/database';
+import { surveySyncService } from '../services/survey-sync';
+// COMMENTED OUT - Asset caching disabled
+// import { replaceAssetUrlsInValue } from '../utils/asset-urls';
+import type { CachedMeridianEvent } from '../services/event-cache';
 
 interface SurveyScreenProps {
   event?: ExpanseEvent;
   onSurveyComplete?: (data: SurveyCompletionData) => void;
   onSurveyAbandoned?: (event: ExpanseEvent) => void;
+  initialAnswers?: Record<string, any>;
+  scanMetadata?: {
+    value: string;
+    time: string;
+    response: any;
+  };
+  isPrefillLoading?: boolean;
 }
 
 const SurveyScreen: React.FC<SurveyScreenProps> = ({
   event,
   onSurveyComplete,
   onSurveyAbandoned,
+  initialAnswers,
+  scanMetadata,
+  isPrefillLoading = false,
 }) => {
   const navigation = useNavigation();
   const route = useRoute();
+  const params = useLocalSearchParams();
   const [showExitConfirm, setShowExitConfirm] = useState(false);
-  const [surveyStartTime] = useState(Date.now());
   const [isOnline, setIsOnline] = useState(offlineDetector.isOnline());
-  const [surveyData, setSurveyData] = useState<SurveyCompletionData | null>(null);
-  const [showCompletionScreen, setShowCompletionScreen] = useState(false);
+
+  // Extract route params for activation pre-fill
+  const preFillDataParam = params.preFillData as string | undefined;
+  const originalActivationPathParam = params.originalActivationPath as string | undefined;
+  const scanValueParam = params.scanValue as string | undefined;
+  const scanTimeParam = params.scanTime as string | undefined;
 
   // Get event from route params if not provided via props
   const eventFromRoute = (route.params as any)?.event;
   const displayEvent = event || eventFromRoute;
+
+  // COMMENTED OUT - Asset caching disabled
+  /*
+  const assetMap = useMemo(() => {
+    if (!displayEvent) {
+      return {};
+    }
+    const map = (displayEvent as CachedMeridianEvent | undefined)?.assetMap;
+    if (!map) {
+      return {};
+    }
+    return map;
+  }, [displayEvent]);
+
+  const preparedEvent = useMemo(() => {
+    if (!displayEvent) {
+      return undefined;
+    }
+
+    const entries = Object.entries(assetMap);
+    if (!entries.length) {
+      return displayEvent;
+    }
+
+    return {
+      ...displayEvent,
+      questions: replaceAssetUrlsInValue(displayEvent.questions, assetMap),
+      surveyJSON: replaceAssetUrlsInValue(displayEvent.surveyJSON, assetMap),
+      surveyJSModel: replaceAssetUrlsInValue(displayEvent.surveyJSModel, assetMap),
+      theme: replaceAssetUrlsInValue(displayEvent.theme, assetMap),
+      surveyJSTheme: replaceAssetUrlsInValue(displayEvent.surveyJSTheme, assetMap),
+      customConfig: replaceAssetUrlsInValue(displayEvent.customConfig, assetMap),
+      thanks: replaceAssetUrlsInValue(displayEvent.thanks, assetMap),
+    } as ExpanseEvent;
+  }, [displayEvent, assetMap]);
+
+  const surveyEvent = preparedEvent || displayEvent;
+  */
+
+  const surveyEvent = displayEvent;
+
+  // Parse pre-fill data from activation survey if present
+  const preFillAnswers = useMemo(() => {
+    if (preFillDataParam && typeof preFillDataParam === 'string') {
+      try {
+        const parsed = JSON.parse(preFillDataParam);
+        console.log('[ACTIVATIONS] 🔄 Activation pre-fill data received');
+        console.log('[ACTIVATIONS] 📋 Number of fields being pre-filled:', Object.keys(parsed).length);
+        console.log('[ACTIVATIONS] 🔑 Pre-fill field keys:', Object.keys(parsed).join(', '));
+        if (originalActivationPathParam) {
+          console.log('[ACTIVATIONS] 📍 Original activation path:', originalActivationPathParam);
+        }
+        return parsed;
+      } catch (error) {
+        console.error('[ACTIVATIONS] ❌ Failed to parse preFillData:', error);
+        return null;
+      }
+    }
+    return null;
+  }, [preFillDataParam, originalActivationPathParam]);
+
+  // Merge pre-fill data with initial answers (initial answers take precedence)
+  const mergedInitialAnswers = useMemo(() => {
+    if (preFillAnswers && initialAnswers) {
+      return { ...preFillAnswers, ...initialAnswers };
+    }
+    return preFillAnswers || initialAnswers;
+  }, [preFillAnswers, initialAnswers]);
+
+  // Create scan metadata from route params if not provided via props
+  const effectiveScanMetadata = useMemo(() => {
+    if (scanMetadata) {
+      return scanMetadata;
+    }
+    if (scanValueParam && scanTimeParam) {
+      return {
+        value: scanValueParam,
+        time: scanTimeParam,
+        response: null,
+      };
+    }
+    return undefined;
+  }, [scanMetadata, scanValueParam, scanTimeParam]);
 
   useEffect(() => {
     // Subscribe to connectivity changes
@@ -50,10 +153,29 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
 
   useEffect(() => {
     // Set theme based on event brand
-    if (displayEvent?.brand) {
-      themeProvider.setTheme(displayEvent.brand);
+    if (surveyEvent?.brand) {
+      themeProvider.setTheme(surveyEvent.brand);
     }
-  }, [displayEvent?.brand]);
+  }, [surveyEvent?.brand]);
+
+  useEffect(() => {
+    // Log activation pre-fill status
+    if (preFillAnswers && originalActivationPathParam) {
+      console.log('[ACTIVATIONS] ✨ Pre-filling survey with activation data');
+      console.log('[ACTIVATIONS] 📍 Original activation path:', originalActivationPathParam);
+      console.log('[ACTIVATIONS] 📋 Pre-fill answer count:', Object.keys(preFillAnswers).length);
+      console.log('[ACTIVATIONS] 🎯 Event ID:', surveyEvent?.id);
+    }
+  }, [preFillAnswers, originalActivationPathParam, surveyEvent?.id]);
+
+  if (!surveyEvent) {
+    return (
+      <SafeAreaView style={styles.loadingFallback}>
+        <ActivityIndicator size="large" color="#257180" />
+        <Text style={styles.loadingFallbackText}>Preparing survey...</Text>
+      </SafeAreaView>
+    );
+  }
 
   /**
    * Handle hardware back button on Android and navigation back
@@ -75,57 +197,115 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
    * Handle back navigation with confirmation
    */
   const handleBackNavigation = useCallback(() => {
-    if (showCompletionScreen) {
-      // Allow immediate exit after completion
-      handleExitSurvey();
-      return;
-    }
-
     setShowExitConfirm(true);
-  }, [showCompletionScreen]);
+  }, []);
+
+  /**
+   * Exit survey and return to event splash screen
+   */
+  const handleExitSurvey = useCallback(() => {
+    // Dismiss back to the event splash screen
+    if (surveyEvent?.id) {
+      router.dismissTo(`/event/${surveyEvent.id}`);
+    } else if (router.canGoBack()) {
+      router.back();
+    } else if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.navigate('EventList' as never);
+    }
+  }, [navigation, surveyEvent?.id]);
 
   /**
    * Handle survey completion
    */
   const handleSurveyComplete = useCallback(async (data: SurveyCompletionData) => {
-    setSurveyData(data);
-    
+    console.log('[SurveyScreen] 📩 Received completion data from WebView');
+    console.log('[SurveyScreen] Answer keys received:', Object.keys(data.answers));
+    console.log('[SurveyScreen] data.answers.end_time:', data.answers.end_time);
+    console.log('[SurveyScreen] data.answers._checkedIn:', data.answers._checkedIn);
+    console.log('[SurveyScreen] data.answers._preSurveyID:', data.answers._preSurveyID);
+
+    // Enrich with native-only metadata (_eventId, scan data, and activation data)
+    // DO NOT override values from the WebView - it already set all the defaults
+    const enrichedAnswers = {
+      ...data.answers,
+      _eventId: data.eventId,
+      ...(effectiveScanMetadata
+        ? {
+            _scanValue: effectiveScanMetadata.value,
+            _scanTime: effectiveScanMetadata.time,
+            _scanResponse: effectiveScanMetadata.response,
+          }
+        : {}),
+      // Include _originalActivation field if this is a linked activation survey
+      ...(originalActivationPathParam
+        ? { _originalActivation: originalActivationPathParam }
+        : {}),
+    };
+
+    // Log activation survey submission
+    if (originalActivationPathParam) {
+      console.log('[ACTIVATIONS] 📤 Submitting activation survey');
+      console.log('[ACTIVATIONS] 📍 _originalActivation path being saved:', originalActivationPathParam);
+      console.log('[ACTIVATIONS] 🎯 Event ID being saved to:', data.eventId);
+      console.log('[ACTIVATIONS] 📋 Total answer fields in submission:', Object.keys(enrichedAnswers).length);
+    }
+
+    console.log('[SurveyScreen] 📦 Enriched answer keys:', Object.keys(enrichedAnswers));
+    console.log('[SurveyScreen] enrichedAnswers.end_time:', enrichedAnswers.end_time);
+    console.log('[SurveyScreen] enrichedAnswers._checkedIn:', enrichedAnswers._checkedIn);
+
+    const enrichedData: SurveyCompletionData = {
+      ...data,
+      answers: enrichedAnswers,
+    };
+
     try {
-      // Store survey response in local database
       const dbService = DatabaseService.createEncrypted();
       const operations = await dbService.getOperations();
-      
+
+      // STEP 1: Save to Firestore using device_survey_guid as document ID
+      // This returns immediately, even offline, and uses the UUID from the survey data
+      console.log('[SurveyScreen] 💾 Saving survey to Firestore...');
+      const firestoreId = await surveySyncService.saveSurvey(enrichedData);
+      console.log('[SurveyScreen] ✅ Survey queued to Firestore with ID:', firestoreId);
+      console.log('[SurveyScreen] ℹ️  Using device_survey_guid as document ID for consistency');
+
+      // STEP 2: Save to local database with same device_survey_guid as ID
+      // This ensures the same UUID is used everywhere (Firestore, local DB)
       await operations.createSurveyResponse({
-        id: `${data.eventId}_${Date.now()}`,
-        event_id: data.eventId,
-        data: JSON.stringify(data.responses),
-        sync_status: 'pending',
+        id: firestoreId, // This is the device_survey_guid
+        event_id: enrichedData.eventId,
+        data: JSON.stringify(enrichedData.answers),
+        sync_status: 'synced', // Already queued to Firestore
       });
 
-      // Show completion screen
-      setShowCompletionScreen(true);
+      console.log('[SurveyScreen] ✅ Survey backed up to local database with same ID');
 
-      // Call parent completion handler
+      // STEP 3: Call completion callback if provided
       if (onSurveyComplete) {
-        onSurveyComplete(data);
+        onSurveyComplete(enrichedData);
       }
 
-      // Auto-exit after 5 seconds for kiosk mode
+      // STEP 4: Wait 5 seconds, then go back to event splash screen
+      console.log('[SurveyScreen] ✅ Survey complete, waiting 5 seconds before returning to event splash screen');
       setTimeout(() => {
+        console.log('[SurveyScreen] ⏰ 5 seconds elapsed, going back to event splash screen');
         handleExitSurvey();
       }, 5000);
-      
+
     } catch (error) {
-      console.error('Failed to save survey response:', error);
+      console.error('[SurveyScreen] ❌ Failed to save survey:', error);
       Alert.alert(
         'Save Error',
-        'Survey completed but failed to save locally. Please try again.',
+        'Survey completed but failed to save. Please try again.',
         [
           { text: 'OK', onPress: handleExitSurvey }
         ]
       );
     }
-  }, [onSurveyComplete]);
+  }, [onSurveyComplete, effectiveScanMetadata, originalActivationPathParam, handleExitSurvey, surveyEvent?.id]);
 
   /**
    * Handle survey error
@@ -136,11 +316,11 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
       'Survey Error',
       `An error occurred while loading the survey: ${error.message}`,
       [
-        { text: 'Retry', onPress: () => (navigation as any).replace('Survey', { event: displayEvent }) },
+        { text: 'Retry', onPress: () => (navigation as any).replace('Survey', { event: surveyEvent }) },
         { text: 'Exit', onPress: handleExitSurvey }
       ]
     );
-  }, [displayEvent]);
+  }, [navigation, surveyEvent, handleExitSurvey]);
 
   /**
    * Handle confirmed exit
@@ -148,12 +328,12 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
   const handleConfirmedExit = useCallback(() => {
     setShowExitConfirm(false);
     
-    if (onSurveyAbandoned && displayEvent) {
-      onSurveyAbandoned(displayEvent);
+    if (onSurveyAbandoned && surveyEvent) {
+      onSurveyAbandoned(surveyEvent);
     }
     
     handleExitSurvey();
-  }, [displayEvent, onSurveyAbandoned]);
+  }, [surveyEvent, onSurveyAbandoned, handleExitSurvey]);
 
   /**
    * Handle cancel exit
@@ -162,47 +342,7 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
     setShowExitConfirm(false);
   }, []);
 
-  /**
-   * Exit survey and return to previous screen
-   */
-  const handleExitSurvey = useCallback(() => {
-    // Clear any stored survey state to ensure privacy
-    setSurveyData(null);
-    setShowCompletionScreen(false);
-    
-    // Navigate back to event list or home
-    if (navigation.canGoBack()) {
-      navigation.goBack();
-    } else {
-      navigation.navigate('EventList' as never);
-    }
-  }, [navigation]);
-
-  /**
-   * Calculate survey duration
-   */
-  const getSurveyDuration = useCallback((): string => {
-    const duration = Date.now() - surveyStartTime;
-    const minutes = Math.floor(duration / 60000);
-    const seconds = Math.floor((duration % 60000) / 1000);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  }, [surveyStartTime]);
-
-  if (!displayEvent) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorTitle}>Event Not Found</Text>
-          <Text style={styles.errorText}>Unable to load survey event.</Text>
-          <TouchableOpacity style={styles.exitButton} onPress={handleExitSurvey}>
-            <Text style={styles.exitButtonText}>Go Back</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  const brandColor = themeProvider.getBrandPrimaryColor(displayEvent.brand || 'Other');
+  const brandColor = themeProvider.getBrandPrimaryColor(surveyEvent?.brand || 'Other');
 
   return (
     <SafeAreaView style={styles.container}>
@@ -210,7 +350,7 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
       <View style={[styles.header, { borderBottomColor: brandColor }]}>
         <View style={styles.headerContent}>
           <Text style={styles.eventTitle} numberOfLines={1}>
-            {displayEvent.eventName || 'Survey'}
+            {surveyEvent?.eventName || surveyEvent?.name || 'Survey'}
           </Text>
           <View style={styles.headerActions}>
             <View style={styles.statusIndicator}>
@@ -222,6 +362,10 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
             <TouchableOpacity
               style={[styles.exitHeaderButton, { borderColor: brandColor }]}
               onPress={handleBackNavigation}
+              testID="survey-exit-button"
+              accessible={true}
+              accessibilityLabel="Exit survey"
+              accessibilityRole="button"
             >
               <Text style={[styles.exitHeaderButtonText, { color: brandColor }]}>
                 Exit
@@ -231,14 +375,23 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
         </View>
       </View>
 
-      {/* Survey WebView SPA */}
-      <SurveyWebViewSPA
-        event={displayEvent}
-        onSurveyComplete={handleSurveyComplete}
-        onSurveyError={handleSurveyError}
-        allowsBackForwardNavigationGestures={false}
-        style={styles.webviewContainer}
-      />
+      {/* Survey WebView - Offline Bundle */}
+      <View style={styles.webviewWrapper}>
+        {isPrefillLoading ? (
+          <View style={styles.prefillLoader}>
+            <ActivityIndicator size="large" color={brandColor} />
+            <Text style={styles.prefillLoaderText}>Looking up badge...</Text>
+          </View>
+        ) : (
+          <OfflineSurveyWebView
+            event={surveyEvent}
+            existingAnswers={mergedInitialAnswers}
+            onSurveyComplete={handleSurveyComplete}
+            onSurveyError={handleSurveyError}
+            style={styles.webviewContainer}
+          />
+        )}
+      </View>
 
       {/* Exit Confirmation Modal */}
       <Modal
@@ -258,13 +411,21 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
               <TouchableOpacity
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={handleCancelExit}
+                testID="survey-continue-button"
+                accessible={true}
+                accessibilityLabel="Continue survey"
+                accessibilityRole="button"
               >
                 <Text style={styles.cancelButtonText}>Continue Survey</Text>
               </TouchableOpacity>
-              
+
               <TouchableOpacity
                 style={[styles.modalButton, styles.confirmButton, { backgroundColor: brandColor }]}
                 onPress={handleConfirmedExit}
+                testID="survey-confirm-exit-button"
+                accessible={true}
+                accessibilityLabel="Confirm exit survey"
+                accessibilityRole="button"
               >
                 <Text style={styles.confirmButtonText}>Exit Survey</Text>
               </TouchableOpacity>
@@ -273,44 +434,6 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
         </View>
       </Modal>
 
-      {/* Completion Screen Modal */}
-      <Modal
-        visible={showCompletionScreen}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={handleExitSurvey}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.completionModalContent}>
-            <Text style={styles.completionTitle}>Survey Complete!</Text>
-            <Text style={styles.completionText}>
-              Thank you for your participation. Your responses have been recorded.
-            </Text>
-            
-            {surveyData && (
-              <View style={styles.completionStats}>
-                <Text style={styles.completionStat}>
-                  Duration: {getSurveyDuration()}
-                </Text>
-                <Text style={styles.completionStat}>
-                  Responses: {Object.keys(surveyData.responses).length}
-                </Text>
-              </View>
-            )}
-            
-            <TouchableOpacity
-              style={[styles.completionButton, { backgroundColor: brandColor }]}
-              onPress={handleExitSurvey}
-            >
-              <Text style={styles.completionButtonText}>Continue</Text>
-            </TouchableOpacity>
-            
-            <Text style={styles.autoExitText}>
-              This screen will close automatically in a few seconds
-            </Text>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 };
@@ -319,6 +442,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+  },
+  loadingFallback: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingFallbackText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#666666',
   },
   header: {
     backgroundColor: '#FFFFFF',
@@ -369,8 +503,24 @@ const styles = StyleSheet.create({
     color: '#666666',
     fontWeight: '500',
   },
+  webviewWrapper: {
+    flex: 1,
+    position: 'relative',
+  },
   webviewContainer: {
     flex: 1,
+  },
+  prefillLoader: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  prefillLoaderText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#333333',
+    fontWeight: '600',
   },
   errorContainer: {
     flex: 1,
@@ -460,57 +610,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
-  },
-  completionModalContent: {
-    backgroundColor: '#FFFFFF',
-    margin: 32,
-    padding: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  completionTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#28A745',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  completionText: {
-    fontSize: 16,
-    color: '#666666',
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 24,
-  },
-  completionStats: {
-    marginBottom: 24,
-    alignItems: 'center',
-  },
-  completionStat: {
-    fontSize: 14,
-    color: '#495057',
-    marginBottom: 4,
-  },
-  completionButton: {
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  completionButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  autoExitText: {
-    fontSize: 12,
-    color: '#999999',
-    textAlign: 'center',
   },
 });
 

@@ -2,22 +2,18 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CLIENT_ID</key>
-	<string>846031493147-uksupskrstnaajk0u52qr779h02r7tci.apps.googleusercontent.com</string>
-	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.846031493147-uksupskrstnaajk0u52qr779h02r7tci</string>
 	<key>API_KEY</key>
-	<string>AIzaSyBJRhrwVic72-LZhrZ5UwEfwlvrhsIF4uo</string>
+	<string>AIzaSyC1J56puEAq_VLFcpH_0Aq7Etu9HNXPjrs</string>
 	<key>GCM_SENDER_ID</key>
-	<string>846031493147</string>
+	<string>375513097023</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.meridianeventtech.surveyjs.staging</string>
+	<string>com.meridianeventtech.app.staging</string>
 	<key>PROJECT_ID</key>
-	<string>latitude-lead-system</string>
+	<string>latitude-leads-staging</string>
 	<key>STORAGE_BUCKET</key>
-	<string>latitude-lead-system.firebasestorage.app</string>
+	<string>latitude-leads-staging.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -29,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:846031493147:ios:b95cbca25f6d80890b80be</string>
+	<string>1:375513097023:ios:938a72465aa69a8a0a298a</string>
 </dict>
 </plist>

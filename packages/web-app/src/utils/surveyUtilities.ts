@@ -186,6 +186,74 @@ export const determineLanguage = (
   return supportedLocales.includes('en') ? 'en' : supportedLocales[0];
 };
 
+/**
+ * Clean phone number by removing all formatting characters
+ * Leaves only numeric digits
+ */
+export const cleanPhoneNumber = (value: any): string => {
+  if (typeof value !== 'string') return value;
+  return value.replace(/[^0-9]/g, '');
+};
+
+/**
+ * Check if a field name/title suggests it's a phone field
+ * Uses fuzzy matching for common phone field patterns
+ */
+export const isPhoneField = (name: string): boolean => {
+  if (!name) return false;
+  const lowerName = name.toLowerCase();
+  const phonePatterns = [
+    'phone',
+    'telephone',
+    'mobile',
+    'cell',
+    'contact',
+    'fono',  // Spanish
+    'telefono',  // Spanish
+    'téléphone',  // French
+    'cellulaire',  // French
+  ];
+
+  return phonePatterns.some(pattern => lowerName.includes(pattern));
+};
+
+/**
+ * Validate international phone number format
+ * Accepts any phone format with 10-15 digits (formatted or unformatted)
+ */
+export const validateInternationalPhone = (value: string): boolean => {
+  if (!value) return true; // Empty is valid (use isRequired for required validation)
+
+  // Convert to string and remove all non-digit characters
+  const cleaned = String(value).replace(/\D/g, '');
+
+  // Accept 10-15 digits (covers US and international)
+  return cleaned.length >= 10 && cleaned.length <= 15;
+};
+
+
+/**
+ * SurveyJS validator function for international phone
+ * This is called by SurveyJS validation system
+ */
+export const validateInternationalPhoneForSurveyJS = function(this: any): void {
+  const value = this.question.value;
+
+  if (!value) {
+    this.returnResult(true);
+    return;
+  }
+
+  const isValid = validateInternationalPhone(value);
+
+  if (!isValid) {
+    this.returnResult(false);
+    return;
+  }
+
+  this.returnResult(true);
+};
+
 // Email validation function for SurveyJS
 // This wraps the shared validation function with the API endpoint
 export const validateEmailForSurveyJS = function(this: any): void {

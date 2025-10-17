@@ -1,0 +1,10 @@
+require 'spaceship'
+Spaceship::ConnectAPI::App.const_set('ESSENTIAL_INCLUDES', 'appStoreVersions')
+
+# Default to production
+app_identifier("com.meridianeventtech.app") # The bundle identifier of your app
+apple_id("shan@iotashan.com") # Your Apple email address
+team_id("X234V4S5DH") # Developer Portal Team ID
+
+# For more information about the Appfile, see:
+#     https://docs.fastlane.tools/advanced/#appfile

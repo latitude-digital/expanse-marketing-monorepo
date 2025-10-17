@@ -13,6 +13,7 @@
 
 import {
   ComponentCollection,
+  ElementFactory,
   ICustomQuestionTypeConfiguration,
   Question,
   Serializer,
@@ -101,6 +102,14 @@ const globalInit = () => {
     isSerializable: true,
   });
 
+  Serializer.addProperty("autocompleteaddress-intl", {
+    name: "_ffs",
+    displayName: "FFS question",
+    type: "text",
+    category: "data",
+    isSerializable: true,
+  });
+
   Serializer.addProperty("firstname", {
     name: "_ffs",
     displayName: "FFS question",
@@ -126,6 +135,14 @@ const globalInit = () => {
   });
 
   Serializer.addProperty("phone", {
+    name: "_ffs",
+    displayName: "FFS question",
+    type: "text",
+    category: "data",
+    isSerializable: true,
+  });
+
+  Serializer.addProperty("phone-intl", {
     name: "_ffs",
     displayName: "FFS question",
     type: "text",
@@ -957,8 +974,197 @@ const globalInit = () => {
   } as ICustomQuestionTypeConfiguration);
 
   /**
+   * Google Autocomplete Address (International with Country) Question
+   *
+   * @description Multi-field address input with Google Places autocomplete (worldwide) with visible country field
+   * @_ffs "address_group" - Maps to address1, address2, city, state, zip_code, country fields
+   * @autocomplete Google Places API integration, no country restrictions
+   * @validation Flexible validation for international addresses
+   * @fields address1*, address2, city*, state*, zip*, country*
+   * @country_restriction None - supports all countries
+   * @note Unlike autocompleteaddressall, this variant has a visible required country field
+   */
+  ComponentCollection.Instance.add({
+    name: "autocompleteaddress-intl",
+    title: "Autocomplete Address (International)",
+    iconName: "icon-mailbox-flag-up",
+    showInToolbox: true,
+    onInit: () => {
+      setPropertyReadOnly("autocompleteaddress-intl", "name");
+      setPropertyReadOnly("autocompleteaddress-intl", "_ffs");
+    },
+    elementsJSON: [
+      {
+        type: "text",
+        name: "address1",
+        title: {
+          en: "Street Address",
+          es: "Dirección 1",
+          fr: "Adresse",
+        },
+        isRequired: true,
+        autocomplete: "address-line1",
+        addressAutocompleteConfig: {
+          addressPartMap: {
+            address1: "address1",
+            address2: "address2",
+            city: "city",
+            state: "state",
+            zip: "zip",
+            country: "country",
+          },
+          // No country restrictions for international version
+        },
+        validators: [
+          {
+            type: "text",
+            text: {
+              en: "Invalid Address",
+              es: "Dirección Inválida",
+              fr: "Adresse non valide",
+            },
+            minLength: 5,
+          },
+        ],
+      },
+      {
+        type: "text",
+        name: "address2",
+        startWithNewLine: false,
+        title: {
+          en: "Apt/Suite/Other",
+          es: "Apto/Suite/Otro",
+          fr: "Appartement/Suite/Autre",
+        },
+        autocomplete: "address-line2",
+      },
+      {
+        type: "text",
+        name: "city",
+        title: {
+          en: "City",
+          es: "Ciudad",
+          fr: "Ville",
+        },
+        isRequired: true,
+        validators: [
+          {
+            type: "text",
+            text: {
+              en: "Invalid City",
+              es: "Ciudad Inválida",
+              fr: "Ville non valide",
+            },
+            minLength: 2,
+          },
+          {
+            type: "regex",
+            text: {
+              en: "Invalid City",
+              es: "Ciudad Inválida",
+              fr: "Ville non valide",
+            },
+            regex: "^[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\\s-]*$",
+          },
+        ],
+      },
+      {
+        type: "text",
+        name: "state",
+        isRequired: true,
+        startWithNewLine: false,
+        title: {
+          en: "State/Province",
+          es: "Estado/Provincia",
+          fr: "État/Province",
+        },
+        maxLength: 10,
+        validators: [
+          {
+            type: "text",
+            text: {
+              en: "Invalid State/Province",
+              es: "Estado/Provincia Inválida",
+              fr: "État/Province non valide",
+            },
+            minLength: 2,
+          },
+          {
+            type: "regex",
+            text: {
+              en: "Invalid State/Province",
+              es: "Estado/Provincia Inválida",
+              fr: "État/Province non valide",
+            },
+            regex: "^[A-Za-z][A-Za-z\\s-]*$",
+          },
+        ],
+      },
+      {
+        type: "text",
+        name: "zip",
+        isRequired: true,
+        valueName: "zip_code",
+        maxLength: "12",
+        startWithNewLine: false,
+        title: {
+          en: "Zip/Postal Code",
+          es: "Código Postal",
+          fr: "Code Postal",
+        },
+        autocomplete: "postal-code",
+        validators: [
+          {
+            type: "text",
+            text: {
+              en: "Invalid Zip/Postal Code",
+              es: "Código Postal Inválido",
+              fr: "Code Postal Non Valide",
+            },
+            minLength: 3,
+          },
+          // Combined regex for US zip codes, Canadian postal codes, and other international formats
+          {
+            type: "regex",
+            text: {
+              en: "Invalid Zip/Postal Code",
+              es: "Código Postal Inválido",
+              fr: "Code Postal Non Valide",
+            },
+            regex: "^[0-9]{5}(?:-[0-9]{4})?$|^[A-Za-z][0-9][A-Za-z][\\s\\-]?[0-9][A-Za-z][0-9]$|^[A-Za-z0-9\\s\\-]{3,12}$",
+          },
+        ],
+      },
+      {
+        type: "text",
+        name: "country",
+        startWithNewLine: false,
+        title: {
+          en: "Country",
+          es: "País",
+          fr: "Pays",
+        },
+        autocomplete: "country-name",
+        visible: true,
+        isRequired: true,
+        validators: [
+          {
+            type: "text",
+            text: {
+              en: "Invalid Country",
+              es: "País Inválido",
+              fr: "Pays non valide",
+            },
+            minLength: 2,
+          },
+        ],
+      },
+    ],
+  } as ICustomQuestionTypeConfiguration);
+
+  /**
    * Email Address Question
-   * 
+   *
    * @description Email input with validation and server-side verification
    * @_ffs "email" - Maps to email field in APIs
    * @validation Email format + server validation via validateEmail function
@@ -987,9 +1193,7 @@ const globalInit = () => {
       }
     },
     questionJSON: {
-      type: "emailtextinput",
-      // type: "text",
-      // renderAs: "emailtextinput",
+      type: "text",
       name: "email",
       title: {
         en: "Email Address",
@@ -1066,6 +1270,62 @@ const globalInit = () => {
           "saveMaskedValue": true,
           "pattern": "999-999-9999"
       }
+    },
+  } as ICustomQuestionTypeConfiguration);
+
+  /**
+   * Phone Number (International) Question
+   *
+   * @description Phone input accepting both US and international formats with auto-formatting
+   * @_ffs "phone" - Maps to phone field in APIs
+   * @validation US format (10 digits) or International (+1-15 digits)
+   * @autocomplete "tel"
+   * @auto_format Live formatting as user types (US: XXX-XXX-XXXX, Intl: +X-XXX-XXX-XXXX)
+   * @note No mask used - auto-formatting via onValueChanged for better UX
+   */
+  ComponentCollection.Instance.add({
+    name: "phone-intl",
+    title: "Phone (International)",
+    iconName: "icon-mobile-retro",
+    showInToolbox: true,
+    inheritBaseProps: ["isRequired", "description", "visible", "enable"],
+    onInit: () => {
+      setPropertyReadOnly("phone-intl", "name");
+      setPropertyReadOnly("phone-intl", "_ffs");
+    },
+    onLoaded(question: Question) {
+      // Sync validators from parent to child for custom questions
+      const child = question.contentQuestion;
+      if (child && question.validators?.length > 0) {
+        child.validators = [...(child.validators || []), ...question.validators];
+        // Sync isRequired from parent to child
+        child.isRequired = question.isRequired;
+      }
+    },
+    questionJSON: {
+      type: "text",
+      name: "phone",
+      title: {
+        en: "Mobile Number",
+        es: "Teléfono",
+        fr: "Téléphone",
+      },
+      placeholder: "+1-555-555-5555 or 555-555-5555",
+      description: {
+        en: "US format: xxx-xxx-xxxx or International: +x-xxx-xxx-xxxx",
+        es: "Formato EE. UU.: xxx-xxx-xxxx o Internacional: +x-xxx-xxx-xxxx",
+        fr: "Format américain : xxx-xxx-xxxx ou International : +x-xxx-xxx-xxxx",
+      },
+      descriptionLocation: "underInput",
+      inputType: "tel",
+      autocomplete: "tel",
+      validators: [
+        {
+          type: "regex",
+          regex: "^\\+?[\\d\\s\\-\\(\\)]{10,20}$",
+          text: "Please enter a valid phone number (10-15 digits)"
+        }
+      ]
     },
   } as ICustomQuestionTypeConfiguration);
 

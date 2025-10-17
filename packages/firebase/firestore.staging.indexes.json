@@ -1,160 +1,6 @@
 {
   "indexes": [
     {
-      "collectionGroup": "surveys",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "_checkedIn",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "_checkedOut",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "last_name",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "first_name",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "surveys",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "_checkedIn",
-          "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "_checkedOut",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "last_name",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "first_name",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "surveys",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "_checkedOut",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "_checkedIn",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "last_name",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "first_name",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "surveys",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "_checkedOut",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "_checkedIn",
-          "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "last_name",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "first_name",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "surveys",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "_checkedOut",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "abandoned",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "last_name",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "first_name",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "surveys",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "_checkedOut",
-          "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "abandoned",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "last_name",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "first_name",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "surveys",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "_checkedOut",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "last_name",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "first_name",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "_checkedIn",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
       "collectionGroup": "surveyResponses",
       "queryScope": "COLLECTION",
       "fields": [
@@ -184,6 +30,86 @@
     },
     {
       "collectionGroup": "surveys",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "_eventId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "_scanValue",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "surveys",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "_checkedIn",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "_checkedOut",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "last_name",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "first_name",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "surveys",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "_checkedIn",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "_checkedOut",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "last_name",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "first_name",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "surveys",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "_checkedOut",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "_checkedIn",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "last_name",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "first_name",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "surveys",
       "queryScope": "COLLECTION",
       "fields": [
         {
@@ -200,6 +126,50 @@
         },
         {
           "fieldPath": "first_name",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "surveys",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "_checkedOut",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "abandoned",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "last_name",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "first_name",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "surveys",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "_checkedOut",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "last_name",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "first_name",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "_checkedIn",
           "order": "ASCENDING"
         }
       ]

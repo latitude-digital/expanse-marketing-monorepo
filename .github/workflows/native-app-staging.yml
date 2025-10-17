@@ -1,0 +1,204 @@
+name: Build and Deploy Native App Staging
+
+on:
+  push:
+    branches:
+      - staging
+    paths:
+      - 'packages/native-app/**'
+      - '.github/workflows/native-app-staging.yml'
+  workflow_dispatch:
+
+jobs:
+  build-deploy:
+    runs-on: [self-hosted, macOS, ARM64]
+    environment: staging
+    defaults:
+      run:
+        working-directory: packages/native-app
+
+    steps:
+      - name: Notify Slack (start)
+        if: false  # Enable if you have Slack configured
+        uses: slackapi/slack-github-action@v1.27.1
+        with:
+          channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": { "type": "plain_text", "text": "🚀 Meridian Events Staging Build Started", "emoji": true }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Run <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|#${{ github.run_number }}> triggered by *${{ github.actor }}* on `${{ github.ref_name }}`."
+                  }
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "Commit: <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set environment variables
+        run: |
+          BUILD_DATE_CODE=$(date +%Y%m%d)
+          echo "BUILD_DATE_CODE=${BUILD_DATE_CODE}"
+          echo "BUILD_VERSION=${BUILD_DATE_CODE}.${{ github.run_number }}" >> $GITHUB_ENV
+          echo "APP_VARIANT=staging" >> $GITHUB_ENV
+
+      - name: Setup environment
+        run: |
+          source ~/.zprofile
+          source ~/.zshrc
+          nvm install
+
+      - name: Verify environment
+        run: |
+          echo "PATH: $PATH"
+          echo "Ruby: $(which ruby) - $(ruby --version)"
+          echo "Bundler: $(which bundle) - $(bundle --version)"
+          echo "Fastlane: $(which fastlane) - $(fastlane --version)"
+          echo "Gem home: $GEM_HOME"
+          echo "Node: $(which node) - $(node --version)"
+          echo "pnpm: $(which pnpm) - $(pnpm --version)"
+
+      - name: Configure git
+        run: |
+          git config --global url."git@github.com:".insteadOf "https://github.com/"
+          export LANG=en_US.UTF-8
+
+      - name: Install Ruby dependencies
+        run: |
+          bundle install
+          bundle update fastlane
+
+      - name: Build and deploy iOS
+        run: |
+          source ~/.zprofile
+          source ~/.zshrc
+          export BUILD_NUMBER=${{ github.run_number }}
+          export APP_VARIANT=staging
+          bundle exec fastlane ios staging
+        env:
+          MATCH_KEYCHAIN_NAME: ${{ secrets.MATCH_KEYCHAIN_NAME }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          APPLE_STORE_CONNECT_KEY_ID: ${{ secrets.APPLE_STORE_CONNECT_KEY_ID }}
+          APPLE_STORE_CONNECT_ISSUER_ID: ${{ secrets.APPLE_STORE_CONNECT_ISSUER_ID }}
+          APPLE_STORE_CONNECT_KEY: ${{ secrets.APPLE_STORE_CONNECT_KEY }}
+          WORKSPACE: ${{ github.workspace }}/packages/native-app
+
+      - name: Archive test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fastlane-report
+          path: packages/native-app/fastlane/report.xml
+
+      - name: Create GitHub Release
+        if: success()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "native-app-staging-v${{ env.BUILD_VERSION }}"
+          name: "Meridian Events Staging v${{ env.BUILD_VERSION }}"
+          body: |
+            ## Meridian Events Staging Release
+
+            **Build Number:** ${{ github.run_number }}
+            **Branch:** ${{ github.ref_name }}
+            **Commit:** ${{ github.sha }}
+
+            This is a staging release for internal testing.
+          files: |
+            packages/native-app/build/MeridianEvents.ipa
+            packages/native-app/build/MeridianEvents.app.dSYM.zip
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Notify Slack (success)
+        if: success() && false  # Enable if you have Slack configured
+        uses: slackapi/slack-github-action@v1.27.1
+        with:
+          channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": { "type": "plain_text", "text": "✅ Meridian Events Staging Deploy Complete", "emoji": true }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Run <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|#${{ github.run_number }}> by *${{ github.actor }}* finished successfully."
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    { "type": "mrkdwn", "text": "*Environment*\nStaging" },
+                    { "type": "mrkdwn", "text": "*Build Version*\n${{ env.BUILD_VERSION }}" }
+                  ]
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    { "type": "mrkdwn", "text": "Branch `${{ github.ref_name }}` · Commit <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>" }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+      - name: Notify Slack (failure)
+        if: failure() && false  # Enable if you have Slack configured
+        uses: slackapi/slack-github-action@v1.27.1
+        with:
+          channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": { "type": "plain_text", "text": "❌ Meridian Events Staging Deploy Failed", "emoji": true }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Run <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|#${{ github.run_number }}> triggered by *${{ github.actor }}* did not complete."
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    { "type": "mrkdwn", "text": "*Logs*\n<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Inspect failure>" }
+                  ]
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    { "type": "mrkdwn", "text": "Branch `${{ github.ref_name }}` · Commit <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>" }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

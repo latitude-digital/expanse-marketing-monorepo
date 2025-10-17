@@ -34,6 +34,7 @@ interface ExpanseEvent {
   fordEventID?: string;
   lincolnEventID?: string;
   preRegDate?: Date;
+  customConfig?: Record<string, any> | null;
 }
 
 const UserHome: React.FC = () => {

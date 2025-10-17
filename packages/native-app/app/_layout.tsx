@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
 import { useEffect } from 'react';
 import { View, ActivityIndicator, TouchableOpacity, Text } from 'react-native';
 import '../src/styles/global.css';
+import { ensureSurveyBundle } from '../src/utils/surveyBundleManager';
 
 function AuthenticatedLayout() {
   const { currentUser, loading, signOut } = useAuth();
@@ -61,9 +62,9 @@ function AuthenticatedLayout() {
           }
         }} 
       />
-      <Stack.Screen 
-        name="index" 
-        options={{ 
+      <Stack.Screen
+        name="index"
+        options={{
           title: "Meridian Events",
           headerShown: true,
           headerTintColor: "#257180",
@@ -71,11 +72,11 @@ function AuthenticatedLayout() {
             backgroundColor: '#F8F9FA',
           },
           headerRight: () => (
-            <TouchableOpacity onPress={handleSignOut} style={{ marginRight: 16 }}>
-              <Text style={{ color: '#257180', fontSize: 16, fontWeight: '600' }}>Sign Out</Text>
+            <TouchableOpacity onPress={handleSignOut}>
+              <Text style={{ color: '#007AFF', fontSize: 17, fontWeight: '400' }}>Sign Out</Text>
             </TouchableOpacity>
           ),
-        }} 
+        }}
       />
       <Stack.Screen 
         name="event/[id]" 
@@ -92,11 +93,31 @@ function AuthenticatedLayout() {
           headerShown: false
         }} 
       />
+      <Stack.Screen
+        name="scan/[id]"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 }
 
 export default function RootLayout() {
+  // Initialize survey bundle on app launch
+  useEffect(() => {
+    const initSurvey = async () => {
+      try {
+        await ensureSurveyBundle();
+        console.log('[App] Survey bundle initialized at app launch');
+      } catch (error) {
+        console.error('[App] Failed to initialize survey bundle:', error);
+      }
+    };
+
+    initSurvey();
+  }, []);
+
   return (
     <AuthProvider>
       <AuthenticatedLayout />

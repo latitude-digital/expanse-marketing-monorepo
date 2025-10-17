@@ -1,0 +1,57 @@
+name: Native App Staging EAS Updates
+
+on:
+  push:
+    branches:
+      - staging
+    paths:
+      - 'packages/native-app/**'
+      - '!packages/native-app/ios/**'
+      - '!packages/native-app/android/**'
+      - '.github/workflows/native-app-staging-updates.yml'
+  workflow_dispatch:
+
+jobs:
+  eas-update:
+    runs-on: [self-hosted, macOS, ARM64]
+    environment: staging
+    defaults:
+      run:
+        working-directory: packages/native-app
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set environment variables
+        run: |
+          BUILD_DATE_CODE=$(date +%Y%m%d)
+          echo "BUILD_DATE_CODE=${BUILD_DATE_CODE}"
+          echo "BUILD_VERSION=${BUILD_DATE_CODE}.${{ github.run_number }}" >> $GITHUB_ENV
+          echo "APP_VARIANT=staging" >> $GITHUB_ENV
+
+      - name: Setup environment
+        run: |
+          source ~/.zprofile
+          source ~/.zshrc
+          nvm install
+
+      - name: Verify environment
+        run: |
+          echo "Node: $(which node) - $(node --version)"
+          echo "pnpm: $(which pnpm) - $(pnpm --version)"
+
+      - name: Install Ruby dependencies
+        run: |
+          bundle install
+
+      - name: Publish EAS Update
+        run: |
+          source ~/.zprofile
+          source ~/.zshrc
+          export BUILD_NUMBER=${{ github.run_number }}
+          export APP_VARIANT=staging
+          bundle exec fastlane ios staging_updates
+        env:
+          WORKSPACE: ${{ github.workspace }}/packages/native-app
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}

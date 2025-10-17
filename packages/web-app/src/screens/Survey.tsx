@@ -47,6 +47,9 @@ import {
   extractUTM,
   determineLanguage,
   validateEmailForSurveyJS,
+  validateInternationalPhoneForSurveyJS,
+  cleanPhoneNumber,
+  isPhoneField,
   type FileValidationResult
 } from '../utils/surveyUtilities';
 
@@ -63,8 +66,9 @@ import GlobalHeader from '../components/GlobalHeader';
 // Types are now imported from @packages/shared/types
 
 
-// Register email validation function
+// Register validation functions
 FunctionFactory.Instance.register("validateEmail", validateEmailForSurveyJS, true);
+FunctionFactory.Instance.register("validateInternationalPhone", validateInternationalPhoneForSurveyJS, true);
 
 const SurveyComponent: React.FC = () => {
   const navigate = useNavigate();
@@ -846,6 +850,7 @@ const SurveyComponent: React.FC = () => {
               'survey_date': new Date(),
               'event_id': event.fordEventID || event.lincolnEventID || eventID,
               'app_version': 'surveyjs_2.0',
+              'device_survey_guid': uuidv4(),
               'abandoned': 0,
               '_utm': extractUTM() as unknown as Record<string, string>,
               '_referrer': (window as any).frames?.top?.document?.referrer,
@@ -1025,7 +1030,8 @@ const SurveyComponent: React.FC = () => {
             let surveyData: SurveyData = sender.data;
             console.log('[onComplete] Initial survey data:', JSON.stringify(surveyData, null, 2));
 
-            // set some default hidden properties
+            // Set tracking properties (these need to be set here in onComplete, not in onAfterRenderSurvey,
+            // because sender.data doesn't include properties set to null via setValue)
             surveyData['_preSurveyID'] = preSurveyID || null;
             surveyData['_checkedIn'] = null;
             surveyData['_checkedOut'] = null;
@@ -1035,7 +1041,6 @@ const SurveyComponent: React.FC = () => {
             surveyData['_sms'] = null;
             surveyData['_exported'] = null;
             surveyData['end_time'] = new Date();
-            surveyData['device_survey_guid'] = uuidv4(); // Use same GUID for both APIs
             
             // Function to interpolate variables in the thank you message
             const interpolateVariables = (text: string, data: any): string => {
@@ -1106,6 +1111,19 @@ const SurveyComponent: React.FC = () => {
             } else {
               console.log('[PostTD Debug] Not a postTD survey or missing required data');
             }
+
+            // Clean phone numbers - remove all formatting characters
+            survey.getAllQuestions().forEach((question: any) => {
+              const questionName = question.name || '';
+              const questionTitle = question.title || '';
+              if (isPhoneField(questionName) || isPhoneField(questionTitle)) {
+                const phoneValue = surveyData[question.name];
+                if (phoneValue) {
+                  surveyData[question.name] = cleanPhoneNumber(phoneValue);
+                  console.log(`[Phone Cleaning] Cleaned "${question.name}": "${phoneValue}" -> "${surveyData[question.name]}"`);
+                }
+              }
+            });
 
             try {
               // Save to Firestore

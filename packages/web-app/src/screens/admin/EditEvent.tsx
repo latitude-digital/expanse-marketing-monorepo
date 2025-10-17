@@ -59,6 +59,7 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
             showHeader: event.showHeader !== undefined ? event.showHeader : true,
             showFooter: event.showFooter !== undefined ? event.showFooter : true,
             tags: event.tags || [],
+            customConfig: event.customConfig ?? null,
         };
     },
     fromFirestore(
@@ -96,6 +97,21 @@ const EEventConverter: FirestoreDataConverter<ExpanseEvent> = {
             showHeader: data.showHeader !== undefined ? data.showHeader : true,
             showFooter: data.showFooter !== undefined ? data.showFooter : true,
             tags: data.tags || [],
+            customConfig: (() => {
+                const config = data.customConfig;
+                if (config === undefined || config === null) {
+                    return null;
+                }
+                if (typeof config === 'string') {
+                    try {
+                        return JSON.parse(config);
+                    } catch (error) {
+                        console.warn('Invalid customConfig JSON stored for event', snapshot.id, error);
+                        return null;
+                    }
+                }
+                return config;
+            })(),
         };
     },
 };
@@ -158,6 +174,7 @@ function DashboardScreen() {
                 showHeader: true,
                 showFooter: true,
                 tags: [],
+                customConfig: null,
             });
         } else {
             // get the event
@@ -621,6 +638,24 @@ function DashboardScreen() {
                                 }
                             ]
                         },
+                        // Custom Configuration Panel
+                        {
+                            "type": "panel",
+                            "name": "customConfigPanel",
+                            "title": "Custom Configuration",
+                            "description": "Provide JSON to control native app features like badge scanning or linked activations. Leave blank for defaults.",
+                            "elements": [
+                                {
+                                    "type": "comment",
+                                    "name": "customConfig",
+                                    "title": "Custom Config (JSON)",
+                                    "description": "Must be valid JSON. Example: { \"badgeScan\": { \"vendor\": \"acme\", \"config\": { \"foo\": \"bar\" } } }",
+                                    "descriptionLocation": "underTitle",
+                                    "rows": 8,
+                                    "placeholder": "{\n  \"badgeScan\": {\n    \"vendor\": \"\",\n    \"config\": {}\n  },\n  \"activations\": []\n}"
+                                }
+                            ]
+                        },
                         {
                             "type": "boolean",
                             "name": "editSurvey",
@@ -773,7 +808,9 @@ function DashboardScreen() {
                     displayName
                 })) : [],
             // Map tags - ensure it's an array
-            tags: thisEvent.tags || []
+            tags: thisEvent.tags || [],
+            // Present customConfig as formatted JSON
+            customConfig: thisEvent.customConfig ? JSON.stringify(thisEvent.customConfig, null, 2) : ''
         };
 
         survey.addNavigationItem({
@@ -789,6 +826,14 @@ function DashboardScreen() {
         });
 
         survey.onServerValidateQuestions.add((sender, { data, errors, complete }) => {
+            if (data.customConfig && typeof data.customConfig === 'string' && data.customConfig.trim() !== '') {
+                try {
+                    JSON.parse(data.customConfig);
+                } catch (error) {
+                    errors["customConfig"] = "Custom Config must be valid JSON";
+                }
+            }
+
             if (thisEvent.id === 'new') {
                 const eventRef = doc(db, "events", data.id);
                 getDoc(eventRef).then((event) => {
@@ -834,6 +879,16 @@ function DashboardScreen() {
             eventData.surveyType = ((sender.data.fordEventID || sender.data.lincolnEventID) && sender.data.surveyType) ? sender.data.surveyType : null;
             // Map tags - ensure it's an array
             eventData.tags = sender.data.tags || [];
+            // Parse custom configuration JSON into a Firestore map
+            if (typeof sender.data.customConfig === 'string' && sender.data.customConfig.trim() !== '') {
+                try {
+                    eventData.customConfig = JSON.parse(sender.data.customConfig);
+                } catch (error) {
+                    eventData.customConfig = null;
+                }
+            } else {
+                eventData.customConfig = null;
+            }
 
             // Handle email configurations based on enablePreRegistration toggle
             if (sender.data.enablePreRegistration) {

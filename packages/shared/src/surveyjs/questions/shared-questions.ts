@@ -20,6 +20,24 @@ export const sharedQuestions: QuestionConfig[] = [
     properties: [{ name: '_ffs', type: 'text', default: 'phone', visible: true }],
   },
   {
+    name: 'phone-intl', baseType: 'text', title: 'Phone (International)',
+    properties: [
+      { name: '_ffs', type: 'text', default: 'phone', visible: true },
+      { name: 'inputType', type: 'text', default: 'tel', visible: false }
+    ],
+    defaultValues: {
+      placeholder: '+1-555-555-5555 or 555-555-5555',
+      description: 'US format: xxx-xxx-xxxx or International: +x-xxx-xxx-xxxx',
+      validators: [
+        {
+          type: 'regex',
+          regex: '^\\+?[\\d\\s\\-\\(\\)]{10,20}$',
+          text: 'Please enter a valid phone number (10-15 digits)'
+        }
+      ]
+    }
+  },
+  {
     name: 'email', baseType: 'text', title: 'Email',
     properties: [{ name: '_ffs', type: 'text', default: 'email', visible: true }],
   },
@@ -38,6 +56,10 @@ export const sharedQuestions: QuestionConfig[] = [
   },
   {
     name: 'autocompleteaddressall', baseType: 'text', title: 'Address (ALL)',
+    properties: [{ name: '_ffs', type: 'text', default: 'address_group', visible: true }],
+  },
+  {
+    name: 'autocompleteaddress-intl', baseType: 'text', title: 'Address (International)',
     properties: [{ name: '_ffs', type: 'text', default: 'address_group', visible: true }],
   },
   // Waivers (always available, dedicated category in toolbox)

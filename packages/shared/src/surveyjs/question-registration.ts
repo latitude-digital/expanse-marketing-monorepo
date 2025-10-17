@@ -61,12 +61,16 @@ function registerUniversalQuestions(): void {
   registerQuestionIfNeeded("firstname", "text");
   registerQuestionIfNeeded("lastname", "text");
   registerQuestionIfNeeded("phone", "text");
+  registerQuestionIfNeeded("phone-intl", "text");
   registerQuestionIfNeeded("email", "text");
-  
+
   // Address questions
   registerQuestionIfNeeded("autocompleteaddress", "text");
+  registerQuestionIfNeeded("autocompleteaddress2", "text");
+  registerQuestionIfNeeded("autocompleteaddresscan", "text");
   registerQuestionIfNeeded("autocompleteaddressall", "text");
-  
+  registerQuestionIfNeeded("autocompleteaddress-intl", "text");
+
   // Waiver questions (SurveyJS lowercases these names)
   registerQuestionIfNeeded("waiver", "panel");
   registerQuestionIfNeeded("adultwaiver", "panel");

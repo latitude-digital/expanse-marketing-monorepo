@@ -16,6 +16,7 @@ interface ExpanseEvent {
     lincolnEventID?: string;
     surveyType?: string;
     disabled?: boolean;
+    customConfig?: Record<string, any> | null;
 }
 
 export default function LincolnCharityEvents() {
