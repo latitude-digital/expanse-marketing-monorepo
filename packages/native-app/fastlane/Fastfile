@@ -179,6 +179,19 @@ platform :ios do
     puts("dSYM: "+lane_context[SharedValues::DSYM_OUTPUT_PATH])
     puts("archive: "+lane_context[SharedValues::XCODEBUILD_ARCHIVE])
 
+    # Upload dSYMs to Sentry for staging
+    if ENV['SENTRY_AUTH_TOKEN']
+      puts "Uploading dSYMs to Sentry (staging environment)..."
+      sentry_debug_files_upload(
+        auth_token: ENV['SENTRY_AUTH_TOKEN'],
+        org_slug: 'latitude-digital',
+        project_slug: 'meridian-events-app',
+        path: lane_context[SharedValues::DSYM_OUTPUT_PATH]
+      )
+    else
+      puts "⚠️  SENTRY_AUTH_TOKEN not set, skipping dSYM upload to Sentry"
+    end
+
     puts "Build complete! Version: #{ENV['APP_VERSION']} (Build: #{ENV['BUILD_NUMBER']})"
     puts "IPA: #{lane_context[SharedValues::IPA_OUTPUT_PATH]}"
     puts "dSYM: #{lane_context[SharedValues::DSYM_OUTPUT_PATH]}"
@@ -215,6 +228,19 @@ platform :ios do
     puts("ipa: "+lane_context[SharedValues::IPA_OUTPUT_PATH])
     puts("dSYM: "+lane_context[SharedValues::DSYM_OUTPUT_PATH])
     puts("archive: "+lane_context[SharedValues::XCODEBUILD_ARCHIVE])
+
+    # Upload dSYMs to Sentry for production
+    if ENV['SENTRY_AUTH_TOKEN']
+      puts "Uploading dSYMs to Sentry (production environment)..."
+      sentry_debug_files_upload(
+        auth_token: ENV['SENTRY_AUTH_TOKEN'],
+        org_slug: 'latitude-digital',
+        project_slug: 'meridian-events-app',
+        path: lane_context[SharedValues::DSYM_OUTPUT_PATH]
+      )
+    else
+      puts "⚠️  SENTRY_AUTH_TOKEN not set, skipping dSYM upload to Sentry"
+    end
 
     puts "Build complete! Version: #{ENV['APP_VERSION']} (Build: #{ENV['BUILD_NUMBER']})"
     puts "IPA: #{lane_context[SharedValues::IPA_OUTPUT_PATH]}"

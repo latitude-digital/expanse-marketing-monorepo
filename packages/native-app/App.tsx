@@ -24,6 +24,37 @@ import { offlineDetector } from './src/utils/offline-detector';
 // Types
 import type { MeridianEvent as ExpanseEvent } from '@meridian-event-tech/shared/types';
 import type { SurveyCompletionData } from './src/components/SurveyWebView';
+import * as Sentry from '@sentry/react-native';
+import Constants from 'expo-constants';
+
+// Get environment from app config
+const appEnv = Constants.expoConfig?.extra?.EXPO_PUBLIC_APP_ENV || 'development';
+const sentryDsn = Constants.expoConfig?.extra?.EXPO_PUBLIC_SENTRY_DSN;
+
+Sentry.init({
+  dsn: sentryDsn || 'https://0e402abb7a52a273ef643deea1148e4c@o4506238718967808.ingest.us.sentry.io/4510212003463168',
+
+  // Set environment to separate staging and production
+  environment: appEnv,
+
+  // Adds more context data to events (IP address, cookies, user, etc.)
+  // For more information, visit: https://docs.sentry.io/platforms/react-native/data-management/data-collected/
+  sendDefaultPii: true,
+
+  // Enable Logs
+  enableLogs: true,
+
+  // Configure Session Replay - different sample rates for staging vs production
+  replaysSessionSampleRate: appEnv === 'production' ? 0.1 : 0.5,
+  replaysOnErrorSampleRate: 1,
+  integrations: [Sentry.mobileReplayIntegration()],
+
+  // Enable debug mode in development and staging
+  debug: appEnv !== 'production',
+
+  // uncomment the line below to enable Spotlight (https://spotlightjs.com)
+  // spotlight: __DEV__,
+});
 
 export type RootStackParamList = {
   EventList: undefined;
@@ -33,7 +64,7 @@ export type RootStackParamList = {
 
 const Stack = createStackNavigator<RootStackParamList>();
 
-export default function App() {
+export default Sentry.wrap(function App() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [events, setEvents] = useState<ExpanseEvent[]>([]);
   const [loading, setLoading] = useState(false);
@@ -262,7 +293,7 @@ export default function App() {
       <StatusBar style="light" />
     </SafeAreaProvider>
   );
-}
+});
 
 const styles = StyleSheet.create({
   loadingContainer: {
