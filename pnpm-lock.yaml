@@ -830,6 +830,9 @@ importers:
       '@expo/config-plugins':
         specifier: ^54.0.2
         version: 54.0.2
+      '@expo/fingerprint':
+        specifier: ^0.15.1
+        version: 0.15.1
       '@react-native-community/cli':
         specifier: ^19.1.1
         version: 19.1.1(typescript@5.9.3)

@@ -468,11 +468,15 @@ export const SurveyWebViewApp: React.FC = () => {
     bridgeRef.current?.log('Creating survey with config', config);
 
     try {
+      const brandForFDS = normalizeBrand(config.brand) as Brand;
+
       // Initialize FDS and brand-specific questions (same as Survey.tsx)
-      bridgeRef.current?.log(`Initializing FDS for brand: ${config.brand}`);
+      bridgeRef.current?.log(
+        `Initializing FDS for brand: ${config.brand} (normalized: ${brandForFDS})`
+      );
 
       try {
-        await initializeFDSForBrand(config.brand);
+        await initializeFDSForBrand(brandForFDS);
         bridgeRef.current?.log('FDS initialization complete');
       } catch (error) {
         bridgeRef.current?.log('ERROR initializing FDS', error);

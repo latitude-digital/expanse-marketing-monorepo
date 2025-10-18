@@ -67,12 +67,11 @@ GitHub Actions automatically publishes updates:
 
 ## Runtime Version Strategy
 
-We use `runtimeVersion: { policy: "appVersion" }` which means:
+We keep `runtimeVersion: { policy: "appVersion" }` in `app.config.js`. EAS updates are gated by the fingerprints stored in `packages/native-app/fingerprints.json`:
 
-- Updates are tied to the app version (e.g., 1.0.0)
-- Apps will only receive updates matching their version
-- When you bump the app version, you must do a full native build
-- OTA updates work within the same app version
+- Full native builds refresh the fingerprint for the selected environment via `pnpm fingerprint:update -- <env>`
+- `eas update` invokes `pnpm fingerprint:check` first; if the generated fingerprint differs from the stored one, the update is blocked
+- Run a full native build whenever native dependency changes alter the fingerprint so the stored value can be updated
 
 ## Channel to Build Profile Mapping
 
@@ -92,4 +91,4 @@ We use `runtimeVersion: { policy: "appVersion" }` which means:
    ```bash
    eas update --branch production --message "Update" --rollout-percentage 25
    ```
-5. **Version bumps require full builds** - don't try to OTA update to a new version
+5. **Run a full build for native changes** – OTA updates only work when the fingerprint matches the installed binary

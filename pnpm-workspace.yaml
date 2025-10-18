@@ -9,6 +9,7 @@ onlyBuiltDependencies:
   - core-js
   - protobufjs
   - survey-analytics
+  - unrs-resolver
 
 ignoredBuiltDependencies:
   - '@prisma/client'

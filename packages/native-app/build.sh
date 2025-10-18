@@ -195,6 +195,15 @@ echo ""
 # Change to script directory (should be packages/native-app)
 cd "$(dirname "$0")"
 
+# Sync Expo fingerprint so runtimeVersion matches this build/update
+if [ "$BUILD_TYPE" = "update" ]; then
+  echo -e "${GREEN}Validating Expo fingerprint for ${ENVIRONMENT}${NC}"
+  pnpm run fingerprint:check -- "$ENVIRONMENT"
+else
+  echo -e "${GREEN}Generating Expo fingerprint and updating record for ${ENVIRONMENT}${NC}"
+  pnpm run fingerprint:update -- "$ENVIRONMENT"
+fi
+
 # Run fastlane
 echo -e "${GREEN}Running: bundle exec fastlane ios ${LANE}${NC}"
 bundle exec fastlane ios "$LANE"

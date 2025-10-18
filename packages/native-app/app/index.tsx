@@ -9,7 +9,7 @@ import { EventCacheService, CachedMeridianEvent } from '../src/services/event-ca
 // import { AssetCacheService } from '../src/services/asset-cache';
 import { eventsService } from '../src/services/firestore';
 import { offlineDetector } from '../src/utils/offline-detector';
-import { getFirestore, waitForPendingWrites } from '@react-native-firebase/firestore';
+import { getFirestore, waitForPendingWrites, enableNetwork } from '@react-native-firebase/firestore';
 
 // DEBUG: Expose offline toggle to global for testing
 (global as any).toggleOfflineMode = (forceOffline?: boolean) => {
@@ -272,18 +272,33 @@ export default function EventListPage() {
     console.log('[EventList] 🌐 Online - fetching events from Firestore');
     setLoading(true);
     try {
-      // Wait for all pending writes before refreshing
+      const db = getFirestore();
+
+      // Step 1: Ensure Firestore network is enabled (in case it was manually disabled)
+      console.log('[EventList] 🔌 Ensuring Firestore network is enabled...');
+      try {
+        await enableNetwork(db);
+        console.log('[EventList] ✅ Firestore network enabled');
+      } catch (error) {
+        console.warn('[EventList] ⚠️ Error enabling network (may already be enabled):', error);
+      }
+
+      // Step 2: Give Firestore a moment to start syncing pending writes
+      console.log('[EventList] ⏳ Giving Firestore time to initiate sync...');
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Step 3: Wait for all pending writes with longer timeout (15 seconds)
       console.log('[EventList] ⏳ Waiting for pending writes to sync...');
       try {
-        const db = getFirestore();
         await Promise.race([
           waitForPendingWrites(db),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000))
         ]);
         console.log('[EventList] ✅ All pending writes synced successfully');
       } catch (error: any) {
         if (error.message === 'timeout') {
-          console.log('[EventList] ⚠️ Timeout waiting for pending writes (5s), continuing with refresh anyway');
+          console.log('[EventList] ⚠️ Timeout waiting for pending writes (15s), continuing with refresh anyway');
+          console.log('[EventList] ⚠️ Some survey data may still be syncing in the background');
         } else {
           console.error('[EventList] ❌ Error waiting for pending writes:', error);
         }
