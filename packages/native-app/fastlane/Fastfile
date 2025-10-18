@@ -32,6 +32,7 @@ platform :ios do
     xcode_select("/Applications/Xcode.app")
     ENV["FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT"] = "120"
     ENV["NODE_OPTIONS"] = "--openssl-legacy-provider"
+    ENV["FASTLANE_WWDR_USE_HTTP1_AND_RETRIES"] = "1"
     create_keychain(
       name: ENV["MATCH_KEYCHAIN_NAME"],
       password: ENV["MATCH_PASSWORD"],
@@ -41,10 +42,17 @@ platform :ios do
       add_to_search_list: true,
       verbose: true
     )
+    # Decode base64 API key if it's base64 encoded, otherwise use as-is
+    api_key_content = ENV["APPLE_STORE_CONNECT_KEY"]
+    if api_key_content && !api_key_content.include?("BEGIN PRIVATE KEY")
+      require 'base64'
+      api_key_content = Base64.decode64(api_key_content)
+    end
+
     app_store_connect_api_key(
       key_id: ENV["APPLE_STORE_CONNECT_KEY_ID"],
       issuer_id: ENV["APPLE_STORE_CONNECT_ISSUER_ID"],
-      key_content: ENV["APPLE_STORE_CONNECT_KEY"]
+      key_content: api_key_content
     )
     sh("git", "config", "user.name", "bot-with-a-latitude");
     sh("git", "config", "user.email", "bcc@latitudedigital.com");
@@ -59,27 +67,48 @@ platform :ios do
     # Slack notifications now handled by GitHub Actions workflow
   end
 
-  desc 'grab the package.json version number and append our build number'
+  desc 'Set version from package.json and build number from timestamp'
   lane :set_version do
-    puts("new version: "+ENV["BUILD_VERSION"])
+    app_version = ENV["APP_VERSION"]
+    build_number = ENV["BUILD_NUMBER"]
+
+    # Determine project name and app identifier based on variant
+    is_staging = ENV["APP_VARIANT"] == "staging"
+    project_name = is_staging ? "MeridianEventsStaging" : "MeridianEvents"
+    app_identifier = is_staging ? "com.meridianeventtech.app.staging" : "com.meridianeventtech.app"
+    xcodeproj_path = "./ios/#{project_name}.xcodeproj"
+
+    puts("Setting version: #{app_version}")
+    puts("Setting build number: #{build_number}")
+    puts("Using project: #{project_name}")
+
     update_plist(
-      plist_path: "./ios/MeridianEvents/Info.plist",
+      plist_path: "./ios/#{project_name}/Info.plist",
       block: proc do |plist|
-        plist["CFBundleVersion"] = ENV["BUILD_NUMBER"]
+        plist["CFBundleVersion"] = build_number
       end
     )
     increment_version_number(
-      xcodeproj: "./ios/MeridianEvents.xcodeproj",
-      version_number: ENV["BUILD_VERSION"]
+      xcodeproj: xcodeproj_path,
+      version_number: app_version
     )
     increment_build_number(
-      build_number: ENV["BUILD_NUMBER"],
-      xcodeproj: "./ios/MeridianEvents.xcodeproj",
+      build_number: build_number,
+      xcodeproj: xcodeproj_path,
     )
   end
 
   desc 'Fetch certificates and provisioning profiles'
   lane :certificates do
+    # Determine project name and app identifier based on variant
+    is_staging = ENV["APP_VARIANT"] == "staging"
+    project_name = is_staging ? "MeridianEventsStaging" : "MeridianEvents"
+    app_identifier = is_staging ? "com.meridianeventtech.app.staging" : "com.meridianeventtech.app"
+    xcodeproj_path = "./ios/#{project_name}.xcodeproj"
+
+    puts("Using app identifier: #{app_identifier}")
+    puts("Using project: #{project_name}")
+
     match(
       type: "appstore",
       app_identifier: app_identifier,
@@ -91,7 +120,7 @@ platform :ios do
     puts("updating code signing "+app_identifier)
     update_code_signing_settings(
         use_automatic_signing: false,
-        path: "./ios/MeridianEvents.xcodeproj",
+        path: xcodeproj_path,
         profile_name: ENV["sigh_"+app_identifier+"_appstore_profile-name"],
         code_sign_identity: ENV["sigh_"+app_identifier+"_appstore_certificate-name"],
       )
@@ -99,14 +128,21 @@ platform :ios do
 
   desc 'update all the default data'
   lane :pre_build do
-    puts("pnpm install")
-    sh("pnpm","install","--frozen-lockfile")
-    ENV["RUNTIME_VERSION"] = ENV["BUILD_VERSION"]
-    puts("expo prebuild")
-    sh("APP_VARIANT="+ENV["APP_VARIANT"], "pnpm", "exec", "expo", "prebuild", "--clean")
-    puts("set team id")
+    puts("pnpm install from monorepo root")
+    Dir.chdir("../..") do
+      sh("pnpm","install","--frozen-lockfile")
+    end
+    ENV["RUNTIME_VERSION"] = ENV["APP_VERSION"]
+    puts("expo prebuild with runtime version: #{ENV['APP_VERSION']}")
+    sh("pnpm", "exec", "expo", "prebuild", "--clean", "--platform", "ios")
+
+    # Determine project name based on variant
+    project_name = ENV["APP_VARIANT"] == "staging" ? "MeridianEventsStaging" : "MeridianEvents"
+    xcodeproj_path = "./ios/#{project_name}.xcodeproj"
+
+    puts("set team id for project: #{project_name}")
     update_project_team(
-      path: "./ios/MeridianEvents.xcodeproj",
+      path: xcodeproj_path,
       teamid: team_id
     )
   end
@@ -114,26 +150,36 @@ platform :ios do
   desc 'Push a new staging build to TestFlight'
   lane :build_staging do
     ENV["APP_VARIANT"] = "staging"
-    app_identifier = "com.meridianeventtech.app.staging"
+
     pre_build
     set_version
     certificates
+
+    # Determine project name for gym
+    project_name = "MeridianEventsStaging"
+
+    # Ensure clean output directory
+    sh("rm", "-rf", "./build")
+    sh("mkdir", "-p", "./build")
+
     gym(
-      scheme: 'MeridianEvents',
-      workspace: './ios/MeridianEvents.xcworkspace',
+      scheme: project_name,
+      workspace: "./ios/#{project_name}.xcworkspace",
       export_method: 'app-store',
       include_bitcode: false,
       verbose: true,
-      buildlog_path: './build',
       output_directory: './build',
-      build_path: './build',
+      output_name: 'MeridianEvents',
+      skip_package_ipa: false,
+      skip_codesigning: false,
+      xcargs: "IDEPostProcessEnablingCompression=NO"
     )
 
     puts("ipa: "+lane_context[SharedValues::IPA_OUTPUT_PATH])
     puts("dSYM: "+lane_context[SharedValues::DSYM_OUTPUT_PATH])
     puts("archive: "+lane_context[SharedValues::XCODEBUILD_ARCHIVE])
 
-    puts "Build complete! Version: #{ENV['BUILD_VERSION']}"
+    puts "Build complete! Version: #{ENV['APP_VERSION']} (Build: #{ENV['BUILD_NUMBER']})"
     puts "IPA: #{lane_context[SharedValues::IPA_OUTPUT_PATH]}"
     puts "dSYM: #{lane_context[SharedValues::DSYM_OUTPUT_PATH]}"
   end
@@ -141,69 +187,95 @@ platform :ios do
   desc 'Release the production build to Apple'
   lane :build_production do
     ENV["APP_VARIANT"] = "production"
-    app_identifier = "com.meridianeventtech.app"
+
     pre_build
     set_version
     certificates
+
+    # Determine project name for gym
+    project_name = "MeridianEvents"
+
+    # Ensure clean output directory
+    sh("rm", "-rf", "./build")
+    sh("mkdir", "-p", "./build")
+
     gym(
-      scheme: 'MeridianEvents',
-      workspace: './ios/MeridianEvents.xcworkspace',
+      scheme: project_name,
+      workspace: "./ios/#{project_name}.xcworkspace",
       export_method: 'app-store',
       include_bitcode: false,
       verbose: true,
-      buildlog_path: './build',
       output_directory: './build',
-      build_path: './build',
+      output_name: 'MeridianEvents',
+      skip_package_ipa: false,
+      skip_codesigning: false,
+      xcargs: "IDEPostProcessEnablingCompression=NO"
     )
 
     puts("ipa: "+lane_context[SharedValues::IPA_OUTPUT_PATH])
     puts("dSYM: "+lane_context[SharedValues::DSYM_OUTPUT_PATH])
     puts("archive: "+lane_context[SharedValues::XCODEBUILD_ARCHIVE])
 
-    puts "Build complete! Version: #{ENV['BUILD_VERSION']}"
+    puts "Build complete! Version: #{ENV['APP_VERSION']} (Build: #{ENV['BUILD_NUMBER']})"
     puts "IPA: #{lane_context[SharedValues::IPA_OUTPUT_PATH]}"
     puts "dSYM: #{lane_context[SharedValues::DSYM_OUTPUT_PATH]}"
   end
 
   desc 'Build and publish EAS update for staging'
   lane :staging_updates do
-    puts("Starting new EAS Updates STAGING build - Build ##{ENV['BUILD_NUMBER']}")
+    puts("Starting new EAS Updates STAGING build")
+    puts("App Version: #{ENV['APP_VERSION']}")
+    puts("Build Number: #{ENV['BUILD_NUMBER']}")
 
-    puts("pnpm install")
-    sh("pnpm","install","--frozen-lockfile")
+    ENV["APP_VARIANT"] = "staging"
+    project_name = "MeridianEventsStaging"
+
+    puts("pnpm install from monorepo root")
+    Dir.chdir("../..") do
+      sh("pnpm","install","--frozen-lockfile")
+    end
 
     # Get current app version as runtime version
     version = get_version_number(
-      xcodeproj: "./ios/MeridianEvents.xcodeproj",
-      target: "MeridianEvents"
+      xcodeproj: "./ios/#{project_name}.xcodeproj",
+      target: project_name
     )
     ENV["RUNTIME_VERSION"] = version
     puts("Runtime version: "+version)
 
-    # Publish EAS update
+    # Publish EAS update with version and build number in message
+    update_message = "#{ENV['APP_VERSION']} (Build: #{ENV['BUILD_NUMBER']})"
     Dir.chdir("#{ENV["WORKSPACE"]}") do
-      sh("APP_VARIANT=staging", "npx", "--yes", "eas-cli@latest", "update", "--branch", "staging", "--message", ENV["BUILD_VERSION"], "--non-interactive")
+      sh("npx", "--yes", "eas-cli@latest", "update", "--branch", "staging", "--message", update_message, "--non-interactive")
     end
   end
 
   desc 'Build and publish EAS update for production'
   lane :production_updates do
-    puts("Starting new EAS Updates PRODUCTION build - Build ##{ENV['BUILD_NUMBER']}")
+    puts("Starting new EAS Updates PRODUCTION build")
+    puts("App Version: #{ENV['APP_VERSION']}")
+    puts("Build Number: #{ENV['BUILD_NUMBER']}")
 
-    puts("pnpm install")
-    sh("pnpm","install","--frozen-lockfile")
+    ENV["APP_VARIANT"] = "production"
+    project_name = "MeridianEvents"
+
+    puts("pnpm install from monorepo root")
+    Dir.chdir("../..") do
+      sh("pnpm","install","--frozen-lockfile")
+    end
 
     # Get current app version as runtime version
     version = get_version_number(
-      xcodeproj: "./ios/MeridianEvents.xcodeproj",
-      target: "MeridianEvents"
+      xcodeproj: "./ios/#{project_name}.xcodeproj",
+      target: project_name
     )
     ENV["RUNTIME_VERSION"] = version
     puts("Runtime version: "+version)
 
-    # Publish EAS update
+    # Publish EAS update with version and build number in message
+    update_message = "#{ENV['APP_VERSION']} (Build: #{ENV['BUILD_NUMBER']})"
     Dir.chdir("#{ENV["WORKSPACE"]}") do
-      sh("npx", "--yes", "eas-cli@latest", "update", "--branch", "production", "--message", ENV["BUILD_VERSION"], "--non-interactive")
+      sh("npx", "--yes", "eas-cli@latest", "update", "--branch", "production", "--message", update_message, "--non-interactive")
     end
   end
 
@@ -213,10 +285,22 @@ platform :ios do
     build_staging
 
     upload_to_testflight(
+      app_identifier: "com.meridianeventtech.app.staging",
+      ipa: lane_context[SharedValues::IPA_OUTPUT_PATH],
       skip_submission: false,
       distribute_external: false,
       skip_waiting_for_build_processing: true,
       groups: ["Latitude"],
+      submission_information: {
+        export_compliance_uses_encryption: true,
+        export_compliance_encryption_updated: false,
+        export_compliance_app_type: "business",
+        export_compliance_is_exempt: true,
+        export_compliance_contains_third_party_cryptography: true,
+        export_compliance_contains_proprietary_cryptography: false,
+        export_compliance_available_on_french_store: false,
+        export_compliance_compliance_required: false
+      }
     )
   end
 
@@ -235,9 +319,15 @@ platform :ios do
       automatic_release: false,
       skip_screenshots: true,
       submission_information: {
-        export_compliance_uses_encryption: false,
-        add_id_info_uses_idfa: false,
+        export_compliance_uses_encryption: true,
         export_compliance_encryption_updated: false,
+        export_compliance_app_type: "business",
+        export_compliance_is_exempt: true,
+        export_compliance_contains_third_party_cryptography: true,
+        export_compliance_contains_proprietary_cryptography: false,
+        export_compliance_available_on_french_store: false,
+        export_compliance_compliance_required: false,
+        add_id_info_uses_idfa: false
       }
     )
   end

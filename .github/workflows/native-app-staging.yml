@@ -56,9 +56,12 @@ jobs:
 
       - name: Set environment variables
         run: |
-          BUILD_DATE_CODE=$(date +%Y%m%d)
-          echo "BUILD_DATE_CODE=${BUILD_DATE_CODE}"
-          echo "BUILD_VERSION=${BUILD_DATE_CODE}.${{ github.run_number }}" >> $GITHUB_ENV
+          cd packages/native-app
+          APP_VERSION=$(node -p "require('./package.json').version")
+          BUILD_NUMBER=$(date +%Y%m%d%H%M%S)
+          echo "APP_VERSION=${APP_VERSION}" >> $GITHUB_ENV
+          echo "BUILD_NUMBER=${BUILD_NUMBER}" >> $GITHUB_ENV
+          echo "BUILD_VERSION=${APP_VERSION} (${BUILD_NUMBER})" >> $GITHUB_ENV
           echo "APP_VARIANT=staging" >> $GITHUB_ENV
 
       - name: Setup Node.js

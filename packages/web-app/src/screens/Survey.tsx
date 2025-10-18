@@ -214,6 +214,7 @@ const SurveyComponent: React.FC = () => {
           // Set default properties before creating model (can be overridden by survey definition)
           const defaultSurveyProperties = {
             "widthMode": "responsive",
+            "clearInvisibleValues": false, // IMPORTANT: Save hidden field values - needed for composite panels
             ...surveyJSON // Survey definition can override defaults
           };
 
@@ -331,10 +332,6 @@ const SurveyComponent: React.FC = () => {
           const survey = new Model(defaultSurveyProperties);
           (survey as any).__eventBrand = eventBrand;
           (survey as any).__isFDSBrand = isFDSBrand;
-
-          // IMPORTANT: Don't clear invisible field values - needed for composite panels
-          // This ensures hidden fields like country in address autocomplete panels are saved
-          survey.clearInvisibleValues = false;
 
           // Set the thank you message from the event configuration if available
           if (event.thanks) {

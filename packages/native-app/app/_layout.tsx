@@ -1,14 +1,16 @@
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { View, ActivityIndicator, TouchableOpacity, Text } from 'react-native';
 import '../src/styles/global.css';
 import { ensureSurveyBundle } from '../src/utils/surveyBundleManager';
+import { VersionInfoModal } from '../src/components/VersionInfoModal';
 
 function AuthenticatedLayout() {
   const { currentUser, loading, signOut } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+  const [showVersionModal, setShowVersionModal] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -42,14 +44,19 @@ function AuthenticatedLayout() {
   }
 
   return (
-    <Stack>
-      <Stack.Screen 
-        name="login" 
-        options={{ 
-          title: "Sign In",
-          headerShown: false
-        }} 
+    <>
+      <VersionInfoModal
+        visible={showVersionModal}
+        onClose={() => setShowVersionModal(false)}
       />
+      <Stack>
+        <Stack.Screen
+          name="login"
+          options={{
+            title: "Sign In",
+            headerShown: false
+          }}
+        />
       <Stack.Screen 
         name="forgot-password" 
         options={{ 
@@ -71,6 +78,17 @@ function AuthenticatedLayout() {
           headerStyle: {
             backgroundColor: '#F8F9FA',
           },
+          headerTitle: () => (
+            <TouchableOpacity onPress={() => setShowVersionModal(true)}>
+              <Text style={{
+                color: '#257180',
+                fontSize: 17,
+                fontWeight: '600',
+              }}>
+                Meridian Events
+              </Text>
+            </TouchableOpacity>
+          ),
           headerRight: () => (
             <TouchableOpacity onPress={handleSignOut}>
               <Text style={{ color: '#007AFF', fontSize: 17, fontWeight: '400' }}>Sign Out</Text>
@@ -99,7 +117,8 @@ function AuthenticatedLayout() {
           headerShown: false,
         }}
       />
-    </Stack>
+      </Stack>
+    </>
   );
 }
 

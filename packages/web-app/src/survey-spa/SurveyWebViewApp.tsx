@@ -547,6 +547,13 @@ export const SurveyWebViewApp: React.FC = () => {
       // Preprocess required validation
       preprocessRequiredValidation(preparedSurveyJSON);
 
+      // Set defaults before creating Model
+      if (!preparedSurveyJSON.widthMode) {
+        preparedSurveyJSON.widthMode = "responsive";
+      }
+      // IMPORTANT: Save hidden field values - needed for composite panels
+      preparedSurveyJSON.clearInvisibleValues = false;
+
       // Create survey model with detailed error handling
       let newSurvey: Model;
       try {
@@ -576,9 +583,6 @@ export const SurveyWebViewApp: React.FC = () => {
         bridgeRef.current?.log('ERROR creating Model - Error keys:', Object.keys(modelError || {}));
         throw modelError;
       }
-
-      // Don't clear invisible values (needed for composite questions)
-      newSurvey.clearInvisibleValues = false;
 
       // Apply theme
       const brandForSurvey = normalizeBrand(config.brand) as Brand;
