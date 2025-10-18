@@ -5,14 +5,16 @@ import {
   sendPasswordResetEmail,
   onAuthStateChanged as firebaseOnAuthStateChanged,
 } from '@react-native-firebase/auth';
+import { getApp } from '@react-native-firebase/app';
 import type { FirebaseAuthTypes } from '@react-native-firebase/auth';
 
 // Log Firebase Auth initialization
 const auth = getAuth();
+const firebaseApp = getApp();
 console.log('🔥 [AUTH INIT] Firebase Auth initialized on import');
-console.log('🔥 [AUTH INIT] Firebase App Name:', auth.app.name);
-console.log('🔥 [AUTH INIT] Project ID:', auth.app.options.projectId);
-console.log('🔥 [AUTH INIT] API Key:', auth.app.options.apiKey?.substring(0, 10) + '...');
+console.log('🔥 [AUTH INIT] Firebase App Name:', firebaseApp.name);
+console.log('🔥 [AUTH INIT] Project ID:', firebaseApp.options.projectId);
+console.log('🔥 [AUTH INIT] API Key:', firebaseApp.options.apiKey?.substring(0, 10) + '...');
 
 // Auth service functions
 export const authService = {
@@ -24,10 +26,11 @@ export const authService = {
       const auth = getAuth();
       console.log('🔐 [AUTH] Auth instance obtained');
       console.log('🔐 [AUTH] Current user before sign in:', auth.currentUser?.uid || 'null');
-      console.log('🔐 [AUTH] Auth app name:', auth.app.name);
+      const firebaseApp = getApp();
+      console.log('🔐 [AUTH] Auth app name:', firebaseApp.name);
       console.log('🔐 [AUTH] Auth app options:', JSON.stringify({
-        projectId: auth.app.options.projectId,
-        apiKey: auth.app.options.apiKey?.substring(0, 10) + '...',
+        projectId: firebaseApp.options.projectId,
+        apiKey: firebaseApp.options.apiKey?.substring(0, 10) + '...',
       }));
 
       console.log('🔐 [AUTH] Attempting signInWithEmailAndPassword...');

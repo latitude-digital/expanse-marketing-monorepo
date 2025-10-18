@@ -5,12 +5,13 @@ import {
   Pressable,
   StyleSheet,
   ActivityIndicator,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import type { MeridianEvent as ExpanseEvent } from '@meridian-event-tech/shared/types';
 import { DatabaseService } from '../../src/services/database';
 import { EventCacheService } from '../../src/services/event-cache';
+import { useEventSync } from '../../src/contexts/EventSyncContext';
 import Icon from '../../src/components/Icon';
 import { useDebounceNavigation } from '../../src/hooks/useDebounceNavigation';
 
@@ -23,6 +24,7 @@ export default function EventSplashScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { navigate } = useDebounceNavigation();
+  const { setCurrentEvent, clearCurrentEvent } = useEventSync();
 
   const [event, setEvent] = useState<ExpanseEvent | null>(null);
   const [loading, setLoading] = useState(true);
@@ -69,6 +71,19 @@ export default function EventSplashScreen() {
     };
   }, [id]);
 
+  // Set current event in EventSyncContext when event loads
+  useEffect(() => {
+    if (event && id) {
+      console.log('[EventSplashScreen] 🎯 Setting current event in EventSyncContext:', id);
+      setCurrentEvent(id, event);
+    }
+
+    return () => {
+      console.log('[EventSplashScreen] 🧹 Clearing current event from EventSyncContext');
+      clearCurrentEvent();
+    };
+  }, [event, id, setCurrentEvent, clearCurrentEvent]);
+
   const handleBack = () => {
     router.replace('/');
   };
@@ -83,6 +98,42 @@ export default function EventSplashScreen() {
         return '#333333';
     }
   };
+
+  // Determine which buttons to show based on event configuration
+  const getEventCapabilities = () => {
+    if (!event) {
+      return { hasBadgeScanning: false, hasCheckIn: false, hasCheckOut: false };
+    }
+
+    // Debug: Log the full event object to understand its structure
+    console.log('[EventSplashScreen] 🔍 Event ID:', event.id);
+    console.log('[EventSplashScreen] 🔍 Event name:', event.name);
+    console.log('[EventSplashScreen] 🔍 customConfig:', JSON.stringify(event.customConfig, null, 2));
+    console.log('[EventSplashScreen] 🔍 preRegDate:', event.preRegDate);
+    console.log('[EventSplashScreen] 🔍 surveyType:', event.surveyType);
+    console.log('[EventSplashScreen] 🔍 _preEventID:', event._preEventID);
+
+    // Check if event has badge scanning enabled
+    // badgeScan is an object with vendor/config, not a boolean
+    const hasBadgeScanning = !!event.customConfig?.badgeScan;
+
+    // Check if event has check-in enabled
+    // Per EventListScreen logic: check-in is enabled if preRegDate exists OR surveyType is 'preTD'
+    const hasCheckIn = !!(event.preRegDate || event.surveyType === 'preTD');
+
+    // Check if event has check-out enabled
+    // Per EventListScreen logic: check-out is enabled if _preEventID exists
+    const hasCheckOut = !!event._preEventID;
+
+    console.log('[EventSplashScreen] ✅ Capabilities:');
+    console.log('[EventSplashScreen]    - hasBadgeScanning:', hasBadgeScanning);
+    console.log('[EventSplashScreen]    - hasCheckIn:', hasCheckIn);
+    console.log('[EventSplashScreen]    - hasCheckOut:', hasCheckOut);
+
+    return { hasBadgeScanning, hasCheckIn, hasCheckOut };
+  };
+
+  const capabilities = getEventCapabilities();
 
   if (loading) {
     return (
@@ -123,41 +174,103 @@ export default function EventSplashScreen() {
 
         {/* Main Action Buttons */}
         <View style={styles.buttonsContainer}>
-          <Pressable
-            style={[styles.mainButton, styles.scanButton]}
-            onPress={() => navigate({
-              pathname: '/scan/[id]',
-              params: {
-                id: event.id,
-                eventData: JSON.stringify(event),
-              },
-            })}
-            testID="scan-badge-button"
-            accessible={true}
-            accessibilityLabel="Scan Badge"
-            accessibilityRole="button"
-          >
-            <Icon name="qrcode-read" size={48} color="#FFFFFF" />
-            <Text style={styles.mainButtonText}>Scan Badge</Text>
-          </Pressable>
+          {/* Badge scanning events: Show "Scan Badge" and "Survey Without Badge" */}
+          {capabilities.hasBadgeScanning && (
+            <>
+              <Pressable
+                style={[styles.mainButton, styles.scanButton]}
+                onPress={() => navigate({
+                  pathname: '/scan/[id]',
+                  params: {
+                    id: event.id,
+                    eventData: JSON.stringify(event),
+                  },
+                })}
+                testID="scan-badge-button"
+                accessible={true}
+                accessibilityLabel="Scan Badge"
+                accessibilityRole="button"
+              >
+                <Icon name="qrcode-read" size={48} color="#FFFFFF" />
+                <Text style={styles.mainButtonText}>Scan Badge</Text>
+              </Pressable>
 
-          <Pressable
-            style={[styles.mainButton, styles.surveyButton]}
-            onPress={() => navigate({
-              pathname: '/survey/[id]',
-              params: {
-                id: event.id,
-                eventData: JSON.stringify(event),
-              },
-            })}
-            testID="survey-without-badge-button"
-            accessible={true}
-            accessibilityLabel="Survey Without Badge"
-            accessibilityRole="button"
-          >
-            <Icon name="clipboard-list-check" size={48} color="#FFFFFF" />
-            <Text style={styles.mainButtonText}>Survey Without Badge</Text>
-          </Pressable>
+              <Pressable
+                style={[styles.mainButton, styles.surveyButton]}
+                onPress={() => navigate({
+                  pathname: '/survey/[id]',
+                  params: {
+                    id: event.id,
+                    eventData: JSON.stringify(event),
+                  },
+                })}
+                testID="survey-without-badge-button"
+                accessible={true}
+                accessibilityLabel="Survey Without Badge"
+                accessibilityRole="button"
+              >
+                <Icon name="clipboard-list-check" size={48} color="#FFFFFF" />
+                <Text style={styles.mainButtonText}>Survey Without Badge</Text>
+              </Pressable>
+            </>
+          )}
+
+          {/* Check-in events: Show "Check In" button */}
+          {capabilities.hasCheckIn && (
+            <Pressable
+              style={[styles.mainButton, styles.checkInButton]}
+              onPress={() => {
+                // TODO: Implement check-in flow
+                console.log('[EventSplashScreen] Check-in button pressed - not yet implemented');
+              }}
+              testID="check-in-button"
+              accessible={true}
+              accessibilityLabel="Check In"
+              accessibilityRole="button"
+            >
+              <Icon name="door-open" size={48} color="#FFFFFF" />
+              <Text style={styles.mainButtonText}>Check In</Text>
+            </Pressable>
+          )}
+
+          {/* Check-out events: Show "Check Out" button */}
+          {capabilities.hasCheckOut && (
+            <Pressable
+              style={[styles.mainButton, styles.checkOutButton]}
+              onPress={() => {
+                // TODO: Implement check-out flow
+                console.log('[EventSplashScreen] Check-out button pressed - not yet implemented');
+              }}
+              testID="check-out-button"
+              accessible={true}
+              accessibilityLabel="Check Out"
+              accessibilityRole="button"
+            >
+              <Icon name="door-closed" size={48} color="#FFFFFF" />
+              <Text style={styles.mainButtonText}>Check Out</Text>
+            </Pressable>
+          )}
+
+          {/* Plain survey events (no badge scanning, check-in, or check-out): Show "Begin Survey" */}
+          {!capabilities.hasBadgeScanning && !capabilities.hasCheckIn && !capabilities.hasCheckOut && (
+            <Pressable
+              style={[styles.mainButton, styles.surveyButton]}
+              onPress={() => navigate({
+                pathname: '/survey/[id]',
+                params: {
+                  id: event.id,
+                  eventData: JSON.stringify(event),
+                },
+              })}
+              testID="begin-survey-button"
+              accessible={true}
+              accessibilityLabel="Begin Survey"
+              accessibilityRole="button"
+            >
+              <Icon name="clipboard-list-check" size={48} color="#FFFFFF" />
+              <Text style={styles.mainButtonText}>Begin Survey</Text>
+            </Pressable>
+          )}
         </View>
       </View>
     </SafeAreaView>
@@ -244,6 +357,12 @@ const styles = StyleSheet.create({
   },
   surveyButton: {
     backgroundColor: '#257180',
+  },
+  checkInButton: {
+    backgroundColor: '#0A8754', // Green for check-in
+  },
+  checkOutButton: {
+    backgroundColor: '#DC3545', // Red for check-out
   },
   mainButtonText: {
     color: '#FFFFFF',

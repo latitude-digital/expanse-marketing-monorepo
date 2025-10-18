@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { authService } from '../services/firebase';
 import { getFirestore, collection, doc, getDoc } from '@react-native-firebase/firestore';
+import { getIdTokenResult } from '@react-native-firebase/auth';
 
 interface User {
   uid: string;
@@ -40,7 +41,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const unsubscribe = authService.onAuthStateChanged(async (user) => {
       if (user) {
         // Get custom claims for admin status
-        const idTokenResult = await user.getIdTokenResult();
+        const idTokenResult = await getIdTokenResult(user);
         const customClaims = idTokenResult.claims;
         
         // Fetch user document from Firestore to get tags
@@ -83,7 +84,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       // Get custom claims for admin status
       console.log('👤 [AuthContext] Fetching ID token and custom claims...');
-      const idTokenResult = await userCredential.user.getIdTokenResult();
+      const idTokenResult = await getIdTokenResult(userCredential.user);
       const customClaims = idTokenResult.claims;
       console.log('👤 [AuthContext] Custom claims:', JSON.stringify({
         admin: customClaims.admin,

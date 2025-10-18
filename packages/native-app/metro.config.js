@@ -13,7 +13,7 @@ config.transformer = {
 
 config.resolver = {
   ...resolver,
-  assetExts: [...resolver.assetExts.filter((ext) => ext !== "svg"), "htmlx"],
+  assetExts: [...resolver.assetExts.filter((ext) => ext !== "svg"), "htmlx", "lottie"],
   sourceExts: [...resolver.sourceExts, "svg"]
 };
 

@@ -8,11 +8,16 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Dimensions,
+  Platform,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
-import { Audio } from 'expo-av';
+import { useAudioPlayer } from 'expo-audio';
+import LottieView from 'lottie-react-native';
+import * as Device from 'expo-device';
 import type { MeridianEvent } from '@meridian-event-tech/shared/types';
 import { surveysService, activationsService } from '../services/firestore';
 
@@ -28,13 +33,13 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [cameraType, setCameraType] = useState<CameraType>('back');
   const [flashMode, setFlashMode] = useState<'off' | 'torch'>('off');
-  const [isCameraAvailable, setIsCameraAvailable] = useState<boolean | null>(null);
+  const [shouldUseManualEntry, setShouldUseManualEntry] = useState<boolean | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [manualValue, setManualValue] = useState('0');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [autoFocusMode, setAutoFocusMode] = useState<'on' | 'off'>('off');
   const cameraRef = useRef<CameraView | null>(null);
-  const soundRef = useRef<Audio.Sound | null>(null);
+  const audioPlayer = useAudioPlayer(require('../assets/sounds/scan-success.wav'));
   const focusBounds = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
   const scanAnimation = useRef(new Animated.Value(0)).current;
 
@@ -47,14 +52,29 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
 
     const checkCameraAvailability = async () => {
       try {
+        // Force manual entry on simulators
+        const isSimulator = !Device.isDevice;
+        console.log('[BadgeScanScreen] 🔍 Is simulator:', isSimulator);
+
+        if (isSimulator) {
+          console.log('[BadgeScanScreen] 📱 Running on simulator - using manual entry mode');
+          if (mounted) {
+            setShouldUseManualEntry(true);
+          }
+          return;
+        }
+
         const available = await CameraView.isAvailableAsync();
+        console.log('[BadgeScanScreen] 📷 Camera availability check:', available);
         if (mounted) {
-          setIsCameraAvailable(available);
+          // Use manual entry if camera is NOT available
+          setShouldUseManualEntry(!available);
         }
       } catch (error) {
-        console.warn('[BadgeScanScreen] Unable to determine camera availability', error);
+        console.warn('[BadgeScanScreen] ❌ Unable to determine camera availability', error);
         if (mounted) {
-          setIsCameraAvailable(false);
+          // On error, assume camera IS available, so don't use manual entry
+          setShouldUseManualEntry(false);
         }
       }
     };
@@ -66,46 +86,22 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
     };
   }, []);
 
-  useEffect(() => {
-    let mounted = true;
-
-    const loadSound = async () => {
-      try {
-        const sound = new Audio.Sound();
-        await sound.loadAsync(require('../assets/sounds/scan-success.wav'));
-        if (mounted) {
-          soundRef.current = sound;
-        } else {
-          await sound.unloadAsync();
-        }
-      } catch (error) {
-        console.warn('[BadgeScanScreen] Failed to load scan success sound', error);
-      }
-    };
-
-    loadSound();
-
-    return () => {
-      mounted = false;
-      if (soundRef.current) {
-        soundRef.current.unloadAsync().catch(() => {});
-      }
-    };
-  }, []);
 
   useEffect(() => {
+    console.log('[BadgeScanScreen] 🔐 Camera permission status:', cameraPermission?.status);
+    console.log('[BadgeScanScreen] 🔐 Camera permission granted:', cameraPermission?.granted);
+
     if (!cameraPermission) {
+      console.log('[BadgeScanScreen] 🔐 Requesting camera permission...');
       requestCameraPermission().catch((error) => {
-        console.warn('[BadgeScanScreen] Failed to request camera permission', error);
+        console.warn('[BadgeScanScreen] ❌ Failed to request camera permission', error);
       });
     }
   }, [cameraPermission, requestCameraPermission]);
 
   const playSuccessFeedback = useCallback(async () => {
     try {
-      if (soundRef.current) {
-        await soundRef.current.replayAsync();
-      }
+      audioPlayer.replay();
     } catch (error) {
       console.warn('[BadgeScanScreen] Unable to play scan success sound', error);
     }
@@ -122,7 +118,7 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
         useNativeDriver: true,
       }),
     ]).start();
-  }, [scanAnimation]);
+  }, [scanAnimation, audioPlayer]);
 
   const goToSurvey = useCallback(
     (options?: {
@@ -272,18 +268,33 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
     setCameraType((prev) => (prev === 'back' ? 'front' : 'back'));
   }, []);
 
+  const handleOpenSettings = useCallback(async () => {
+    if (Platform.OS === 'ios') {
+      await Linking.openURL('app-settings:');
+    } else {
+      await Linking.openSettings();
+    }
+  }, []);
+
   const renderPermissionPrompt = () => (
     <View style={styles.permissionContainer}>
       <Text style={styles.permissionTitle}>Camera Access Needed</Text>
       <Text style={styles.permissionText}>
-        We need camera access to scan attendee badges. Please enable camera permissions in settings.
+        We need camera access to scan QR codes and driver's licenses. Please enable camera permissions in Settings.
       </Text>
       <TouchableOpacity
         style={styles.permissionButton}
-        onPress={() => requestCameraPermission()}
-        testID="grant-permission-button"
+        onPress={handleOpenSettings}
+        testID="open-settings-button"
       >
-        <Text style={styles.permissionButtonText}>Grant Permission</Text>
+        <Text style={styles.permissionButtonText}>Open Settings</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.permissionButton, { marginTop: 12, backgroundColor: '#666' }]}
+        onPress={() => router.back()}
+        testID="cancel-permission-button"
+      >
+        <Text style={styles.permissionButtonText}>Cancel</Text>
       </TouchableOpacity>
     </View>
   );
@@ -356,15 +367,6 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
         >
           <Text style={styles.headerButtonText}>Cancel</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{badgeVendorLabel}</Text>
-        <TouchableOpacity
-          onPress={() => goToSurvey()}
-          style={styles.headerButton}
-          accessibilityLabel="Skip scanning and open survey"
-          testID="skip-to-survey-button"
-        >
-          <Text style={styles.headerButtonText}>Survey</Text>
-        </TouchableOpacity>
       </View>
 
       {errorMessage && (
@@ -373,16 +375,26 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
         </View>
       )}
 
-      {isCameraAvailable === false ? (
-        renderManualEntry()
-      ) : (
-        <View style={styles.cameraContainer}>
-          {!cameraPermission || !cameraPermission.granted ? (
-            <View style={styles.loaderContainer}>
-              <ActivityIndicator size="large" color="#FFFFFF" />
-              <Text style={styles.loaderText}>Requesting camera permission...</Text>
-            </View>
-          ) : (
+      {(() => {
+        console.log('[BadgeScanScreen] 🎬 Render decision - shouldUseManualEntry:', shouldUseManualEntry);
+        console.log('[BadgeScanScreen] 🎬 Render decision - cameraPermission:', cameraPermission?.status);
+        console.log('[BadgeScanScreen] 🎬 Render decision - granted:', cameraPermission?.granted);
+
+        if (shouldUseManualEntry === true) {
+          console.log('[BadgeScanScreen] 🎬 Rendering: Manual Entry');
+          return renderManualEntry();
+        }
+
+        return (
+          <View style={styles.cameraContainer}>
+            {!cameraPermission || !cameraPermission.granted ? (
+              <View style={styles.loaderContainer}>
+                <ActivityIndicator size="large" color="#FFFFFF" />
+                <Text style={styles.loaderText}>Requesting camera permission...</Text>
+              </View>
+            ) : (() => {
+              console.log('[BadgeScanScreen] 🎬 Rendering: Camera View');
+              return (
             <CameraView
               ref={cameraRef}
               style={styles.camera}
@@ -402,29 +414,18 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
               }}
             >
               <View style={styles.overlay}>
-                <View style={styles.overlaySide} />
-                <View style={styles.overlayCenter}>
-                  <View style={styles.overlaySpacer} />
-                  <View style={styles.reticle}>
-                    <Animated.View
-                      style={[
-                        styles.reticleHighlight,
-                        {
-                          opacity: scanAnimation.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [0, 0.5],
-                          }),
-                        },
-                      ]}
-                    />
-                    <Text style={styles.reticleText}>Align QR code within frame</Text>
-                  </View>
-                  <View style={styles.overlaySpacer} />
+                <View style={styles.squareReticleContainer}>
+                  <LottieView
+                    source={require('../../assets/animations/square-loading.lottie')}
+                    autoPlay
+                    loop
+                    style={styles.squareReticle}
+                  />
                 </View>
-                <View style={styles.overlaySide} />
               </View>
             </CameraView>
-          )}
+              );
+            })()}
 
           <View style={styles.controls}>
             <TouchableOpacity
@@ -451,7 +452,8 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
             )}
           </View>
         </View>
-      )}
+        );
+      })()}
     </SafeAreaView>
   );
 };
@@ -466,7 +468,6 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
     backgroundColor: '#000000',
@@ -480,11 +481,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  headerTitle: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-  },
   cameraContainer: {
     flex: 1,
     position: 'relative',
@@ -494,39 +490,18 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    flexDirection: 'row',
-  },
-  overlaySide: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  overlayCenter: {
-    flex: 3,
-    flexDirection: 'column',
-  },
-  overlaySpacer: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  reticle: {
-    flex: 2,
-    borderWidth: 2,
-    borderColor: '#00B4D8',
-    marginHorizontal: 8,
-    alignItems: 'center',
     justifyContent: 'center',
-    position: 'relative',
-    overflow: 'hidden',
+    alignItems: 'center',
   },
-  reticleText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-    marginTop: 8,
+  squareReticleContainer: {
+    width: Math.min(Dimensions.get('window').width * 0.7, 300),
+    aspectRatio: 1, // Makes it square
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  reticleHighlight: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#00B4D8',
+  squareReticle: {
+    width: '100%',
+    height: '100%',
   },
   controls: {
     flexDirection: 'row',

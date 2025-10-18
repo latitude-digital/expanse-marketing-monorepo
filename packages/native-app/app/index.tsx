@@ -9,6 +9,7 @@ import { EventCacheService, CachedMeridianEvent } from '../src/services/event-ca
 // import { AssetCacheService } from '../src/services/asset-cache';
 import { eventsService } from '../src/services/firestore';
 import { offlineDetector } from '../src/utils/offline-detector';
+import { getFirestore, waitForPendingWrites } from '@react-native-firebase/firestore';
 
 // DEBUG: Expose offline toggle to global for testing
 (global as any).toggleOfflineMode = (forceOffline?: boolean) => {
@@ -271,6 +272,23 @@ export default function EventListPage() {
     console.log('[EventList] 🌐 Online - fetching events from Firestore');
     setLoading(true);
     try {
+      // Wait for all pending writes before refreshing
+      console.log('[EventList] ⏳ Waiting for pending writes to sync...');
+      try {
+        const db = getFirestore();
+        await Promise.race([
+          waitForPendingWrites(db),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+        ]);
+        console.log('[EventList] ✅ All pending writes synced successfully');
+      } catch (error: any) {
+        if (error.message === 'timeout') {
+          console.log('[EventList] ⚠️ Timeout waiting for pending writes (5s), continuing with refresh anyway');
+        } else {
+          console.error('[EventList] ❌ Error waiting for pending writes:', error);
+        }
+      }
+
       const refreshed = await fetchAndCacheEvents();
       console.log(`[EventList] ✅ Fetched ${refreshed.length} events from Firestore`);
 

@@ -17,6 +17,7 @@ import { router } from 'expo-router';
 import Icon from '../components/Icon';
 import type { CachedMeridianEvent } from '../services/event-cache';
 import { useDebounceNavigation } from '../hooks/useDebounceNavigation';
+import { getFirestore, waitForPendingWrites } from '@react-native-firebase/firestore';
 
 export type EventFilter = 'today' | 'upcoming' | 'past' | 'all';
 
@@ -65,6 +66,27 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
     if (onRefresh) {
       setRefreshing(true);
       try {
+        // Step 1: Wait for all pending writes with timeout
+        console.log('[EventList] ⏳ Waiting for pending writes before refresh...');
+
+        try {
+          const db = getFirestore();
+          await Promise.race([
+            waitForPendingWrites(db),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('timeout')), 5000)
+            )
+          ]);
+          console.log('[EventList] ✅ All pending writes synced');
+        } catch (error: any) {
+          if (error.message === 'timeout') {
+            console.log('[EventList] ⚠️ Timeout waiting for pending writes, continuing anyway');
+          } else {
+            console.error('[EventList] ❌ Error waiting for pending writes:', error);
+          }
+        }
+
+        // Step 2: Refresh events
         await onRefresh();
       } finally {
         setRefreshing(false);
@@ -191,83 +213,30 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
       </View>
       
       <View style={styles.eventFooter}>
-        {event.customConfig?.badgeScan ? (
-          onEventPress ? (
-            <Pressable
-              style={[styles.actionButton, styles.startButton]}
-              onPress={() => onEventPress(event)}
-              testID={`start-button-${event.id}`}
-              accessible={true}
-              accessibilityLabel={`Start ${event.name}`}
-              accessibilityRole="button"
-            >
-              <Icon name="arrow-right" size={20} color="#FFFFFF" />
-              <Text style={styles.actionButtonText}>Start</Text>
-            </Pressable>
-          ) : (
-            <Pressable
-              style={[styles.actionButton, styles.startButton]}
-              onPress={() => navigate(`/event/${event.id}`)}
-              testID={`start-button-${event.id}`}
-              accessible={true}
-              accessibilityLabel={`Start ${event.name}`}
-              accessibilityRole="button"
-            >
-              <Icon name="arrow-right" size={20} color="#FFFFFF" />
-              <Text style={styles.actionButtonText}>Start</Text>
-            </Pressable>
-          )
-        ) : (
-          onEventPress ? (
-            <Pressable
-              style={styles.actionButton}
-              onPress={() => onEventPress(event)}
-              testID={`survey-button-${event.id}`}
-              accessible={true}
-              accessibilityLabel={`Survey button for ${event.name}`}
-              accessibilityRole="button"
-            >
-              <Icon name="clipboard-list-check" size={20} color="#FFFFFF" />
-              <Text style={styles.actionButtonText}>Survey</Text>
-            </Pressable>
-          ) : (
-            <Pressable
-              style={styles.actionButton}
-              onPress={() => navigate({
-                pathname: '/survey/[id]',
-                params: {
-                  id: event.id,
-                  eventData: JSON.stringify(event)
-                }
-              })}
-              testID={`survey-button-${event.id}`}
-              accessible={true}
-              accessibilityLabel={`Survey button for ${event.name}`}
-              accessibilityRole="button"
-            >
-              <Icon name="clipboard-list-check" size={20} color="#FFFFFF" />
-              <Text style={styles.actionButtonText}>Survey</Text>
-            </Pressable>
-          )
-        )}
-
-        {(event.preRegDate || event.surveyType === 'preTD') && (
+        {/* All events show a "Start" button that goes to the splash screen */}
+        {onEventPress ? (
           <Pressable
-            style={styles.actionButton}
-            onPress={() => handleCheckInPress(event)}
+            style={[styles.actionButton, styles.startButton]}
+            onPress={() => onEventPress(event)}
+            testID={`start-button-${event.id}`}
+            accessible={true}
+            accessibilityLabel={`Start ${event.name}`}
+            accessibilityRole="button"
           >
-            <Icon name="person-circle-check" size={20} color="#FFFFFF" />
-            <Text style={styles.actionButtonText}>Check-In</Text>
+            <Icon name="arrow-right" size={20} color="#FFFFFF" />
+            <Text style={styles.actionButtonText}>Start</Text>
           </Pressable>
-        )}
-
-        {event._preEventID && (
+        ) : (
           <Pressable
-            style={styles.actionButton}
-            onPress={() => handleCheckOutPress(event)}
+            style={[styles.actionButton, styles.startButton]}
+            onPress={() => navigate(`/event/${event.id}`)}
+            testID={`start-button-${event.id}`}
+            accessible={true}
+            accessibilityLabel={`Start ${event.name}`}
+            accessibilityRole="button"
           >
-            <Icon name="person-walking-arrow-right" size={20} color="#FFFFFF" />
-            <Text style={styles.actionButtonText}>Check Out</Text>
+            <Icon name="arrow-right" size={20} color="#FFFFFF" />
+            <Text style={styles.actionButtonText}>Start</Text>
           </Pressable>
         )}
       </View>

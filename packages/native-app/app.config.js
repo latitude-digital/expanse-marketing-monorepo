@@ -34,9 +34,9 @@ export default {
         UIStatusBarHidden: false,
         UISupportedInterfaceOrientations: ["UIInterfaceOrientationPortrait", "UIInterfaceOrientationPortraitUpsideDown"],
         "UISupportedInterfaceOrientations~ipad": ["UIInterfaceOrientationPortrait", "UIInterfaceOrientationPortraitUpsideDown", "UIInterfaceOrientationLandscapeLeft", "UIInterfaceOrientationLandscapeRight"],
-        NSCameraUsageDescription: "This app needs access to camera for driver's license scanning and document capture.",
-        NSPhotoLibraryUsageDescription: "This app needs access to photo library for uploading documents and images.",
-        NSLocationWhenInUseUsageDescription: "This app may use location for event-specific surveys."
+        NSCameraUsageDescription: "This app needs access to the camera to scan QR codes and driver's licenses.",
+        NSLocationWhenInUseUsageDescription: "This app uses your location to help you find nearby events.",
+        ITSAppUsesNonExemptEncryption: false
       }
     },
     android: {
@@ -106,13 +106,7 @@ export default {
       [
         "expo-camera",
         {
-          cameraPermission: "Allow $(PRODUCT_NAME) to access your camera for driver's license scanning."
-        }
-      ],
-      [
-        "expo-image-picker",
-        {
-          photosPermission: "Allow $(PRODUCT_NAME) to access your photo library for document uploads."
+          cameraPermission: "Allow $(PRODUCT_NAME) to access your camera to scan QR codes and driver's licenses."
         }
       ]
     ],

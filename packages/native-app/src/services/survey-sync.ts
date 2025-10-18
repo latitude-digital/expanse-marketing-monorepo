@@ -34,51 +34,55 @@ export class SurveySyncService {
    * Key approach:
    * - Uses device_survey_guid from survey data as the Firestore document ID
    * - This ensures the same ID is used everywhere (Firestore, local DB)
-   * - Works offline - setDoc() returns immediately and queues the write
+   * - NON-BLOCKING: Returns document ID immediately without waiting for server confirmation
+   * - Firestore queues the write locally and syncs automatically when online
    * - No ID collisions across devices since device_survey_guid is a UUID
    */
-  async saveSurvey(completionData: SurveyCompletionData): Promise<string> {
-    try {
-      const { eventId, answers } = completionData;
+  saveSurvey(completionData: SurveyCompletionData): string {
+    const { eventId, answers } = completionData;
 
-      if (!eventId) {
-        throw new Error('eventId is required');
-      }
+    if (!eventId) {
+      throw new Error('eventId is required');
+    }
 
-      if (!answers || typeof answers !== 'object') {
-        throw new Error('answers object is required');
-      }
+    if (!answers || typeof answers !== 'object') {
+      throw new Error('answers object is required');
+    }
 
-      // Use device_survey_guid as the document ID - it's already a unique UUID
-      const deviceSurveyGuid = answers.device_survey_guid as string;
-      if (!deviceSurveyGuid) {
-        throw new Error('device_survey_guid is required in survey answers');
-      }
+    // Use device_survey_guid as the document ID - it's already a unique UUID
+    const deviceSurveyGuid = answers.device_survey_guid as string;
+    if (!deviceSurveyGuid) {
+      throw new Error('device_survey_guid is required in survey answers');
+    }
 
-      console.log('[SurveySync] 💾 Saving survey to Firestore:', {
-        eventId,
-        deviceSurveyGuid,
-        answersCount: Object.keys(answers).length,
+    console.log('[SurveySync] 💾 Saving survey to Firestore:', {
+      eventId,
+      deviceSurveyGuid,
+      answersCount: Object.keys(answers).length,
+    });
+
+    const db = getFirestore();
+    const surveysCollection = collection(db, 'events', eventId, 'surveys');
+
+    // Use the device_survey_guid as the document ID
+    // This ensures consistency between Firestore and local database
+    const docRef = doc(surveysCollection, deviceSurveyGuid);
+
+    // CRITICAL: Don't await setDoc() - this prevents app hanging when offline
+    // The write succeeds locally immediately and syncs to server when online
+    setDoc(docRef, answers)
+      .then(() => {
+        console.log('[SurveySync] ✅ Survey saved to Firestore with ID:', docRef.id);
+        console.log('[SurveySync] Path: events/' + eventId + '/surveys/' + docRef.id);
+      })
+      .catch((error) => {
+        console.error('[SurveySync] ❌ Failed to save survey:', error);
+        // Error is logged but doesn't block the app
+        // The write is still queued locally and will retry automatically
       });
 
-      const db = getFirestore();
-      const surveysCollection = collection(db, 'events', eventId, 'surveys');
-
-      // Use the device_survey_guid as the document ID
-      // This ensures consistency between Firestore and local database
-      const docRef = doc(surveysCollection, deviceSurveyGuid);
-
-      // Use setDoc() - works offline and returns immediately
-      await setDoc(docRef, answers);
-
-      console.log('[SurveySync] ✅ Survey saved to Firestore with ID:', docRef.id);
-      console.log('[SurveySync] Path: events/' + eventId + '/surveys/' + docRef.id);
-
-      return docRef.id;
-    } catch (error) {
-      console.error('[SurveySync] ❌ Failed to save survey:', error);
-      throw error;
-    }
+    // Return the document ID immediately - don't wait for server confirmation
+    return docRef.id;
   }
 }
 

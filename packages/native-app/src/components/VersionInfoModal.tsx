@@ -1,8 +1,11 @@
-import React from 'react';
-import { Modal, View, Text, StyleSheet, Pressable, ScrollView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Modal, View, Text, StyleSheet, Pressable, ScrollView, Platform, Switch } from 'react-native';
 import * as Application from 'expo-application';
 import * as Updates from 'expo-updates';
 import Constants from 'expo-constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { disableNetwork, enableNetwork, getFirestore } from '@react-native-firebase/firestore';
+import { useEventSync } from '../contexts/EventSyncContext';
 
 interface VersionInfoModalProps {
   visible: boolean;
@@ -15,6 +18,39 @@ export const VersionInfoModal: React.FC<VersionInfoModalProps> = ({ visible, onC
   const easUpdateId = Updates.updateId;
   const easChannel = Updates.channel;
   const runtimeVersion = Updates.runtimeVersion;
+
+  // Sync state from context
+  const { isOnline, pendingWriteCount } = useEventSync();
+
+  // Manual offline mode toggle
+  const [offlineMode, setOfflineMode] = useState(false);
+
+  // Load offline mode preference on mount
+  useEffect(() => {
+    AsyncStorage.getItem('manualOfflineMode').then(value => {
+      setOfflineMode(value === 'true');
+    });
+  }, []);
+
+  // Handle offline mode toggle
+  const handleToggleOfflineMode = async (enabled: boolean) => {
+    try {
+      const db = getFirestore();
+
+      if (enabled) {
+        await disableNetwork(db);
+        console.log('[VersionInfo] 📵 Manual offline mode enabled');
+      } else {
+        await enableNetwork(db);
+        console.log('[VersionInfo] 📶 Manual offline mode disabled');
+      }
+
+      await AsyncStorage.setItem('manualOfflineMode', String(enabled));
+      setOfflineMode(enabled);
+    } catch (error) {
+      console.error('[VersionInfo] ❌ Error toggling offline mode:', error);
+    }
+  };
 
   return (
     <Modal
@@ -60,6 +96,60 @@ export const VersionInfoModal: React.FC<VersionInfoModalProps> = ({ visible, onC
                 <Text style={styles.label}>Runtime Version:</Text>
                 <Text style={styles.value}>{runtimeVersion}</Text>
               </View>
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Network & Sync</Text>
+
+              <View style={styles.infoRow}>
+                <Text style={styles.label}>Manual Offline Mode:</Text>
+                <Switch
+                  value={offlineMode}
+                  onValueChange={handleToggleOfflineMode}
+                  trackColor={{ false: '#E9ECEF', true: '#257180' }}
+                  thumbColor={offlineMode ? '#FFFFFF' : '#FFFFFF'}
+                  ios_backgroundColor="#E9ECEF"
+                />
+              </View>
+
+              <View style={styles.infoRow}>
+                <Text style={styles.label}>Connection Status:</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <View style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: isOnline ? '#28A745' : '#FFC107',
+                    marginRight: 6,
+                  }} />
+                  <Text style={styles.value}>{isOnline ? 'Online' : 'Offline'}</Text>
+                </View>
+              </View>
+
+              <View style={styles.infoRow}>
+                <Text style={styles.label}>Pending Writes:</Text>
+                <Text style={[
+                  styles.value,
+                  pendingWriteCount > 0 && { color: '#FFC107', fontWeight: '600' }
+                ]}>
+                  {pendingWriteCount}
+                </Text>
+              </View>
+
+              {pendingWriteCount > 0 && (
+                <View style={{
+                  marginTop: 8,
+                  padding: 8,
+                  backgroundColor: '#FFF3CD',
+                  borderRadius: 6
+                }}>
+                  <Text style={{ fontSize: 12, color: '#856404' }}>
+                    {pendingWriteCount} survey{pendingWriteCount === 1 ? '' : 's'} waiting to sync
+                  </Text>
+                </View>
+              )}
             </View>
 
             <View style={styles.divider} />

@@ -291,16 +291,8 @@ platform :ios do
       distribute_external: false,
       skip_waiting_for_build_processing: true,
       groups: ["Latitude"],
-      submission_information: {
-        export_compliance_uses_encryption: true,
-        export_compliance_encryption_updated: false,
-        export_compliance_app_type: "business",
-        export_compliance_is_exempt: true,
-        export_compliance_contains_third_party_cryptography: true,
-        export_compliance_contains_proprietary_cryptography: false,
-        export_compliance_available_on_french_store: false,
-        export_compliance_compliance_required: false
-      }
+      # Export compliance information (uses built-in encryption, not distributed in France)
+      uses_non_exempt_encryption: false  # Set to false because we only use standard iOS encryption
     )
   end
 

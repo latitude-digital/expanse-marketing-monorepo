@@ -7,42 +7,50 @@ import {
   orderBy,
   getDocs,
   onSnapshot,
-  connectFirestoreEmulator,
+  initializeFirestore,
 } from '@react-native-firebase/firestore';
+import { getApp } from '@react-native-firebase/app';
 import { MeridianEvent as ExpanseEvent } from '@meridian-event-tech/shared/types';
+import type { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
 
-// Connect to emulator in development
-const initializeFirestore = () => {
-  const db = getFirestore();
+/**
+ * Configure Firestore with unlimited cache for offline support
+ * MUST be called before any Firestore operations
+ */
+let firestoreSetupPromise: Promise<void> | null = null;
 
-  // Configure Firestore settings for better offline support
-  // Note: React Native Firebase has offline persistence enabled by default
-  // and doesn't expose settings() like web SDK. Cache size is configured
-  // in firebase.json if needed.
-
-  // Log Firebase project connection info
+const logFirestoreInfo = (db: FirebaseFirestoreTypes.Module) => {
+  const app = db.app ?? getApp();
   console.log('🔥 [FIRESTORE] Initialized Firestore');
-  console.log('🔥 [FIRESTORE] Firebase App Name:', db.app.name);
-  console.log('🔥 [FIRESTORE] Project ID:', db.app.options.projectId);
-  console.log('🔥 [FIRESTORE] Storage Bucket:', db.app.options.storageBucket);
+  console.log('🔥 [FIRESTORE] Firebase App Name:', app.name);
+  console.log('🔥 [FIRESTORE] Project ID:', app.options.projectId);
+  console.log('🔥 [FIRESTORE] Storage Bucket:', app.options.storageBucket);
   console.log('🔥 [FIRESTORE] Offline Persistence: ENABLED (default for React Native Firebase)');
 
-  // Connect to emulator if in development
-  // DISABLED: Uncomment to use local emulator
-  // if (__DEV__) {
-  //   try {
-  //     // Use localhost for iOS simulator, 10.0.2.2 for Android emulator
-  //     const host = 'localhost';
-  //     connectFirestoreEmulator(db, host, 8080);
-  //     console.log('🔧 Connected to Firestore emulator at localhost:8080');
-  //   } catch (error) {
-  //     console.log('⚠️ Firestore emulator already connected');
-  //   }
-  // }
+  // Connect to the Firestore emulator here if needed (import connectFirestoreEmulator locally).
 };
 
-// Initialize on import
-initializeFirestore();
+export const configureFirestore = async () => {
+  if (!firestoreSetupPromise) {
+    firestoreSetupPromise = (async () => {
+      try {
+        const app = getApp();
+        const db = await initializeFirestore(app, {
+          cacheSizeBytes: -1,
+        });
+        console.log('🔥 [FIRESTORE] ✅ Unlimited cache size enabled');
+        logFirestoreInfo(db);
+      } catch (error) {
+        console.warn('🔥 [FIRESTORE] ⚠️ Failed to configure cache size (may have already been set):', error);
+        // Ensure we still log project information even if settings were already applied
+        const db = getFirestore();
+        logFirestoreInfo(db);
+      }
+    })();
+  }
+
+  return firestoreSetupPromise;
+};
 
 export const eventsService = {
   // Get all events from Firestore
