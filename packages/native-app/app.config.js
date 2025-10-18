@@ -126,6 +126,7 @@ export default {
       EXPO_PUBLIC_APP_ENV: IS_STAGING ? "staging" : "production",
       EXPO_PUBLIC_DEBUG_MODE: IS_STAGING ? "true" : "false",
       EXPO_PUBLIC_ENABLE_LOGGING: IS_STAGING ? "true" : "false",
+      EXPO_PUBLIC_SENTRY_DSN: process.env.EXPO_PUBLIC_SENTRY_DSN || "https://0e402abb7a52a273ef643deea1148e4c@o4506238718967808.ingest.us.sentry.io/4510212003463168",
       EXPO_PUBLIC_SYNC_INTERVAL_MS: "30000",
       EXPO_PUBLIC_MAX_RETRY_ATTEMPTS: "3",
       EXPO_PUBLIC_OFFLINE_STORAGE_LIMIT_MB: "100",

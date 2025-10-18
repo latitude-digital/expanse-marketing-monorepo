@@ -130,6 +130,7 @@ if [ "$BUILD_TYPE" = "full" ]; then
     check_env_var "APPLE_STORE_CONNECT_KEY_ID" "Enter App Store Connect API Key ID" false
     check_env_var "APPLE_STORE_CONNECT_ISSUER_ID" "Enter App Store Connect Issuer ID" false
     check_env_var "APPLE_STORE_CONNECT_KEY" "Enter App Store Connect API Key (base64)" true
+    check_env_var "SENTRY_AUTH_TOKEN" "Enter Sentry auth token (for dSYM uploads)" true
 fi
 
 # EAS update specific
