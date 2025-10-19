@@ -79,6 +79,8 @@ export class DatabaseService {
       this.database = await SQLite.openDatabaseAsync(this.dbName);
       await this.configureDatabase();
       await this.runMigrations();
+      // Defensive: ensure base tables exist even if migrations skipped (e.g., fresh installs)
+      await this.createTables();
       await this.createIndexes();
     } catch (error) {
       console.error('Database initialization failed:', error);
