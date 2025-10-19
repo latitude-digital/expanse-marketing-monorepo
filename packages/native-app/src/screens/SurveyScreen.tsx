@@ -8,6 +8,8 @@ import {
   Modal,
   BackHandler,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
@@ -346,6 +348,11 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
 
   return (
     <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        style={styles.keyboardContainer}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 24 : 0}
+      >
       {/* Survey Header */}
       <View style={[styles.header, { borderBottomColor: brandColor }]}>
         <View style={styles.headerContent}>
@@ -392,6 +399,7 @@ const SurveyScreen: React.FC<SurveyScreenProps> = ({
           />
         )}
       </View>
+      </KeyboardAvoidingView>
 
       {/* Exit Confirmation Modal */}
       <Modal
@@ -442,6 +450,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+  },
+  keyboardContainer: {
+    flex: 1,
   },
   loadingFallback: {
     flex: 1,
