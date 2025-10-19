@@ -228,12 +228,14 @@ export class FDSTagboxRenderer extends SurveyQuestionElementBase {
 }
 
 // Register the tagbox renderer with useAsDefault: true to replace default SurveyJS tagbox
-ReactQuestionFactory.Instance.registerQuestion(
-    "tagbox",
-    (props) => {
-        return React.createElement(FDSTagboxRenderer, props);
-    },
-    "customtype", // Using "customtype" for the third parameter to enable useAsDefault
-    true // useAsDefault: true - replaces default SurveyJS tagbox renderer
-);
+export function registerFDSTagboxRenderer(factory = ReactQuestionFactory.Instance) {
+    factory.registerQuestion(
+        "tagbox",
+        (props) => {
+            return React.createElement(FDSTagboxRenderer, props);
+        },
+        "customtype", // Using "customtype" for the third parameter to enable useAsDefault
+        true // useAsDefault: true - replaces default SurveyJS tagbox renderer
+    );
+}
 // @ts-nocheck

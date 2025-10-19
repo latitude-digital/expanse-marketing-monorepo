@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, Text, ActivityIndicator, TouchableOpacity, Alert, Platform } from 'react-native';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { View, StyleSheet, Text, ActivityIndicator, TouchableOpacity, Alert, Modal } from 'react-native';
 import { useNavigation } from 'expo-router';
 import EventListScreen from '../src/screens/EventListScreen';
 import { useAuth } from '../src/contexts/AuthContext';
@@ -9,7 +9,9 @@ import { EventCacheService, CachedMeridianEvent } from '../src/services/event-ca
 // import { AssetCacheService } from '../src/services/asset-cache';
 import { eventsService } from '../src/services/firestore';
 import { offlineDetector } from '../src/utils/offline-detector';
-import { getFirestore, waitForPendingWrites, enableNetwork } from '@react-native-firebase/firestore';
+import { getFirestore, waitForPendingWrites, enableNetwork, collection, onSnapshot, query, limit } from '@react-native-firebase/firestore';
+import { createSyncManager } from '../src/services/sync-manager';
+import * as Updates from 'expo-updates';
 
 // DEBUG: Expose offline toggle to global for testing
 (global as any).toggleOfflineMode = (forceOffline?: boolean) => {
@@ -20,6 +22,26 @@ import { getFirestore, waitForPendingWrites, enableNetwork } from '@react-native
       : '🟢 [DEBUG] Offline mode DISABLED - app will use real network'
   );
   return offlineDetector.debugForceOffline;
+};
+
+type RefreshStepKey = 'events' | 'sync' | 'updates';
+type RefreshStepStatus = 'pending' | 'in_progress' | 'success' | 'error';
+
+interface RefreshStepState {
+  status: RefreshStepStatus;
+  message?: string;
+}
+
+const createInitialRefreshSteps = (): Record<RefreshStepKey, RefreshStepState> => ({
+  events: { status: 'pending' },
+  sync: { status: 'pending' },
+  updates: { status: 'pending' },
+});
+
+const refreshStepLabels: Record<RefreshStepKey, string> = {
+  events: 'Refreshing events',
+  sync: 'Syncing data',
+  updates: 'Checking for updates',
 };
 
 export default function EventListPage() {
@@ -39,6 +61,37 @@ export default function EventListPage() {
 
   const [databaseService] = useState(() => DatabaseService.createEncrypted());
   const [eventCache] = useState(() => new EventCacheService(databaseService));
+  const [syncManager] = useState(() => createSyncManager(databaseService));
+  const refreshInProgressRef = useRef(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshModalVisible, setRefreshModalVisible] = useState(false);
+  const [refreshSteps, setRefreshSteps] = useState<Record<RefreshStepKey, RefreshStepState>>(
+    () => createInitialRefreshSteps()
+  );
+  const [pendingReload, setPendingReload] = useState(false);
+
+  const setStepStatus = useCallback(
+    (step: RefreshStepKey, status: RefreshStepStatus, message?: string) => {
+      setRefreshSteps((prev) => ({
+        ...prev,
+        [step]: { status, message },
+      }));
+    },
+    []
+  );
+
+  const getStatusColor = useCallback((status: RefreshStepStatus) => {
+    switch (status) {
+      case 'success':
+        return '#2E7D32';
+      case 'error':
+        return '#C62828';
+      case 'in_progress':
+        return '#F9A825';
+      default:
+        return '#9CA3AF';
+    }
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -247,105 +300,251 @@ export default function EventListPage() {
     return unsubscribe;
   }, [dbReady, fetchAndCacheEvents]);
 
-  const handleRefresh = useCallback(async () => {
-    console.log('[EventList] 🔄 Refresh Events button pressed');
-    // COMMENTED OUT - Asset caching disabled
-    // if (!dbReady || !assetCache) {
+  const runRefreshFlow = useCallback(async () => {
     if (!dbReady) {
-      console.log('[EventList] ❌ Database not ready');
       Alert.alert('Not Ready', 'Please wait for the app to finish initializing.', [{ text: 'OK' }]);
       return;
     }
 
-    if (!offlineDetector.isOnline()) {
-      console.log('[EventList] ⚠️ Refresh requested while offline, using cached events');
-      const cached = await eventCache.getCachedEvents();
-      setEvents(cached);
-      Alert.alert(
-        'Offline Mode',
-        `Loaded ${cached.length} cached event${cached.length !== 1 ? 's' : ''}.`,
-        [{ text: 'OK' }]
-      );
+    if (refreshInProgressRef.current) {
+      setRefreshModalVisible(true);
       return;
     }
 
-    console.log('[EventList] 🌐 Online - fetching events from Firestore');
-    setLoading(true);
-    try {
-      const db = getFirestore();
+    refreshInProgressRef.current = true;
+    setRefreshing(true);
+    setRefreshSteps(createInitialRefreshSteps());
+    setRefreshModalVisible(true);
+    setPendingReload(false);
 
-      // Step 1: Ensure Firestore network is enabled (in case it was manually disabled)
-      console.log('[EventList] 🔌 Ensuring Firestore network is enabled...');
+    const runEventsStep = async () => {
+      let unsubscribe: (() => void) | undefined;
       try {
-        await enableNetwork(db);
-        console.log('[EventList] ✅ Firestore network enabled');
+        setStepStatus('events', 'in_progress', 'Preparing to refresh events...');
+        const db = getFirestore();
+
+        if (!offlineDetector.isOnline()) {
+          const cached = await eventCache.getCachedEvents();
+          setEvents(cached);
+          setStepStatus(
+            'events',
+            'success',
+            `Offline: showing ${cached.length} cached event${cached.length === 1 ? '' : 's'}.`
+          );
+          return;
+        }
+
+        try {
+          await enableNetwork(db);
+        } catch (error) {
+          console.warn('[EventList] ⚠️ Error enabling Firestore network (may already be enabled):', error);
+        }
+
+        let connectedToServer = false;
+        unsubscribe = onSnapshot(
+          query(collection(db, 'events'), limit(1)),
+          { includeMetadataChanges: true },
+          (snapshot) => {
+            if (!snapshot.metadata.fromCache) {
+              connectedToServer = true;
+              setStepStatus('events', 'in_progress', 'Connected to Firestore. Refreshing events...');
+            }
+          },
+          (error) => {
+            console.error('[EventList] ❌ Firestore metadata listener error:', error);
+          }
+        );
+
+        try {
+          await Promise.race([
+            waitForPendingWrites(db),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000)),
+          ]);
+        } catch (error: any) {
+          if (error?.message === 'timeout') {
+            setStepStatus('events', 'in_progress', 'Pending writes still syncing...');
+          } else {
+            setStepStatus('events', 'in_progress', 'Continuing refresh despite sync warning.');
+          }
+        }
+
+        const refreshed = await fetchAndCacheEvents();
+        if (refreshed.length) {
+          setEvents(refreshed);
+        }
+
+        setStepStatus(
+          'events',
+          'success',
+          connectedToServer
+            ? 'Events refreshed from Firestore.'
+            : 'Events refreshed (using latest cached data).'
+        );
       } catch (error) {
-        console.warn('[EventList] ⚠️ Error enabling network (may already be enabled):', error);
+        console.error('[EventList] ❌ Refresh events failed:', error);
+        setStepStatus(
+          'events',
+          'error',
+          error instanceof Error ? error.message : 'Unexpected error refreshing events.'
+        );
+      } finally {
+        if (unsubscribe) {
+          unsubscribe();
+        }
       }
+    };
 
-      // Step 2: Give Firestore a moment to start syncing pending writes
-      console.log('[EventList] ⏳ Giving Firestore time to initiate sync...');
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Step 3: Wait for all pending writes with longer timeout (15 seconds)
-      console.log('[EventList] ⏳ Waiting for pending writes to sync...');
+    const runSyncStep = async () => {
+      setStepStatus('sync', 'in_progress', 'Checking for pending responses...');
       try {
-        await Promise.race([
-          waitForPendingWrites(db),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000))
-        ]);
-        console.log('[EventList] ✅ All pending writes synced successfully');
-      } catch (error: any) {
-        if (error.message === 'timeout') {
-          console.log('[EventList] ⚠️ Timeout waiting for pending writes (15s), continuing with refresh anyway');
-          console.log('[EventList] ⚠️ Some survey data may still be syncing in the background');
+        const operations = await databaseService.getOperations();
+        const pendingCount = await operations.getPendingSyncItemCount();
+
+        if (pendingCount === 0) {
+          setStepStatus('sync', 'success', 'No pending responses to sync.');
+          return;
+        }
+
+        setStepStatus(
+          'sync',
+          'in_progress',
+          `Syncing ${pendingCount} pending response${pendingCount === 1 ? '' : 's'}...`
+        );
+
+        await syncManager.startSync();
+
+        const remaining = await operations.getPendingSyncItemCount();
+        if (remaining === 0) {
+          setStepStatus('sync', 'success', 'All responses synced.');
         } else {
-          console.error('[EventList] ❌ Error waiting for pending writes:', error);
+          setStepStatus(
+            'sync',
+            'error',
+            `${remaining} response${remaining === 1 ? '' : 's'} still pending after sync.`
+          );
         }
-      }
-
-      const refreshed = await fetchAndCacheEvents();
-      console.log(`[EventList] ✅ Fetched ${refreshed.length} events from Firestore`);
-
-      if (refreshed.length > 0) {
-        // Log first event's surveyJSModel to verify what we got from Firestore
-        const firstEvent = refreshed[0];
-        console.log(`[EventList] 📊 First event (${firstEvent.id}) surveyJSModel type:`, firstEvent.surveyJSModel ? typeof firstEvent.surveyJSModel : 'undefined');
-        if (firstEvent.surveyJSModel) {
-          const model = typeof firstEvent.surveyJSModel === 'string'
-            ? JSON.parse(firstEvent.surveyJSModel)
-            : firstEvent.surveyJSModel;
-          console.log('[EventList] 📋 First event surveyJSModel pages:', JSON.stringify(model.pages?.[0]?.elements?.slice(0, 3)));
-        }
-      }
-
-      if (refreshed.length) {
-        setEvents(refreshed);
-        Alert.alert(
-          'Events Refreshed',
-          `Successfully loaded ${refreshed.length} event${refreshed.length !== 1 ? 's' : ''}.`,
-          [{ text: 'OK' }]
-        );
-      } else {
-        const cached = await eventCache.getCachedEvents();
-        setEvents(cached);
-        Alert.alert(
-          'Refresh Complete',
-          `No new events found. Showing ${cached.length} cached event${cached.length !== 1 ? 's' : ''}.`,
-          [{ text: 'OK' }]
+      } catch (error) {
+        console.error('[EventList] ❌ Sync step failed:', error);
+        setStepStatus(
+          'sync',
+          'error',
+          error instanceof Error ? error.message : 'Unexpected error while syncing.'
         );
       }
-    } catch (error) {
-      console.error('[EventList] ❌ Manual refresh failed:', error);
-      Alert.alert(
-        'Refresh Failed',
-        'Unable to refresh events. Please try again.',
-        [{ text: 'OK' }]
-      );
+    };
+
+    const runUpdatesStep = async () => {
+      setStepStatus('updates', 'in_progress', 'Checking for app updates...');
+      try {
+        const updateResult = await Updates.checkForUpdateAsync();
+        if (!updateResult.isAvailable) {
+          setStepStatus('updates', 'success', 'App is up to date.');
+          return;
+        }
+
+        setStepStatus('updates', 'in_progress', 'Downloading update...');
+        await Updates.fetchUpdateAsync();
+        setPendingReload(true);
+        setStepStatus('updates', 'success', 'Update downloaded. Restart to apply.');
+      } catch (error: any) {
+        console.error('[EventList] ❌ Update step failed:', error);
+        let message = error instanceof Error ? error.message : 'Unexpected error while checking for updates.';
+        if (error?.code === 'ERR_UPDATES_DISABLED') {
+          message = 'Updates disabled for this build.';
+        }
+        setStepStatus('updates', 'error', message);
+      }
+    };
+
+    try {
+      await runEventsStep();
+      await runSyncStep();
+      await runUpdatesStep();
     } finally {
-      setLoading(false);
+      setRefreshing(false);
+      refreshInProgressRef.current = false;
     }
-  }, [dbReady, eventCache, fetchAndCacheEvents]);
+  }, [dbReady, eventCache, fetchAndCacheEvents, setStepStatus, databaseService, syncManager]);
+
+  const handleRefresh = useCallback(async () => {
+    await runRefreshFlow();
+  }, [runRefreshFlow]);
+
+  const allStepsComplete = Object.values(refreshSteps).every(
+    (step) => step.status === 'success' || step.status === 'error'
+  );
+
+  const handleRefreshModalClose = useCallback(async () => {
+    if (refreshInProgressRef.current) {
+      return;
+    }
+
+    setRefreshModalVisible(false);
+    setRefreshSteps(createInitialRefreshSteps());
+
+    if (pendingReload) {
+      try {
+        await Updates.reloadAsync();
+      } catch (error) {
+        console.error('[EventList] ❌ Failed to apply update:', error);
+      } finally {
+        setPendingReload(false);
+      }
+    }
+  }, [pendingReload]);
+
+  const renderRefreshModal = () => (
+    <Modal
+      transparent
+      animationType="fade"
+      visible={refreshModalVisible}
+      onRequestClose={handleRefreshModalClose}
+    >
+      <View style={styles.refreshModalBackdrop}>
+        <View style={styles.refreshModalContainer}>
+          <Text style={styles.refreshModalTitle}>Refresh Status</Text>
+          {(Object.keys(refreshStepLabels) as RefreshStepKey[]).map((key) => {
+            const step = refreshSteps[key];
+            const showSpinner = step.status === 'in_progress';
+
+            return (
+              <View key={key} style={styles.refreshStatusRow}>
+                <View style={[styles.refreshStatusIndicator, { backgroundColor: getStatusColor(step.status) }]} />
+                <View style={styles.refreshStatusTextContainer}>
+                  <Text style={styles.refreshStatusLabel}>{refreshStepLabels[key]}</Text>
+                  {step.message ? (
+                    <Text style={styles.refreshStatusMessage}>{step.message}</Text>
+                  ) : null}
+                  {showSpinner ? (
+                    <ActivityIndicator
+                      size="small"
+                      color="#257180"
+                      style={styles.refreshStatusSpinner}
+                    />
+                  ) : null}
+                </View>
+              </View>
+            );
+          })}
+
+          <View style={styles.refreshModalFooter}>
+            <TouchableOpacity
+              style={[
+                styles.refreshModalButton,
+                (!allStepsComplete || refreshInProgressRef.current) && styles.refreshModalButtonDisabled,
+              ]}
+              disabled={!allStepsComplete || refreshInProgressRef.current}
+              onPress={handleRefreshModalClose}
+            >
+              <Text style={styles.refreshModalButtonText}>
+                {pendingReload ? 'Restart' : 'OK'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
 
   // COMMENTED OUT - Asset caching disabled
   /*
@@ -407,7 +606,7 @@ export default function EventListPage() {
     navigation.setOptions({
       headerLeft: () => (
         <TouchableOpacity
-          onPress={handleRefresh}
+          onPress={runRefreshFlow}
           // COMMENTED OUT - Asset caching disabled
           // onLongPress={handleLongPressClearCache}
           disabled={loading}
@@ -415,7 +614,7 @@ export default function EventListPage() {
           accessibilityRole="button"
           // COMMENTED OUT - Asset caching disabled
           // accessibilityHint="Tap to refresh events, long press to clear asset cache"
-          accessibilityHint="Tap to refresh events"
+          accessibilityHint="Tap to refresh"
         >
           <Text
             style={[
@@ -423,7 +622,7 @@ export default function EventListPage() {
               loading && styles.headerRefreshTextDisabled,
             ]}
           >
-            Refresh Events
+            Refresh
           </Text>
         </TouchableOpacity>
       ),
@@ -431,7 +630,7 @@ export default function EventListPage() {
         paddingLeft: 0,
       },
     });
-  }, [navigation, handleRefresh, loading]);
+  }, [navigation, runRefreshFlow, loading]);
 
   if (loading) {
     return (
@@ -443,12 +642,16 @@ export default function EventListPage() {
   }
 
   return (
-    <EventListScreen
-      events={events}
-      loading={loading}
-      currentUser={currentUser ?? undefined}
-      onRefresh={handleRefresh}
-    />
+    <>
+      <EventListScreen
+        events={events}
+        loading={loading}
+        currentUser={currentUser ?? undefined}
+        onRefresh={handleRefresh}
+        refreshing={refreshing}
+      />
+      {renderRefreshModal()}
+    </>
   );
 }
 
@@ -472,5 +675,77 @@ const styles = StyleSheet.create({
   },
   headerRefreshTextDisabled: {
     color: '#8E8E93', // iOS system gray
+  },
+  refreshModalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  refreshModalContainer: {
+    width: '100%',
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  refreshModalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1f2937',
+    marginBottom: 16,
+  },
+  refreshStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  refreshStatusIndicator: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginTop: 4,
+    marginRight: 12,
+  },
+  refreshStatusTextContainer: {
+    flex: 1,
+  },
+  refreshStatusLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1f2937',
+  },
+  refreshStatusMessage: {
+    marginTop: 4,
+    fontSize: 14,
+    color: '#4b5563',
+    lineHeight: 20,
+  },
+  refreshStatusSpinner: {
+    marginTop: 8,
+  },
+  refreshModalFooter: {
+    marginTop: 8,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  refreshModalButton: {
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: '#257180',
+  },
+  refreshModalButtonDisabled: {
+    backgroundColor: '#94a3b8',
+  },
+  refreshModalButtonText: {
+    color: '#ffffff',
+    fontWeight: '600',
+    fontSize: 15,
   },
 });

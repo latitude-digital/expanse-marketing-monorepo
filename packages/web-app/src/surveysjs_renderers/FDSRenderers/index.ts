@@ -11,3 +11,6 @@ export { FDSPanelRenderer } from './FDSPanel';
 
 // Export shared utilities
 export * from './FDSShared';
+
+// Export registrar utilities
+export { registerAllFDSRenderers } from './register';

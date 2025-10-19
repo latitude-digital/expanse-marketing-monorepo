@@ -150,12 +150,14 @@ export class FDSCheckboxRenderer extends SurveyQuestionElementBase {
 }
 
 // Register the checkbox renderer with useAsDefault: true to replace default SurveyJS checkbox
-ReactQuestionFactory.Instance.registerQuestion(
-    "checkbox",
-    (props) => {
-        return React.createElement(FDSCheckboxRenderer, props);
-    },
-    "customtype", // Using "customtype" for the third parameter to enable useAsDefault
-    true // useAsDefault: true - replaces default SurveyJS checkbox renderer
-);
+export function registerFDSCheckboxRenderer(factory = ReactQuestionFactory.Instance) {
+    factory.registerQuestion(
+        "checkbox",
+        (props) => {
+            return React.createElement(FDSCheckboxRenderer, props);
+        },
+        "customtype", // Using "customtype" for the third parameter to enable useAsDefault
+        true // useAsDefault: true - replaces default SurveyJS checkbox renderer
+    );
+}
 // @ts-nocheck

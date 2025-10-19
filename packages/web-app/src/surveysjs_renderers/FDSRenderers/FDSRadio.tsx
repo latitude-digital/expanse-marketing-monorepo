@@ -120,12 +120,14 @@ export class FDSRadioRenderer extends SurveyQuestionElementBase {
 }
 
 // Register the radio group renderer with useAsDefault: true to replace default SurveyJS radio
-ReactQuestionFactory.Instance.registerQuestion(
-    "radiogroup",
-    (props) => {
-        return React.createElement(FDSRadioRenderer, props);
-    },
-    "customtype", // Using "customtype" for the third parameter to enable useAsDefault
-    true // useAsDefault: true - replaces default SurveyJS radio renderer
-);
+export function registerFDSRadioRenderer(factory = ReactQuestionFactory.Instance) {
+    factory.registerQuestion(
+        "radiogroup",
+        (props) => {
+            return React.createElement(FDSRadioRenderer, props);
+        },
+        "customtype", // Using "customtype" for the third parameter to enable useAsDefault
+        true // useAsDefault: true - replaces default SurveyJS radio renderer
+    );
+}
 // @ts-nocheck

@@ -191,12 +191,14 @@ export class FDSTextRenderer extends SurveyQuestionElementBase {
 }
 
 // Override the default text question renderer with our Ford UI version
-ReactQuestionFactory.Instance.registerQuestion(
-    "text",
-    (props) => {
-        return React.createElement(FDSTextRenderer, props);
-    }
-);
+export function registerFDSTextRenderer(factory = ReactQuestionFactory.Instance) {
+    factory.registerQuestion(
+        "text",
+        (props) => {
+            return React.createElement(FDSTextRenderer, props);
+        }
+    );
+}
 
 // NOTE: Do NOT register "emailtextinput" here - it has its own brand-aware factory
 // in EmailTextInput/index.tsx that chooses between Ford UI and default SurveyJS rendering

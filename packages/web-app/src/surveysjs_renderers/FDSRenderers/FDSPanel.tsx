@@ -112,11 +112,13 @@ export class FDSPanelRenderer extends SurveyQuestionElementBase {
 }
 
 // Register the panel renderer with useAsDefault: true to replace default SurveyJS panel
-ReactQuestionFactory.Instance.registerQuestion(
-    "panel",
-    (props) => {
-        return React.createElement(FDSPanelRenderer, props);
-    },
-    "customtype", // Using "customtype" for the third parameter to enable useAsDefault
-    true // useAsDefault: true - replaces default SurveyJS panel renderer
-);
+export function registerFDSPanelRenderer(factory = ReactQuestionFactory.Instance) {
+    factory.registerQuestion(
+        "panel",
+        (props) => {
+            return React.createElement(FDSPanelRenderer, props);
+        },
+        "customtype", // Using "customtype" for the third parameter to enable useAsDefault
+        true // useAsDefault: true - replaces default SurveyJS panel renderer
+    );
+}

@@ -59,9 +59,11 @@ export class FDSToggleRenderer extends SurveyQuestionElementBase {
 }
 
 // Register the toggle renderer
-ReactQuestionFactory.Instance.registerQuestion(
-    "boolean",
-    (props) => {
-        return React.createElement(FDSToggleRenderer, props);
-    }
-);
+export function registerFDSToggleRenderer(factory = ReactQuestionFactory.Instance) {
+    factory.registerQuestion(
+        "boolean",
+        (props) => {
+            return React.createElement(FDSToggleRenderer, props);
+        }
+    );
+}

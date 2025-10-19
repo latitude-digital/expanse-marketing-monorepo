@@ -53,9 +53,11 @@ export class FDSTextAreaRenderer extends SurveyQuestionElementBase {
 }
 
 // Register the textarea renderer
-ReactQuestionFactory.Instance.registerQuestion(
-    "comment",
-    (props) => {
-        return React.createElement(FDSTextAreaRenderer, props);
-    }
-);
+export function registerFDSTextAreaRenderer(factory = ReactQuestionFactory.Instance) {
+    factory.registerQuestion(
+        "comment",
+        (props) => {
+            return React.createElement(FDSTextAreaRenderer, props);
+        }
+    );
+}

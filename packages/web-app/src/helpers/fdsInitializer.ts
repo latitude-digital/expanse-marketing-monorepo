@@ -3,7 +3,6 @@
  * Only loads FDS components and brand-specific questions when needed
  */
 
-import { ReactQuestionFactory } from 'survey-react-ui';
 import { AllSurveys, FMCSurveys } from '../surveyjs_questions';
 import FordSurveysNew from '../surveyjs_questions/FordSurveysNew';
 import LincolnSurveys from '../surveyjs_questions/LincolnSurveys';
@@ -40,19 +39,20 @@ async function loadFDSRenderers(): Promise<void> {
     return;
   }
 
-  try {
-    // Dynamically import FDS renderers (for web app)
-    const { FDSTextRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSText');
-    const { FDSRadioRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSRadio');
-    const { FDSCheckboxRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSCheckbox');
-    const { FDSDropdownRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSDropdown');
-    const { FDSTagboxRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSTagbox');
-    const { FDSTextAreaRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSTextArea');
-    const { FDSToggleRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSToggle');
-    const { FDSRatingRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSRating');
-    const { FDSPanelRenderer } = await import('../surveysjs_renderers/FDSRenderers/FDSPanel');
+  if (typeof window !== 'undefined') {
+    const registrar = (window as any).__FDS_REGISTER_RENDERERS__;
+    if (typeof registrar === 'function') {
+      registrar();
+      console.log('FDS renderers registered via WebView helper');
+      FDSRenderersLoaded = true;
+      return;
+    }
+  }
 
-    console.log('FDS renderers loaded successfully');
+  try {
+    const { registerAllFDSRenderers } = await import('../surveysjs_renderers/FDSRenderers/register');
+    registerAllFDSRenderers();
+    console.log('FDS renderers loaded successfully via dynamic import');
     FDSRenderersLoaded = true;
   } catch (error) {
     console.error('Failed to load FDS renderers:', error);

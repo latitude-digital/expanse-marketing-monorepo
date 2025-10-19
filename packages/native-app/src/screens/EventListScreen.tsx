@@ -7,13 +7,11 @@ import {
   Pressable,
   RefreshControl,
   ActivityIndicator,
-  Linking,
   TextInput,
   Dimensions,
   ScaledSize,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 import Icon from '../components/Icon';
 import type { CachedMeridianEvent } from '../services/event-cache';
 import { useDebounceNavigation } from '../hooks/useDebounceNavigation';
@@ -35,6 +33,7 @@ interface EventListScreenProps {
   currentUser?: User;
   onRefresh?: () => Promise<void>;
   onEventPress?: (event: CachedMeridianEvent) => void;
+  refreshing?: boolean;
 }
 
 const EventListScreen: React.FC<EventListScreenProps> = ({
@@ -43,13 +42,17 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
   currentUser,
   onRefresh,
   onEventPress,
+  refreshing: refreshingProp,
 }) => {
   // Using Expo Router instead of React Navigation
   const [filter, setFilter] = useState<EventFilter>('today');
-  const [refreshing, setRefreshing] = useState(false);
+  const [internalRefreshing, setInternalRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [screenData, setScreenData] = useState(Dimensions.get('window'));
   const { navigate } = useDebounceNavigation();
+
+  const isControlledRefresh = typeof refreshingProp === 'boolean';
+  const refreshing = isControlledRefresh ? !!refreshingProp : internalRefreshing;
 
   useEffect(() => {
     const onChange = ({ window }: { window: ScaledSize; screen: ScaledSize }) => {
@@ -64,7 +67,9 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
 
   const handleRefresh = useCallback(async () => {
     if (onRefresh) {
-      setRefreshing(true);
+      if (!isControlledRefresh) {
+        setInternalRefreshing(true);
+      }
       try {
         // Step 1: Wait for all pending writes with timeout
         console.log('[EventList] ⏳ Waiting for pending writes before refresh...');
@@ -89,10 +94,12 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
         // Step 2: Refresh events
         await onRefresh();
       } finally {
-        setRefreshing(false);
+        if (!isControlledRefresh) {
+          setInternalRefreshing(false);
+        }
       }
     }
-  }, [onRefresh]);
+  }, [onRefresh, isControlledRefresh]);
 
   const filterEvents = useCallback((events: CachedMeridianEvent[], filter: EventFilter, searchTerm: string): CachedMeridianEvent[] => {
     const now = new Date();
@@ -176,16 +183,6 @@ const EventListScreen: React.FC<EventListScreenProps> = ({
       </Text>
     </Pressable>
   );
-
-  const handleCheckInPress = (event: CachedMeridianEvent) => {
-    const url = `/s/${event.subdomain || event.id}/in`;
-    Linking.openURL(url);
-  };
-
-  const handleCheckOutPress = (event: CachedMeridianEvent) => {
-    const url = `/s/${event.subdomain || event.id}/out`;
-    Linking.openURL(url);
-  };
 
   const renderEventItem = ({ item: event }: { item: CachedMeridianEvent }) => (
     <View style={styles.eventCard}>

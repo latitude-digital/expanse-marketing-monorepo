@@ -23,7 +23,7 @@ import { offlineDetector } from './src/utils/offline-detector';
 
 // Types
 import type { MeridianEvent as ExpanseEvent } from '@meridian-event-tech/shared/types';
-import type { SurveyCompletionData } from './src/components/SurveyWebView';
+import type { SurveyCompletionData } from './src/components/OfflineSurveyWebView';
 import * as Sentry from '@sentry/react-native';
 import Constants from 'expo-constants';
 

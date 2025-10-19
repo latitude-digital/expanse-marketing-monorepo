@@ -115,12 +115,14 @@ export class FDSDropdownRenderer extends SurveyQuestionElementBase {
 }
 
 // Register the dropdown renderer with useAsDefault: true to replace default SurveyJS dropdown
-ReactQuestionFactory.Instance.registerQuestion(
-    "dropdown",
-    (props) => {
-        return React.createElement(FDSDropdownRenderer, props);
-    },
-    "customtype", // Using "customtype" for the third parameter to enable useAsDefault  
-    true // useAsDefault: true - replaces default SurveyJS dropdown renderer
-);
+export function registerFDSDropdownRenderer(factory = ReactQuestionFactory.Instance) {
+    factory.registerQuestion(
+        "dropdown",
+        (props) => {
+            return React.createElement(FDSDropdownRenderer, props);
+        },
+        "customtype", // Using "customtype" for the third parameter to enable useAsDefault  
+        true // useAsDefault: true - replaces default SurveyJS dropdown renderer
+    );
+}
 // @ts-nocheck

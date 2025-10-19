@@ -43,6 +43,9 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
   const focusBounds = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
   const scanAnimation = useRef(new Animated.Value(0)).current;
 
+  // Use ref for immediate synchronous duplicate scan prevention (best practice)
+  const processingRef = useRef(false);
+
   const isPermissionDenied = cameraPermission?.status === 'denied';
 
   const badgeVendorLabel = useMemo(() => badgeScanConfig?.vendor ?? 'Badge Scan', [badgeScanConfig?.vendor]);
@@ -148,8 +151,12 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
         return;
       }
 
+      // Set ref IMMEDIATELY for synchronous duplicate prevention (best practice)
+      processingRef.current = true;
+      // Also set state for UI feedback
+      setIsProcessing(true);
+
       try {
-        setIsProcessing(true);
         await playSuccessFeedback();
 
         // Check if this badge has already completed a survey in Firestore
@@ -161,6 +168,7 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
           if (existingSurvey) {
             console.log('[BadgeScanScreen] Badge has already completed a survey for this event');
             console.log('[BadgeScanScreen] Existing survey path:', existingSurvey.path);
+            processingRef.current = false;
             setIsProcessing(false);
             Alert.alert(
               'Survey Already Completed',
@@ -239,6 +247,7 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
       } catch (error) {
         console.warn('[BadgeScanScreen] Error handling scan result', error);
         setErrorMessage('Unable to process scan result. Please try again.');
+        processingRef.current = false;
         setIsProcessing(false);
       }
     },
@@ -247,12 +256,13 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
 
   const handleBarcodeScanned = useCallback(
     ({ data }: { data: string }) => {
-      if (isProcessing) {
+      // Use ref for immediate synchronous check (prevents race conditions)
+      if (processingRef.current) {
         return;
       }
       handleScanValue(data);
     },
-    [handleScanValue, isProcessing]
+    [handleScanValue]
   );
 
   const handleTapToFocus = useCallback(() => {

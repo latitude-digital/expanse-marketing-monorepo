@@ -466,6 +466,18 @@ const SurveyComponent: React.FC = () => {
           if (shouldUseCustomNavigation) {
             console.log('[Navigation Debug] Hiding built-in navigation buttons');
             survey.showNavigationButtons = false;
+          } else {
+            console.log('[Navigation Debug] surveyJSON.showNavigationButtons:', (surveyJSON as any).showNavigationButtons,
+              'surveyJSON.showCompleteButton:', (surveyJSON as any).showCompleteButton);
+            // Ensure non-FDS brands keep the default SurveyJS controls unless survey JSON overrides it
+            if (!surveyJSON.showNavigationButtons) {
+              survey.showNavigationButtons = 'bottom';
+            }
+            if (typeof surveyJSON.showCompleteButton === 'undefined') {
+              survey.showCompleteButton = true;
+            }
+            console.log('[Navigation Debug] Final survey.showNavigationButtons:', survey.showNavigationButtons,
+              'survey.showCompleteButton:', survey.showCompleteButton);
           }
 
           // Apply theme for all brands
@@ -769,8 +781,20 @@ const SurveyComponent: React.FC = () => {
           }
 
           survey.onAfterRenderSurvey.add((sender: Model) => {
-            (sender as any).showCompleteButton = (surveyJSON as any).showCompleteButton;
-            (sender as any).showNavigationButtons = (surveyJSON as any).showNavigationButtons;
+            const jsonShowComplete = (surveyJSON as any).showCompleteButton;
+            const jsonShowNavigation = (surveyJSON as any).showNavigationButtons;
+            console.log('[Navigation Debug:onAfterRender] Incoming showCompleteButton:', jsonShowComplete,
+              'showNavigationButtons:', jsonShowNavigation);
+
+            if (typeof jsonShowComplete !== 'undefined') {
+              (sender as any).showCompleteButton = jsonShowComplete;
+            }
+            if (typeof jsonShowNavigation !== 'undefined') {
+              (sender as any).showNavigationButtons = jsonShowNavigation;
+            }
+
+            console.log('[Navigation Debug:onAfterRender] Applied sender.showCompleteButton:', (sender as any).showCompleteButton,
+              'sender.showNavigationButtons:', (sender as any).showNavigationButtons);
             
             // Add click handler to Complete button for scroll-to-error fallback
             setTimeout(() => {

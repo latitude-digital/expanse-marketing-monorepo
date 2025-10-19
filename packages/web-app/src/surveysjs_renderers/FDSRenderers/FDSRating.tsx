@@ -220,9 +220,11 @@ export class FDSRatingRenderer extends SurveyQuestionElementBase {
 }
 
 // Register the rating renderer
-ReactQuestionFactory.Instance.registerQuestion(
-  "rating",
-  (props) => {
-    return React.createElement(FDSRatingRenderer, props);
-  }
-);
+export function registerFDSRatingRenderer(factory = ReactQuestionFactory.Instance) {
+  factory.registerQuestion(
+    "rating",
+    (props) => {
+      return React.createElement(FDSRatingRenderer, props);
+    }
+  );
+}

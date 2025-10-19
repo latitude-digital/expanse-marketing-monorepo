@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Model, FunctionFactory, surveyLocalization, ComponentCollection, ElementFactory } from 'survey-core';
-import { Survey, ReactQuestionFactory } from 'survey-react-ui';
+import { Survey } from 'survey-react-ui';
 import Showdown from 'showdown';
 import { v4 as uuidv4 } from 'uuid';
 import type { SurveyConfig, WebViewToNativeMessage, NativeToWebViewMessage } from '@meridian-event-tech/shared/types';
@@ -13,17 +13,7 @@ import GlobalHeader from '../components/GlobalHeader';
 import { FordSurveyNavigation } from '../components/FordSurveyNavigation';
 import { getBrandTheme, normalizeBrand } from '../utils/brandUtils';
 import { prepareForSurvey } from '../helpers/surveyTemplatesAll';
-
-// Import all FDS renderer classes for explicit registration
-import { FDSTextRenderer } from '../surveysjs_renderers/FDSRenderers/FDSText';
-import { FDSRadioRenderer } from '../surveysjs_renderers/FDSRenderers/FDSRadio';
-import { FDSCheckboxRenderer } from '../surveysjs_renderers/FDSRenderers/FDSCheckbox';
-import { FDSDropdownRenderer } from '../surveysjs_renderers/FDSRenderers/FDSDropdown';
-import { FDSTagboxRenderer } from '../surveysjs_renderers/FDSRenderers/FDSTagbox';
-import { FDSTextAreaRenderer } from '../surveysjs_renderers/FDSRenderers/FDSTextArea';
-import { FDSToggleRenderer } from '../surveysjs_renderers/FDSRenderers/FDSToggle';
-import { FDSRatingRenderer } from '../surveysjs_renderers/FDSRenderers/FDSRating';
-import { FDSPanelRenderer } from '../surveysjs_renderers/FDSRenderers/FDSPanel';
+import { registerAllFDSRenderers } from '../surveysjs_renderers/FDSRenderers/register';
 
 /**
  * Native bridge interface for WebView ↔ React Native communication
@@ -69,85 +59,12 @@ function initializeLocalization() {
  * Explicitly register FDS renderers after React/SurveyJS initialization
  * This solves timing issues with IIFE bundle format where module-level registration may not execute
  */
-function registerFDSRenderers(bridgeRef: React.MutableRefObject<NativeBridge | null>) {
-  // Removed logging to prevent postMessage from triggering re-renders
-
+function ensureFDSRenderersRegistered() {
   try {
-    // Register text renderer
-    ReactQuestionFactory.Instance.registerQuestion(
-      "text",
-      (props) => React.createElement(FDSTextRenderer, props)
-    );
-
-    // Register radio renderer with useAsDefault
-    ReactQuestionFactory.Instance.registerQuestion(
-      "radiogroup",
-      (props) => React.createElement(FDSRadioRenderer, props),
-      "customtype",
-      true // useAsDefault: true
-    );
-
-    // Register checkbox renderer with useAsDefault
-    ReactQuestionFactory.Instance.registerQuestion(
-      "checkbox",
-      (props) => React.createElement(FDSCheckboxRenderer, props),
-      "customtype",
-      true
-    );
-
-    // Register dropdown renderer with useAsDefault
-    ReactQuestionFactory.Instance.registerQuestion(
-      "dropdown",
-      (props) => React.createElement(FDSDropdownRenderer, props),
-      "customtype",
-      true
-    );
-
-    // Register tagbox renderer with useAsDefault
-    ReactQuestionFactory.Instance.registerQuestion(
-      "tagbox",
-      (props) => React.createElement(FDSTagboxRenderer, props),
-      "customtype",
-      true
-    );
-
-    // Register comment/textarea renderer with useAsDefault
-    ReactQuestionFactory.Instance.registerQuestion(
-      "comment",
-      (props) => React.createElement(FDSTextAreaRenderer, props),
-      "customtype",
-      true
-    );
-
-    // Register boolean/toggle renderer with useAsDefault
-    ReactQuestionFactory.Instance.registerQuestion(
-      "boolean",
-      (props) => React.createElement(FDSToggleRenderer, props),
-      "customtype",
-      true
-    );
-
-    // Register rating renderer with useAsDefault
-    ReactQuestionFactory.Instance.registerQuestion(
-      "rating",
-      (props) => React.createElement(FDSRatingRenderer, props),
-      "customtype",
-      true
-    );
-
-    // Register panel renderer with useAsDefault
-    ReactQuestionFactory.Instance.registerQuestion(
-      "panel",
-      (props) => React.createElement(FDSPanelRenderer, props),
-      "customtype",
-      true
-    );
-
-    // Removed logging to prevent postMessage from triggering re-renders
-
+    registerAllFDSRenderers();
   } catch (error) {
-    // Log only critical errors (catch block won't trigger re-renders unless error occurs)
     console.error('ERROR registering FDS renderers', error);
+    throw error;
   }
 }
 
@@ -484,7 +401,9 @@ export const SurveyWebViewApp: React.FC = () => {
       }
 
       // Explicitly register FDS renderers to solve timing issues with IIFE bundle
-      registerFDSRenderers(bridgeRef);
+      if (brandForFDS === 'Ford' || brandForFDS === 'Lincoln') {
+        ensureFDSRenderersRegistered();
+      }
 
       // Log all registered custom components (ComponentCollection)
       const registeredComponents = ComponentCollection.Instance.items.map(item => item.name);
