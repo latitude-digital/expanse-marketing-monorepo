@@ -12,6 +12,7 @@ import { offlineDetector } from '../src/utils/offline-detector';
 import { getFirestore, waitForPendingWrites, enableNetwork, collection, onSnapshot, query, limit } from '@react-native-firebase/firestore';
 import { createSyncManager } from '../src/services/sync-manager';
 import * as Updates from 'expo-updates';
+import { locationManager } from '../src/services/location-manager';
 
 // DEBUG: Expose offline toggle to global for testing
 (global as any).toggleOfflineMode = (forceOffline?: boolean) => {
@@ -91,6 +92,13 @@ export default function EventListPage() {
       default:
         return '#9CA3AF';
     }
+  }, []);
+
+  // Initialize location manager on mount
+  useEffect(() => {
+    locationManager.initialize().catch((error) => {
+      console.warn('[EventListPage] Failed to initialize location:', error);
+    });
   }, []);
 
   useEffect(() => {

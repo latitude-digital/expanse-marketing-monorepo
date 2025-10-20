@@ -84,6 +84,13 @@ if $DEPLOY_WEB; then
     echo -e "${YELLOW}🧹 Cleaning previous build artifacts${NC}"
     rm -rf packages/web-app/dist packages/web-app/build 2>/dev/null || true
     rm -rf packages/shared/lib packages/shared/dist 2>/dev/null || true
+
+    # Remove any leftover firebase.json symlink that could interfere with env detection
+    if [ -L packages/firebase/firebase.json ]; then
+        echo -e "${BLUE}Removing leftover firebase.json symlink...${NC}"
+        rm packages/firebase/firebase.json
+    fi
+
     echo -e "${GREEN}✅ Build artifacts cleaned${NC}"
 
     # Step 2: Update version in package.json
@@ -159,22 +166,29 @@ if $DEPLOY_FUNCTIONS; then
     echo -e "${YELLOW}🔥 Building Firebase Functions${NC}"
     cd packages/firebase
 
+    # Create firebase.json symlink for firebase use command
+    if [ ! -f firebase.json ]; then
+        echo -e "${BLUE}Creating firebase.json symlink...${NC}"
+        ln -s firebase.staging.json firebase.json
+    fi
+
     # Switch to staging alias (this will make Firebase load .env.staging automatically)
     echo -e "${BLUE}Switching to staging Firebase alias${NC}"
     firebase use staging
 
     # Build the functions (TypeScript compilation)
-    pnpm build
+    echo -e "${BLUE}Building functions TypeScript...${NC}"
+    pnpm --filter @meridian-event-tech/firebase build
     echo -e "${GREEN}✅ Firebase Functions built${NC}"
 
     # Step 12: Deploy Firebase Functions to staging project
     echo -e "${YELLOW}🚀 Deploying Firebase Functions to staging${NC}"
-    
+
     # Run firebase-pnpm-workspaces explicitly before deployment
     echo -e "${BLUE}Bundling workspace dependencies...${NC}"
     rm -rf .firebase-pnpm-workspaces
     npx firebase-pnpm-workspaces --filter @meridian-event-tech/firebase
-    
+
     # Deploy all functions to the staging project (no namespace needed)
     firebase deploy --only functions
 

@@ -84,6 +84,13 @@ if $DEPLOY_WEB; then
     echo -e "${YELLOW}🧹 Cleaning previous build artifacts${NC}"
     rm -rf packages/web-app/dist packages/web-app/build
     rm -rf packages/shared/lib packages/shared/dist
+
+    # Remove any leftover firebase.json symlink that could interfere with env detection
+    if [ -L packages/firebase/firebase.json ]; then
+        echo -e "${BLUE}Removing leftover firebase.json symlink...${NC}"
+        rm packages/firebase/firebase.json
+    fi
+
     echo -e "${GREEN}✅ Build artifacts cleaned${NC}"
 
     # Step 2: Update version in package.json
@@ -161,12 +168,19 @@ if $DEPLOY_FUNCTIONS; then
     echo -e "${YELLOW}🔥 Building Firebase Functions${NC}"
     cd packages/firebase
 
+    # Create firebase.json symlink for firebase use command
+    if [ ! -f firebase.json ]; then
+        echo -e "${BLUE}Creating firebase.json symlink...${NC}"
+        ln -s firebase.production.json firebase.json
+    fi
+
     # Switch to prod alias (this will make Firebase load .env.prod automatically)
     echo -e "${BLUE}Switching to prod Firebase alias${NC}"
     firebase use prod
 
     # Build the functions (TypeScript compilation)
-    pnpm build
+    echo -e "${BLUE}Building functions TypeScript...${NC}"
+    pnpm --filter @meridian-event-tech/firebase build
     echo -e "${GREEN}✅ Firebase Functions built${NC}"
 
     # Step 12: Deploy Firebase Functions to production project

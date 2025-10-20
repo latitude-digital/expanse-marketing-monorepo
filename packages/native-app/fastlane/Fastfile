@@ -132,6 +132,12 @@ platform :ios do
     Dir.chdir("../..") do
       sh("pnpm","install","--frozen-lockfile")
     end
+
+    # CRITICAL: Rebuild survey bundle BEFORE expo prebuild
+    # expo prebuild bundles assets, so the survey must be rebuilt first
+    puts("Rebuilding survey bundle...")
+    sh("node", "../scripts/build-survey.js")
+
     ENV["RUNTIME_VERSION"] = ENV["APP_VERSION"]
     puts("expo prebuild with runtime version: #{ENV['APP_VERSION']}")
     sh("pnpm", "exec", "expo", "prebuild", "--clean", "--platform", "ios")
@@ -272,7 +278,8 @@ platform :ios do
     # Publish EAS update with version and build number in message
     update_message = "#{ENV['APP_VERSION']} (Build: #{ENV['BUILD_NUMBER']})"
     Dir.chdir("#{ENV["WORKSPACE"]}") do
-      sh("npx", "--yes", "eas-cli@latest", "update", "--branch", "staging", "--message", update_message, "--non-interactive")
+      # Use CI=1 environment variable instead of --non-interactive flag
+      sh({"CI" => "1"}, "npx", "--yes", "eas-cli@latest", "update", "--branch", "staging", "--message", update_message)
     end
   end
 
@@ -301,7 +308,8 @@ platform :ios do
     # Publish EAS update with version and build number in message
     update_message = "#{ENV['APP_VERSION']} (Build: #{ENV['BUILD_NUMBER']})"
     Dir.chdir("#{ENV["WORKSPACE"]}") do
-      sh("npx", "--yes", "eas-cli@latest", "update", "--branch", "production", "--message", update_message, "--non-interactive")
+      # Use CI=1 environment variable instead of --non-interactive flag
+      sh({"CI" => "1"}, "npx", "--yes", "eas-cli@latest", "update", "--branch", "production", "--message", update_message)
     end
   end
 

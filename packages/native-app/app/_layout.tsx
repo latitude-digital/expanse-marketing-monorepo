@@ -9,6 +9,7 @@ import '../src/styles/global.css';
 import { ensureSurveyBundle } from '../src/utils/surveyBundleManager';
 import { VersionInfoModal } from '../src/components/VersionInfoModal';
 import { configureFirestore } from '../src/services/firestore';
+import * as Updates from 'expo-updates';
 
 function AuthenticatedLayout() {
   const { currentUser, loading, signOut } = useAuth();
@@ -166,7 +167,7 @@ function AuthenticatedLayout() {
 }
 
 export default function RootLayout() {
-  // Initialize Firestore and survey bundle on app launch
+  // Initialize Firestore, survey bundle, and check for updates on app launch
   useEffect(() => {
     const initApp = async () => {
       // CRITICAL: Configure Firestore BEFORE any Firestore operations
@@ -183,6 +184,28 @@ export default function RootLayout() {
         console.log('[App] ✅ Survey bundle initialized at app launch');
       } catch (error) {
         console.error('[App] ❌ Failed to initialize survey bundle:', error);
+      }
+
+      // Check for and install EAS updates on app launch
+      try {
+        console.log('[App] 🔄 Checking for EAS updates...');
+        const update = await Updates.checkForUpdateAsync();
+
+        if (update.isAvailable) {
+          console.log('[App] 📥 Update available, downloading...');
+          await Updates.fetchUpdateAsync();
+          console.log('[App] ✅ Update downloaded, reloading app...');
+          await Updates.reloadAsync();
+        } else {
+          console.log('[App] ✅ App is up to date');
+        }
+      } catch (error: any) {
+        // Don't block app launch on update errors
+        if (error?.code === 'ERR_UPDATES_DISABLED') {
+          console.log('[App] ℹ️ Updates disabled for this build (development mode)');
+        } else {
+          console.error('[App] ⚠️ Failed to check for updates:', error);
+        }
       }
     };
 

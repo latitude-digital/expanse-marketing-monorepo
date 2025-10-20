@@ -17,7 +17,10 @@ export default {
     },
     updates: {
       url: "https://u.expo.dev/8c91d982-ab7b-48a5-81ef-6ef7c316b876",
-      fallbackToCacheTimeout: 0
+      fallbackToCacheTimeout: 0,
+      requestHeaders: {
+        "expo-channel-name": IS_STAGING ? "staging" : "production"
+      }
     },
     assetBundlePatterns: [
       "**/*"
@@ -28,6 +31,9 @@ export default {
       buildNumber: "1",
       icon: "./assets/icon.png",
       googleServicesFile: IS_STAGING ? "./GoogleService-Info-Staging.plist" : "./GoogleService-Info.plist",
+      config: {
+        googleMapsApiKey: IS_STAGING ? "AIzaSyCojzymTXfjPAJgyHcdGWSEPqu1eSPW3yA" : "AIzaSyAmyB6DNVoJcQW6l2HrZIdQcht2InTH_Bg"
+      },
       infoPlist: {
         UILaunchStoryboardName: "SplashScreen",
         UIViewControllerBasedStatusBarAppearance: false,
@@ -108,6 +114,12 @@ export default {
         {
           cameraPermission: "Allow $(PRODUCT_NAME) to access your camera to scan QR codes and driver's licenses."
         }
+      ],
+      [
+        "expo-location",
+        {
+          locationWhenInUsePermission: "Allow $(PRODUCT_NAME) to use your location to provide better address suggestions."
+        }
       ]
     ],
     experiments: {
@@ -130,7 +142,8 @@ export default {
       EXPO_PUBLIC_SYNC_INTERVAL_MS: "30000",
       EXPO_PUBLIC_MAX_RETRY_ATTEMPTS: "3",
       EXPO_PUBLIC_OFFLINE_STORAGE_LIMIT_MB: "100",
-      EXPO_PUBLIC_DB_ENCRYPTION_KEY: "default-dev-key-change-in-prod"
+      EXPO_PUBLIC_DB_ENCRYPTION_KEY: "default-dev-key-change-in-prod",
+      EXPO_PUBLIC_GOOGLE_MAPS_API_KEY: IS_STAGING ? "AIzaSyCojzymTXfjPAJgyHcdGWSEPqu1eSPW3yA" : "AIzaSyAmyB6DNVoJcQW6l2HrZIdQcht2InTH_Bg"
     }
   }
 };

@@ -14,6 +14,7 @@ dist/
 .firebase/
 firebase-debug.log
 firebase-debug.*.log
+firebase.json
 
 # Logs
 logs
