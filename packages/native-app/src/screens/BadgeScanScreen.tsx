@@ -43,8 +43,15 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
   const focusBounds = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
   const scanAnimation = useRef(new Animated.Value(0)).current;
 
-  // Use ref for immediate synchronous duplicate scan prevention (best practice)
-  const processingRef = useRef(false);
+  // Track last scanned barcode to prevent duplicate processing
+  // Camera fires onBarcodeScanned continuously (~30-60fps) while barcode is visible
+  // This ref provides synchronous debouncing without React closure issues
+  const lastScanRef = useRef<{
+    value: string | null;
+    timestamp: number;
+  }>({ value: null, timestamp: 0 });
+
+  const SCAN_COOLDOWN_MS = 2000; // 2 seconds before allowing same barcode again
 
   const isPermissionDenied = cameraPermission?.status === 'denied';
 
@@ -151,25 +158,23 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
         return;
       }
 
-      // Set ref IMMEDIATELY for synchronous duplicate prevention (best practice)
-      processingRef.current = true;
-      // Also set state for UI feedback
+      // Set processing state for UI feedback (also disables camera callback)
       setIsProcessing(true);
 
       try {
         await playSuccessFeedback();
 
         // Check if this badge has already completed a survey in Firestore
-        console.log('[BadgeScanScreen] Checking if badge has already completed a survey:', value);
+        console.log('[BadgeScanScreen] 🔍 Checking Firestore for existing survey with badge:', value);
 
         try {
           const existingSurvey = await surveysService.checkBadgeAlreadyScanned(value, event.id);
 
           if (existingSurvey) {
-            console.log('[BadgeScanScreen] Badge has already completed a survey for this event');
-            console.log('[BadgeScanScreen] Existing survey path:', existingSurvey.path);
-            processingRef.current = false;
-            setIsProcessing(false);
+            console.log('[BadgeScanScreen] ⚠️  DUPLICATE DETECTED - Badge has already completed a survey for this event');
+            console.log('[BadgeScanScreen] 📄 Existing survey path:', existingSurvey.path);
+            console.log('[BadgeScanScreen] 🚨 Showing duplicate alert and will navigate back on dismiss');
+            // Show alert and navigate back (no need to reset processing - we're leaving the screen)
             Alert.alert(
               'Survey Already Completed',
               'This badge has already completed a survey for this event.',
@@ -184,8 +189,11 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
             );
             return;
           }
+
+          console.log('[BadgeScanScreen] ✅ No existing survey found, proceeding with new survey');
         } catch (firestoreError) {
-          console.warn('[BadgeScanScreen] Error checking Firestore for existing survey (offline?):', firestoreError);
+          console.warn('[BadgeScanScreen] ⚠️  Error checking Firestore for existing survey (offline?):', firestoreError);
+          console.log('[BadgeScanScreen] 📴 Continuing anyway - duplicates will be handled on sync');
           // Continue anyway when offline - we'll handle duplicates on sync
         }
 
@@ -233,7 +241,7 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
           console.log('[ACTIVATIONS] No activation events configured for this event, skipping activation check');
         }
 
-        console.log('[BadgeScanScreen] Proceeding to survey...');
+        console.log('[BadgeScanScreen] 🎯 All checks passed, proceeding to survey...');
         const timestamp = new Date().toISOString();
 
         setTimeout(() => {
@@ -245,10 +253,14 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
           });
         }, SCAN_ANIMATION_DURATION);
       } catch (error) {
-        console.warn('[BadgeScanScreen] Error handling scan result', error);
+        console.error('[BadgeScanScreen] ❌ ERROR in handleScanValue:', error);
         setErrorMessage('Unable to process scan result. Please try again.');
-        processingRef.current = false;
+        // Reset processing state so user can try again
+        console.log('[BadgeScanScreen] 🔓 Resetting isProcessing=false (user can retry)');
         setIsProcessing(false);
+        // Reset last scan so same barcode can be retried
+        console.log('[BadgeScanScreen] 🔄 Resetting lastScanRef (user can retry same barcode)');
+        lastScanRef.current = { value: null, timestamp: 0 };
       }
     },
     [goToSurvey, playSuccessFeedback, event, router]
@@ -256,10 +268,19 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
 
   const handleBarcodeScanned = useCallback(
     ({ data }: { data: string }) => {
-      // Use ref for immediate synchronous check (prevents race conditions)
-      if (processingRef.current) {
+      const now = Date.now();
+      const timeSinceLastScan = now - lastScanRef.current.timestamp;
+
+      // Prevent duplicate processing:
+      // 1. Same barcode within cooldown period → ignore
+      // 2. Different barcode → always process (user switching badges)
+      if (lastScanRef.current.value === data && timeSinceLastScan < SCAN_COOLDOWN_MS) {
         return;
       }
+
+      // Update last scan IMMEDIATELY (synchronous, no closure issues)
+      lastScanRef.current = { value: data, timestamp: now };
+
       handleScanValue(data);
     },
     [handleScanValue]
@@ -413,7 +434,7 @@ export const BadgeScanScreen: React.FC<BadgeScanScreenProps> = ({ event }) => {
               barcodeScannerSettings={{
                 barcodeTypes: ['qr'],
               }}
-              onBarcodeScanned={handleBarcodeScanned}
+              onBarcodeScanned={isProcessing ? undefined : handleBarcodeScanned}
               onTouchEnd={handleTapToFocus}
               autofocus={autoFocusMode}
               onLayout={(event) => {

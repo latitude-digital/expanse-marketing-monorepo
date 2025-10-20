@@ -183,6 +183,7 @@ export const OfflineSurveyWebView: React.FC<OfflineSurveyWebViewProps> = ({
             break;
 
           case 'CONSOLE_LOG':
+            console.log('[WebView]', message.payload.message, message.payload.data || '');
             break;
 
           case 'JAVASCRIPT_ERROR':
