@@ -14,6 +14,7 @@ import { FordSurveyNavigation } from '../components/FordSurveyNavigation';
 import { getBrandTheme, normalizeBrand } from '../utils/brandUtils';
 import { prepareForSurvey } from '../helpers/surveyTemplatesAll';
 import { registerAllFDSRenderers } from '../surveysjs_renderers/FDSRenderers/register';
+import { nativePlacesApi } from '../utils/nativePlacesApi';
 
 /**
  * Native bridge interface for WebView ↔ React Native communication
@@ -33,8 +34,10 @@ function validateEmail(values: any[]): boolean {
   return emailRegex.test(email);
 }
 
-// Register email validation globally
-FunctionFactory.Instance.register('validateEmail', validateEmail, true);
+// Register email validation globally as a SYNCHRONOUS validator
+// Note: Third parameter `false` (or omitted) = synchronous, `true` = async
+// Async validators MUST call this.returnResult() - this function is synchronous
+FunctionFactory.Instance.register('validateEmail', validateEmail, false);
 
 /**
  * Initialize SurveyJS localization
@@ -109,7 +112,7 @@ export const SurveyWebViewApp: React.FC = () => {
         }
       },
       log: (message, data) => {
-        console.log(`[SurveyWebView] ${message}`, data || '');
+        console.log(`[WebBundle] ${message}`, data || '');
         bridgeRef.current?.postMessage('CONSOLE_LOG', {
           message,
           data: data ? JSON.stringify(data) : undefined,
@@ -583,36 +586,234 @@ export const SurveyWebViewApp: React.FC = () => {
         });
       }
 
+      // DEBUG: Global click handler to detect ANY click
+      // document.addEventListener('click', (e) => {
+      //   const target = e.target as HTMLElement;
+      //   console.log('[WebBundle] GLOBAL CLICK:', {
+      //     tagName: target.tagName,
+      //     className: target.className,
+      //     id: target.id,
+      //     value: (target as any).value,
+      //     title: (target as any).title,
+      //     textContent: target.textContent?.substring(0, 50),
+      //   });
+
+      //   // Check if it's a Complete button
+      //   const isCompleteButton =
+      //     (target.tagName === 'INPUT' || target.tagName === 'BUTTON') &&
+      //     (target.className.includes('complete') ||
+      //      (target as any).value === 'Complete' ||
+      //      (target as any).title === 'Complete' ||
+      //      target.textContent === 'Complete');
+
+      //   if (isCompleteButton) {
+      //     console.log('[WebBundle] 🔴 COMPLETE BUTTON DETECTED!');
+      //     console.log('[WebBundle] Survey state:', newSurvey.state);
+      //     console.log('[WebBundle] Survey mode:', (newSurvey as any).mode);
+      //     console.log('[WebBundle] Is last page:', newSurvey.isLastPage);
+      //     console.log('[WebBundle] Current page has errors:', newSurvey.currentPage?.hasErrors());
+      //     console.log('[WebBundle] Is completed:', (newSurvey as any).isCompleted);
+      //     console.log('[WebBundle] showNavigationButtons:', (newSurvey as any).showNavigationButtons);
+      //     console.log('[WebBundle] clearInvisibleValues:', (newSurvey as any).clearInvisibleValues);
+
+      //     // Check if there's a completeLastPage override
+      //     console.log('[WebBundle] completeLastPage is:', typeof newSurvey.completeLastPage);
+      //     console.log('[WebBundle] doComplete is:', typeof (newSurvey as any).doComplete);
+      //     console.log('[WebBundle] onComplete.isEmpty:', newSurvey.onComplete.isEmpty);
+      //     console.log('[WebBundle] onComplete.length:', (newSurvey.onComplete as any).length);
+
+      //     // Try manually triggering completion methods
+      //     console.log('[WebBundle] Testing manual completion methods...');
+
+      //     setTimeout(() => {
+      //       console.log('[WebBundle] Before completeLastPage - state:', newSurvey.state);
+      //       console.log('[WebBundle] Calling survey.completeLastPage()...');
+      //       try {
+      //         newSurvey.completeLastPage();
+      //         console.log('[WebBundle] completeLastPage() called successfully');
+      //         console.log('[WebBundle] After completeLastPage - state:', newSurvey.state);
+      //         console.log('[WebBundle] After completeLastPage - isCompleted:', (newSurvey as any).isCompleted);
+
+      //         // If still not completed, try doComplete
+      //         if (newSurvey.state !== 'completed') {
+      //           console.log('[WebBundle] State still not completed, trying doComplete()...');
+      //           (newSurvey as any).doComplete();
+      //           console.log('[WebBundle] After doComplete - state:', newSurvey.state);
+      //         }
+      //       } catch (err) {
+      //         console.error('[WebBundle] completeLastPage() error:', err);
+      //       }
+      //     }, 100);
+      //   }
+
+      //   // Check if it's any navigation button
+      //   if (target.tagName === 'INPUT' || target.tagName === 'BUTTON') {
+      //     console.log('[WebBundle] ⚠️ BUTTON/INPUT CLICKED:', target);
+      //   }
+      // }, true);
+
+      // Render hook - detect button clicks
+      newSurvey.onAfterRenderSurvey.add((survey, htmlElement) => {
+        console.log('[WebBundle] onAfterRenderSurvey fired, htmlElement type:', typeof htmlElement);
+
+        // Validate htmlElement is an actual HTMLElement
+        if (!htmlElement || !(htmlElement instanceof HTMLElement)) {
+          console.log('[WebBundle] ⚠️ htmlElement is not an HTMLElement, skipping button detection');
+          return;
+        }
+
+        // Find and log all navigation buttons - try multiple selectors
+        const selectors = [
+          'input[value="Complete"]',
+          'input[title*="Complete"]',
+          'input[title*="complete"]',
+          'button[title*="Complete"]',
+          'button[title*="complete"]',
+          'input.sd-btn',
+          'input.sv-btn',
+          '.sv-footer__complete-btn',
+          '.sd-footer__complete-btn',
+        ];
+
+        console.log('[WebBundle] Searching for complete buttons with selectors:', selectors);
+
+        selectors.forEach(selector => {
+          try {
+            const buttons = htmlElement.querySelectorAll(selector);
+            console.log(`[WebBundle] Selector "${selector}" found ${buttons.length} buttons`);
+
+            buttons.forEach((btn, index) => {
+              console.log(`[WebBundle] Button ${index} for selector "${selector}":`, {
+                tagName: btn.tagName,
+                className: btn.className,
+                value: (btn as any).value,
+                title: (btn as any).title,
+              });
+
+              const handler = (event: Event) => {
+                console.log(`[WebBundle] ✅ COMPLETE BUTTON CLICKED! (selector: ${selector}, index: ${index})`);
+                console.log('[WebBundle] Click event:', event);
+              };
+              btn.addEventListener('click', handler, true);
+            });
+          } catch (error) {
+            console.error(`[WebBundle] Error with selector "${selector}":`, error);
+          }
+        });
+
+        // Also dump the entire HTML to see what's there
+        try {
+          console.log('[WebBundle] Survey HTML structure:', htmlElement.innerHTML.substring(0, 500));
+        } catch (error) {
+          console.error('[WebBundle] Error dumping HTML:', error);
+        }
+      });
+
+      // Validation hook - fires when validation runs on current page
+      newSurvey.onValidatedErrorsOnCurrentPage.add((sender, options) => {
+        console.log('[WebBundle] 🔍 Validation ran on current page');
+        const errors = options.errors;
+        console.log('[WebBundle] Validation errors count:', errors.length);
+        if (errors.length > 0) {
+          console.log('[WebBundle] ⚠️ VALIDATION FAILED:');
+          errors.forEach((error, i) => {
+            console.log(`[WebBundle]   ${i + 1}. ${error.question?.name || 'Unknown'}: ${error.text}`);
+          });
+        } else {
+          console.log('[WebBundle] ✅ Validation passed');
+        }
+
+        // DIAGNOSTIC: Check for invisible required questions that could block completion
+        const invisibleRequired = sender.getAllQuestions(false, false, true)
+          .filter(q => q.isRequired && !q.isVisible && q.isEmpty());
+
+        if (invisibleRequired.length > 0) {
+          console.error('[WebBundle] ⚠️ INVISIBLE REQUIRED QUESTIONS DETECTED:',
+            invisibleRequired.map(q => ({
+              name: q.name,
+              parent: q.parent?.name,
+              isVisible: q.isVisible,
+              isEmpty: q.isEmpty(),
+              hasErrors: q.hasErrors()
+            }))
+          );
+          bridgeRef.current?.log('INVISIBLE REQUIRED QUESTIONS BLOCKING:',
+            invisibleRequired.map(q => `${q.name} (parent: ${q.parent?.name || 'none'})`).join(', ')
+          );
+        }
+      });
+
       // Completion handler
       newSurvey.onComplete.add((sender) => {
-        // Enrich survey data with tracking properties and end_time
-        const enrichedAnswers = {
-          ...sender.data,
-          end_time: new Date(),
-          _preSurveyID: sender.data._preSurveyID !== undefined ? sender.data._preSurveyID : null,
-          _checkedIn: sender.data._checkedIn !== undefined ? sender.data._checkedIn : null,
-          _checkedOut: sender.data._checkedOut !== undefined ? sender.data._checkedOut : null,
-          _claimed: sender.data._claimed !== undefined ? sender.data._claimed : null,
-          _used: sender.data._used !== undefined ? sender.data._used : null,
-          _email: sender.data._email !== undefined ? sender.data._email : null,
-          _sms: sender.data._sms !== undefined ? sender.data._sms : null,
-          _exported: sender.data._exported !== undefined ? sender.data._exported : null,
-        };
+        console.log('[WebBundle] 🎉 onComplete fired!');
+        console.log('[WebBundle] Survey state:', sender.state);
+        console.log('[WebBundle] Survey data:', sender.data);
 
-        const submission = {
-          answers: enrichedAnswers,
-          eventId: config.eventId,
-          responseId: config.responseId,
-          completedAt: new Date().toISOString(),
-          duration: Date.now() - new Date(sender.getValue('start_time') || Date.now()).getTime(),
-          device_survey_guid: sender.getValue('device_survey_guid') || uuidv4(),
-        };
+        // DIAGNOSTIC: Final check for invisible required questions
+        const invisibleRequired = sender.getAllQuestions(false, false, true)
+          .filter(q => q.isRequired && !q.isVisible && q.isEmpty());
 
-        bridgeRef.current?.log('[onComplete] Submission data keys:', Object.keys(submission.answers));
-        bridgeRef.current?.log('[onComplete] end_time:', submission.answers.end_time);
-        bridgeRef.current?.log('[onComplete] _preSurveyID:', submission.answers._preSurveyID);
-        bridgeRef.current?.postMessage('SURVEY_COMPLETE', submission);
-        bridgeRef.current?.log('Survey completed', submission);
+        if (invisibleRequired.length > 0) {
+          console.error('[WebBundle] ⚠️ WARNING: Survey completed despite invisible required questions:',
+            invisibleRequired.map(q => ({
+              name: q.name,
+              parent: q.parent?.name,
+              type: q.getType(),
+              isVisible: q.isVisible,
+              isEmpty: q.isEmpty()
+            }))
+          );
+          bridgeRef.current?.log('WARNING: Invisible required questions present at completion:',
+            invisibleRequired.map(q => q.name).join(', ')
+          );
+        }
+
+        try {
+          console.log('[WebBundle] onComplete - START processing');
+          bridgeRef.current?.log('[onComplete] Handler fired - START');
+
+          // Enrich survey data with tracking properties and end_time
+          const enrichedAnswers = {
+            ...sender.data,
+            end_time: new Date(),
+            _preSurveyID: sender.data._preSurveyID !== undefined ? sender.data._preSurveyID : null,
+            _checkedIn: sender.data._checkedIn !== undefined ? sender.data._checkedIn : null,
+            _checkedOut: sender.data._checkedOut !== undefined ? sender.data._checkedOut : null,
+            _claimed: sender.data._claimed !== undefined ? sender.data._claimed : null,
+            _used: sender.data._used !== undefined ? sender.data._used : null,
+            _email: sender.data._email !== undefined ? sender.data._email : null,
+            _sms: sender.data._sms !== undefined ? sender.data._sms : null,
+            _exported: sender.data._exported !== undefined ? sender.data._exported : null,
+          };
+
+          console.log('[WebBundle] Answers enriched');
+          bridgeRef.current?.log('[onComplete] Answers enriched');
+
+          const submission = {
+            answers: enrichedAnswers,
+            eventId: config.eventId,
+            responseId: config.responseId,
+            completedAt: new Date().toISOString(),
+            duration: Date.now() - new Date(sender.getValue('start_time') || Date.now()).getTime(),
+            device_survey_guid: sender.getValue('device_survey_guid') || uuidv4(),
+          };
+
+          console.log('[WebBundle] Submission object created:', submission);
+          bridgeRef.current?.log('[onComplete] Submission object created');
+          bridgeRef.current?.log('[onComplete] Submission data keys:', Object.keys(submission.answers));
+          bridgeRef.current?.log('[onComplete] end_time:', submission.answers.end_time);
+          bridgeRef.current?.log('[onComplete] _preSurveyID:', submission.answers._preSurveyID);
+
+          console.log('[WebBundle] About to post SURVEY_COMPLETE message');
+          bridgeRef.current?.log('[onComplete] About to post SURVEY_COMPLETE message');
+          bridgeRef.current?.postMessage('SURVEY_COMPLETE', submission);
+          console.log('[WebBundle] ✅ SURVEY_COMPLETE message posted!');
+          bridgeRef.current?.log('[onComplete] Message posted - COMPLETE');
+        } catch (error) {
+          console.error('[WebBundle] ❌ ERROR in onComplete handler:', error);
+          bridgeRef.current?.log('[onComplete] ERROR in handler:', error);
+          throw error;
+        }
       });
 
       // Set default values
@@ -625,15 +826,37 @@ export const SurveyWebViewApp: React.FC = () => {
       }
       setCurrentLocale(newSurvey.locale || config.locale || derivedLocales[0] || 'en');
 
+      console.log('[WebBundle] Setting survey state...');
       setSurvey(newSurvey);
+      console.log('[WebBundle] ✅ Survey state set!');
+
+      // DIAGNOSTIC: Log initial survey configuration
+      console.log('[WebBundle] Initial survey configuration:', {
+        state: newSurvey.state,
+        visiblePageCount: newSurvey.visiblePageCount,
+        currentPageNo: newSurvey.currentPageNo,
+        showNavigationButtons: newSurvey.showNavigationButtons,
+        showPreviewBeforeComplete: newSurvey.showPreviewBeforeComplete,
+        showCompletedPage: newSurvey.showCompletedPage,
+        checkErrorsMode: newSurvey.checkErrorsMode,
+        clearInvisibleValues: newSurvey.clearInvisibleValues,
+        widthMode: newSurvey.widthMode
+      });
+      bridgeRef.current?.log('[Init] Survey config:', `state=${newSurvey.state}, pages=${newSurvey.visiblePageCount}, navButtons=${newSurvey.showNavigationButtons}`);
+
+      // Log survey completion handler count
+      console.log('[WebBundle] onComplete handlers registered:', newSurvey.onComplete.length || 'unknown');
+      console.log('[WebBundle] onCompleting handlers registered:', newSurvey.onCompleting.length || 'unknown');
 
       // Send ready signal
+      console.log('[WebBundle] Survey created successfully, sending SURVEY_READY');
       bridgeRef.current?.log('Survey created successfully');
       bridgeRef.current?.postMessage('SURVEY_READY', {
         pageCount: newSurvey.visiblePageCount,
         currentPage: newSurvey.currentPageNo,
         surveyId: config.eventId,
       });
+      console.log('[WebBundle] SURVEY_READY message sent');
     } catch (error) {
       bridgeRef.current?.log('Error creating survey', error);
       bridgeRef.current?.postMessage('SURVEY_ERROR', {
@@ -653,6 +876,256 @@ export const SurveyWebViewApp: React.FC = () => {
     setDefaultValues,
     saveProgress,
   ]);
+
+  /**
+   * Initialize address autocomplete after survey is rendered
+   */
+  useEffect(() => {
+    if (!survey) return;
+
+    bridgeRef.current?.log('[AddressAutocomplete] Survey rendered, setting up address autocomplete...');
+
+    // Wait for the DOM to be ready
+    const initializeAddressFields = () => {
+      const addressInputs = document.querySelectorAll(
+        'input[autocomplete="address-line1"]'
+      );
+
+      bridgeRef.current?.log(`[AddressAutocomplete] Found ${addressInputs.length} address inputs`);
+
+      addressInputs.forEach((input) => {
+        const inputElement = input as HTMLInputElement;
+
+        // Check if already initialized
+        if (inputElement.hasAttribute('data-autocomplete-initialized')) {
+          return;
+        }
+
+        inputElement.setAttribute('data-autocomplete-initialized', 'true');
+        bridgeRef.current?.log('[AddressAutocomplete] Initializing autocomplete for input:', inputElement.name);
+
+        // Initialize native autocomplete
+        initializeNativeAutocomplete(inputElement, survey);
+      });
+    };
+
+    // Try immediately
+    initializeAddressFields();
+
+    // Also watch for dynamically added inputs
+    const observer = new MutationObserver(() => {
+      try {
+        initializeAddressFields();
+      } catch (error) {
+        bridgeRef.current?.log('[AddressAutocomplete] MutationObserver error:', error);
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [survey]);
+
+  /**
+   * Initialize native autocomplete for an input element
+   */
+  const initializeNativeAutocomplete = (inputElement: HTMLInputElement, surveyModel: Model) => {
+    let debounceTimeout: any;
+    let currentPredictions: any[] = [];
+    let dropdownElement: HTMLDivElement | null = null;
+
+    const createDropdown = () => {
+      if (dropdownElement) return dropdownElement;
+
+      dropdownElement = document.createElement('div');
+      dropdownElement.className = 'native-places-dropdown';
+      dropdownElement.style.cssText = `
+        position: absolute;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 9999;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        display: none;
+      `;
+      document.body.appendChild(dropdownElement);
+      return dropdownElement;
+    };
+
+    const positionDropdown = () => {
+      if (!dropdownElement) return;
+      const rect = inputElement.getBoundingClientRect();
+      dropdownElement.style.left = `${rect.left + window.scrollX}px`;
+      dropdownElement.style.top = `${rect.bottom + window.scrollY}px`;
+      dropdownElement.style.width = `${rect.width}px`;
+    };
+
+    const showDropdown = (predictions: any[]) => {
+      const dropdown = createDropdown();
+      dropdown.innerHTML = '';
+      currentPredictions = predictions;
+
+      if (predictions.length === 0) {
+        dropdown.style.display = 'none';
+        return;
+      }
+
+      predictions.forEach((prediction) => {
+        const item = document.createElement('div');
+        item.className = 'native-places-dropdown-item';
+        item.style.cssText = `
+          padding: 12px;
+          cursor: pointer;
+          border-bottom: 1px solid #eee;
+        `;
+        item.innerHTML = `
+          <div style="font-weight: 500;">${prediction.mainText}</div>
+          <div style="font-size: 0.9em; color: #666;">${prediction.secondaryText}</div>
+        `;
+
+        item.addEventListener('mouseenter', () => {
+          item.style.backgroundColor = '#f5f5f5';
+        });
+        item.addEventListener('mouseleave', () => {
+          item.style.backgroundColor = 'white';
+        });
+        item.addEventListener('click', async () => {
+          await handlePredictionSelect(prediction);
+        });
+
+        dropdown.appendChild(item);
+      });
+
+      // Add Google attribution (required by Google Places API Terms of Service)
+      const attribution = document.createElement('div');
+      attribution.style.cssText = `
+        padding: 8px 12px;
+        font-size: 0.75em;
+        color: #666;
+        background: #f9f9f9;
+        text-align: right;
+        border-top: 1px solid #ddd;
+      `;
+      attribution.innerHTML = 'Powered by Google';
+      dropdown.appendChild(attribution);
+
+      positionDropdown();
+      dropdown.style.display = 'block';
+    };
+
+    const hideDropdown = () => {
+      if (dropdownElement) {
+        dropdownElement.style.display = 'none';
+      }
+    };
+
+    const handlePredictionSelect = async (prediction: any) => {
+      try {
+        bridgeRef.current?.log('[AddressAutocomplete] Fetching details for place:', prediction.placeId);
+        const details = await nativePlacesApi.getPlaceDetails(prediction.placeId);
+
+        // Parse address components
+        const ParsedData: Record<string, any> = {
+          formatted_address: details.formattedAddress,
+        };
+
+        const postalData = details.addressComponents.find((item) =>
+          item.types.includes("postal_code")
+        );
+        const countryData = details.addressComponents.find((item) =>
+          item.types.includes("country")
+        );
+        const addressData = details.addressComponents.find((item) =>
+          item.types.includes("administrative_area_level_1")
+        );
+        const cityData = details.addressComponents.find((item) =>
+          item.types.includes("locality")
+        );
+        const routeData = details.addressComponents.find((item) =>
+          item.types.includes("route")
+        );
+        const streetNumberData = details.addressComponents.find((item) =>
+          item.types.includes("street_number")
+        );
+
+        ParsedData.address1 = [
+          streetNumberData?.longName,
+          routeData?.longName,
+        ]
+          .join(" ")
+          .trim();
+        ParsedData.city = cityData == null ? "" : cityData.longName;
+        ParsedData.state = addressData == null ? "" : addressData.shortName;
+        ParsedData.zip_code = postalData == null ? "" : postalData.longName;
+        ParsedData.country = countryData == null ? "" : countryData.shortName;
+
+        // Update survey values
+        const isComposite = surveyModel.getQuestionByName("address_group");
+        if (isComposite) {
+          surveyModel.setValue("address_group", ParsedData);
+        } else {
+          [
+            "address1",
+            "city",
+            "state",
+            "zip_code",
+            "country",
+          ].forEach((key) => {
+            try {
+              surveyModel.setValue(key, ParsedData[key]);
+            } catch (e) {
+              console.log("error", e);
+            }
+          });
+        }
+
+        hideDropdown();
+      } catch (error) {
+        bridgeRef.current?.log('[AddressAutocomplete] Error fetching place details:', error);
+      }
+    };
+
+    const handleInput = async (event: Event) => {
+      const value = (event.target as HTMLInputElement).value;
+
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+      }
+
+      if (!value || value.length < 3) {
+        hideDropdown();
+        return;
+      }
+
+      debounceTimeout = setTimeout(async () => {
+        try {
+          bridgeRef.current?.log('[AddressAutocomplete] Fetching predictions for:', value);
+          const predictions = await nativePlacesApi.getAutocompletePredictions(value);
+          showDropdown(predictions);
+        } catch (error) {
+          bridgeRef.current?.log('[AddressAutocomplete] Error fetching predictions:', error);
+          hideDropdown();
+        }
+      }, 300);
+    };
+
+    inputElement.addEventListener('input', handleInput);
+    inputElement.addEventListener('blur', () => {
+      setTimeout(hideDropdown, 200);
+    });
+    inputElement.addEventListener('focus', () => {
+      if (currentPredictions.length > 0 && inputElement.value.length >= 3) {
+        showDropdown(currentPredictions);
+      }
+    });
+  };
 
   const handleLocaleChange = useCallback(
     (locale: string) => {

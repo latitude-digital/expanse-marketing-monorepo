@@ -9,18 +9,59 @@
 /**
  * Messages sent FROM Native → TO WebView
  */
-export type NativeToWebViewMessage = {
-  type: 'SURVEY_INIT';
-  payload: {
-    surveyJSON: any;
-    theme?: any;
-    locale?: string;
-    eventId: string;
-    responseId?: string;
-    answers?: Record<string, any>;
-    brand: 'Ford' | 'Lincoln' | 'Other';
-  };
-};
+export type NativeToWebViewMessage =
+  | {
+      type: 'SURVEY_INIT';
+      payload: {
+        surveyJSON: any;
+        theme?: any;
+        locale?: string;
+        eventId: string;
+        responseId?: string;
+        answers?: Record<string, any>;
+        brand: 'Ford' | 'Lincoln' | 'Other';
+      };
+    }
+  | {
+      type: 'PLACES_AUTOCOMPLETE_RESULT';
+      payload: {
+        requestId: string;
+        predictions: Array<{
+          placeId: string;
+          description: string;
+          mainText: string;
+          secondaryText: string;
+        }>;
+      };
+    }
+  | {
+      type: 'PLACES_DETAILS_RESULT';
+      payload: {
+        requestId: string;
+        details: {
+          placeId: string;
+          formattedAddress: string;
+          addressComponents: Array<{
+            longName: string;
+            shortName: string;
+            types: string[];
+          }>;
+          geometry?: {
+            location: {
+              lat: number;
+              lng: number;
+            };
+          };
+        };
+      };
+    }
+  | {
+      type: 'PLACES_ERROR';
+      payload: {
+        requestId: string;
+        error: string;
+      };
+    };
 
 /**
  * Messages sent FROM WebView → TO Native
@@ -92,6 +133,22 @@ export type WebViewToNativeMessage =
       payload: {
         message: string;
         data?: string;
+      };
+    }
+  | {
+      type: 'PLACES_AUTOCOMPLETE_REQUEST';
+      payload: {
+        requestId: string;
+        input: string;
+        sessionToken?: string;
+      };
+    }
+  | {
+      type: 'PLACES_DETAILS_REQUEST';
+      payload: {
+        requestId: string;
+        placeId: string;
+        sessionToken?: string;
       };
     };
 

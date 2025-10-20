@@ -13,10 +13,12 @@ import { View, StyleSheet, ActivityIndicator, Text } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import type {
   WebViewToNativeMessage,
+  NativeToWebViewMessage,
   SurveyConfig,
   SurveyCompletionData,
   SurveyProgressData,
 } from '@meridian-event-tech/shared/types';
+import { placesApiService } from '../services/places-api-service';
 
 /**
  * Extended event type with survey fields
@@ -82,6 +84,18 @@ export const OfflineSurveyWebView: React.FC<OfflineSurveyWebViewProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [webViewReady, setWebViewReady] = useState(false);
 
+  // Use refs to avoid adding ANY handlers to handleMessage dependencies
+  // This prevents handleMessage from being recreated, which can break WebView message handling
+  // React Native WebView has a known issue where changing onMessage breaks message handling
+  const handlePlacesAutocompleteRequestRef = useRef<(requestId: string, input: string, sessionToken?: string) => void>();
+  const handlePlacesDetailsRequestRef = useRef<(requestId: string, placeId: string, sessionToken?: string) => void>();
+
+  // Refs for all callback props to keep handleMessage stable
+  const onSurveyCompleteRef = useRef(onSurveyComplete);
+  const onSurveyErrorRef = useRef(onSurveyError);
+  const onProgressSaveRef = useRef(onProgressSave);
+  const onPageChangedRef = useRef(onPageChanged);
+
   // Get the file:// URL for the survey bundle (written at app launch)
   const surveyFileUrl = getSurveyFileUrl();
 
@@ -137,6 +151,88 @@ export const OfflineSurveyWebView: React.FC<OfflineSurveyWebViewProps> = ({
   }, [webViewReady, event, responseId, existingAnswers]);
 
   /**
+   * Send a message to the WebView
+   */
+  const sendMessageToWebView = useCallback((message: NativeToWebViewMessage) => {
+    const messageString = JSON.stringify(message);
+    webViewRef.current?.injectJavaScript(`
+      window.postMessage(${JSON.stringify(messageString)}, '*');
+      true;
+    `);
+  }, []);
+
+  /**
+   * Handle Places API autocomplete request
+   */
+  const handlePlacesAutocompleteRequest = useCallback(
+    async (requestId: string, input: string, sessionToken?: string) => {
+      try {
+        const predictions = await placesApiService.getAutocompletePredictions(input, sessionToken);
+
+        sendMessageToWebView({
+          type: 'PLACES_AUTOCOMPLETE_RESULT',
+          payload: {
+            requestId,
+            predictions,
+          },
+        });
+      } catch (error) {
+        console.error('[OfflineSurveyWebView] Places autocomplete error:', error);
+        sendMessageToWebView({
+          type: 'PLACES_ERROR',
+          payload: {
+            requestId,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          },
+        });
+      }
+    },
+    [sendMessageToWebView]
+  );
+
+  /**
+   * Handle Places API details request
+   */
+  const handlePlacesDetailsRequest = useCallback(
+    async (requestId: string, placeId: string, sessionToken?: string) => {
+      try {
+        const details = await placesApiService.getPlaceDetails(placeId, sessionToken);
+
+        sendMessageToWebView({
+          type: 'PLACES_DETAILS_RESULT',
+          payload: {
+            requestId,
+            details,
+          },
+        });
+      } catch (error) {
+        console.error('[OfflineSurveyWebView] Places details error:', error);
+        sendMessageToWebView({
+          type: 'PLACES_ERROR',
+          payload: {
+            requestId,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          },
+        });
+      }
+    },
+    [sendMessageToWebView]
+  );
+
+  /**
+   * Keep refs updated with latest handler functions and callback props
+   * This ensures handleMessage can access current values without being in its dependency array
+   */
+  useEffect(() => {
+    handlePlacesAutocompleteRequestRef.current = handlePlacesAutocompleteRequest;
+    handlePlacesDetailsRequestRef.current = handlePlacesDetailsRequest;
+    onSurveyCompleteRef.current = onSurveyComplete;
+    onSurveyErrorRef.current = onSurveyError;
+    onProgressSaveRef.current = onProgressSave;
+    onPageChangedRef.current = onPageChanged;
+  }, [handlePlacesAutocompleteRequest, handlePlacesDetailsRequest, onSurveyComplete, onSurveyError, onProgressSave, onPageChanged]);
+
+  /**
    * Handle messages from WebView
    */
   const handleMessage = useCallback(
@@ -146,40 +242,38 @@ export const OfflineSurveyWebView: React.FC<OfflineSurveyWebViewProps> = ({
 
         switch (message.type) {
           case 'PAGE_LOADED':
+            console.log('[handleMessage]', message.type);
             setWebViewReady(true);
             setLoading(false);
             break;
 
           case 'SURVEY_READY':
+            console.log('[handleMessage]', message.type);
             break;
 
           case 'SURVEY_COMPLETE':
-            if (onSurveyComplete) {
-              onSurveyComplete(message.payload);
-            }
+            console.log('[handleMessage]', message.type);
+            onSurveyCompleteRef.current?.(message.payload);
             break;
 
           case 'SURVEY_ERROR':
             console.error('[OfflineSurveyWebView] Survey error:', message.payload.error);
             setError(message.payload.error);
-            if (onSurveyError) {
-              onSurveyError(new Error(message.payload.error));
-            }
+            onSurveyErrorRef.current?.(new Error(message.payload.error));
             break;
 
           case 'PAGE_CHANGED':
-            if (onPageChanged) {
-              onPageChanged(message.payload.pageNo, message.payload.totalPages);
-            }
+            console.log('[handleMessage]', message.type);
+            onPageChangedRef.current?.(message.payload.pageNo, message.payload.totalPages);
             break;
 
           case 'VALUE_CHANGED':
+            console.log('[handleMessage]', message.type);
             break;
 
           case 'SAVE_PROGRESS':
-            if (onProgressSave) {
-              onProgressSave(message.payload);
-            }
+            console.log('[handleMessage]', message.type);
+            onProgressSaveRef.current?.(message.payload);
             break;
 
           case 'CONSOLE_LOG':
@@ -187,17 +281,37 @@ export const OfflineSurveyWebView: React.FC<OfflineSurveyWebViewProps> = ({
             break;
 
           case 'JAVASCRIPT_ERROR':
-            console.error('[OfflineSurveyWebView] JavaScript error in WebView:', message.payload);
+            console.error('[OfflineSurveyWebView] JavaScript error in WebView:', message);
+            break;
+
+          case 'PLACES_AUTOCOMPLETE_REQUEST':
+            console.log('[handleMessage]', message.type);
+            handlePlacesAutocompleteRequestRef.current?.(
+              message.payload.requestId,
+              message.payload.input,
+              message.payload.sessionToken
+            );
+            break;
+
+          case 'PLACES_DETAILS_REQUEST':
+            console.log('[handleMessage]', message.type);
+            handlePlacesDetailsRequestRef.current?.(
+              message.payload.requestId,
+              message.payload.placeId,
+              message.payload.sessionToken
+            );
             break;
 
           default:
+            console.error('[handleMessage]', 'unhandled message!!', event.nativeEvent.data);
             break;
         }
       } catch (err) {
         console.error('[OfflineSurveyWebView] Error parsing message:', err);
       }
     },
-    [onSurveyComplete, onSurveyError, onProgressSave, onPageChanged]
+    // All callbacks are accessed via refs to prevent WebView message handling from breaking
+    []
   );
 
   /**
@@ -212,11 +326,11 @@ export const OfflineSurveyWebView: React.FC<OfflineSurveyWebViewProps> = ({
       setLoading(false);
       setError(errorMessage);
 
-      if (onSurveyError) {
-        onSurveyError(new Error(errorMessage));
-      }
+      // Use ref to avoid recreating this handler
+      onSurveyErrorRef.current?.(new Error(errorMessage));
     },
-    [onSurveyError]
+    // Empty dependency array - accessing callback via ref
+    []
   );
 
   /**
@@ -268,6 +382,7 @@ export const OfflineSurveyWebView: React.FC<OfflineSurveyWebViewProps> = ({
         // iOS-specific props
         contentInsetAdjustmentBehavior="never"
         automaticallyAdjustContentInsets={false}
+        webviewDebuggingEnabled={true}
         // Performance
         cacheEnabled={true}
         // Kiosk mode

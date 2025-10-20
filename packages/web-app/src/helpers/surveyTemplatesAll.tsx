@@ -20,6 +20,7 @@ import { EmailTextInput } from "../surveysjs_renderers/EmailTextInput";
 import Showdown from "showdown";
 import { registerIcons } from "./fontAwesomeIcons";
 import { AllSurveys, FordSurveys, LincolnSurveys } from "../surveyjs_questions";
+import { nativePlacesApi } from "../utils/nativePlacesApi";
 
 console.log(
   CheckboxVOIQuestion.name,
@@ -217,16 +218,248 @@ export const prepareSurveyOnQuestionAdded = (
   console.log('prepareSurveyOnQuestionAdded called, survey questions:', 
     options.survey.getAllQuestions().map(q => ({ name: q.name, type: q.getType() })));
   
-  // Function to initialize Google Places on an address input
-  const initializeGooglePlaces = (inputElement: HTMLInputElement, survey: any) => {
+  // Function to initialize address autocomplete (native bridge or Google Places)
+  const initializeAddressAutocomplete = (inputElement: HTMLInputElement, survey: any) => {
+    console.log('[AddressAutocomplete] Initializing for input:', inputElement.name);
+
+    // Check if we're in native WebView - use native bridge
+    if (nativePlacesApi.isRunningInNative()) {
+      console.log('[AddressAutocomplete] Using native Places API bridge');
+      initializeNativeAutocomplete(inputElement, survey);
+    } else {
+      console.log('[AddressAutocomplete] Using Google Places API fallback');
+      initializeGooglePlacesAutocomplete(inputElement, survey);
+    }
+  };
+
+  // Native WebView implementation using bridge
+  const initializeNativeAutocomplete = (inputElement: HTMLInputElement, survey: any) => {
+    let debounceTimeout: any;
+    let currentPredictions: any[] = [];
+    let dropdownElement: HTMLDivElement | null = null;
+
+    // Create dropdown for suggestions
+    const createDropdown = () => {
+      if (dropdownElement) return dropdownElement;
+
+      dropdownElement = document.createElement('div');
+      dropdownElement.className = 'native-places-dropdown';
+      dropdownElement.style.cssText = `
+        position: absolute;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 9999;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        display: none;
+      `;
+      document.body.appendChild(dropdownElement);
+      return dropdownElement;
+    };
+
+    // Position dropdown below input
+    const positionDropdown = () => {
+      if (!dropdownElement) return;
+      const rect = inputElement.getBoundingClientRect();
+      dropdownElement.style.left = `${rect.left + window.scrollX}px`;
+      dropdownElement.style.top = `${rect.bottom + window.scrollY}px`;
+      dropdownElement.style.width = `${rect.width}px`;
+    };
+
+    // Show dropdown with predictions
+    const showDropdown = (predictions: any[]) => {
+      const dropdown = createDropdown();
+      dropdown.innerHTML = '';
+      currentPredictions = predictions;
+
+      if (predictions.length === 0) {
+        dropdown.style.display = 'none';
+        return;
+      }
+
+      predictions.forEach((prediction, index) => {
+        const item = document.createElement('div');
+        item.className = 'native-places-dropdown-item';
+        item.style.cssText = `
+          padding: 12px;
+          cursor: pointer;
+          border-bottom: 1px solid #eee;
+        `;
+        item.innerHTML = `
+          <div style="font-weight: 500;">${prediction.mainText}</div>
+          <div style="font-size: 0.9em; color: #666;">${prediction.secondaryText}</div>
+        `;
+
+        item.addEventListener('mouseenter', () => {
+          item.style.backgroundColor = '#f5f5f5';
+        });
+        item.addEventListener('mouseleave', () => {
+          item.style.backgroundColor = 'white';
+        });
+        item.addEventListener('click', async () => {
+          await handlePredictionSelect(prediction);
+        });
+
+        dropdown.appendChild(item);
+      });
+
+      positionDropdown();
+      dropdown.style.display = 'block';
+    };
+
+    // Hide dropdown
+    const hideDropdown = () => {
+      if (dropdownElement) {
+        dropdownElement.style.display = 'none';
+      }
+    };
+
+    // Handle prediction selection
+    const handlePredictionSelect = async (prediction: any) => {
+      try {
+        console.log('[AddressAutocomplete] Fetching details for place:', prediction.placeId);
+        const details = await nativePlacesApi.getPlaceDetails(prediction.placeId);
+
+        // Parse address components
+        const ParsedData: Record<string, any> = {
+          formatted_address: details.formattedAddress,
+        };
+
+        const postalData = details.addressComponents.find((item) =>
+          item.types.includes("postal_code")
+        );
+        const countryData = details.addressComponents.find((item) =>
+          item.types.includes("country")
+        );
+        const addressData = details.addressComponents.find((item) =>
+          item.types.includes("administrative_area_level_1")
+        );
+        const cityData = details.addressComponents.find((item) =>
+          item.types.includes("locality")
+        );
+        const routeData = details.addressComponents.find((item) =>
+          item.types.includes("route")
+        );
+        const streetNumberData = details.addressComponents.find((item) =>
+          item.types.includes("street_number")
+        );
+
+        ParsedData.address1 = [
+          streetNumberData?.longName,
+          routeData?.longName,
+        ]
+          .join(" ")
+          .trim();
+        ParsedData.city = cityData == null ? "" : cityData.longName;
+        ParsedData.state = addressData == null ? "" : addressData.shortName;
+        ParsedData.zip_code = postalData == null ? "" : postalData.longName;
+        ParsedData.country = countryData == null ? "" : countryData.shortName;
+
+        // Update survey values
+        const isComposite = survey.getQuestionByName("address_group");
+        if (isComposite) {
+          survey.setValue("address_group", ParsedData);
+        } else {
+          [
+            "address1",
+            "city",
+            "state",
+            "zip_code",
+            "country",
+          ].forEach((key) => {
+            try {
+              survey.setValue(key, ParsedData[key]);
+            } catch (e) {
+              console.log("error", e);
+            }
+          });
+        }
+
+        hideDropdown();
+      } catch (error) {
+        console.error('[AddressAutocomplete] Error fetching place details:', error);
+      }
+    };
+
+    // Handle input changes
+    const handleInput = async (event: Event) => {
+      const value = (event.target as HTMLInputElement).value;
+
+      // Clear existing timeout
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+      }
+
+      // Hide dropdown if input is empty
+      if (!value || value.length < 3) {
+        hideDropdown();
+        return;
+      }
+
+      // Debounce the autocomplete request
+      debounceTimeout = setTimeout(async () => {
+        try {
+          console.log('[AddressAutocomplete] Fetching predictions for:', value);
+          const predictions = await nativePlacesApi.getAutocompletePredictions(value);
+          showDropdown(predictions);
+        } catch (error) {
+          console.error('[AddressAutocomplete] Error fetching predictions:', error);
+          hideDropdown();
+        }
+      }, 300); // 300ms debounce
+    };
+
+    // Attach event listeners
+    inputElement.addEventListener('input', handleInput);
+    inputElement.addEventListener('blur', () => {
+      // Delay hiding to allow click events on dropdown items
+      setTimeout(hideDropdown, 200);
+    });
+    inputElement.addEventListener('focus', () => {
+      if (currentPredictions.length > 0 && inputElement.value.length >= 3) {
+        showDropdown(currentPredictions);
+      }
+    });
+
+    // Cleanup on element removal
+    const cleanup = () => {
+      if (dropdownElement && dropdownElement.parentNode) {
+        dropdownElement.parentNode.removeChild(dropdownElement);
+      }
+    };
+
+    // Add cleanup listener
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.removedNodes.forEach((node) => {
+          if (node === inputElement || (node as Element).contains?.(inputElement)) {
+            cleanup();
+            observer.disconnect();
+          }
+        });
+      });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  };
+
+  // Google Places API fallback for browsers
+  const initializeGooglePlacesAutocomplete = (inputElement: HTMLInputElement, survey: any) => {
+    // Check if Google Places API is available
+    if (typeof google === 'undefined' || !google.maps?.places) {
+      console.warn('[AddressAutocomplete] Google Places API not loaded');
+      return;
+    }
+
     // Determine country restrictions based on survey questions
     let countryRestrictions: { country: string[] | null } = { country: ["us"] }; // Default to US
     const allQuestions = survey.getAllQuestions();
-    
-    const parentQuestion = allQuestions.find((q: any) => 
+
+    const parentQuestion = allQuestions.find((q: any) =>
       q.elements && q.elements.some((element: any) => element.name === "address1")
     );
-    
+
     // First check - look for specific question types
     if (parentQuestion) {
       if (parentQuestion.getType() === "autocompleteaddresscan") {
@@ -236,11 +469,11 @@ export const prepareSurveyOnQuestionAdded = (
       }
     } else {
       // Fallback check - look for Canadian address indicators in the DOM
-      const hasProvince = !!document.querySelector('input[aria-label="Province"]') || 
+      const hasProvince = !!document.querySelector('input[aria-label="Province"]') ||
                          !!Array.from(document.querySelectorAll('*')).find(el => el.textContent?.includes('Province'));
-      const hasPostalCode = !!document.querySelector('input[aria-label="Postal Code"]') || 
+      const hasPostalCode = !!document.querySelector('input[aria-label="Postal Code"]') ||
                            !!Array.from(document.querySelectorAll('*')).find(el => el.textContent?.includes('Postal Code'));
-      
+
       if (hasProvince && hasPostalCode) {
         countryRestrictions = { country: ["ca"] };
       }
@@ -329,10 +562,12 @@ export const prepareSurveyOnQuestionAdded = (
               );
               addressInputs.forEach((input) => {
                 const inputElement = input as HTMLInputElement;
-                
-                // Check if Google Places is already initialized (has pac-target-input class)
-                if (!inputElement.classList.contains('pac-target-input')) {
-                  initializeGooglePlaces(inputElement, options.survey);
+
+                // Check if autocomplete is already initialized
+                if (!inputElement.classList.contains('pac-target-input') &&
+                    !inputElement.hasAttribute('data-autocomplete-initialized')) {
+                  inputElement.setAttribute('data-autocomplete-initialized', 'true');
+                  initializeAddressAutocomplete(inputElement, options.survey);
                 }
               });
             }
@@ -355,8 +590,10 @@ export const prepareSurveyOnQuestionAdded = (
       );
       existingAddressInputs.forEach((input) => {
         const inputElement = input as HTMLInputElement;
-        if (!inputElement.classList.contains('pac-target-input')) {
-          initializeGooglePlaces(inputElement, options.survey);
+        if (!inputElement.classList.contains('pac-target-input') &&
+            !inputElement.hasAttribute('data-autocomplete-initialized')) {
+          inputElement.setAttribute('data-autocomplete-initialized', 'true');
+          initializeAddressAutocomplete(inputElement, options.survey);
         }
       });
     }, 500); // Small delay to ensure DOM is ready
