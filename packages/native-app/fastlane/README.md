@@ -85,7 +85,7 @@ Fetch certificates, build for staging and upload to TestFlight.
 [bundle exec] fastlane ios production
 ```
 
-Fetch certificates, build for production and upload to App Store.
+Fetch certificates, build for production and upload to TestFlight.
 
 ----
 

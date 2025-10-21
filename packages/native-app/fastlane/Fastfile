@@ -330,31 +330,20 @@ platform :ios do
     )
   end
 
-  desc 'Fetch certificates, build for production and upload to App Store.'
+  desc 'Fetch certificates, build for production and upload to TestFlight.'
   lane :production do
     puts("Starting new PRODUCTION build - Build ##{ENV['BUILD_NUMBER']}")
     build_production
 
-    deliver(
-      team_id: "126039517",
-      dev_portal_team_id: "X234V4S5DH",
-      force: true,
-      metadata_path: "./metadata",
-      run_precheck_before_submit: false,
-      submit_for_review: false,
-      automatic_release: false,
-      skip_screenshots: true,
-      submission_information: {
-        export_compliance_uses_encryption: true,
-        export_compliance_encryption_updated: false,
-        export_compliance_app_type: "business",
-        export_compliance_is_exempt: true,
-        export_compliance_contains_third_party_cryptography: true,
-        export_compliance_contains_proprietary_cryptography: false,
-        export_compliance_available_on_french_store: false,
-        export_compliance_compliance_required: false,
-        add_id_info_uses_idfa: false
-      }
+    upload_to_testflight(
+      app_identifier: "com.meridianeventtech.app",
+      ipa: lane_context[SharedValues::IPA_OUTPUT_PATH],
+      skip_submission: false,
+      distribute_external: false,
+      skip_waiting_for_build_processing: true,
+      groups: ["Latitude"],
+      # Export compliance information (uses built-in encryption, not distributed in France)
+      uses_non_exempt_encryption: false  # Set to false because we only use standard iOS encryption
     )
   end
 end
