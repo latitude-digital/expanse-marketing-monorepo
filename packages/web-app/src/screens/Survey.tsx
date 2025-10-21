@@ -1182,7 +1182,13 @@ const SurveyComponent: React.FC = () => {
             }
           });
 
+          // IMPORTANT: Pass the survey instance so autocomplete can reference it dynamically
+          // This ensures autocomplete always uses the current survey, even if it gets recreated
           prepareSurveyOnQuestionAdded({} as any, { survey } as any);
+
+          // Store survey reference globally so autocomplete can access the latest instance
+          // This solves the stale closure issue when user auth state changes
+          (window as any).__currentSurveyInstance = survey;
 
           setThisSurvey(survey);
         } else {

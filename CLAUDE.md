@@ -79,3 +79,4 @@ This is a monorepo for Expanse Marketing, a survey SAAS platform with advanced F
 ## Memories
 
 - The firebase project name is latitude-lead-system
+- remember that we need to keep @packages/web-app/src/screens/Survey.tsx and @packages/web-app/src/survey-spa/SurveyWebViewApp.tsx as close in features as possible

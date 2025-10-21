@@ -220,14 +220,28 @@ export const prepareSurveyOnQuestionAdded = (
   
   // Function to initialize address autocomplete (native bridge or Google Places)
   const initializeAddressAutocomplete = (inputElement: HTMLInputElement, survey: any) => {
+    console.log('[AddressAutocomplete] ========================================');
     console.log('[AddressAutocomplete] Initializing for input:', inputElement.name);
+    console.log('[AddressAutocomplete] Input element details:', {
+      name: inputElement.name,
+      id: inputElement.id,
+      className: inputElement.className,
+      'data-testid': inputElement.getAttribute('data-testid'),
+      'aria-label': inputElement.getAttribute('aria-label'),
+      autocomplete: inputElement.getAttribute('autocomplete')
+    });
+    console.log('[AddressAutocomplete] Environment:', {
+      isNative: nativePlacesApi.isRunningInNative(),
+      userAgent: navigator.userAgent,
+      hostname: window.location.hostname
+    });
 
     // Check if we're in native WebView - use native bridge
     if (nativePlacesApi.isRunningInNative()) {
-      console.log('[AddressAutocomplete] Using native Places API bridge');
+      console.log('[AddressAutocomplete] ➡️ Using native Places API bridge');
       initializeNativeAutocomplete(inputElement, survey);
     } else {
-      console.log('[AddressAutocomplete] Using Google Places API fallback');
+      console.log('[AddressAutocomplete] ➡️ Using Google Places API fallback');
       initializeGooglePlacesAutocomplete(inputElement, survey);
     }
   };
@@ -320,6 +334,11 @@ export const prepareSurveyOnQuestionAdded = (
     const handlePredictionSelect = async (prediction: any) => {
       try {
         console.log('[AddressAutocomplete] Fetching details for place:', prediction.placeId);
+
+        // CRITICAL FIX: Use the current survey instance from window, not the closure variable
+        const currentSurvey = (window as any).__currentSurveyInstance || survey;
+        console.log('[AddressAutocomplete:Native] Using survey instance:', currentSurvey === survey ? 'original (closure)' : 'current (from window)');
+
         const details = await nativePlacesApi.getPlaceDetails(prediction.placeId);
 
         // Parse address components
@@ -357,10 +376,10 @@ export const prepareSurveyOnQuestionAdded = (
         ParsedData.zip_code = postalData == null ? "" : postalData.longName;
         ParsedData.country = countryData == null ? "" : countryData.shortName;
 
-        // Update survey values
-        const isComposite = survey.getQuestionByName("address_group");
+        // Update survey values using current survey instance
+        const isComposite = currentSurvey.getQuestionByName("address_group");
         if (isComposite) {
-          survey.setValue("address_group", ParsedData);
+          currentSurvey.setValue("address_group", ParsedData);
         } else {
           [
             "address1",
@@ -370,7 +389,7 @@ export const prepareSurveyOnQuestionAdded = (
             "country",
           ].forEach((key) => {
             try {
-              survey.setValue(key, ParsedData[key]);
+              currentSurvey.setValue(key, ParsedData[key]);
             } catch (e) {
               console.log("error", e);
             }
@@ -446,11 +465,16 @@ export const prepareSurveyOnQuestionAdded = (
 
   // Google Places API fallback for browsers
   const initializeGooglePlacesAutocomplete = (inputElement: HTMLInputElement, survey: any) => {
+    console.log('[AddressAutocomplete:Google] Starting initialization for input:', inputElement.name);
+    console.log('[AddressAutocomplete:Google] Input element:', inputElement);
+    console.log('[AddressAutocomplete:Google] Survey object:', survey);
+
     // Check if Google Places API is available
     if (typeof google === 'undefined' || !google.maps?.places) {
       console.warn('[AddressAutocomplete] Google Places API not loaded');
       return;
     }
+    console.log('[AddressAutocomplete:Google] Google Places API is available');
 
     // Determine country restrictions based on survey questions
     let countryRestrictions: { country: string[] | null } = { country: ["us"] }; // Default to US
@@ -488,12 +512,26 @@ export const prepareSurveyOnQuestionAdded = (
       }
     );
 
+    console.log('[AddressAutocomplete:Google] Autocomplete instance created:', autocomplete);
+    console.log('[AddressAutocomplete:Google] Adding place_changed listener');
+
     autocomplete.addListener("place_changed", async function () {
+      console.log('[AddressAutocomplete:Google] ========== PLACE_CHANGED EVENT FIRED ==========');
+
+      // CRITICAL FIX: Use the current survey instance from window, not the closure variable
+      // This prevents stale survey references when Firebase auth state changes cause re-renders
+      const currentSurvey = (window as any).__currentSurveyInstance || survey;
+      console.log('[AddressAutocomplete:Google] Using survey instance:', currentSurvey === survey ? 'original (closure)' : 'current (from window)');
+      console.log('[AddressAutocomplete:Google] Survey instances match:', currentSurvey === survey);
+
       const place = await autocomplete.getPlace();
+      console.log('[AddressAutocomplete:Google] Place object received:', place);
+      console.log('[AddressAutocomplete:Google] Address components:', place.address_components);
 
       const ParsedData: Record<string, any> = {
         formatted_address: place.formatted_address,
       };
+      console.log('[AddressAutocomplete:Google] Initial ParsedData:', ParsedData);
 
       const postalData = place.address_components?.find((item) =>
         item.types.includes("postal_code")
@@ -525,10 +563,50 @@ export const prepareSurveyOnQuestionAdded = (
       ParsedData.zip_code = postalData == null ? "" : postalData.long_name;
       ParsedData.country = countryData == null ? "" : countryData.short_name;
 
-      const isComposite = survey.getQuestionByName("address_group");
-      if (isComposite) {
-        survey.setValue("address_group", ParsedData);
+      console.log('[AddressAutocomplete:Google] Final ParsedData:', ParsedData);
+
+      const compositeQuestion = currentSurvey.getQuestionByName("address_group");
+      console.log('[AddressAutocomplete:Google] Is composite question?', !!compositeQuestion);
+      console.log('[AddressAutocomplete:Google] Composite question:', compositeQuestion);
+
+      if (compositeQuestion) {
+        console.log('[AddressAutocomplete:Google] Setting values on composite question child elements');
+
+        // For composite questions, we need to set values on the individual child elements
+        // The field mapping: address1, city, state, zip (maps to zip_code), country
+        const fieldMapping = {
+          'address1': 'address1',
+          'city': 'city',
+          'state': 'state',
+          'zip': 'zip_code',    // Element name 'zip' maps to value 'zip_code'
+          'country': 'country'
+        };
+
+        Object.entries(fieldMapping).forEach(([elementName, dataKey]) => {
+          try {
+            const childElement = compositeQuestion.getQuestionByName(elementName);
+            if (childElement) {
+              const value = ParsedData[dataKey];
+              console.log(`[AddressAutocomplete:Google] Setting child element "${elementName}" = "${value}"`);
+              childElement.value = value;
+              console.log(`[AddressAutocomplete:Google] ✅ Child "${elementName}" set successfully, current value:`, childElement.value);
+            } else {
+              console.warn(`[AddressAutocomplete:Google] ⚠️ Child element "${elementName}" not found in composite`);
+            }
+          } catch (e) {
+            console.error(`[AddressAutocomplete:Google] ❌ Error setting child element "${elementName}":`, e);
+          }
+        });
+
+        // Also set the composite value for consistency
+        try {
+          currentSurvey.setValue("address_group", ParsedData);
+          console.log('[AddressAutocomplete:Google] ✅ Also set composite address_group value for consistency');
+        } catch (e) {
+          console.error('[AddressAutocomplete:Google] ❌ Error setting composite address_group:', e);
+        }
       } else {
+        console.log('[AddressAutocomplete:Google] Setting individual field values (non-composite)');
         [
           "address1",
           "city",
@@ -537,37 +615,51 @@ export const prepareSurveyOnQuestionAdded = (
           "country",
         ].forEach((key) => {
           try {
-            survey.setValue(key, ParsedData[key]);
+            console.log(`[AddressAutocomplete:Google] Setting ${key} = ${ParsedData[key]}`);
+            currentSurvey.setValue(key, ParsedData[key]);
+            const newValue = currentSurvey.getValue(key);
+            console.log(`[AddressAutocomplete:Google] ✅ ${key} set successfully, current value:`, newValue);
           } catch (e) {
-            console.log("error", e);
+            console.error(`[AddressAutocomplete:Google] ❌ Error setting ${key}:`, e);
           }
         });
       }
+
+      console.log('[AddressAutocomplete:Google] ========== PLACE_CHANGED HANDLER COMPLETE ==========');
     });
   };
 
   // Use MutationObserver to detect when address inputs are added to the DOM
   const observeAddressInputs = () => {
+    console.log('[AddressAutocomplete] Setting up MutationObserver for address inputs');
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.type === 'childList') {
           mutation.addedNodes.forEach((node) => {
             if (node.nodeType === Node.ELEMENT_NODE) {
               const element = node as Element;
-              
+
               // Look for address1 inputs that have been added
               // Support both Ford UI inputs and standard SurveyJS inputs
               const addressInputs = element.querySelectorAll(
                 'input[data-testid="fds-text-address1"], input[aria-label="Street Address"], input[autocomplete="address-line1"]'
               );
+
+              if (addressInputs.length > 0) {
+                console.log('[AddressAutocomplete] Found', addressInputs.length, 'address input(s) in DOM mutation');
+              }
+
               addressInputs.forEach((input) => {
                 const inputElement = input as HTMLInputElement;
 
                 // Check if autocomplete is already initialized
                 if (!inputElement.classList.contains('pac-target-input') &&
                     !inputElement.hasAttribute('data-autocomplete-initialized')) {
+                  console.log('[AddressAutocomplete] Initializing autocomplete for newly added input:', inputElement);
                   inputElement.setAttribute('data-autocomplete-initialized', 'true');
                   initializeAddressAutocomplete(inputElement, options.survey);
+                } else {
+                  console.log('[AddressAutocomplete] Skipping already initialized input:', inputElement);
                 }
               });
             }
@@ -584,16 +676,22 @@ export const prepareSurveyOnQuestionAdded = (
 
     // Also check for existing address inputs that might already be in the DOM
     setTimeout(() => {
+      console.log('[AddressAutocomplete] Checking for existing address inputs (after 500ms delay)');
       // Support both Ford UI inputs and standard SurveyJS inputs
       const existingAddressInputs = document.querySelectorAll(
         'input[data-testid="fds-text-address1"], input[aria-label="Street Address"], input[autocomplete="address-line1"]'
       );
+      console.log('[AddressAutocomplete] Found', existingAddressInputs.length, 'existing address input(s)');
+
       existingAddressInputs.forEach((input) => {
         const inputElement = input as HTMLInputElement;
         if (!inputElement.classList.contains('pac-target-input') &&
             !inputElement.hasAttribute('data-autocomplete-initialized')) {
+          console.log('[AddressAutocomplete] Initializing autocomplete for existing input:', inputElement);
           inputElement.setAttribute('data-autocomplete-initialized', 'true');
           initializeAddressAutocomplete(inputElement, options.survey);
+        } else {
+          console.log('[AddressAutocomplete] Skipping already initialized existing input:', inputElement);
         }
       });
     }, 500); // Small delay to ensure DOM is ready
