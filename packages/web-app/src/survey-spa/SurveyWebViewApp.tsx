@@ -521,9 +521,22 @@ export const SurveyWebViewApp: React.FC = () => {
       // Prepare survey (same as Survey.tsx)
       prepareForSurvey(newSurvey, config.brand);
 
-      // Apply existing answers
+      // Set default values FIRST
+      setDefaultValues(newSurvey, config.eventId);
+
+      // Apply existing answers (merge with defaults, don't replace)
       if (config.answers) {
-        newSurvey.data = config.answers;
+        bridgeRef.current?.log('[Badge Scan] Merging badge data with defaults');
+        bridgeRef.current?.log('[Badge Scan] Default values before merge:', Object.keys(newSurvey.data));
+        bridgeRef.current?.log('[Badge Scan] Badge scan values to merge:', Object.keys(config.answers));
+
+        // Merge badge scan data on top of defaults (badge data takes precedence)
+        newSurvey.data = {
+          ...newSurvey.data,  // Keep all default values
+          ...config.answers,  // Overlay with badge scan pre-fill data
+        };
+
+        bridgeRef.current?.log('[Badge Scan] Final merged values:', Object.keys(newSurvey.data));
       }
 
       // Setup markdown support
@@ -816,9 +829,7 @@ export const SurveyWebViewApp: React.FC = () => {
         }
       });
 
-      // Set default values
-      setDefaultValues(newSurvey, config.eventId);
-
+      // Locale configuration
       if (config.locale) {
         newSurvey.locale = config.locale;
       } else if (derivedLocales.length > 0) {
