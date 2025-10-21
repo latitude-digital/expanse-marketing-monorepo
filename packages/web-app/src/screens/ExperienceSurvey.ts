@@ -80,7 +80,7 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
   widthMode: 'responsive',
   fitToContainer: true,
   headerView: 'advanced',
-  checkErrorsMode: 'onValueChanged',
+  checkErrorsMode: 'onComplete',
   textUpdateMode: 'onBlur',
   showTitle: false, // Adding required field from base interface
   pages: [
@@ -283,7 +283,7 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
               name: 'ford_model',
               visibleIf: '{current_owner} = 1',
               title: 'Which model of Ford do you drive most often?',
-              isRequired: true,
+              requiredIf: '{current_owner} = 1',
               _ffs: 'vehicle_driven_most_model_id',
               choices: [
                 { value: 3195, text: 'Bronco' },

@@ -360,14 +360,14 @@ ${waiverText}
                                             "type": "text",
                                             "name": "signature",
                                             "title": "Signature",
-                                            "isRequired": true,
+                                            "requiredIf": "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
                                             "placeholder": "Type to Sign"
                                         },
                                         {
                                             "type": "checkbox",
                                             "name": "waiver_agree",
                                             "titleLocation": "hidden",
-                                            "isRequired": true,
+                                            "requiredIf": "{ageBracket} <> 'Under 18' and {ageBracket} notempty",
                                             "choices": [
                                                 {
                                                     "value": "Item 3",
@@ -418,7 +418,7 @@ ${minorWaiverText}
                                         "name": "minorName1",
                                         "visibleIf": "{minorsYesNo} = '1'",
                                         "title": "Full Name of Minor 1",
-                                        "isRequired": true
+                                        "requiredIf": "{minorsYesNo} = '1'"
                                     },
                                     {
                                         "type": "text",
@@ -437,7 +437,7 @@ ${minorWaiverText}
                                         "name": "minor_signature",
                                         "visibleIf": "{minorsYesNo} = '1'",
                                         "title": "Parent / Guardian Signature",
-                                        "isRequired": true,
+                                        "requiredIf": "{minorsYesNo} = '1'",
                                         "placeholder": "Type to Sign"
                                     },
                                     {
@@ -445,7 +445,7 @@ ${minorWaiverText}
                                         "name": "minor_waiver_agree",
                                         "visibleIf": "{minorsYesNo} = '1'",
                                         "titleLocation": "hidden",
-                                        "isRequired": true,
+                                        "requiredIf": "{minorsYesNo} = '1'",
                                         "choices": [
                                             {
                                                 "value": "Item 1",
