@@ -16,10 +16,10 @@
     "node": "20"
   },
   "dependencies": {
-    "@meridian-event-tech/shared": "workspace:*",
     "@aws-sdk/client-s3": "^3.864.0",
     "@aws-sdk/cloudfront-signer": "^3.862.0",
     "@aws-sdk/s3-presigned-post": "^3.864.0",
+    "@meridian-event-tech/shared": "workspace:*",
     "@sentry/node": "^10.3.0",
     "@sentry/profiling-node": "^10.3.0",
     "axios": "1.7.4",
@@ -30,6 +30,7 @@
     "moment-timezone": "^0.5.45",
     "sqids": "^0.3.0",
     "survey-core": "^2.3.1",
+    "twilio": "^5.10.0",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

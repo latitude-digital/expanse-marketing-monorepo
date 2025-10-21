@@ -14,5 +14,8 @@ export * from './meridian-event';
 // WebView bridge types (for React Native WebView communication)
 export * from './webview-bridge';
 
+// Bulk SMS types
+export * from './bulkSms';
+
 // Re-export SurveyJS types for convenience
 export type { Model as SurveyModel, Question as SurveyQuestionBase } from 'survey-core';

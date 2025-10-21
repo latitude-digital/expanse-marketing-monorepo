@@ -43,6 +43,7 @@ export * from './utils/network';
 export * from './utils/formatting';
 export * from './utils/surveyLocale';
 export * from './utils/browser';
+export * from './utils/phoneValidation';
 
 // SurveyJS Registration
 export { 

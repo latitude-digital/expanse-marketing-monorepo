@@ -45,6 +45,7 @@ import EditEvent from './screens/admin/EditEvent';
 import EditEventTailwind from './screens/admin/EditEventTailwind';
 import EditSurvey from './screens/admin/EditSurvey';
 import ReUpload from './screens/admin/ReUpload';
+import BulkSMS from './screens/admin/BulkSMS';
 
 console.log('window._env_ at runtime:', window._env_);
 
@@ -105,6 +106,7 @@ root.render(
             <Route path="event/new" element={<EditEvent />} />
             <Route path="survey/:eventID" element={<EditSurvey />} />
             <Route path="reupload" element={<ReUpload />} />
+            <Route path="bulk-sms" element={<BulkSMS />} />
           </Route>
           
           <Route path="admin/login" element={<Login />} />

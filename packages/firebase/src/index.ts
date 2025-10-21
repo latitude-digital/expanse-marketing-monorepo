@@ -45,6 +45,11 @@ import {
   deleteUserImpl,
   updateUserTagsImpl
 } from "./user-management-functions";
+import {
+  createBulkSmsSendImpl,
+  processBulkSmsSendImpl,
+  twilioStatusWebhookImpl
+} from "./bulkSms";
 
 // Re-export shared utilities from shared package
 export { uploadSurveyToAPI, type UploadResult } from "@meridian-event-tech/shared";
@@ -94,3 +99,6 @@ export const listUsers = listUsersImpl(app);
 export const setAdminClaim = setAdminClaimImpl(app);
 export const deleteUser = deleteUserImpl(app);
 export const updateUserTags = updateUserTagsImpl(app);
+export const createBulkSmsSend = createBulkSmsSendImpl(app, "(default)");
+export const processBulkSmsSend = processBulkSmsSendImpl(app, "(default)");
+export const twilioStatusWebhook = twilioStatusWebhookImpl(app, "(default)");
