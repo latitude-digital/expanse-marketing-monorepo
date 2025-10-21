@@ -44,6 +44,56 @@
     },
     {
       "collectionGroup": "surveys",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "dealer_landscaper",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "event_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "sweepstakes_optin",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "surveys",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "event_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "sweepstakes_optin",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "surveys",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "event_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "sweepstakes_optin",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dealer_landscaper",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "surveys",
       "queryScope": "COLLECTION",
       "fields": [
         {

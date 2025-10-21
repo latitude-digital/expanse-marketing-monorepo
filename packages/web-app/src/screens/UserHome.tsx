@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { collection, query, getDocs, where, orderBy, Timestamp } from 'firebase/firestore';
 import db from '../services/firestore';
 import { useAuth } from '../contexts/AuthContext';
@@ -39,9 +39,11 @@ interface ExpanseEvent {
 
 const UserHome: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { currentUser, userData, isAdmin } = useAuth();
   const [events, setEvents] = useState<ExpanseEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const showFerrisButton = searchParams.get('ferris') === '1';
 
   useEffect(() => {
     if (!currentUser) {
@@ -170,6 +172,18 @@ const UserHome: React.FC = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Ferris Winner Picker Button */}
+        {showFerrisButton && (
+          <div className="mb-6">
+            <button
+              onClick={() => navigate('/winner-picker')}
+              className="w-full md:w-auto px-6 py-3 text-lg font-semibold text-white bg-gradient-to-r from-[#257180] to-[#1a4d57] hover:from-[#1a4d57] hover:to-[#257180] rounded-lg shadow-lg transition-all duration-200"
+            >
+              🏆 Pick a Winner
+            </button>
+          </div>
+        )}
+
         {events.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500">No active events available</p>

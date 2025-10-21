@@ -7,6 +7,7 @@ import {
   getLionsFollowupsImpl
 } from "./functions";
 import { getLincolnCharityEventsImpl } from "./functions/getLincolnCharityEvents";
+import { getRandomSweepstakesWinnersImpl } from "./functions/getRandomSweepstakesWinners";
 import {
   getSurveyImpl,
   saveSurveyImpl,
@@ -69,6 +70,7 @@ export const checkSurveyLimit = checkSurveyLimitImpl(app, "(default)");
 export const validateSurveyLimit = validateSurveyLimitImpl(app, "(default)");
 export const getLionsFollowups = getLionsFollowupsImpl(app, "(default)");
 export const getLincolnCharityEvents = getLincolnCharityEventsImpl(app, "(default)");
+export const getRandomSweepstakesWinners = getRandomSweepstakesWinnersImpl(app, "(default)");
 export const getSurvey = getSurveyImpl(app, "(default)");
 export const saveSurvey = saveSurveyImpl(app, "(default)");
 export const validateEmail = sparkpostValidateEmailImpl(app);

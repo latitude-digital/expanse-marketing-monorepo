@@ -34,6 +34,7 @@ import Thanks from './screens/Thanks';
 import Stats from './screens/Stats';
 import Dashboard from './screens/Dashboard';
 import LincolnCharityEvents from './screens/LincolnCharityEvents';
+import WinnerPicker from './screens/WinnerPicker';
 
 // Admin components
 import AdminLayout from './components/AdminLayout';
@@ -75,6 +76,7 @@ root.render(
           <Route path="/" element={<App />}>
           <Route index element={<Home />} />
           <Route path="home" element={<ProtectedRoute><UserHome /></ProtectedRoute>} />
+          <Route path="winner-picker" element={<ProtectedRoute><WinnerPicker /></ProtectedRoute>} />
           <Route path="login" element={<Login />} />
           <Route path="welcome" element={<Login />} />
           <Route path="auth" element={<Login />} />
