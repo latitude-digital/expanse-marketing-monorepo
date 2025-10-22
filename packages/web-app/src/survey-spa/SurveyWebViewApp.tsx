@@ -305,29 +305,6 @@ export const SurveyWebViewApp: React.FC = () => {
   );
 
   /**
-   * Set default survey values
-   */
-  const setDefaultValues = useCallback((survey: Model, eventId: string) => {
-    const defaults: Record<string, any> = {
-      start_time: new Date(),
-      survey_date: new Date(),
-      event_id: eventId,
-      app_version: 'webview_1.0',
-      device_survey_guid: uuidv4(),
-      abandoned: 0,
-      _language: window.navigator?.language,
-      device_id: window.navigator?.userAgent,
-      _screenWidth: window.screen?.width,
-      _offset: new Date().getTimezoneOffset(),
-      _timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    };
-
-    Object.entries(defaults).forEach(([key, value]) => {
-      survey.setValue(key, value);
-    });
-  }, []);
-
-  /**
    * Save progress to React Native
    */
   const saveProgress = useCallback(
@@ -521,22 +498,100 @@ export const SurveyWebViewApp: React.FC = () => {
       // Prepare survey (same as Survey.tsx)
       prepareForSurvey(newSurvey, config.brand);
 
-      // Set default values FIRST
-      setDefaultValues(newSurvey, config.eventId);
+      // Use SurveyJS mergeData() API to properly merge all data sources without fighting
+      // This preserves: Survey JSON defaults + Tracking metadata + Badge scan pre-fill
+      bridgeRef.current?.log('[Data Merge] Setting up survey data...');
 
-      // Apply existing answers (merge with defaults, don't replace)
+      // Generate NEW unique ID for this survey response
+      const newDeviceSurveyGuid = uuidv4();
+      bridgeRef.current?.log('[Data Merge] Generated new device_survey_guid:', newDeviceSurveyGuid);
+
+      // STEP 1: Merge badge scan pre-fill data FIRST (if present)
+      // This allows us to extract the old device_survey_guid before overwriting it
       if (config.answers) {
-        bridgeRef.current?.log('[Badge Scan] Merging badge data with defaults');
-        bridgeRef.current?.log('[Badge Scan] Default values before merge:', Object.keys(newSurvey.data));
-        bridgeRef.current?.log('[Badge Scan] Badge scan values to merge:', Object.keys(config.answers));
+        bridgeRef.current?.log('[Badge Scan] Merging badge scan pre-fill data');
+        bridgeRef.current?.log('[Badge Scan] Badge scan values:', Object.keys(config.answers));
 
-        // Merge badge scan data on top of defaults (badge data takes precedence)
-        newSurvey.data = {
-          ...newSurvey.data,  // Keep all default values
-          ...config.answers,  // Overlay with badge scan pre-fill data
-        };
+        // Save the old device_survey_guid if present (for activation surveys)
+        const oldDeviceSurveyGuid = config.answers.device_survey_guid;
+        if (oldDeviceSurveyGuid) {
+          bridgeRef.current?.log('[Badge Scan] Found old device_survey_guid from activation survey:', oldDeviceSurveyGuid);
+        }
 
-        bridgeRef.current?.log('[Badge Scan] Final merged values:', Object.keys(newSurvey.data));
+        // Strip out tracking fields that should NOT be copied from activation survey
+        // These fields are survey-specific and should be fresh for each new survey response
+        const trackingFieldsToStrip = [
+          'device_survey_guid',  // Will be set fresh below
+          'start_time',          // Will be set fresh below
+          'survey_date',         // Will be set fresh below
+          'end_time',            // Old survey's completion time
+          'event_id',            // Old event ID (we want the NEW event ID)
+          'abandoned',           // Should start fresh
+          '_eventId',            // Old event ID
+          '_checkedIn',          // Tracking fields
+          '_checkedOut',
+          '_claimed',
+          '_used',
+          '_email',
+          '_sms',
+          '_exported',
+          '_preSurveyID',        // Not relevant to new survey
+        ];
+
+        // Create clean pre-fill data (user data only, no tracking fields)
+        const cleanAnswers = { ...config.answers };
+        trackingFieldsToStrip.forEach(field => delete cleanAnswers[field]);
+
+        bridgeRef.current?.log('[Badge Scan] Stripped tracking fields, keeping only user data');
+        bridgeRef.current?.log('[Badge Scan] Clean user data keys:', Object.keys(cleanAnswers));
+
+        // Merge clean pre-fill data (user answers only)
+        newSurvey.mergeData(cleanAnswers);
+
+        // If this was an activation survey, store the old ID in _originalID
+        if (oldDeviceSurveyGuid) {
+          newSurvey.mergeData({ _originalID: oldDeviceSurveyGuid });
+          bridgeRef.current?.log('[Badge Scan] Saved old device_survey_guid as _originalID');
+        }
+
+        bridgeRef.current?.log('[Badge Scan] Badge data merged successfully');
+      }
+
+      // STEP 2: Merge tracking metadata (overwrites old device_survey_guid with new one)
+      // Note: Use ISO strings for dates instead of Date objects for proper serialization
+      const now = new Date();
+      const startTimeISO = now.toISOString();
+      const surveyDateISO = now.toISOString();
+
+      bridgeRef.current?.log('[Data Merge] About to merge tracking metadata');
+      bridgeRef.current?.log('[Data Merge] start_time value (before merge):', startTimeISO);
+      bridgeRef.current?.log('[Data Merge] start_time type:', typeof startTimeISO);
+      bridgeRef.current?.log('[Data Merge] survey_date value (before merge):', surveyDateISO);
+
+      newSurvey.mergeData({
+        start_time: startTimeISO,
+        survey_date: surveyDateISO,
+        event_id: config.eventId,
+        app_version: 'webview_1.0',
+        device_survey_guid: newDeviceSurveyGuid, // Always use NEW unique ID
+        abandoned: 0,
+        _language: window.navigator?.language,
+        device_id: window.navigator?.userAgent,
+        _screenWidth: window.screen?.width,
+        _offset: now.getTimezoneOffset(),
+        _timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      });
+      bridgeRef.current?.log('[Data Merge] Tracking metadata merged with NEW device_survey_guid');
+
+      bridgeRef.current?.log('[Data Merge] Final survey data keys:', Object.keys(newSurvey.data));
+      bridgeRef.current?.log('[Data Merge] Final device_survey_guid:', newSurvey.data.device_survey_guid);
+      bridgeRef.current?.log('[Data Merge] Final start_time value:', newSurvey.data.start_time);
+      bridgeRef.current?.log('[Data Merge] Final start_time type:', typeof newSurvey.data.start_time);
+      bridgeRef.current?.log('[Data Merge] Final survey_date value:', newSurvey.data.survey_date);
+      bridgeRef.current?.log('[Data Merge] Final survey_date type:', typeof newSurvey.data.survey_date);
+      bridgeRef.current?.log('[Data Merge] Full survey.data:', JSON.stringify(newSurvey.data, null, 2));
+      if (newSurvey.data._originalID) {
+        bridgeRef.current?.log('[Data Merge] Activation survey - _originalID:', newSurvey.data._originalID);
       }
 
       // Setup markdown support
@@ -884,7 +939,6 @@ export const SurveyWebViewApp: React.FC = () => {
     preprocessRequiredValidation,
     applyBrandTheme,
     prepareSurveyJsonAndTheme,
-    setDefaultValues,
     saveProgress,
   ]);
 
