@@ -52,6 +52,9 @@ export class SurveySyncService {
     // Use device_survey_guid as the document ID - it's already a unique UUID
     const deviceSurveyGuid = answers.device_survey_guid as string;
     if (!deviceSurveyGuid) {
+      console.error('[SurveySync] ❌ MISSING device_survey_guid!');
+      console.error('[SurveySync] Available answer keys:', Object.keys(answers));
+      console.error('[SurveySync] Full answers object:', JSON.stringify(answers, null, 2));
       throw new Error('device_survey_guid is required in survey answers');
     }
 
