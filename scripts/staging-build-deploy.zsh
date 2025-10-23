@@ -166,13 +166,7 @@ if $DEPLOY_FUNCTIONS; then
     echo -e "${YELLOW}🔥 Building Firebase Functions${NC}"
     cd packages/firebase
 
-    # Create firebase.json symlink for firebase use command
-    if [ ! -f firebase.json ]; then
-        echo -e "${BLUE}Creating firebase.json symlink...${NC}"
-        ln -s firebase.staging.json firebase.json
-    fi
-
-    # Switch to staging alias (this will make Firebase load .env.staging automatically)
+    # Switch to staging alias
     echo -e "${BLUE}Switching to staging Firebase alias${NC}"
     firebase use staging
 
@@ -192,8 +186,8 @@ if $DEPLOY_FUNCTIONS; then
     # Deploy all functions to the staging project (no namespace needed)
     firebase deploy --only functions
 
-    # Deploy Firestore rules and indexes using staging config
-    firebase deploy --only firestore:rules,firestore:indexes --config firebase.staging.json
+    # Deploy Firestore rules and indexes
+    firebase deploy --only firestore:rules,firestore:indexes
     echo -e "${GREEN}✅ Firebase Functions deployed to staging${NC}"
 
     # Restore the original package.json with workspace references

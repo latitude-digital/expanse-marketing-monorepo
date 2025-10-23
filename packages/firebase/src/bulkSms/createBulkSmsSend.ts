@@ -26,7 +26,10 @@ import {
  * @param database - Firestore database name ("staging" or "(default)")
  */
 export const createBulkSmsSendImpl = (app: admin.app.App, database: string = "(default)") => {
-  return onCall({ cors: true }, async (request) => {
+  return onCall({
+    cors: true,
+    secrets: ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_API_KEY_SID', 'TWILIO_API_KEY_SECRET', 'TWILIO_PHONE_NUMBER'],
+  }, async (request) => {
     try {
       // ============================================================
       // STEP 1: AUTHENTICATION
@@ -174,13 +177,13 @@ export const createBulkSmsSendImpl = (app: admin.app.App, database: string = "(d
           phoneNumber: phoneNumber,
           status: 'pending',
           retryCount: 0,
-          // Optional fields are undefined initially
-          deliveryStatus: undefined,
-          twilioSid: undefined,
-          errorMessage: undefined,
-          errorCode: undefined,
-          sentAt: undefined,
-          deliveredAt: undefined,
+          // Optional fields are null initially - Firestore allows null but not undefined
+          deliveryStatus: null,
+          twilioSid: null,
+          errorMessage: null,
+          errorCode: null,
+          sentAt: null,
+          deliveredAt: null,
         };
 
         batch.set(recipientRef, recipientData);

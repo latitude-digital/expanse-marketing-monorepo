@@ -101,11 +101,11 @@ export interface SmsRecipient {
   /** Our processing status */
   status: 'pending' | 'sent' | 'failed';
 
-  /** Delivery status from Twilio webhook (optional) */
-  deliveryStatus?: TwilioMessageStatus;
+  /** Delivery status from Twilio webhook (optional, null initially) */
+  deliveryStatus?: TwilioMessageStatus | null;
 
-  /** Twilio message SID for webhook correlation (optional) */
-  twilioSid?: string;
+  /** Twilio message SID for webhook correlation (optional, null initially) */
+  twilioSid?: string | null;
 
   /** Error message if send/delivery failed (nullable per Twilio SDK) */
   errorMessage?: string | null;
@@ -113,11 +113,11 @@ export interface SmsRecipient {
   /** Twilio error code if send/delivery failed (nullable per Twilio SDK) */
   errorCode?: number | null;
 
-  /** Timestamp when message was sent to Twilio (optional) */
-  sentAt?: Date | string;
+  /** Timestamp when message was sent to Twilio (optional, null initially) */
+  sentAt?: Date | string | null;
 
-  /** Timestamp when Twilio confirmed delivery (optional) */
-  deliveredAt?: Date | string;
+  /** Timestamp when Twilio confirmed delivery (optional, null initially) */
+  deliveredAt?: Date | string | null;
 
   /** Number of retry attempts */
   retryCount: number;

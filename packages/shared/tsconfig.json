@@ -19,6 +19,9 @@
   "exclude": [
     "node_modules",
     "lib",
-    "src/icons"
+    "src/icons",
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx"
   ]
 }

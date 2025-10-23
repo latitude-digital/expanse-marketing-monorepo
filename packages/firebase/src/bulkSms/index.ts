@@ -7,3 +7,4 @@
 export { createBulkSmsSendImpl } from './createBulkSmsSend';
 export { processBulkSmsSendImpl } from './processBulkSmsSend';
 export { twilioStatusWebhookImpl } from './twilioStatusWebhook';
+export { validatePhoneNumbersImpl } from './validatePhoneNumbers';

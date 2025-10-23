@@ -15,11 +15,15 @@ import Twilio from 'twilio';
 import type { MessageInstance, MessageListInstanceCreateOptions }
   from 'twilio/lib/rest/api/v2010/account/message';
 
-// Initialize Twilio client
+// Initialize Twilio client with API Key authentication
 export const twilioClient = Twilio(
-  process.env.TWILIO_ACCOUNT_SID!,
-  process.env.TWILIO_AUTH_TOKEN!
+  process.env.TWILIO_API_KEY_SID!,
+  process.env.TWILIO_API_KEY_SECRET!,
+  { accountSid: process.env.TWILIO_ACCOUNT_SID! }
 );
+
+// Export auth token for webhook signature validation
+export const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN!;
 
 // Export types for use in functions
 export type { MessageInstance, MessageListInstanceCreateOptions };

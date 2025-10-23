@@ -6,6 +6,7 @@ import type { BulkSmsSend } from '@meridian-event-tech/shared';
 interface BulkSMSProgressProps {
   sendId: string;
   onBack: () => void;
+  onViewDetails?: (sendId: string) => void;
 }
 
 /**
@@ -19,7 +20,7 @@ interface BulkSMSProgressProps {
  * - Completion message when status === 'completed'
  * - Back button to send another
  */
-const BulkSMSProgress: React.FC<BulkSMSProgressProps> = ({ sendId, onBack }) => {
+const BulkSMSProgress: React.FC<BulkSMSProgressProps> = ({ sendId, onBack, onViewDetails }) => {
   const [send, setSend] = useState<BulkSmsSend | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -203,14 +204,23 @@ const BulkSMSProgress: React.FC<BulkSMSProgressProps> = ({ sendId, onBack }) => 
         </div>
       )}
 
-      {/* Back Button */}
-      <div className="flex justify-end">
-        <button
-          onClick={onBack}
-          className="px-6 py-2 bg-gray-100 text-gray-700 font-medium rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-        >
-          {isComplete ? 'Send Another' : 'Back to Form'}
-        </button>
+      {/* Action Buttons */}
+      <div className="flex justify-end gap-3">
+        {isComplete && onViewDetails ? (
+          <button
+            onClick={() => onViewDetails(sendId)}
+            className="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            View Details
+          </button>
+        ) : (
+          <button
+            onClick={onBack}
+            className="px-6 py-2 bg-gray-100 text-gray-700 font-medium rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+          >
+            Back to Form
+          </button>
+        )}
       </div>
     </div>
   );

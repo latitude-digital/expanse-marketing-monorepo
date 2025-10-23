@@ -11,7 +11,8 @@
 
 import { onRequest } from 'firebase-functions/v2/https';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { validateRequest } from './twilioClient';
+import { validateRequest, twilioAuthToken } from './twilioClient';
+import { getTwilioStatusCallbackUrl } from '../utils/getTwilioStatusCallbackUrl';
 import type { TwilioMessageStatus } from '@meridian-event-tech/shared';
 
 /**
@@ -31,11 +32,15 @@ export const twilioStatusWebhookImpl = (
       cors: false,
       timeoutSeconds: 60,
       memory: '256MiB',
+      secrets: ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_API_KEY_SID', 'TWILIO_API_KEY_SECRET', 'TWILIO_PHONE_NUMBER'],
     },
     async (request, response) => {
       try {
         console.log('[Twilio Webhook] Received status update', {
           method: request.method,
+          url: request.url,
+          originalUrl: request.originalUrl,
+          path: request.path,
           headers: request.headers,
           body: request.body,
         });
@@ -50,13 +55,14 @@ export const twilioStatusWebhookImpl = (
         }
 
         // Construct full webhook URL for signature validation
-        // IMPORTANT: Must include protocol, host, path, and query params
-        const webhookUrl = `https://${request.headers.host}${request.url}`;
+        // Use the same URL generation logic that we used to configure Twilio
+        // This ensures the URL matches exactly what Twilio used for the signature
+        const webhookUrl = getTwilioStatusCallbackUrl(database);
         console.log('[Twilio Webhook] Validating signature for URL:', webhookUrl);
 
         // Validate the request is from Twilio
         const isValid = validateRequest(
-          process.env.TWILIO_AUTH_TOKEN!,
+          twilioAuthToken,
           twilioSignature,
           webhookUrl,
           request.body

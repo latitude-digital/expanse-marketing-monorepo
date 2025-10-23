@@ -168,13 +168,7 @@ if $DEPLOY_FUNCTIONS; then
     echo -e "${YELLOW}🔥 Building Firebase Functions${NC}"
     cd packages/firebase
 
-    # Create firebase.json symlink for firebase use command
-    if [ ! -f firebase.json ]; then
-        echo -e "${BLUE}Creating firebase.json symlink...${NC}"
-        ln -s firebase.production.json firebase.json
-    fi
-
-    # Switch to prod alias (this will make Firebase load .env.prod automatically)
+    # Switch to prod alias
     echo -e "${BLUE}Switching to prod Firebase alias${NC}"
     firebase use prod
 
@@ -194,8 +188,8 @@ if $DEPLOY_FUNCTIONS; then
     # Deploy all functions to the production project (no namespace needed)
     firebase deploy --only functions
 
-    # Deploy Firestore rules and indexes using production config
-    firebase deploy --only firestore:rules,firestore:indexes --config firebase.production.json
+    # Deploy Firestore rules and indexes
+    firebase deploy --only firestore:rules,firestore:indexes
     echo -e "${GREEN}✅ Firebase Functions deployed to production${NC}"
 
     # Restore the original package.json with workspace references

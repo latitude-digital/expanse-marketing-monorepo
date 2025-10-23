@@ -18,6 +18,7 @@ import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import * as admin from 'firebase-admin';
 import { twilioClient } from './twilioClient';
 import type { MessageInstance } from './twilioClient';
+import { getTwilioStatusCallbackUrl } from '../utils/getTwilioStatusCallbackUrl';
 
 // Constants
 const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER;
@@ -45,6 +46,7 @@ export const processBulkSmsSendImpl = (app: admin.app.App, database: string = "(
       database: database,
       timeoutSeconds: 540,
       memory: '512MiB',
+      secrets: ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_API_KEY_SID', 'TWILIO_API_KEY_SECRET', 'TWILIO_PHONE_NUMBER'],
     },
     async (event) => {
       if (!event?.data) {
@@ -117,14 +119,14 @@ export const processBulkSmsSendImpl = (app: admin.app.App, database: string = "(
         }
 
         const message = sendData.message;
-        const statusCallbackUrl = process.env.TWILIO_STATUS_CALLBACK_URL;
+        const statusCallbackUrl = getTwilioStatusCallbackUrl(database);
 
         if (!TWILIO_PHONE_NUMBER) {
           throw new Error('TWILIO_PHONE_NUMBER not configured');
         }
 
         console.log(`[processBulkSmsSend] ${sendId}: Processing message: "${message.substring(0, 50)}..."`);
-        console.log(`[processBulkSmsSend] ${sendId}: Status callback URL: ${statusCallbackUrl || 'not configured'}`);
+        console.log(`[processBulkSmsSend] ${sendId}: Status callback URL: ${statusCallbackUrl}`);
 
         // Processing loop with pagination
         let hasMore = true;

@@ -48,7 +48,8 @@ import {
 import {
   createBulkSmsSendImpl,
   processBulkSmsSendImpl,
-  twilioStatusWebhookImpl
+  twilioStatusWebhookImpl,
+  validatePhoneNumbersImpl
 } from "./bulkSms";
 
 // Re-export shared utilities from shared package
@@ -102,3 +103,4 @@ export const updateUserTags = updateUserTagsImpl(app);
 export const createBulkSmsSend = createBulkSmsSendImpl(app, "(default)");
 export const processBulkSmsSend = processBulkSmsSendImpl(app, "(default)");
 export const twilioStatusWebhook = twilioStatusWebhookImpl(app, "(default)");
+export const validatePhoneNumbers = validatePhoneNumbersImpl(app);
