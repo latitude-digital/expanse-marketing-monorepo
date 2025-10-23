@@ -1,6 +1,6 @@
 {
   "name": "@meridian-event-tech/web-app",
-  "version": "1.0.1761021590",
+  "version": "1.0.1761223640",
   "private": true,
   "dependencies": {
     "@meridian-event-tech/shared": "workspace:*",

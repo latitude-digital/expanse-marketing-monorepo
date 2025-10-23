@@ -11,7 +11,7 @@
 
 import { onRequest } from 'firebase-functions/v2/https';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { validateRequest, twilioAuthToken } from './twilioClient';
+import { validateRequest } from './twilioClient';
 import { getTwilioStatusCallbackUrl } from '../utils/getTwilioStatusCallbackUrl';
 import type { TwilioMessageStatus } from '@meridian-event-tech/shared';
 
@@ -54,26 +54,51 @@ export const twilioStatusWebhookImpl = (
           return;
         }
 
+        // Get auth token from environment (it's a secret, so must be accessed at runtime)
+        const authToken = process.env.TWILIO_AUTH_TOKEN?.trim();
+        if (!authToken) {
+          console.error('[Twilio Webhook] TWILIO_AUTH_TOKEN not available');
+          response.status(500).send('Configuration error');
+          return;
+        }
+
         // Construct full webhook URL for signature validation
-        // Use the same URL generation logic that we used to configure Twilio
-        // This ensures the URL matches exactly what Twilio used for the signature
         const webhookUrl = getTwilioStatusCallbackUrl(database);
-        console.log('[Twilio Webhook] Validating signature for URL:', webhookUrl);
+
+        // Comprehensive debug logging for signature validation
+        console.log('[Twilio Webhook] ===== SIGNATURE VALIDATION DEBUG =====');
+        console.log('[Twilio Webhook] Received signature:', twilioSignature);
+        console.log('[Twilio Webhook] Webhook URL for validation:', webhookUrl);
+        console.log('[Twilio Webhook] Auth token (first 4 chars):', authToken.substring(0, 4));
+        console.log('[Twilio Webhook] Auth token (last 4 chars):', authToken.substring(authToken.length - 4));
+        console.log('[Twilio Webhook] Auth token length:', authToken.length);
+        console.log('[Twilio Webhook] Request Content-Type:', request.headers['content-type']);
+        console.log('[Twilio Webhook] Body keys (sorted):', Object.keys(request.body).sort());
+        console.log('[Twilio Webhook] Body values:');
+        for (const [key, value] of Object.entries(request.body)) {
+          console.log(`  ${key}: "${value}" (type: ${typeof value}, length: ${String(value).length})`);
+        }
+
+        // Manually construct what Twilio would use for signature
+        // Twilio constructs: URL + sorted params as "key=value&key=value"
+        const sortedKeys = Object.keys(request.body).sort();
+        const paramsString = sortedKeys.map(key => `${key}=${request.body[key]}`).join('&');
+        console.log('[Twilio Webhook] Params string for signature:', paramsString);
+        console.log('[Twilio Webhook] Full string to sign:', webhookUrl + paramsString);
 
         // Validate the request is from Twilio
         const isValid = validateRequest(
-          twilioAuthToken,
+          authToken,
           twilioSignature,
           webhookUrl,
           request.body
         );
 
+        console.log('[Twilio Webhook] Validation result:', isValid);
+        console.log('[Twilio Webhook] ===== END SIGNATURE VALIDATION DEBUG =====');
+
         if (!isValid) {
-          console.error('[Twilio Webhook] Invalid signature - possible attack!', {
-            signature: twilioSignature,
-            url: webhookUrl,
-            body: request.body,
-          });
+          console.error('[Twilio Webhook] SIGNATURE VALIDATION FAILED!');
           response.status(403).send('Forbidden: Invalid signature');
           return;
         }

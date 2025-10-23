@@ -92,12 +92,13 @@ const BulkSMS: React.FC = () => {
 
       const result = await validatePhoneNumbers({ phoneNumbers: phoneLines });
 
-      if (result.data.success) {
+      // Always update the list with valid numbers, even if validation partially failed
+      if (result.data.results && result.data.results.length > 0) {
         setValidationResults(result.data.results);
         setValidationSummary(result.data.summary);
-        setIsValidated(true);
 
         // Replace phone numbers textarea with only valid, normalized, deduplicated numbers
+        // This happens even if there are errors - we clean the list regardless
         const validNumbers = result.data.results
           .filter(r => r.isValid && r.normalized)
           .map(r => r.normalized)
@@ -107,6 +108,11 @@ const BulkSMS: React.FC = () => {
         const cleanedPhoneNumbers = validNumbers.join('\n');
         setPhoneNumbers(cleanedPhoneNumbers);
         setPhoneNumbersSnapshot(cleanedPhoneNumbers);
+      }
+
+      // Set validation state based on success
+      if (result.data.success) {
+        setIsValidated(true);
       } else {
         setError(result.data.error || 'Validation failed');
       }
