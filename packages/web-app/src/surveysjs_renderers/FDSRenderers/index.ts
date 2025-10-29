@@ -5,7 +5,7 @@ export { FDSCheckboxRenderer } from './FDSCheckbox';
 export { FDSDropdownRenderer } from './FDSDropdown';
 export { FDSTagboxRenderer } from './FDSTagbox';
 export { FDSTextAreaRenderer } from './FDSTextArea';
-export { FDSToggleRenderer } from './FDSToggle';
+export { FDSBooleanRenderer } from './FDSBoolean';
 export { FDSRatingRenderer } from './FDSRating';
 export { FDSPanelRenderer } from './FDSPanel';
 

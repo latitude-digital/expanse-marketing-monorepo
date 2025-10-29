@@ -84,7 +84,7 @@ function registerFordQuestions(): void {
   console.log('[Question Registration] Registering Ford-specific questions');
   
   // Ford opt-in
-  registerQuestionIfNeeded("fordoptin", "radiogroup");
+  registerQuestionIfNeeded("fordoptin", "boolean");
   
   // Ford Vehicle of Interest
   registerQuestionIfNeeded("fordvoi", "checkbox");

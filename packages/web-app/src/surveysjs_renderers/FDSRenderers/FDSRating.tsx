@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
 import { QuestionRatingModel } from "survey-core";
-import { StyledButton, StyledSelectDropdown as SelectDropdown } from "@ui/ford-ui-components";
-import { useQuestionValidation, renderLabel, renderDescription, getOptionalText, FDSQuestionWrapper } from "./FDSShared";
+import { StyledButton, StyledSelectDropdown as SelectDropdown, Typography } from "@ui/ford-ui-components";
+import { useQuestionValidation, FDSQuestionWrapper } from "./FDSShared";
 
 // Custom hook for responsive behavior
 const useBreakpoint = () => {
@@ -34,7 +34,6 @@ const FDSRatingComponent: React.FC<{ question: QuestionRatingModel }> = ({ quest
   
   // Use shared validation utilities
   const { isInvalid, errorMessage } = useQuestionValidation(question);
-  const optionalText = getOptionalText(question);
   
   
   // Generate rating scale options
@@ -86,7 +85,7 @@ const FDSRatingComponent: React.FC<{ question: QuestionRatingModel }> = ({ quest
 
     return (
       <SelectDropdown
-        label={question.title}
+        label={question.fullTitle}
         description={question.description}
         placeholder="Select rating..."
         options={selectOptions}
@@ -122,21 +121,14 @@ const FDSRatingComponent: React.FC<{ question: QuestionRatingModel }> = ({ quest
 
   // Desktop button grid rendering
   const renderDesktopButtons = () => {
-    // Handle labels that might contain JSX elements
-    const labelContent = renderLabel(question.title);
-    const label = typeof labelContent === 'string' ? labelContent : question.title;
-    
-    const descriptionContent = renderDescription(question.description);
-    const description = typeof descriptionContent === 'string' ? descriptionContent : question.description;
-
     // Get helper labels (same logic as in generateRatingOptions)
     const leftLabel = question.minRateDescription || question.rateMin_text || 'Poor';
     const rightLabel = question.maxRateDescription || question.rateMax_text || 'Excellent';
 
     return (
       <FDSQuestionWrapper
-        label={label}
-        description={description}
+        label={question.fullTitle}
+        description={question.description}
         isRequired={question.isRequired}
         isInvalid={isInvalid}
         errorMessage={errorMessage}
@@ -145,9 +137,14 @@ const FDSRatingComponent: React.FC<{ question: QuestionRatingModel }> = ({ quest
         <div className="flex items-center gap-4">
           {/* Left helper label */}
           {leftLabel && (
-            <span className="text-sm text-[var(--semantic-color-text-onlight-subtle)] whitespace-nowrap">
+            <Typography
+              displayStyle="body-2-regular"
+              displayColor="text-onlight-subtle"
+              className="whitespace-nowrap"
+              spanProps={{ className: "text-ford-body2-regular" }}
+            >
               {leftLabel}
-            </span>
+            </Typography>
           )}
           
           {/* Rating buttons */}
@@ -188,9 +185,14 @@ const FDSRatingComponent: React.FC<{ question: QuestionRatingModel }> = ({ quest
           
           {/* Right helper label */}
           {rightLabel && (
-            <span className="text-sm text-[var(--semantic-color-text-onlight-subtle)] whitespace-nowrap">
+            <Typography
+              displayStyle="body-2-regular"
+              displayColor="text-onlight-subtle"
+              className="whitespace-nowrap"
+              spanProps={{ className: "text-ford-body2-regular" }}
+            >
               {rightLabel}
-            </span>
+            </Typography>
           )}
         </div>
       </FDSQuestionWrapper>

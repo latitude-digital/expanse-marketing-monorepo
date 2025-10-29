@@ -23,10 +23,18 @@ const FDSRadioComponent: React.FC<{ question: QuestionRadiogroupModel }> = ({ qu
     
     // Transform SurveyJS visibleChoices to RadioButtonGroup options format
     // visibleChoices includes special items like None and Other
-    const options = question.visibleChoices.map((choice: any) => ({
-        label: choice.text || choice.value,
-        value: choice.value
-    }));
+    const options = question.visibleChoices.map((choice: any) => {
+        const rawText = typeof choice.text === 'object'
+            ? choice.locText?.textOrHtml || choice.locText?.renderedHtml || choice.locText
+            : choice.text;
+        const displayLabel = rawText || choice.value;
+
+        return {
+            label: renderLabel(displayLabel),
+            value: choice.value,
+            name: question.name,
+        };
+    });
     
     const handleRadioChange = (value: string) => {
         question.value = value;

@@ -212,11 +212,11 @@ const fordInit = () => {
 
   /**
    * Ford Email Opt-In Question
-   * 
-   * @description Radio button group for Ford email marketing consent
-   * @_ffs "email_opt_in" - Maps to email_opt_in field in Ford API (1=Yes, 0=No)
+   *
+   * @description Single checkbox for Ford email marketing consent
+   * @_ffs "emailOptIn" - Maps to emailOptIn field in Ford API (1=checked, 0=unchecked)
    * @privacy_policy Includes Ford Motor Company privacy policy link
-   * @required true
+   * @required false (checkbox is optional)
    */
   // Register other Ford questions if they don't exist
   if (!ComponentCollection.Instance.getCustomQuestionByName("fordoptin")) {
@@ -228,30 +228,23 @@ const fordInit = () => {
     showInToolbox: true,
     inheritBaseProps: true,
     questionJSON: {
-      type: "radiogroup",
-      title: {
-        en: "Please email me communications including product information, offers, and incentives from Ford Motor Company and the local dealer.",
-        es: "Quiero recibir comunicaciones, incluidas información sobre productos y servicios, encuestas, y ofertas especiales de Ford Motor Company y sus concesionarios.",
-        fr: "Je souhaite recevoir des communications, y des informations sur les produits et services, des enquêtes, et des offres spéciales de Ford Motor Company et de son concessionnaire.",
+      type: "boolean",
+      renderAs: "checkbox",
+      defaultValue: true,
+      valueTrue: 1,
+      valueFalse: 0,
+      label: {
+        en: "I am interested in a local Ford dealer calling me concerning product information, offers, and incentives.",
+        es: "Estoy interesado en que un concesionario Ford local me llame sobre información de productos, ofertas e incentivos.",
+        fr: "Je suis intéressé par un concessionnaire Ford local qui m'appelle concernant les informations sur les produits, les offres et les incitations.",
       },
       description: {
-        en: "Ford Motor Company respects your privacy and treats your personal information with care. [Click here to read Ford Motor Company's privacy policy.](https://ford.com/help/privacy/)",
-        es: "Ford Motor Company respeta su confidencialidad y trata su información personal con respeto. [Haga clic aquí para consultar la política de confidencialidad de Ford Motor Company.](https://es.ford.com/help/privacy/)",
-        fr: "Ford Motor Company respecte votre vie privée et traite vos informations personnelles avec soin. [Cliquez ici pour lire la politique de confidencialité de Ford Motor Company.](https://ford.com/help/privacy/)",
+        en: "Our Privacy Pledge\nFor information on how we protect your privacy, please read [our privacy policy](https://ford.com/help/privacy/).",
+        es: "Nuestro Compromiso de Privacidad\nPara obtener información sobre cómo protegemos su privacidad, lea [nuestra política de privacidad](https://es.ford.com/help/privacy/).",
+        fr: "Notre Engagement en matière de Confidentialité\nPour plus d'informations sur la façon dont nous protégeons votre vie privée, veuillez lire [notre politique de confidentialité](https://ford.com/help/privacy/).",
       },
       descriptionLocation: "underInput",
       isRequired: true,
-      renderAs: "radiobuttongroup",
-      choices: [
-        {
-          value: 1,
-          text: "Yes",
-        },
-        {
-          value: 0,
-          text: "No",
-        },
-      ],
     },
     onLoaded(question: Question) {
       // Sync isRequired and validators from parent to child for custom questions

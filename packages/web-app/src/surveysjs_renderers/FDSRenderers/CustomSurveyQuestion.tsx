@@ -1,7 +1,8 @@
 import React from "react";
 import { ReactElementFactory, SurveyQuestionElementBase } from "survey-react-ui";
-import { Question } from "survey-core";
+import { Question, QuestionBooleanModel } from "survey-core";
 import { areFDSRenderersLoaded } from "../../helpers/fdsInitializer";
+import { FDSBooleanComponent } from "./FDSBoolean";
 
 interface CustomSurveyQuestionProps {
   element: Question;
@@ -198,18 +199,22 @@ export class CustomSurveyQuestion extends React.Component<CustomSurveyQuestionPr
       return null;
     }
 
-    // This component is only used for FDS brands now
-    // Non-FDS brands use ErrorHandlingWrapper instead
-    // Only render the question element itself, bypassing SurveyJS title and error wrappers
-    const questionElement = creator.createQuestionElement(element);
-    
-    if (!questionElement) {
-      return null;
-    }
-
     // Get CSS classes for the wrapper but don't include title/error styling
     const cssClasses = element.cssClasses;
     const wrapperClass = cssClasses?.questionWrapper || "sv_q_wrapper";
+
+    const renderFDSQuestion = () => {
+      if (element.getType() === "boolean") {
+        return <FDSBooleanComponent question={element as QuestionBooleanModel} />;
+      }
+      return null;
+    };
+
+    const questionElement = renderFDSQuestion() || creator.createQuestionElement(element);
+
+    if (!questionElement) {
+      return null;
+    }
 
     return (
       <div

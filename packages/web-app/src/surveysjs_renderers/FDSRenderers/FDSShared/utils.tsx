@@ -71,6 +71,7 @@ export const renderQuestionDescription = (description?: string, question?: any):
             displayColor="text-onlight-subtle"
             displayBox="block"
             className="mt-1"
+            spanProps={{ className: "text-ford-caption-semibold" }}
         >
             {hasHtml ? <span className="fds-question-description__html" dangerouslySetInnerHTML={{ __html: processedDescription }} /> : processedDescription}
         </Typography>

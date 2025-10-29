@@ -4,9 +4,10 @@ import { registerFDSCheckboxRenderer } from './FDSCheckbox';
 import { registerFDSDropdownRenderer } from './FDSDropdown';
 import { registerFDSTagboxRenderer } from './FDSTagbox';
 import { registerFDSTextAreaRenderer } from './FDSTextArea';
-import { registerFDSToggleRenderer } from './FDSToggle';
+import { registerFDSBooleanRenderer } from './FDSBoolean';
 import { registerFDSRatingRenderer } from './FDSRating';
 import { registerFDSPanelRenderer } from './FDSPanel';
+import { registerFDSHtmlRenderer } from './FDSHtml';
 
 let fdsRenderersRegistered = false;
 
@@ -21,9 +22,10 @@ export function registerAllFDSRenderers(): void {
   registerFDSDropdownRenderer();
   registerFDSTagboxRenderer();
   registerFDSTextAreaRenderer();
-  registerFDSToggleRenderer();
+  registerFDSBooleanRenderer();
   registerFDSRatingRenderer();
   registerFDSPanelRenderer();
+  registerFDSHtmlRenderer();
 
   fdsRenderersRegistered = true;
 

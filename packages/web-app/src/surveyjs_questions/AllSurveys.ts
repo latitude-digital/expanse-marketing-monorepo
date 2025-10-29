@@ -1329,50 +1329,6 @@ const globalInit = () => {
     },
   } as ICustomQuestionTypeConfiguration);
 
-  /**
-   * General Email Opt-In Question
-   * 
-   * @description Boolean checkbox for Ford email marketing consent
-   * @_ffs Not typically set - handled by brand-specific opt-ins
-   * @privacy_policy Includes Ford privacy policy link
-   * @note For brand-specific opt-ins, use fordoptin or lincolnoptin instead
-   */
-  ComponentCollection.Instance.add({
-    name: "optin",
-    title: "Check Opt-In",
-    iconName: "icon-checkbox",
-    showInToolbox: true,
-    inheritBaseProps: true,
-    onLoaded(question: Question) {
-      // Sync validators from parent to child for custom questions
-      const child = question.contentQuestion;
-      if (child && question.validators?.length > 0) {
-        child.validators = [...(child.validators || []), ...question.validators];
-        // Sync isRequired from parent to child
-        child.isRequired = question.isRequired;
-      }
-    },
-    questionJSON: {
-      type: "boolean",
-      renderAs: "checkbox",
-      title: {
-        en: "Please email me communications, including product and service information, surveys and special offers from Ford and its retailers.",
-        es: "Por favor, envíenme comunicaciones, incluyendo información sobre productos y servicios, encuestas y ofertas especiales de Ford y sus minoristas.",
-        fr: "Veuillez m'envoyer des communications, y compris des informations sur les produits et services, des enquêtes et des offres spéciales de Ford et de ses détaillants.",
-      },
-      description: {
-        en: "Ford Motor Company respects your privacy and treats your personal information with care. **[Click here to read Ford Motor Company's privacy policy.](https://ford.com/help/privacy/)**",
-        es: "Ford Motor Company respeta su confidencialidad y trata su información personal con respeto. **[Haga clic aquí para consultar la política de confidencialidad de Ford Motor Company.](https://es.ford.com/help/privacy/)**",
-        fr: "Ford Motor Company respecte votre vie privée et traite vos informations personnelles avec soin. **[Cliquez ici pour lire la politique de confidentialité de Ford Motor Company.](https://ford.com/help/privacy/)**",
-      },
-      descriptionLocation: "underInput",
-      label: "I agree",
-      titleLocation: "top",
-      valueTrue: "Yes",
-      valueFalse: "No",
-    },
-  } as ICustomQuestionTypeConfiguration);
-
   // Add Serializer properties for waiver questions
   Serializer.addProperty("adultwaiver", {
     name: "_ffs",

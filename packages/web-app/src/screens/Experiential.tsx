@@ -889,7 +889,32 @@ ${minorWaiverText}
                         });
                     });
 
+                    // Handle boolean checkbox rendering - add title and description
                     survey.onAfterRenderQuestionInput.add((sender: Model, options: any) => {
+                        const question = options.question;
+                        const wrapper = options.htmlElement?.closest('.sv_q_wrapper');
+
+                        if (question.getType() === 'boolean' && question.renderAs === 'checkbox') {
+                            // Skip custom wrapper questions (e.g., fordoptin) so FDS renderers control content
+                            const parentType = question.parentQuestion?.getType?.();
+                            const questionType = question.jsonObj?.type || parentType || question.getType();
+                            const isCustomBoolean = (question as any).__fdsCustomBoolean;
+                            const hasFDSWrapper = !!wrapper?.querySelector('.fds-question-wrapper');
+                            console.log('[onAfterRenderQuestionInput] boolean checkbox parent inspection', {
+                                name: question.name,
+                                type: question.getType(),
+                                parentType,
+                                parentName: question.parentQuestion?.name,
+                                labelTrue: question.locLabelTrue?.textOrHtml || question.labelTrue,
+                                legacyLabel: question.locLabel?.textOrHtml || question.label,
+                                questionType,
+                                isCustomBoolean,
+                                hasFDSWrapper,
+                            });
+                            console.log('[onAfterRenderQuestionInput] Skipping legacy boolean DOM manipulation');
+                            return;
+                        }
+
                         if (options.question.name === "address1") {
                             const autocomplete = new window.google.maps.places.Autocomplete(options.htmlElement, {
                                 types: ['address'],

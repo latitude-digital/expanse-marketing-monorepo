@@ -191,23 +191,8 @@ export const baseSurvey: ExperienceSurveyConfiguration = {
             },
             {
               type: 'fordoptin',
-              name: 'email_opt_in',
-              _ffs: 'emailOptIn',
-              renderAs: 'radiobuttongroup',
-              buttonSize: 'medium',
-              title:
-                'Please email me communications including product information, offers, and incentives from Ford Motor Company and the local dealer.',
-              isRequired: true,
-              choices: [
-                {
-                  value: 1,
-                  text: 'Yes'
-                },
-                {
-                  value: 0,
-                  text: 'No'
-                }
-              ]
+              name: 'fordEmailOptIn',
+              _ffs: 'emailOptIn'
             }
           ]
         },
