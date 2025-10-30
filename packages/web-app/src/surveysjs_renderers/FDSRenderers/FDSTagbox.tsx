@@ -3,12 +3,12 @@ import React, { useState, useRef, useEffect } from "react";
 import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
 import { QuestionTagboxModel } from "survey-core";
 import { StyledSelectDropdown as SelectDropdown, StyledButton } from "@ui/ford-ui-components";
-import { useQuestionValidation, renderLabel, renderDescription, getOptionalText, FDSQuestionWrapper } from "./FDSShared";
+import { useQuestionValidation, renderLabel, renderDescription, FDSQuestionWrapper, isQuestionEffectivelyRequired } from "./FDSShared";
 
 // Functional component wrapper to use React hooks
 const FDSTagboxComponent: React.FC<{ question: QuestionTagboxModel }> = ({ question }) => {
     const { isInvalid, errorMessage } = useQuestionValidation(question);
-    const optionalText = getOptionalText(question);
+    const isRequired = isQuestionEffectivelyRequired(question);
     
     // State for dropdown open/closed
     const [isOpen, setIsOpen] = useState(false);
@@ -193,7 +193,7 @@ const FDSTagboxComponent: React.FC<{ question: QuestionTagboxModel }> = ({ quest
         <FDSQuestionWrapper
             label={label}
             description={description}
-            isRequired={question.isRequired}
+            isRequired={isRequired}
             isInvalid={isInvalid}
             errorMessage={errorMessage}
             question={question}

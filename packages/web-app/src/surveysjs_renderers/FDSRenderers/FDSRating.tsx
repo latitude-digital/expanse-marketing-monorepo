@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
 import { QuestionRatingModel } from "survey-core";
 import { StyledButton, StyledSelectDropdown as SelectDropdown, Typography } from "@ui/ford-ui-components";
-import { useQuestionValidation, FDSQuestionWrapper } from "./FDSShared";
+import { useQuestionValidation, FDSQuestionWrapper, getOptionalText, isQuestionEffectivelyRequired } from "./FDSShared";
 
 // Custom hook for responsive behavior
 const useBreakpoint = () => {
@@ -34,6 +34,8 @@ const FDSRatingComponent: React.FC<{ question: QuestionRatingModel }> = ({ quest
   
   // Use shared validation utilities
   const { isInvalid, errorMessage } = useQuestionValidation(question);
+  const isRequired = isQuestionEffectivelyRequired(question);
+  const optionalText = !isRequired ? getOptionalText(question) : '';
   
   
   // Generate rating scale options
@@ -93,8 +95,8 @@ const FDSRatingComponent: React.FC<{ question: QuestionRatingModel }> = ({ quest
         variant="select"
         isInvalid={isInvalid}
         errorMessage={errorMessage}
-        isRequired={question.isRequired}
-        requiredMessage={optionalText}
+        isRequired={isRequired}
+        requiredMessage={!isRequired ? optionalText : undefined}
         isDisabled={question.isReadOnly}
         listBoxProps={{
           style: { 
@@ -126,13 +128,13 @@ const FDSRatingComponent: React.FC<{ question: QuestionRatingModel }> = ({ quest
     const rightLabel = question.maxRateDescription || question.rateMax_text || 'Excellent';
 
     return (
-      <FDSQuestionWrapper
-        label={question.fullTitle}
-        description={question.description}
-        isRequired={question.isRequired}
-        isInvalid={isInvalid}
-        errorMessage={errorMessage}
-        question={question}
+        <FDSQuestionWrapper
+            label={question.fullTitle}
+            description={question.description}
+            isRequired={isRequired}
+            isInvalid={isInvalid}
+            errorMessage={errorMessage}
+            question={question}
       >
         <div className="flex items-center gap-4">
           {/* Left helper label */}

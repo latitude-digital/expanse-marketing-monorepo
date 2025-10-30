@@ -3,7 +3,7 @@ import React from "react";
 import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
 import { QuestionTextModel } from "survey-core";
 import { StyledTextField } from "@ui/ford-ui-components";
-import { renderLabel, renderDescription, getOptionalText } from "./FDSShared/utils";
+import { renderLabel, renderDescription, getOptionalText, isQuestionEffectivelyRequired } from "./FDSShared/utils";
 
 interface ParsedAddress {
   formatted_address?: string;
@@ -47,7 +47,7 @@ export class FDSTextRenderer extends SurveyQuestionElementBase {
     protected renderElement(): JSX.Element {
         const question = this.question;
         const inputType = this.getInputType();
-        const optionalText = getOptionalText(question);
+        const directRequired = isQuestionEffectivelyRequired(question);
         
         // Get validation state from question or parent (for composite questions)
         // For composite questions, the error is on the parent question
@@ -81,7 +81,9 @@ export class FDSTextRenderer extends SurveyQuestionElementBase {
             return rawValue;
         };
         // For composite questions, check parent's isRequired too
-        const isRequired = question.isRequired || (parentQuestion && parentQuestion.isRequired);
+        const compositeRequired = parentQuestion ? isQuestionEffectivelyRequired(parentQuestion) : false;
+        const effectiveRequired = directRequired || compositeRequired;
+        const optionalText = !effectiveRequired ? getOptionalText(question) : '';
         
         // Check if title and description should be hidden
         const isTitleHidden = question.titleLocation === "hidden";
@@ -90,8 +92,8 @@ export class FDSTextRenderer extends SurveyQuestionElementBase {
             <StyledTextField
                 label={isTitleHidden ? undefined : renderLabel(question.fullTitle)}
                 description={isTitleHidden ? undefined : renderDescription(question.description)}
-                isRequired={isRequired}
-                requiredMessage={!isRequired ? optionalText : undefined}
+                isRequired={effectiveRequired}
+                requiredMessage={!effectiveRequired ? optionalText : undefined}
                 placeholder={usesMasking 
                     ? this.getMaskPlaceholder(question.maskSettings.pattern) 
                     : (question.placeholder || "")}

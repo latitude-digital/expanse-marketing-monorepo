@@ -2,7 +2,7 @@ import React from "react";
 import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
 import { QuestionCommentModel } from "survey-core";
 import { TextArea } from "@ui/ford-ui-components";
-import { useQuestionValidation, renderLabel, renderDescription, getOptionalText } from "./FDSShared";
+import { useQuestionValidation, renderLabel, renderDescription, getOptionalText, isQuestionEffectivelyRequired } from "./FDSShared";
 
 export class FDSTextAreaRenderer extends SurveyQuestionElementBase {
     constructor(props: any) {
@@ -20,7 +20,8 @@ export class FDSTextAreaRenderer extends SurveyQuestionElementBase {
     protected renderElement(): JSX.Element {
         const question = this.question;
         const { isInvalid, errorMessage } = useQuestionValidation(question);
-        const optionalText = getOptionalText(question);
+        const isRequired = isQuestionEffectivelyRequired(question);
+        const optionalText = !isRequired ? getOptionalText(question) : '';
         
         // Check if title and description should be hidden
         const isTitleHidden = question.titleLocation === "hidden";
@@ -35,8 +36,8 @@ export class FDSTextAreaRenderer extends SurveyQuestionElementBase {
                 maxLength={question.maxLength}
                 isInvalid={isInvalid}
                 errorMessage={errorMessage}
-                isRequired={question.isRequired}
-                requiredMessage={optionalText}
+                isRequired={isRequired}
+                requiredMessage={!isRequired ? optionalText : undefined}
                 isDisabled={question.isReadOnly}
                 showCharacterCount={typeof question.maxLength === 'number' && question.maxLength > 0}
                 onChange={(value: string) => {

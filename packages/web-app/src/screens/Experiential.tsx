@@ -513,6 +513,37 @@ ${minorWaiverText}
                             if (options.isNextPage && !sender.currentPage?.validate(true, true)) {
                                 console.log('[Page Change] Validation failed, preventing page change and scrolling to error');
 
+                                const currentPage = sender.currentPage;
+                                if (currentPage) {
+                                    const errorMessages: string[] = [];
+                                    currentPage.questions.forEach((question: any) => {
+                                        if (question.errors?.length) {
+                                            const questionTitle = (question.fullTitle || question.title || question.name || '')
+                                                .toString()
+                                                .replace(/<[^>]+>/g, '')
+                                                .trim();
+                                            question.errors.forEach((error: any) => {
+                                                const message = typeof error?.getText === 'function'
+                                                    ? error.getText()
+                                                    : error?.text || error?.message || String(error);
+                                                if (message) {
+                                                    errorMessages.push(`${questionTitle}: ${message}`);
+                                                }
+                                            });
+                                        }
+                                    });
+
+                                    if (errorMessages.length > 0) {
+                                        console.groupCollapsed('[Page Change] Validation errors');
+                                        errorMessages.forEach((msg, index) => {
+                                            console.log(`${index + 1}. ${msg}`);
+                                        });
+                                        console.groupEnd();
+                                    } else {
+                                        console.log('[Page Change] No question-level error messages found.');
+                                    }
+                                }
+
                                 // Allow time for errors to render, then scroll
                                 setTimeout(() => {
                                     const errorSelectors = [

@@ -1,11 +1,11 @@
 // @ts-nocheck
 import React from "react";
-import { ElementFactory, LocalizableString, QuestionTextModel, Serializer, surveyLocalization, defaultCss } from "survey-core";
+import { ElementFactory, LocalizableString, QuestionTextModel, Serializer, defaultCss } from "survey-core";
 import { ReactQuestionFactory, SurveyQuestionElementBase, SurveyQuestionText } from "survey-react-ui";
 import { StyledTextField } from "@ui/ford-ui-components";
 import { vsprintf } from 'sprintf-js';
 import { normalizeBrand } from '../../utils/brandUtils';
-import { renderDescription } from '../FDSRenderers/FDSShared/utils';
+import { collectQuestionErrors, renderDescription, getOptionalText, isQuestionEffectivelyRequired } from '../FDSRenderers/FDSShared/utils';
 
 const CUSTOM_QUESTION_TYPE = "emailtextinput";
 
@@ -100,13 +100,14 @@ class EmailTextInputFordUI extends SurveyQuestionElementBase {
     protected renderElement(): JSX.Element {
         const question = this.question;
         const title = question.fullTitle;
-        const isRequired = question.isRequired;
-        const errorMessage = question.errors.length > 0 
-            ? (question.errors[0].getText ? question.errors[0].getText() : question.errors[0].text)
+        const isRequired = isQuestionEffectivelyRequired(question);
+        const errors = collectQuestionErrors(question);
+        const firstError = errors[0];
+        const isInvalid = errors.length > 0;
+        const errorMessage = firstError
+            ? (typeof firstError.getText === 'function' ? firstError.getText() : firstError.text || firstError.message)
             : undefined;
-        const isInvalid = question.errors.length > 0;
-        const currentLocale = (question.survey as any).locale || 'en';
-        const optionalText = surveyLocalization.locales[currentLocale]?.["optionalText"] || " (Optional)";
+        const optionalText = !isRequired ? getOptionalText(question) : '';
         
         
         return (

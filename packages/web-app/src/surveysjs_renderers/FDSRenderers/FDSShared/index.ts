@@ -4,7 +4,9 @@ export {
     getOptionalText,
     useQuestionValidation,
     renderLabel,
-    renderDescription
+    renderDescription,
+    isQuestionEffectivelyRequired,
+    collectQuestionErrors
 } from './utils';
 
 export { FDSQuestionWrapper } from './FDSQuestionWrapper';

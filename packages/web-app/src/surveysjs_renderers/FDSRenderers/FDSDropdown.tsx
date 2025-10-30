@@ -3,12 +3,13 @@ import React, { useState } from "react";
 import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui";
 import { QuestionDropdownModel } from "survey-core";
 import { StyledSelectDropdown as SelectDropdown } from "@ui/ford-ui-components";
-import { useQuestionValidation, renderLabel, renderDescription, getOptionalText } from "./FDSShared";
+import { useQuestionValidation, renderLabel, renderDescription, getOptionalText, isQuestionEffectivelyRequired } from "./FDSShared";
 
 // Functional component wrapper to use React hooks
 const FDSDropdownComponent: React.FC<{ question: QuestionDropdownModel }> = ({ question }) => {
     const { isInvalid, errorMessage } = useQuestionValidation(question);
-    const optionalText = getOptionalText(question);
+    const isRequired = isQuestionEffectivelyRequired(question);
+    const optionalText = !isRequired ? getOptionalText(question) : '';
     
     // Determine if this should be a searchable combobox 
     // Use ComboBox for any question with choicesByUrl (external data source)
@@ -66,8 +67,8 @@ const FDSDropdownComponent: React.FC<{ question: QuestionDropdownModel }> = ({ q
             filterPlaceholder={isSearchable ? "Type to search..." : undefined}
             isInvalid={isInvalid}
             errorMessage={errorMessage}
-            isRequired={question.isRequired}
-            requiredMessage={!question.isRequired ? optionalText : undefined}
+            isRequired={isRequired}
+            requiredMessage={!isRequired ? optionalText : undefined}
             isDisabled={question.isReadOnly}
             listBoxProps={isSearchable ? { 
                 style: { maxHeight: '240px' }, // Override max-h-60 which seems to be 60px instead of 240px

@@ -4,12 +4,12 @@ import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui
 import { QuestionRadiogroupModel } from "survey-core";
 import { RadioButtonGroup, StyledTextField } from "@ui/ford-ui-components";
 import { FDSQuestionWrapper } from "./FDSShared/FDSQuestionWrapper";
-import { useQuestionValidation, renderLabel, renderDescription, getOptionalText } from "./FDSShared";
+import { useQuestionValidation, renderLabel, renderDescription, isQuestionEffectivelyRequired } from "./FDSShared";
 
 // Functional component to handle the Other text input
 const FDSRadioComponent: React.FC<{ question: QuestionRadiogroupModel }> = ({ question }) => {
     const { isInvalid, errorMessage } = useQuestionValidation(question);
-    const optionalText = getOptionalText(question);
+    const isRequired = isQuestionEffectivelyRequired(question);
     
     // Track if "Other" is selected
     const [isOtherSelected, setIsOtherSelected] = useState(question.isOtherSelected);
@@ -60,7 +60,7 @@ const FDSRadioComponent: React.FC<{ question: QuestionRadiogroupModel }> = ({ qu
         <FDSQuestionWrapper
             label={question.fullTitle}
             description={question.description}
-            isRequired={question.isRequired}
+            isRequired={isRequired}
             isInvalid={isInvalid}
             errorMessage={errorMessage}
             question={question}
@@ -89,7 +89,7 @@ const FDSRadioComponent: React.FC<{ question: QuestionRadiogroupModel }> = ({ qu
                             onChange={(value: string) => handleOtherTextChange(value)}
                             placeholder={question.otherPlaceholder || "Please specify..."}
                             isDisabled={question.isReadOnly}
-                            isInvalid={isInvalid && !otherText && question.isRequired}
+                            isInvalid={isInvalid && !otherText && isRequired}
                             onBlur={() => {
                                 question.validate();
                             }}

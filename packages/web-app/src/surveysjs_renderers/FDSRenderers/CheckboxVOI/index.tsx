@@ -5,7 +5,7 @@ import { ReactQuestionFactory, SurveyQuestionCheckbox } from "survey-react-ui";
 import { SegmentedControl } from '@ui/ford-ui-components';
 import StyledSelectionCardSmall from '@ui/ford-ui-components/v2/selection-card/small/styled/StyledSelectionCardSmall';
 import { FDSQuestionWrapper } from '../FDSShared/FDSQuestionWrapper';
-import { useQuestionValidation } from '../FDSShared';
+import { collectQuestionErrors, isQuestionEffectivelyRequired } from '../FDSShared/utils';
 
 import { trim } from "lodash";
 
@@ -148,14 +148,16 @@ export class CheckboxVOIQuestion extends SurveyQuestionCheckbox {
             }
 
             // Get validation state for FDS wrapper
-            const errorMessage = this.question.errors.length > 0 
-                ? (this.question.errors[0].getText ? this.question.errors[0].getText() : this.question.errors[0].text)
+            const errors = collectQuestionErrors(this.question);
+            const firstError = errors[0];
+            const isInvalid = errors.length > 0;
+            const errorMessage = firstError
+                ? (typeof firstError.getText === 'function' ? firstError.getText() : firstError.text || firstError.message)
                 : undefined;
-            const isInvalid = this.question.errors?.length > 0;
             
             // Use the actual isRequired property from the question
             // Check both the parent question and the content question for isRequired
-            const isActuallyRequired = this.question.isRequired || this.question.contentQuestion?.isRequired;
+            const isActuallyRequired = isQuestionEffectivelyRequired(this.question) || isQuestionEffectivelyRequired(this.question.contentQuestion);
 
             return (
                 <FDSQuestionWrapper

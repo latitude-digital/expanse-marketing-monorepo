@@ -4,11 +4,12 @@ import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui
 import { QuestionCheckboxModel } from "survey-core";
 import { Checkbox, StyledTextField } from "@ui/ford-ui-components";
 import { FDSQuestionWrapper } from "./FDSShared/FDSQuestionWrapper";
-import { useQuestionValidation, renderLabel } from "./FDSShared/utils";
+import { useQuestionValidation, renderLabel, isQuestionEffectivelyRequired } from "./FDSShared/utils";
 
 // Functional component to handle the Other text input
 const FDSCheckboxComponent: React.FC<{ question: QuestionCheckboxModel }> = ({ question }) => {
     const { isInvalid, errorMessage } = useQuestionValidation(question);
+    const isRequired = isQuestionEffectivelyRequired(question);
     
     // Track if "Other" is selected
     const [isOtherSelected, setIsOtherSelected] = useState(question.isOtherSelected);
@@ -65,7 +66,7 @@ const FDSCheckboxComponent: React.FC<{ question: QuestionCheckboxModel }> = ({ q
         <FDSQuestionWrapper
             label={question.fullTitle}
             description={question.description}
-            isRequired={question.isRequired}
+            isRequired={isRequired}
             isInvalid={isInvalid}
             errorMessage={errorMessage}
             question={question}
@@ -111,7 +112,7 @@ const FDSCheckboxComponent: React.FC<{ question: QuestionCheckboxModel }> = ({ q
                             onChange={(value: string) => handleOtherTextChange(value)}
                             placeholder={question.otherPlaceholder || "Please specify..."}
                             isDisabled={question.isReadOnly}
-                            isInvalid={isInvalid && !otherText && question.isRequired}
+                            isInvalid={isInvalid && !otherText && isRequired}
                             onBlur={() => {
                                 question.validate();
                             }}

@@ -4,6 +4,7 @@ import { ItemValue, RendererFactory, Serializer } from "survey-core";
 import { ReactQuestionFactory, SurveyQuestionRadiogroup } from "survey-react-ui";
 import UnstyledSelectionCard from "@ui/ford-ui-components/v2/selection-card/default/UnstyledSelectionCard";
 import { FDSQuestionWrapper } from '../FDSShared/FDSQuestionWrapper';
+import { collectQuestionErrors, isQuestionEffectivelyRequired } from '../FDSShared/utils';
 
 import style from './_index.module.scss'
 
@@ -108,16 +109,20 @@ export class RadioGroupRowQuestion extends SurveyQuestionRadiogroup {
         }
 
         // Get validation state for FDS wrapper
-        const errorMessage = question.errors.length > 0 
-            ? (question.errors[0].getText ? question.errors[0].getText() : question.errors[0].text)
+        const errors = collectQuestionErrors(question);
+        const firstError = errors[0];
+        const isInvalid = errors.length > 0;
+        const errorMessage = firstError
+            ? (typeof firstError.getText === 'function' ? firstError.getText() : firstError.text || firstError.message)
             : undefined;
-        const isInvalid = question.errors.length > 0;
+
+        const isRequired = isQuestionEffectivelyRequired(question);
 
         return (
             <FDSQuestionWrapper
                 label={label || parentTitle || question.title || question.fullTitle || question.name}
                 description={description}
-                isRequired={question.isRequired}
+                isRequired={isRequired}
                 isInvalid={isInvalid}
                 errorMessage={errorMessage}
                 question={question}

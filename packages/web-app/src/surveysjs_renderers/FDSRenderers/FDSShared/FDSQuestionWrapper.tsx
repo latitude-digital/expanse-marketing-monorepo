@@ -1,6 +1,6 @@
 import React from 'react';
 import { Typography } from "@ui/ford-ui-components";
-import { renderLabel, renderDescription, processMarkdown, getOptionalText, renderQuestionDescription } from './utils';
+import { renderLabel, renderDescription, processMarkdown, getOptionalText, renderQuestionDescription, isQuestionEffectivelyRequired } from './utils';
 import { FDSErrorDisplay } from './FDSErrorDisplay';
 import { FDSRequiredIndicator } from './FDSRequiredIndicator';
 
@@ -33,12 +33,24 @@ export const FDSQuestionWrapper: React.FC<FDSQuestionWrapperProps> = ({
   const shouldShowDescriptionAbove = Boolean(description && showDescriptionAbove && (!isTitleHidden || isCustomBoolean));
   const shouldShowDescriptionBelow = Boolean(description && !showDescriptionAbove && (!isTitleHidden || isCustomBoolean));
 
-  // Enhanced required detection: Check both isRequired prop and validators for expression validators with "notempty"
-  const isActuallyRequired = isRequired || (question?.validators && question.validators.some((validator: any) => 
+  // Enhanced required detection: include dynamic requiredIf logic, parent requirements, and validator expressions
+  const requiredFromSurvey = isQuestionEffectivelyRequired(question, isRequired);
+  const requiredFromValidators = question?.validators && question.validators.some((validator: any) => 
     validator.type === 'expression' && validator.expression?.includes('notempty')
-  ));
+  );
+  const isActuallyRequired = Boolean(requiredFromSurvey || requiredFromValidators);
 
   // Get the optional text and append it to the label if not required (similar to how StyledTextField works)
+  if (process.env.NODE_ENV !== 'production' && question?.name) {
+    console.log('[FDSQuestionWrapper] requirement check', {
+      name: question.name,
+      isRequiredProp: isRequired,
+      requiredIf: question?.requiredIf,
+      parentRequired: question?.parentQuestion?.isRequired,
+      effectiveRequired: isActuallyRequired,
+    });
+  }
+
   const optionalText = !isActuallyRequired && question ? getOptionalText(question) : '';
   const labelWithOptional = (label || '') + optionalText;
 

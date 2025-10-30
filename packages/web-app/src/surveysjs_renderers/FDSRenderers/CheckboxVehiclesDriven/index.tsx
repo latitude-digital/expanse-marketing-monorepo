@@ -5,6 +5,7 @@ import { ReactQuestionFactory, SurveyQuestionCheckbox } from "survey-react-ui";
 import StyledSelectionCardSmall from '@ui/ford-ui-components/v2/selection-card/small/styled/StyledSelectionCardSmall';
 import { Chip } from '@ui/ford-ui-components/v2/chip/chip';
 import { FDSQuestionWrapper } from '../FDSShared/FDSQuestionWrapper';
+import { collectQuestionErrors, isQuestionEffectivelyRequired } from '../FDSShared/utils';
 
 export class CheckboxVehiclesDrivenQuestion extends SurveyQuestionCheckbox {
     constructor(props: any) {
@@ -49,11 +50,12 @@ export class CheckboxVehiclesDrivenQuestion extends SurveyQuestionCheckbox {
                 }
                 // Return early if data is still loading - don't apply filtering yet
                 
+                const wrapperRequired = isQuestionEffectivelyRequired(this.question) || isQuestionEffectivelyRequired(this.question.contentQuestion);
                 return (
                     <FDSQuestionWrapper
                         label={this.question.fullTitle || this.question.title || "Please select the Lincoln vehicles that you experienced today."}
                         description={this.question.description}
-                        isRequired={this.question.isRequired || this.question.contentQuestion?.isRequired}
+                        isRequired={wrapperRequired}
                         isInvalid={false}
                         errorMessage={undefined}
                         question={this.question}
@@ -93,11 +95,13 @@ export class CheckboxVehiclesDrivenQuestion extends SurveyQuestionCheckbox {
             (this as any).originalDataMap = originalDataMap;
 
             // Get validation state for FDS wrapper
-            const errorMessage = this.question.errors.length > 0 
-                ? (this.question.errors[0].getText ? this.question.errors[0].getText() : this.question.errors[0].text)
+            const errors = collectQuestionErrors(this.question);
+            const firstError = errors[0];
+            const isInvalid = errors.length > 0;
+            const errorMessage = firstError
+                ? (typeof firstError.getText === 'function' ? firstError.getText() : firstError.text || firstError.message)
                 : undefined;
-            const isInvalid = this.question.errors.length > 0;
-            
+
 
             // Get selected vehicles for chips display
             const selectedValues = this.question.value || [];
@@ -111,11 +115,12 @@ export class CheckboxVehiclesDrivenQuestion extends SurveyQuestionCheckbox {
                 };
             });
 
+            const wrapperRequiredFinal = isQuestionEffectivelyRequired(this.question) || isQuestionEffectivelyRequired(this.question.contentQuestion);
             return (
                 <FDSQuestionWrapper
                     label={this.question.fullTitle || this.question.title || "Please select the Lincoln vehicles that you experienced today."}
                     description={this.question.description}
-                    isRequired={this.question.isRequired || this.question.contentQuestion?.isRequired}
+                    isRequired={wrapperRequiredFinal}
                     isInvalid={isInvalid}
                     errorMessage={errorMessage}
                     question={this.question}

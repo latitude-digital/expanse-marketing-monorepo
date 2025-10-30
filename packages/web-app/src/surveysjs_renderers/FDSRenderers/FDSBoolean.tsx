@@ -4,7 +4,7 @@ import { ReactQuestionFactory, SurveyQuestionElementBase } from "survey-react-ui
 import { QuestionBooleanModel, Serializer, RendererFactory } from "survey-core";
 import { Checkbox as FDSCheckbox, Toggle, Typography } from "@ui/ford-ui-components";
 import { FDSQuestionWrapper } from "./FDSShared/FDSQuestionWrapper";
-import { useQuestionValidation, renderLabel, getOptionalText, processMarkdown } from "./FDSShared/utils";
+import { useQuestionValidation, renderLabel, getOptionalText, processMarkdown, isQuestionEffectivelyRequired } from "./FDSShared/utils";
 
 // Functional component to handle both checkbox and toggle rendering
 export const FDSBooleanComponent: React.FC<{ question: QuestionBooleanModel }> = ({ question }) => {
@@ -41,7 +41,8 @@ export const FDSBooleanComponent: React.FC<{ question: QuestionBooleanModel }> =
     const labelFalseText = resolveText(question.locLabelFalse, '');
     const legacyLabelText = resolveText(question.locLabel, question.label);
     const titleText = resolveText(question.locTitle, question.fullTitle || parentTitle || '');
-    const optionalSuffix = !question.isRequired ? getOptionalText(question) : '';
+    const requiredStatus = isQuestionEffectivelyRequired(question);
+    const optionalSuffix = !requiredStatus ? getOptionalText(question) : '';
 
     if (process.env.NODE_ENV !== 'production') {
         console.log('[FDSBoolean] render', {
@@ -77,7 +78,7 @@ export const FDSBooleanComponent: React.FC<{ question: QuestionBooleanModel }> =
             <FDSQuestionWrapper
                 label={question.fullTitle}
                 description={question.description || question.parentQuestion?.description}
-                isRequired={question.isRequired}
+                isRequired={requiredStatus}
                 isInvalid={isInvalid}
                 errorMessage={errorMessage}
                 question={question}
@@ -114,7 +115,7 @@ export const FDSBooleanComponent: React.FC<{ question: QuestionBooleanModel }> =
         <FDSQuestionWrapper
             label={question.fullTitle}
             description={question.description}
-            isRequired={question.isRequired}
+            isRequired={requiredStatus}
             isInvalid={isInvalid}
             errorMessage={errorMessage}
             question={question}
