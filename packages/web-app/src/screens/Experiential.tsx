@@ -581,9 +581,28 @@ ${minorWaiverText}
                         });
                     }
 
+                    const scrollToTop = () => {
+                        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+                    };
+
+                    survey.focusFirstQuestionAutomatic = false;
+
                     survey.onCurrentPageChanged.add(() => {
                         // Reset scroll position when page changes successfully
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        setValidationErrors([]);
+                        requestAnimationFrame(() => {
+                            scrollToTop();
+                            const active = document.activeElement as HTMLElement | null;
+                            if (active && typeof active.blur === 'function') {
+                                active.blur();
+                            }
+                        });
+                    });
+
+                    survey.onAfterRenderPage.add(() => {
+                        requestAnimationFrame(() => {
+                            scrollToTop();
+                        });
                     });
 
                     // Intercept validation errors to ensure scrolling happens

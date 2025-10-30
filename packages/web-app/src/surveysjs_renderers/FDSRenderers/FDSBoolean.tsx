@@ -86,6 +86,7 @@ export const FDSBooleanComponent: React.FC<{ question: QuestionBooleanModel }> =
                 <div data-testid={`fds-boolean-checkbox-${question.name}`}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <FDSCheckbox
+                            className="items-start justify-start gap-sm shrink flex-wrap"
                             isSelected={isChecked}
                             onChange={(value: boolean) => handleChange(value)}
                             isDisabled={question.isReadOnly}
@@ -96,9 +97,10 @@ export const FDSBooleanComponent: React.FC<{ question: QuestionBooleanModel }> =
                             aria-label={ariaLabel}
                             label={combinedLabel}
                             labelProps={{
-                                className: "text-left text-ford-body1-regular",
+                                className: "text-left text-ford-body1-regular items-start flex flex-1 flex-wrap whitespace-normal break-words",
                                 displayStyle: "body-1-regular",
                                 displayColor: "text-onlight-strong",
+                                spanProps: { className: "text-left whitespace-normal break-words flex-1" },
                             }}
                             onBlur={() => {
                                 question.validate();
